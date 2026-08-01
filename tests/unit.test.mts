@@ -1,0 +1,200 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+
+/* env.ts validates at import time, and otp.ts pulls AUTH_SECRET from it. */
+process.env.DATABASE_URL ??= "postgresql://localhost:5432/quoin_test";
+process.env.AUTH_SECRET ??= "test-secret-at-least-32-characters-long!!";
+
+const { normalizePhone, maskPhone, InvalidPhoneError } = await import(
+  "@/lib/auth/phone"
+);
+const { generateCode, hashCode, verifyCode, OTP_LENGTH } = await import(
+  "@/lib/auth/otp"
+);
+const { haversineKm, resolveServiceability } = await import("@/lib/geo");
+const { normalizeQty, areaFromDimensions, applyWastage, lineTotal } =
+  await import("@/lib/cart/quantity");
+const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
+  await import("@/lib/types/catalog");
+const { PRODUCTS } = await import("@/lib/data/catalog");
+
+describe("phone normalisation", () => {
+  it("collapses every Indian input format onto one E.164 value", () => {
+    for (const input of [
+      "9876543210",
+      "09876543210",
+      "+919876543210",
+      "919876543210",
+      "+91 98765-43210",
+      "  98765 43210  ",
+    ]) {
+      assert.equal(normalizePhone(input), "+919876543210", input);
+    }
+  });
+
+  it("rejects numbers that cannot be Indian mobiles", () => {
+    for (const bad of ["", "12345", "1234567890", "5876543210", "98765432101"]) {
+      assert.throws(() => normalizePhone(bad), InvalidPhoneError, bad);
+    }
+  });
+
+  it("masks all but the last five digits", () => {
+    assert.equal(maskPhone("+919876543210"), "+91 ***** 43210");
+  });
+});
+
+describe("otp", () => {
+  it("generates codes of the right length, including leading zeros", () => {
+    for (let i = 0; i < 500; i++) {
+      const code = generateCode();
+      assert.equal(code.length, OTP_LENGTH);
+      assert.match(code, /^\d+$/);
+    }
+  });
+
+  it("verifies a correct code and rejects a wrong one", () => {
+    const phone = "+919876543210";
+    const hash = hashCode(phone, "123456");
+    assert.ok(verifyCode(phone, "123456", hash));
+    assert.ok(!verifyCode(phone, "123457", hash));
+  });
+
+  it("will not accept a code minted for a different phone", () => {
+    /* The phone is bound into the HMAC precisely to stop this replay. */
+    const hash = hashCode("+919876543210", "123456");
+    assert.ok(!verifyCode("+919999999999", "123456", hash));
+  });
+
+  it("never stores the code itself", () => {
+    assert.ok(!hashCode("+919876543210", "123456").includes("123456"));
+  });
+});
+
+describe("serviceability", () => {
+  const vasantVihar = { lat: 28.5601, lng: 77.1591 };
+  const stores = [
+    {
+      id: "s1",
+      code: "DEL-VV",
+      name: "Quoin South Delhi",
+      lat: 28.5601,
+      lng: 77.1591,
+      serviceRadiusKm: 6,
+      baseEtaMinutes: 18,
+    },
+    {
+      id: "s2",
+      code: "DEL-OKH",
+      name: "Quoin Okhla",
+      lat: 28.5355,
+      lng: 77.2731,
+      serviceRadiusKm: 7,
+      baseEtaMinutes: 22,
+    },
+  ];
+
+  it("measures a known distance to within a few percent", () => {
+    /* Vasant Vihar to Okhla is roughly 11 km as the crow flies. */
+    const km = haversineKm(vasantVihar, { lat: 28.5355, lng: 77.2731 });
+    assert.ok(km > 10 && km < 12, `got ${km}`);
+  });
+
+  it("picks the nearest store that can actually reach the point", () => {
+    const r = resolveServiceability(vasantVihar, stores);
+    assert.equal(r.serviceable, true);
+    assert.equal(r.store?.code, "DEL-VV");
+    assert.equal(r.distanceKm, 0);
+    assert.equal(r.etaMinutes, 18);
+  });
+
+  it("reports not serviceable outside every radius", () => {
+    /* Jaipur — far outside any Delhi store. */
+    const r = resolveServiceability({ lat: 26.9124, lng: 75.7873 }, stores);
+    assert.equal(r.serviceable, false);
+    assert.equal(r.store, null);
+    assert.equal(r.etaMinutes, null);
+  });
+
+  it("quotes a longer eta the further out the customer is", () => {
+    const near = resolveServiceability(vasantVihar, stores).etaMinutes!;
+    const far = resolveServiceability(
+      { lat: 28.5901, lng: 77.1891 },
+      stores,
+    ).etaMinutes!;
+    assert.ok(far > near, `${far} should exceed ${near}`);
+  });
+});
+
+describe("quantity grid", () => {
+  const marble = PRODUCTS.find((p) => p.slug === "italian-marble-statuario")!;
+  const variant = marble.variants[0]; // min 20, step 5
+
+  it("never sells below the minimum", () => {
+    assert.equal(normalizeQty(variant, 0), 20);
+    assert.equal(normalizeQty(variant, 19), 20);
+    assert.equal(normalizeQty(variant, -5), 20);
+  });
+
+  it("rounds up onto the step, never down", () => {
+    /* Rounding down would leave the customer short on site. */
+    assert.equal(normalizeQty(variant, 21), 25);
+    assert.equal(normalizeQty(variant, 25), 25);
+    assert.equal(normalizeQty(variant, 26), 30);
+  });
+
+  it("survives garbage input", () => {
+    assert.equal(normalizeQty(variant, NaN), 20);
+    assert.equal(normalizeQty(variant, Infinity), 20);
+  });
+
+  it("computes the area shown on the product page", () => {
+    const area = areaFromDimensions(10, 12);
+    assert.equal(area, 120);
+    assert.equal(applyWastage(area, true), 132);
+    assert.equal(applyWastage(area, false), 120);
+    assert.equal(normalizeQty(variant, 132), 135);
+  });
+
+  it("treats impossible dimensions as no area", () => {
+    assert.equal(areaFromDimensions(0, 12), 0);
+    assert.equal(areaFromDimensions(-3, 12), 0);
+    assert.equal(areaFromDimensions(NaN, 12), 0);
+  });
+});
+
+describe("price resolution", () => {
+  const marble = PRODUCTS.find((p) => p.slug === "italian-marble-statuario")!;
+  const paint = PRODUCTS.find(
+    (p) => p.slug === "asian-paints-royale-luxury-emulsion",
+  )!;
+
+  it("shows the cheapest variant, flagged as a from-price", () => {
+    const p = resolvePrice(paint, false);
+    assert.equal(p.amount, 15500);
+    assert.equal(p.isFrom, true);
+  });
+
+  it("charges Pro members the trade rate", () => {
+    const standard = resolveVariantPrice(marble.variants[0], false);
+    const pro = resolveVariantPrice(marble.variants[0], true);
+    assert.equal(standard.amount, 14900);
+    assert.equal(pro.amount, 13400);
+    assert.equal(pro.isProPrice, true);
+  });
+
+  it("reports no Pro saving where no trade rate exists", () => {
+    const oneLitre = paint.variants.find((v) => v.label === "1 L")!;
+    assert.equal(proSaving(oneLitre), null);
+  });
+
+  it("matches the total rendered on the marble page", () => {
+    /* 10ft x 12ft +10% -> 135 sq.ft. at Rs.149 = Rs.20,115. */
+    const price = resolveVariantPrice(marble.variants[0], false);
+    assert.equal(lineTotal(price.amount, 135), 2011500);
+    assert.equal(formatPrice(2011500), "₹20,115");
+  });
+
+  it("groups rupees the Indian way", () => {
+    assert.equal(formatPrice(100000000), "₹10,00,000");
+  });
+});

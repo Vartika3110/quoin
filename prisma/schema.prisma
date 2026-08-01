@@ -1,0 +1,125 @@
+// Module 1 — identity, addresses and serviceability.
+//
+// Deliberately scoped: no catalogue, cart or order models yet. What is
+// here is what every later module depends on — who the customer is, where
+// they are, and whether Quoin can serve that location.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserTier {
+  STANDARD
+  PRO
+}
+
+model User {
+  id String @id @default(cuid())
+
+  /// E.164, always normalised before it reaches the database (+919876543210).
+  /// Storing raw user input here guarantees duplicate accounts.
+  phone String  @unique
+  name  String?
+  email String? @unique
+
+  /// Drives price resolution. A tier column rather than a boolean because
+  /// trade/architect tiers are already implied by the storefront.
+  tier UserTier @default(STANDARD)
+
+  /// Paise, never rupees. Wallet is a running balance today; it becomes a
+  /// derived sum over a ledger table when refunds and credits land.
+  walletPaise Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses Address[]
+
+  @@map("users")
+}
+
+enum AddressLabel {
+  HOME
+  WORK
+  /// A construction site — often has no formal address, hence `landmark`.
+  SITE
+  OTHER
+}
+
+model Address {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label    AddressLabel @default(HOME)
+  line1    String
+  line2    String?
+  landmark String?
+  city     String
+  state    String
+  pincode  String
+
+  /// Serviceability is decided by coordinates, never by pincode. Pincodes
+  /// straddle store radii and would make the 18-minute promise a lie.
+  lat Float
+  lng Float
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+/// A pending phone verification. Rows are kept after use rather than
+/// deleted so that rate limiting can see recent history per phone.
+model OtpChallenge {
+  id    String @id @default(cuid())
+  phone String
+
+  /// HMAC of the code, never the code itself. A support engineer reading
+  /// the table must not be able to log in as a customer.
+  codeHash String
+
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([phone, createdAt])
+  @@map("otp_challenges")
+}
+
+/// A dark store. Serviceability and the delivery promise are computed
+/// against these, so `instant` fulfilment is only ever offered where a
+/// store can actually reach the customer.
+model Store {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  lat Float
+  lng Float
+
+  /// Straight-line kilometres. Road distance is what actually matters, so
+  /// this is intentionally conservative until routing is wired in.
+  serviceRadiusKm Float @default(6)
+
+  /// The headline promise for in-stock items from this store.
+  baseEtaMinutes Int @default(18)
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("stores")
+}

@@ -3,7 +3,16 @@
     "allow": [
       "Bash(npx eslint *)",
       "Bash(npx tsc *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npm install *)",
+      "Bash(npm audit *)",
+      "Bash(npm ls *)",
+      "Bash(npx prisma *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"import fitz; print\\('pymupdf ok'\\)\")",
+      "Bash(python3 -c \"import pdfplumber; print\\('pdfplumber ok'\\)\")",
+      "Bash(brew --version)",
+      "Bash(/private/tmp/claude-501/-Users-gg-Desktop-Quion/c87fd050-bd4c-4a8c-a344-bc6cc74cfc53/scratchpad/venv/bin/python -c ' *)"
     ]
   }
 }
