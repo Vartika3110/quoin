@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Swatch } from "@/components/Swatch";
 import { Calendar, Clock, Heart, Ruler, Truck } from "@/components/icons";
 import {
@@ -40,11 +41,13 @@ export function ProductCard({
   return (
     <article className="group flex w-[168px] flex-col overflow-hidden rounded-card border border-line-soft bg-surface transition-colors hover:border-line lg:w-auto">
       <div className="relative aspect-square overflow-hidden bg-raised">
-        <Swatch
-          swatchKey={product.image}
-          label={product.title}
-          className="size-full transition-transform duration-300 group-hover:scale-[1.03]"
-        />
+        <Link href={`/p/${product.slug}`} className="block size-full">
+          <Swatch
+            swatchKey={product.image}
+            label={product.title}
+            className="size-full transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        </Link>
         <button
           aria-label={`Save ${product.title}`}
           className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-black/45 text-ink backdrop-blur-sm hover:text-gold"
@@ -58,7 +61,7 @@ export function ProductCard({
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-3">
+      <Link href={`/p/${product.slug}`} className="flex flex-1 flex-col gap-1.5 p-3">
         <div className="flex flex-wrap items-baseline gap-x-1.5">
           <span className="text-base font-semibold text-gold">
             {formatPrice(price.amount)}
@@ -80,7 +83,7 @@ export function ProductCard({
             {BADGE_LABEL[badge]}
           </span>
         )}
-      </div>
+      </Link>
     </article>
   );
 }

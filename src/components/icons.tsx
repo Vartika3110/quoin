@@ -213,6 +213,44 @@ export const Ruler = (p: IconProps) => (
   </Svg>
 );
 
+export const Plus = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Svg>
+);
+
+export const Minus = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 12h14" />
+  </Svg>
+);
+
+export const Check = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m5 12.5 4.5 4.5L19 7" />
+  </Svg>
+);
+
+export const Info = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 11v5M12 8h.01" />
+  </Svg>
+);
+
+export const Shield = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3l7 3v5.5c0 4.2-2.9 7.8-7 9.5-4.1-1.7-7-5.3-7-9.5V6z" />
+    <path d="m9 12 2 2 4-4" />
+  </Svg>
+);
+
+export const Back = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M19 12H5M11 6l-6 6 6 6" />
+  </Svg>
+);
+
 /** Maps the `icon` string on a CatalogTab to its component. */
 export const TAB_ICONS = {
   grid: Grid,

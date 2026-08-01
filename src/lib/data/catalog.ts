@@ -242,3 +242,19 @@ export async function getCategories(): Promise<Category[]> {
 export async function getTopPicks(): Promise<Product[]> {
   return PRODUCTS;
 }
+
+/** Null rather than throwing — the route turns a miss into a 404. */
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  return PRODUCTS.find((p) => p.slug === slug) ?? null;
+}
+
+/** Cheap cross-sell: same category, excluding the product being viewed. */
+export async function getRelatedProducts(product: Product): Promise<Product[]> {
+  return PRODUCTS.filter(
+    (p) => p.id !== product.id && p.categoryId === product.categoryId,
+  );
+}
+
+export async function getAllProductSlugs(): Promise<string[]> {
+  return PRODUCTS.map((p) => p.slug);
+}

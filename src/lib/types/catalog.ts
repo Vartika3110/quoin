@@ -145,6 +145,20 @@ export interface PriceView {
   isFrom: boolean;
 }
 
+/** Price of one specific variant. The detail page prices what is selected. */
+export function resolveVariantPrice(variant: Variant, isPro: boolean): PriceView {
+  const usedProPrice = isPro && variant.proPrice != null;
+  const amount = usedProPrice ? variant.proPrice! : variant.price;
+
+  return {
+    amount,
+    strikethrough: variant.mrp > amount ? variant.mrp : null,
+    isProPrice: usedProPrice,
+    isFrom: false,
+  };
+}
+
+/** Price shown on a card: the cheapest variant, flagged as "Onwards". */
 export function resolvePrice(product: Product, isPro: boolean): PriceView {
   const cheapest = product.variants.reduce((min, v) => {
     const effective = isPro && v.proPrice != null ? v.proPrice : v.price;
@@ -152,15 +166,17 @@ export function resolvePrice(product: Product, isPro: boolean): PriceView {
     return effective < minEffective ? v : min;
   }, product.variants[0]);
 
-  const usedProPrice = isPro && cheapest.proPrice != null;
-  const amount = usedProPrice ? cheapest.proPrice! : cheapest.price;
-
   return {
-    amount,
-    strikethrough: cheapest.mrp > amount ? cheapest.mrp : null,
-    isProPrice: usedProPrice,
+    ...resolveVariantPrice(cheapest, isPro),
     isFrom: product.variants.length > 1,
   };
+}
+
+/** What a Pro would save on this variant, or null when there is no Pro rate. */
+export function proSaving(variant: Variant): Paise | null {
+  if (variant.proPrice == null) return null;
+  const saving = variant.price - variant.proPrice;
+  return saving > 0 ? saving : null;
 }
 
 /** Formats paise as ₹ with Indian digit grouping and no trailing decimals. */
