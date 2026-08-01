@@ -1,26 +1,125 @@
 @import "tailwindcss";
 
+/**
+ * Quoin design tokens.
+ *
+ * The storefront is dark-first by design — this is a deliberate brand
+ * choice, not a theme preference, so the palette is not wired to
+ * `prefers-color-scheme`. A light theme, if it ever ships, belongs to
+ * the Pro/ops console rather than the consumer storefront.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces, darkest to lightest */
+  --quoin-bg: #000000;
+  --quoin-surface: #101010;
+  --quoin-surface-raised: #171717;
+  --quoin-surface-hover: #1f1f1f;
+
+  /* Warm gold — wordmark, prices, active states, Pro affordances */
+  --quoin-gold: #c8a45c;
+  --quoin-gold-bright: #e0c088;
+  --quoin-gold-dim: #8a6f38;
+  /* Gold at low alpha for tinted chip backgrounds and hairlines */
+  --quoin-gold-wash: rgb(200 164 92 / 0.12);
+  --quoin-gold-edge: rgb(200 164 92 / 0.32);
+
+  /* Type */
+  --quoin-text: #ffffff;
+  --quoin-text-muted: #a3a3a3;
+  --quoin-text-faint: #6b6b6b;
+
+  /* Lines */
+  --quoin-border: #262626;
+  --quoin-border-soft: #1c1c1c;
+
+  /* Status */
+  --quoin-success: #4ade80;
+  --quoin-danger: #f87171;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-bg: var(--quoin-bg);
+  --color-surface: var(--quoin-surface);
+  --color-raised: var(--quoin-surface-raised);
+  --color-hover: var(--quoin-surface-hover);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-gold: var(--quoin-gold);
+  --color-gold-bright: var(--quoin-gold-bright);
+  --color-gold-dim: var(--quoin-gold-dim);
+  --color-gold-wash: var(--quoin-gold-wash);
+  --color-gold-edge: var(--quoin-gold-edge);
+
+  --color-ink: var(--quoin-text);
+  --color-muted: var(--quoin-text-muted);
+  --color-faint: var(--quoin-text-faint);
+
+  --color-line: var(--quoin-border);
+  --color-line-soft: var(--quoin-border-soft);
+
+  --color-success: var(--quoin-success);
+  --color-danger: var(--quoin-danger);
+
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-cormorant);
+
+  /* Card radii are generous in the reference — 16px is the workhorse. */
+  --radius-card: 1rem;
+  --radius-tile: 0.875rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--quoin-bg);
+  color: var(--quoin-text);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/**
+ * Horizontal rails (banners, product carousels) scroll edge-to-edge on
+ * mobile. The scrollbar is hidden but the rail stays keyboard- and
+ * trackpad-scrollable, and snaps so cards never rest half-cut.
+ *
+ * Declared in the components layer on purpose: the Tailwind utilities
+ * layer is emitted after it, so lg:grid and lg:overflow-visible can
+ * still override the rail on desktop. Unlayered, these rules would beat
+ * every utility and the desktop grid would never apply.
+ */
+@layer components {
+  .rail {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  .rail > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+}
+
+/* Bottom nav sits above the iOS home indicator on installed PWAs. */
+.safe-bottom {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+/* Visible focus for keyboard users only — the design has no room for
+   permanent focus rings, but they must exist when tabbing. */
+:focus-visible {
+  outline: 2px solid var(--quoin-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
