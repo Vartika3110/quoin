@@ -1,0 +1,308 @@
+<title>Quoin Build Handoff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+/* Dark-first by design: Quoin's storefront is a dark product and this
+   document carries the same identity. Tokens are defined complete on
+   bare :root (dark), then swapped for light in both directions. */
+:root{
+  --ground:#0B0A09; --surface:#141210; --surface-2:#1C1916;
+  --line:#2A2621; --line-soft:#1F1C18;
+  --ink:#EDE9E1; --muted:#A29A8C; --faint:#6E665B;
+  --gold:#C8A45C; --gold-bright:#E3C68C; --gold-wash:rgb(200 164 92 / .11);
+  --gold-edge:rgb(200 164 92 / .30);
+  --ok:#6FB587; --ok-wash:rgb(111 181 135 / .12);
+  --shadow:0 1px 2px rgb(0 0 0 / .5);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --ground:#FAF8F4; --surface:#FFFFFF; --surface-2:#F3EFE8;
+    --line:#E1DACE; --line-soft:#EDE8DF;
+    --ink:#1A1612; --muted:#5C544A; --faint:#8B8276;
+    --gold:#8A6A28; --gold-bright:#6E5420; --gold-wash:rgb(138 106 40 / .09);
+    --gold-edge:rgb(138 106 40 / .26);
+    --ok:#2F7D4F; --ok-wash:rgb(47 125 79 / .10);
+    --shadow:0 1px 2px rgb(26 22 18 / .07);
+  }
+}
+:root[data-theme="light"]{
+  --ground:#FAF8F4; --surface:#FFFFFF; --surface-2:#F3EFE8;
+  --line:#E1DACE; --line-soft:#EDE8DF;
+  --ink:#1A1612; --muted:#5C544A; --faint:#8B8276;
+  --gold:#8A6A28; --gold-bright:#6E5420; --gold-wash:rgb(138 106 40 / .09);
+  --gold-edge:rgb(138 106 40 / .26);
+  --ok:#2F7D4F; --ok-wash:rgb(47 125 79 / .10);
+  --shadow:0 1px 2px rgb(26 22 18 / .07);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+  font-size:16px; line-height:1.65; margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:52rem; margin:0 auto; padding:clamp(2rem,5vw,4.5rem) clamp(1.15rem,4vw,2rem) 6rem}
+section{margin-top:clamp(3rem,6vw,4.5rem)}
+p{margin:0 0 1rem; max-width:66ch}
+a{color:var(--gold); text-underline-offset:3px}
+a:hover{color:var(--gold-bright)}
+:focus-visible{outline:2px solid var(--gold); outline-offset:3px; border-radius:3px}
+
+/* ---- masthead ---- */
+.mark{font-family:"Cormorant Garamond",Georgia,serif; font-weight:400;
+  font-size:clamp(2.4rem,7vw,3.6rem); letter-spacing:.2em; line-height:1; margin:0}
+.eyebrow{font-size:.7rem; letter-spacing:.19em; text-transform:uppercase;
+  color:var(--gold); margin:0 0 1.4rem; font-weight:600}
+.lede{font-family:"Cormorant Garamond",Georgia,serif; font-weight:300;
+  font-size:clamp(1.3rem,3vw,1.7rem); line-height:1.4; color:var(--muted);
+  max-width:40ch; margin:1.5rem 0 0; text-wrap:balance}
+.meta{display:flex; flex-wrap:wrap; gap:.5rem .75rem; margin-top:2rem;
+  padding-top:1.5rem; border-top:1px solid var(--line)}
+.chip{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.72rem;
+  color:var(--muted); background:var(--surface); border:1px solid var(--line);
+  border-radius:5px; padding:.3rem .55rem; white-space:nowrap}
+.chip.pass{color:var(--ok); background:var(--ok-wash); border-color:transparent}
+
+/* ---- headings ---- */
+h2{font-family:"Cormorant Garamond",Georgia,serif; font-weight:600;
+  font-size:clamp(1.6rem,3.6vw,2.05rem); line-height:1.2; margin:0 0 .35rem;
+  text-wrap:balance; letter-spacing:.005em}
+h3{font-size:.95rem; font-weight:600; margin:2rem 0 .5rem; letter-spacing:.005em}
+.sub{color:var(--faint); font-size:.83rem; margin:0 0 1.6rem}
+
+/* ---- tables ---- */
+.scroll{overflow-x:auto; margin:1.4rem 0; border:1px solid var(--line);
+  border-radius:10px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; min-width:34rem; font-size:.855rem}
+th,td{text-align:left; padding:.72rem .9rem; border-bottom:1px solid var(--line-soft);
+  vertical-align:top}
+thead th{font-size:.68rem; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--faint); font-weight:600; background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+td code{font-size:.8rem}
+.num{font-variant-numeric:tabular-nums}
+
+code{font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.845em;
+  background:var(--surface-2); border:1px solid var(--line-soft);
+  padding:.1em .38em; border-radius:4px; color:var(--gold)}
+pre{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:.9rem 1.05rem; overflow-x:auto; margin:1rem 0}
+pre code{background:none; border:0; padding:0; color:var(--ink); font-size:.82rem}
+
+/* ---- callout ---- */
+.note{border:1px solid var(--gold-edge); background:var(--gold-wash);
+  border-radius:10px; padding:1.1rem 1.25rem; margin:1.5rem 0}
+.note p:last-child{margin-bottom:0}
+.note strong{color:var(--gold)}
+
+/* ---- timeline: the session is genuinely sequential, so the spine
+       encodes real chronology rather than decorating the page ---- */
+.tl{list-style:none; margin:1.5rem 0 0; padding:0 0 0 1.6rem;
+  border-left:1px solid var(--line)}
+.tl li{position:relative; padding-bottom:1.9rem}
+.tl li:last-child{padding-bottom:0}
+.tl li::before{content:""; position:absolute; left:calc(-1.6rem - 4.5px);
+  top:.52rem; width:8px; height:8px; border-radius:50%;
+  background:var(--gold); box-shadow:0 0 0 4px var(--ground)}
+.tl h3{margin:0 0 .2rem; font-size:.95rem}
+.tl p{margin:0; font-size:.875rem; color:var(--muted)}
+.tl .stamp{font-family:"JetBrains Mono",ui-monospace,monospace;
+  font-size:.68rem; color:var(--faint); letter-spacing:.04em}
+
+/* ---- decision blocks ---- */
+.stack{display:flex; flex-direction:column; gap:.85rem; margin:1.4rem 0}
+.card{border:1px solid var(--line); background:var(--surface);
+  border-radius:10px; padding:1rem 1.15rem; box-shadow:var(--shadow)}
+.card h3{margin:0 0 .3rem}
+.card p{margin:0; font-size:.88rem; color:var(--muted)}
+.card p + p{margin-top:.5rem}
+
+/* ---- open questions ---- */
+.ask{display:grid; grid-template-columns:auto 1fr; gap:.7rem 1rem;
+  align-items:start; padding:1rem 0; border-bottom:1px solid var(--line-soft)}
+.ask:last-child{border-bottom:0}
+.ask .q{font-weight:600; font-size:.9rem}
+.ask p{margin:.25rem 0 0; font-size:.86rem; color:var(--muted)}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--gold); margin-top:.55rem}
+
+footer{margin-top:5rem; padding-top:1.5rem; border-top:1px solid var(--line);
+  font-size:.78rem; color:var(--faint)}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Build handoff &middot; 26 August 2026</p>
+    <h1 class="mark">QUOIN</h1>
+    <p class="lede">Materials, interiors and expert services behind one storefront &mdash; and the three-way split that shapes every decision below.</p>
+    <div class="meta">
+      <span class="chip">Next.js&nbsp;16 &middot; React&nbsp;19</span>
+      <span class="chip">Tailwind&nbsp;v4</span>
+      <span class="chip">Postgres &middot; Prisma</span>
+      <span class="chip num">3 commits</span>
+      <span class="chip pass num">21/21 tests passing</span>
+      <span class="chip pass">build &amp; lint clean</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Quoin is three businesses, not one</h2>
+    <p class="sub">Read from the reference design &mdash; and the reason the backend is shaped the way it is.</p>
+    <p>A single catalogue fronts three operations with almost nothing in common underneath. Treating them as one product is the failure mode this build is organised to avoid.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Line</th><th>Evidence in the UI</th><th>What it needs</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Q&#8209;commerce</strong></td><td>&ldquo;18 minutes&rdquo;, &ldquo;1.1&nbsp;km away&rdquo;, address picker, live cart</td><td>Dark stores, geo&#8209;fenced catalogue, per&#8209;store inventory, dispatch</td></tr>
+          <tr><td><strong>Services</strong></td><td>Site Visit &ldquo;&#8377;149 Per Visit&rdquo;, Consult tab, Experts Verified</td><td>Professionals, availability slots, bookings &mdash; no inventory at all</td></tr>
+          <tr><td><strong>Projects</strong></td><td>Project Hub, Quoin Studio, Quoin Pro</td><td>Long&#8209;running entity spanning many orders, BOQ, quotes</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The decision everything hangs on</h2>
+    <p class="sub">Four fulfilment types &mdash; modelled per product, never assumed.</p>
+    <p>Four different pricing units appear in a single row of the reference design: <code>Per Visit</code>, <code>/sq.ft.</code>, <code>Onwards</code>, <code>Per Pc</code>. That rules out a single <code>price</code> column and a single checkout path.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Fulfilment</th><th>Meaning</th><th>Example</th><th>Promise</th></tr></thead>
+        <tbody>
+          <tr><td><code>instant</code></td><td>In a dark store inside the serviceable radius</td><td>Paint, pendant light</td><td class="num">18 min</td></tr>
+          <tr><td><code>scheduled</code></td><td>Real stock, delivered on a chosen date</td><td>Cement, sanitaryware</td><td class="num">2&ndash;3 days</td></tr>
+          <tr><td><code>bookable</code></td><td>Consumes a professional&rsquo;s time slot</td><td>Site visit, consultation</td><td>Slot picked</td></tr>
+          <tr><td><code>made_to_order</code></td><td>Cut or manufactured after ordering</td><td>Marble slabs</td><td class="num">7 days</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <p><strong>The 18&#8209;minute promise is only true for one of the four.</strong> Marble and a site visit cannot honour it, and a header that implies otherwise turns every such order into a support ticket. Each product card now carries its own real promise, and the header is scoped with &ldquo;on in&#8209;stock items near you&rdquo;.</p>
+    </div>
+    <p>Two more consequences that are cheap now and painful later: money is stored in <strong>paise as integers</strong> throughout, because float rupees accumulate error across tier pricing, GST and promos; and price is <strong>resolved by a pure function</strong> rather than stored, so the server at checkout and the optimistic client total cannot drift apart.</p>
+  </section>
+
+  <section>
+    <h2>What is built</h2>
+    <p class="sub">Three commits. Every claim below was verified, not assumed.</p>
+
+    <div class="stack">
+      <div class="card">
+        <h3>Storefront shell &amp; home page</h3>
+        <p>Mobile reproduces the reference design closely. Desktop is a genuine reflow &mdash; sticky top bar, left category rail, 4&#8209;up banners, 5&#8209;up product grid, bottom nav removed. Both layouts ship in one markup tree, toggled by CSS, so there is no hydration flash.</p>
+        <p>Two real bugs found and fixed here: <code>.rail</code> was unlayered CSS, which beats Tailwind&rsquo;s <code>@layer utilities</code> &mdash; <code>lg:grid</code> was silently losing and the desktop grid never applied. And an apostrophe inside a CSS comment broke the PostCSS tokenizer outright.</p>
+      </div>
+
+      <div class="card">
+        <h3>Product detail &mdash; the buy box</h3>
+        <p>Rendered from fulfilment &times; pricing unit rather than hand&#8209;wired per product. Marble gets a length&nbsp;&times;&nbsp;width calculator with a 10% cutting allowance (trade practice for stone and tile); a site visit gets a slot picker and no quantity at all; paint gets variant chips and a stepper.</p>
+        <p>Verified in browser: 10&nbsp;&times;&nbsp;12&nbsp;ft = 120&nbsp;sq.ft. &rarr; 132 with allowance &rarr; <strong>135 ordered</strong> (min&nbsp;20, step&nbsp;5). &#8377;149&nbsp;&times;&nbsp;135 = <strong>&#8377;20,115</strong>, save &#8377;5,400, Pro saves &#8377;2,025.</p>
+      </div>
+
+      <div class="card">
+        <h3>Backend module 1 &mdash; identity</h3>
+        <p>Seven API routes: OTP request and verify, logout, <code>/me</code>, address CRUD, serviceability. Phone&#8209;OTP auth over Postgres via Prisma, with one response envelope shape so the planned native client implements error handling once.</p>
+        <p>Not yet run end&#8209;to&#8209;end &mdash; there is no Postgres on the build machine. The routes are compile&#8209;verified; the security&#8209;critical logic underneath them is covered by tests.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How the session ran</h2>
+    <p class="sub">Chronological &mdash; each stage gated on the one before it.</p>
+    <ol class="tl">
+      <li>
+        <span class="stamp">01 &middot; ANALYSIS</span>
+        <h3>Reading the reference design</h3>
+        <p>Identified the three&#8209;business split and the four pricing units. Settled the stack: one Next.js deployment, but the web app talks to <code>/api/v1</code> route handlers rather than server actions, so a native client later plugs into the same contract.</p>
+      </li>
+      <li>
+        <span class="stamp">02 &middot; UI</span>
+        <h3>Storefront shell</h3>
+        <p>Design tokens, domain model, responsive home page. Verified at 375&nbsp;px and 1440&nbsp;px; the desktop grid bug was caught by measuring rather than eyeballing a screenshot.</p>
+      </li>
+      <li>
+        <span class="stamp">03 &middot; UI</span>
+        <h3>Product detail screen</h3>
+        <p>Built deliberately before the backend, so the pricing&#8209;unit model was stress&#8209;tested against a real screen before the schema went live. All four fulfilment paths exercised in the browser.</p>
+      </li>
+      <li>
+        <span class="stamp">04 &middot; BACKEND</span>
+        <h3>Module 1: identity, addresses, serviceability</h3>
+        <p>Prisma schema, OTP auth, address CRUD, geo serviceability. 21 unit tests written against the parts that carry security weight.</p>
+      </li>
+      <li>
+        <span class="stamp">05 &middot; INPUT</span>
+        <h3>Ozone catalogue received</h3>
+        <p>51&#8209;page supplier PDF, MRP effective April 2026. A first extraction pass pulled <strong>390 SKUs</strong> with codes, prices and categories; the true total is higher.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Decisions worth challenging</h2>
+    <p class="sub">Defensible, but they are judgement calls &mdash; push back if you disagree.</p>
+
+    <div class="stack">
+      <div class="card">
+        <h3>OTP security rests on limits, not on the hash</h3>
+        <p>A six&#8209;digit code is only 10<sup>6</sup> possibilities, so no hash function makes a stolen table hard to reverse. The real defences are a 5&#8209;minute TTL, a per&#8209;challenge attempt cap recorded <em>before</em> comparison so a dropped connection cannot farm free guesses, and a per&#8209;phone request limit. Codes are HMAC&rsquo;d and bound to the phone, so one number&rsquo;s code cannot be replayed against another.</p>
+      </div>
+      <div class="card">
+        <h3>Rate limiting keys on the phone, not the IP</h3>
+        <p>What is being controlled is outbound SMS spend and harassment of the number&rsquo;s real owner. Both survive an IP change, so an IP&#8209;keyed limit protects the wrong thing.</p>
+      </div>
+      <div class="card">
+        <h3>Serviceability resolves on coordinates, never pincodes</h3>
+        <p>Pincodes straddle store radii. Using them would make the 18&#8209;minute promise false for a predictable slice of customers on day one.</p>
+      </div>
+      <div class="card">
+        <h3>Sessions are JWTs, and cannot be revoked early</h3>
+        <p>Stated plainly because it is a real tradeoff. Tier is therefore re&#8209;read from the database wherever money depends on it &mdash; a cancelled Pro member must not keep trade pricing for the remaining life of their token.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Open &mdash; needs a decision</h2>
+    <p class="sub">Each of these blocks work that is otherwise ready to start.</p>
+
+    <div class="ask"><span class="dot"></span><div>
+      <div class="q">What is the margin rule on the Ozone catalogue?</div>
+      <p>The PDF carries MRPs only. The model has <code>mrp</code>, <code>price</code> and <code>proPrice</code> as separate fields; without a rule (&ldquo;sell at MRP&nbsp;&minus;&nbsp;18%, Pro at MRP&nbsp;&minus;&nbsp;27%&rdquo;) every product renders with zero discount.</p>
+    </div></div>
+
+    <div class="ask"><span class="dot"></span><div>
+      <div class="q">GitHub repo name, and private or public?</div>
+      <p>Three commits are sitting on a local <code>main</code>. Pushing and deploying are outward&#8209;facing, so both are waiting on an explicit go&#8209;ahead. Private is the recommendation.</p>
+    </div></div>
+
+    <div class="ask"><span class="dot"></span><div>
+      <div class="q">Where does the rest of the catalogue come from?</div>
+      <p>Ozone covers fittings &mdash; a real slice of Interiors and Premium Products. The reference design also leads with cement, marble, paint, lighting and services, none of which this PDF supplies.</p>
+    </div></div>
+  </section>
+
+  <section>
+    <h2>Running it</h2>
+    <p class="sub">Storefront needs no database; the API routes do.</p>
+<pre><code>npm install
+npm run dev          # storefront on :3000, runs on fixture data
+npm test             # 21 unit tests
+npm run typecheck    # tsc --noEmit</code></pre>
+    <p>For the API, copy <code>.env.example</code> to <code>.env.local</code>, point <code>DATABASE_URL</code> at Postgres, then:</p>
+<pre><code>npm run db:migrate
+npm run db:seed      # three Delhi dark stores</code></pre>
+    <p>In development, login codes are printed to the server log rather than sent by SMS. Production refuses to boot without SMS credentials, so that can never be the active sender on a deploy.</p>
+  </section>
+
+  <footer>
+    Quoin &middot; build handoff, 26 August 2026 &middot; storefront on fixture data, backend module&nbsp;1 compile&#8209;verified
+  </footer>
+
+</div>
