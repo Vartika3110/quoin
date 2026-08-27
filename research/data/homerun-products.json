@@ -11,7 +11,8 @@
   "pricePaise": 35500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Maha"
  },
  {
   "source": "homerun",
@@ -25,7 +26,8 @@
   "pricePaise": 38000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Maha"
  },
  {
   "source": "homerun",
@@ -39,7 +41,8 @@
   "pricePaise": 41000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ultratech"
  },
  {
   "source": "homerun",
@@ -53,7 +56,8 @@
   "pricePaise": 38500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ramco"
  },
  {
   "source": "homerun",
@@ -67,7 +71,8 @@
   "pricePaise": 41500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ramco"
  },
  {
   "source": "homerun",
@@ -81,7 +86,8 @@
   "pricePaise": 9300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -95,7 +101,8 @@
   "pricePaise": 800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -109,7 +116,8 @@
   "pricePaise": 8500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -123,7 +131,8 @@
   "pricePaise": 43000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -137,7 +146,8 @@
   "pricePaise": 74000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -151,7 +161,8 @@
   "pricePaise": 42000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -165,7 +176,8 @@
   "pricePaise": 77500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -179,7 +191,8 @@
   "pricePaise": 14200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -193,7 +206,8 @@
   "pricePaise": 325000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -207,7 +221,8 @@
   "pricePaise": 71500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla White"
  },
  {
   "source": "homerun",
@@ -221,7 +236,8 @@
   "pricePaise": 22200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -235,7 +251,8 @@
   "pricePaise": 29500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -249,7 +266,8 @@
   "pricePaise": 61000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -263,7 +281,8 @@
   "pricePaise": 36500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Gyproc"
  },
  {
   "source": "homerun",
@@ -277,7 +296,8 @@
   "pricePaise": 29500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Alagar"
  },
  {
   "source": "homerun",
@@ -291,7 +311,8 @@
   "pricePaise": 46000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla Super"
  },
  {
   "source": "homerun",
@@ -305,7 +326,8 @@
   "pricePaise": 78000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -319,7 +341,8 @@
   "pricePaise": 37000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -333,7 +356,8 @@
   "pricePaise": 6000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -347,7 +371,8 @@
   "pricePaise": 120000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla White"
  },
  {
   "source": "homerun",
@@ -361,7 +386,8 @@
   "pricePaise": 37500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Priya"
  },
  {
   "source": "homerun",
@@ -375,7 +401,8 @@
   "pricePaise": 35000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Priya"
  },
  {
   "source": "homerun",
@@ -389,7 +416,8 @@
   "pricePaise": 4000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -403,7 +431,8 @@
   "pricePaise": 1900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -417,7 +446,8 @@
   "pricePaise": 14000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -431,7 +461,8 @@
   "pricePaise": 61000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -445,7 +476,8 @@
   "pricePaise": 2400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -459,7 +491,8 @@
   "pricePaise": 3000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Viking"
  },
  {
   "source": "homerun",
@@ -473,7 +506,8 @@
   "pricePaise": 108000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla White"
  },
  {
   "source": "homerun",
@@ -487,7 +521,8 @@
   "pricePaise": 1500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Trim Cut"
  },
  {
   "source": "homerun",
@@ -501,7 +536,8 @@
   "pricePaise": 61500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -515,7 +551,8 @@
   "pricePaise": 65000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -529,7 +566,8 @@
   "pricePaise": 75500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -543,7 +581,8 @@
   "pricePaise": 36400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Fevicol"
  },
  {
   "source": "homerun",
@@ -557,7 +596,8 @@
   "pricePaise": 29200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Fevicol"
  },
  {
   "source": "homerun",
@@ -571,7 +611,8 @@
   "pricePaise": 187000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Fevicol"
  },
  {
   "source": "homerun",
@@ -585,7 +626,8 @@
   "pricePaise": 30000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Fevicol"
  },
  {
   "source": "homerun",
@@ -599,7 +641,8 @@
   "pricePaise": 42600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Pidilite"
  },
  {
   "source": "homerun",
@@ -613,7 +656,8 @@
   "pricePaise": 62500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -627,7 +671,8 @@
   "pricePaise": 360000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -641,7 +686,8 @@
   "pricePaise": 138000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -655,7 +701,8 @@
   "pricePaise": 102000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -669,7 +716,8 @@
   "pricePaise": 8500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -683,7 +731,8 @@
   "pricePaise": 129900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -697,7 +746,8 @@
   "pricePaise": 24000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -711,7 +761,8 @@
   "pricePaise": 39900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Dr. Fixit"
  },
  {
   "source": "homerun",
@@ -725,7 +776,8 @@
   "pricePaise": 21700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Dr. Fixit"
  },
  {
   "source": "homerun",
@@ -739,7 +791,8 @@
   "pricePaise": 43900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Dr. Fixit"
  },
  {
   "source": "homerun",
@@ -753,7 +806,8 @@
   "pricePaise": 37600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Dr. Fixit"
  },
  {
   "source": "homerun",
@@ -767,7 +821,8 @@
   "pricePaise": 16000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Dr. Fixit"
  },
  {
   "source": "homerun",
@@ -781,7 +836,8 @@
   "pricePaise": 168000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -795,7 +851,8 @@
   "pricePaise": 50000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -809,7 +866,8 @@
   "pricePaise": 1092200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -823,7 +881,8 @@
   "pricePaise": 97700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -837,7 +896,8 @@
   "pricePaise": 3000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -851,7 +911,8 @@
   "pricePaise": 79400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -865,7 +926,8 @@
   "pricePaise": 146300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -879,7 +941,8 @@
   "pricePaise": 584800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -893,7 +956,8 @@
   "pricePaise": 58600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -907,7 +971,8 @@
   "pricePaise": 12200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -921,7 +986,8 @@
   "pricePaise": 13100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -935,7 +1001,8 @@
   "pricePaise": 63200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -949,7 +1016,8 @@
   "pricePaise": 2000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -963,7 +1031,8 @@
   "pricePaise": 800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -977,7 +1046,8 @@
   "pricePaise": 800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -991,7 +1061,8 @@
   "pricePaise": 225100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Century"
  },
  {
   "source": "homerun",
@@ -1005,7 +1076,8 @@
   "pricePaise": 164000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Century"
  },
  {
   "source": "homerun",
@@ -1019,7 +1091,8 @@
   "pricePaise": 146900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Century"
  },
  {
   "source": "homerun",
@@ -1033,7 +1106,8 @@
   "pricePaise": 49500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -1047,7 +1121,8 @@
   "pricePaise": 57500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -1061,7 +1136,8 @@
   "pricePaise": 96000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -1075,7 +1151,8 @@
   "pricePaise": 105000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -1089,7 +1166,8 @@
   "pricePaise": 118000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -1103,7 +1181,8 @@
   "pricePaise": 136000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -1117,7 +1196,8 @@
   "pricePaise": 241100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -1131,7 +1211,8 @@
   "pricePaise": 332400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1145,7 +1226,8 @@
   "pricePaise": 239400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1159,7 +1241,8 @@
   "pricePaise": 271000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1173,7 +1256,8 @@
   "pricePaise": 125000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1187,7 +1271,8 @@
   "pricePaise": 30500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jsw"
  },
  {
   "source": "homerun",
@@ -1201,7 +1286,8 @@
   "pricePaise": 122500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1215,7 +1301,8 @@
   "pricePaise": 115200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -1229,7 +1316,8 @@
   "pricePaise": 143200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Greenply"
  },
  {
   "source": "homerun",
@@ -1243,7 +1331,8 @@
   "pricePaise": 172600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Greenply"
  },
  {
   "source": "homerun",
@@ -1257,7 +1346,8 @@
   "pricePaise": 225800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Greenply"
  },
  {
   "source": "homerun",
@@ -1271,7 +1361,8 @@
   "pricePaise": 37300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Action Tesa"
  },
  {
   "source": "homerun",
@@ -1285,7 +1376,8 @@
   "pricePaise": 51400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Action Tesa"
  },
  {
   "source": "homerun",
@@ -1299,7 +1391,8 @@
   "pricePaise": 19000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -1313,7 +1406,8 @@
   "pricePaise": 35300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -1327,7 +1421,8 @@
   "pricePaise": 61800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -1341,7 +1436,8 @@
   "pricePaise": 69900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -1355,7 +1451,8 @@
   "pricePaise": 41500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jsw"
  },
  {
   "source": "homerun",
@@ -1369,7 +1466,8 @@
   "pricePaise": 31600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1383,7 +1481,8 @@
   "pricePaise": 1600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1397,7 +1496,8 @@
   "pricePaise": 3200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1411,7 +1511,8 @@
   "pricePaise": 9700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1425,7 +1526,8 @@
   "pricePaise": 2300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1439,7 +1541,8 @@
   "pricePaise": 4800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1453,7 +1556,8 @@
   "pricePaise": 6900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1467,7 +1571,8 @@
   "pricePaise": 19900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -1481,7 +1586,8 @@
   "pricePaise": 1300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1495,7 +1601,8 @@
   "pricePaise": 19000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Schneider"
  },
  {
   "source": "homerun",
@@ -1509,7 +1616,8 @@
   "pricePaise": 146900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Schneider"
  },
  {
   "source": "homerun",
@@ -1523,7 +1631,8 @@
   "pricePaise": 386600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Schneider"
  },
  {
   "source": "homerun",
@@ -1537,7 +1646,8 @@
   "pricePaise": 800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1551,7 +1661,8 @@
   "pricePaise": 1100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1565,7 +1676,8 @@
   "pricePaise": 800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1579,7 +1691,8 @@
   "pricePaise": 8800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1593,7 +1706,8 @@
   "pricePaise": 8700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1607,7 +1721,8 @@
   "pricePaise": 9000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1621,7 +1736,8 @@
   "pricePaise": 2900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1635,7 +1751,8 @@
   "pricePaise": 16000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1649,7 +1766,8 @@
   "pricePaise": 12700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1663,7 +1781,8 @@
   "pricePaise": 19700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1677,7 +1796,8 @@
   "pricePaise": 11700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1691,7 +1811,8 @@
   "pricePaise": 4600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1705,7 +1826,8 @@
   "pricePaise": 6200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1719,7 +1841,8 @@
   "pricePaise": 5200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1733,7 +1856,8 @@
   "pricePaise": 5400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1747,7 +1871,8 @@
   "pricePaise": 2300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1761,7 +1886,8 @@
   "pricePaise": 3100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1775,7 +1901,8 @@
   "pricePaise": 2000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -1789,7 +1916,8 @@
   "pricePaise": 6900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -1803,7 +1931,8 @@
   "pricePaise": 14600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -1817,7 +1946,8 @@
   "pricePaise": 18500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -1831,7 +1961,8 @@
   "pricePaise": 50200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -1845,7 +1976,8 @@
   "pricePaise": 630000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Pidilite"
  },
  {
   "source": "homerun",
@@ -1859,7 +1991,8 @@
   "pricePaise": 58000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -1873,7 +2006,8 @@
   "pricePaise": 30000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -1887,7 +2021,8 @@
   "pricePaise": 6200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -1901,7 +2036,8 @@
   "pricePaise": 300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -1915,7 +2051,8 @@
   "pricePaise": 700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -1929,7 +2066,8 @@
   "pricePaise": 5600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -1943,7 +2081,8 @@
   "pricePaise": 2300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -1957,7 +2096,8 @@
   "pricePaise": 517100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1971,7 +2111,8 @@
   "pricePaise": 2320000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1985,7 +2126,8 @@
   "pricePaise": 2390900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -1999,7 +2141,8 @@
   "pricePaise": 506200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -2013,7 +2156,8 @@
   "pricePaise": 306500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -2027,7 +2171,8 @@
   "pricePaise": 16000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -2041,7 +2186,8 @@
   "pricePaise": 4100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -2055,7 +2201,8 @@
   "pricePaise": 7300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -2069,7 +2216,8 @@
   "pricePaise": 4400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2083,7 +2231,8 @@
   "pricePaise": 11500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2097,7 +2246,8 @@
   "pricePaise": 10100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2111,7 +2261,8 @@
   "pricePaise": 10900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2125,7 +2276,8 @@
   "pricePaise": 22800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2139,7 +2291,8 @@
   "pricePaise": 4900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2153,7 +2306,8 @@
   "pricePaise": 38000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2167,7 +2321,8 @@
   "pricePaise": 8400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2181,7 +2336,8 @@
   "pricePaise": 5200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2195,7 +2351,8 @@
   "pricePaise": 2900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -2209,7 +2366,8 @@
   "pricePaise": 27200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -2223,7 +2381,8 @@
   "pricePaise": 18200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -2237,7 +2396,8 @@
   "pricePaise": 60500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Legrand"
  },
  {
   "source": "homerun",
@@ -2251,7 +2411,8 @@
   "pricePaise": 4200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2265,7 +2426,8 @@
   "pricePaise": 4200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2279,7 +2441,8 @@
   "pricePaise": 1200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2293,7 +2456,8 @@
   "pricePaise": 2000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2307,7 +2471,8 @@
   "pricePaise": 7000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2321,7 +2486,8 @@
   "pricePaise": 5500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2335,7 +2501,8 @@
   "pricePaise": 24900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2349,7 +2516,8 @@
   "pricePaise": 16000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2363,7 +2531,8 @@
   "pricePaise": 29300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -2377,7 +2546,8 @@
   "pricePaise": 58900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -2391,7 +2561,8 @@
   "pricePaise": 96200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -2405,7 +2576,8 @@
   "pricePaise": 52900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -2419,7 +2591,8 @@
   "pricePaise": 550000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -2433,7 +2606,8 @@
   "pricePaise": 58000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -2447,7 +2621,8 @@
   "pricePaise": 16000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -2461,7 +2636,8 @@
   "pricePaise": 1836500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -2475,7 +2651,8 @@
   "pricePaise": 21500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2489,7 +2666,8 @@
   "pricePaise": 37800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2503,7 +2681,8 @@
   "pricePaise": 64700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2517,7 +2696,8 @@
   "pricePaise": 176400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -2531,7 +2711,8 @@
   "pricePaise": 194500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -2545,7 +2726,8 @@
   "pricePaise": 356900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Havells"
  },
  {
   "source": "homerun",
@@ -2559,7 +2741,8 @@
   "pricePaise": 3700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -2573,7 +2756,8 @@
   "pricePaise": 3000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2587,7 +2771,8 @@
   "pricePaise": 298100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2601,7 +2786,8 @@
   "pricePaise": 897000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2615,7 +2801,8 @@
   "pricePaise": 124900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Crompton"
  },
  {
   "source": "homerun",
@@ -2629,7 +2816,8 @@
   "pricePaise": 22000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2643,7 +2831,8 @@
   "pricePaise": 35700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2657,7 +2846,8 @@
   "pricePaise": 54500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2671,7 +2861,8 @@
   "pricePaise": 24000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2685,7 +2876,8 @@
   "pricePaise": 37800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2699,7 +2891,8 @@
   "pricePaise": 55800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2713,7 +2906,8 @@
   "pricePaise": 47400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Action Tesa"
  },
  {
   "source": "homerun",
@@ -2727,7 +2921,8 @@
   "pricePaise": 120300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2741,7 +2936,8 @@
   "pricePaise": 75700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2755,7 +2951,8 @@
   "pricePaise": 514700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -2769,7 +2966,8 @@
   "pricePaise": 4400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -2783,7 +2981,8 @@
   "pricePaise": 32600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -2797,7 +2996,8 @@
   "pricePaise": 3600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -2811,7 +3011,8 @@
   "pricePaise": 62600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2825,7 +3026,8 @@
   "pricePaise": 64700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -2839,7 +3041,8 @@
   "pricePaise": 229900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2853,7 +3056,8 @@
   "pricePaise": 126100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2867,7 +3071,8 @@
   "pricePaise": 194000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2881,7 +3086,8 @@
   "pricePaise": 167400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2895,7 +3101,8 @@
   "pricePaise": 98900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2909,7 +3116,8 @@
   "pricePaise": 146300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2923,7 +3131,8 @@
   "pricePaise": 176000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2937,7 +3146,8 @@
   "pricePaise": 52400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2951,7 +3161,8 @@
   "pricePaise": 91200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2965,7 +3176,8 @@
   "pricePaise": 690000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2979,7 +3191,8 @@
   "pricePaise": 133400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -2993,7 +3206,8 @@
   "pricePaise": 104900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -3007,7 +3221,8 @@
   "pricePaise": 128800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -3021,7 +3236,8 @@
   "pricePaise": 81000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -3035,7 +3251,8 @@
   "pricePaise": 299400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -3049,7 +3266,8 @@
   "pricePaise": 181200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -3063,7 +3281,8 @@
   "pricePaise": 4800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3077,7 +3296,8 @@
   "pricePaise": 1024200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3091,7 +3311,8 @@
   "pricePaise": 173500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3105,7 +3326,8 @@
   "pricePaise": 254100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -3119,7 +3341,8 @@
   "pricePaise": 201200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3133,7 +3356,8 @@
   "pricePaise": 111200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3147,7 +3371,8 @@
   "pricePaise": 152400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3161,7 +3386,8 @@
   "pricePaise": 617600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3175,7 +3401,8 @@
   "pricePaise": 244700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3189,7 +3416,8 @@
   "pricePaise": 15400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -3203,7 +3431,8 @@
   "pricePaise": 825000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ashirvad"
  },
  {
   "source": "homerun",
@@ -3217,7 +3446,8 @@
   "pricePaise": 222200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Polycab"
  },
  {
   "source": "homerun",
@@ -3231,7 +3461,8 @@
   "pricePaise": 211200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Polycab"
  },
  {
   "source": "homerun",
@@ -3245,7 +3476,8 @@
   "pricePaise": 219900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Havells"
  },
  {
   "source": "homerun",
@@ -3259,7 +3491,8 @@
   "pricePaise": 333900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -3273,7 +3506,8 @@
   "pricePaise": 176700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3287,7 +3521,8 @@
   "pricePaise": 142200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3301,7 +3536,8 @@
   "pricePaise": 1200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3315,7 +3551,8 @@
   "pricePaise": 187600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3329,7 +3566,8 @@
   "pricePaise": 199500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3343,7 +3581,8 @@
   "pricePaise": 196600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3357,7 +3596,8 @@
   "pricePaise": 197300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3371,7 +3611,8 @@
   "pricePaise": 833100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3385,7 +3626,8 @@
   "pricePaise": 11600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3399,7 +3641,8 @@
   "pricePaise": 332400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3413,7 +3656,8 @@
   "pricePaise": 80400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3427,7 +3671,8 @@
   "pricePaise": 131600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3441,7 +3686,8 @@
   "pricePaise": 1700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3455,7 +3701,8 @@
   "pricePaise": 122100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Anchor"
  },
  {
   "source": "homerun",
@@ -3469,7 +3716,8 @@
   "pricePaise": 43600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3483,7 +3731,8 @@
   "pricePaise": 271400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Europa"
  },
  {
   "source": "homerun",
@@ -3497,7 +3746,8 @@
   "pricePaise": 428200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Europa"
  },
  {
   "source": "homerun",
@@ -3511,7 +3761,8 @@
   "pricePaise": 64600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Europa"
  },
  {
   "source": "homerun",
@@ -3525,7 +3776,8 @@
   "pricePaise": 80100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Godrej"
  },
  {
   "source": "homerun",
@@ -3539,7 +3791,8 @@
   "pricePaise": 26100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Europa"
  },
  {
   "source": "homerun",
@@ -3553,7 +3806,8 @@
   "pricePaise": 573200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Godrej"
  },
  {
   "source": "homerun",
@@ -3567,7 +3821,8 @@
   "pricePaise": 347400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Godrej"
  },
  {
   "source": "homerun",
@@ -3581,7 +3836,8 @@
   "pricePaise": 423700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Godrej"
  },
  {
   "source": "homerun",
@@ -3595,7 +3851,8 @@
   "pricePaise": 3400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3609,7 +3866,8 @@
   "pricePaise": 6800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3623,7 +3881,8 @@
   "pricePaise": 82300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Europa"
  },
  {
   "source": "homerun",
@@ -3637,7 +3896,8 @@
   "pricePaise": 2224400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3651,7 +3911,8 @@
   "pricePaise": 3084200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3665,7 +3926,8 @@
   "pricePaise": 2275900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3679,7 +3941,8 @@
   "pricePaise": 302700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3693,7 +3956,8 @@
   "pricePaise": 2281100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3707,7 +3971,8 @@
   "pricePaise": 530400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3721,7 +3986,8 @@
   "pricePaise": 96200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3735,7 +4001,8 @@
   "pricePaise": 364800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Europa"
  },
  {
   "source": "homerun",
@@ -3749,7 +4016,8 @@
   "pricePaise": 206300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Europa"
  },
  {
   "source": "homerun",
@@ -3763,7 +4031,8 @@
   "pricePaise": 87000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Araldite"
  },
  {
   "source": "homerun",
@@ -3777,7 +4046,8 @@
   "pricePaise": 73500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Araldite"
  },
  {
   "source": "homerun",
@@ -3791,7 +4061,8 @@
   "pricePaise": 798500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -3805,7 +4076,8 @@
   "pricePaise": 13000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -3819,7 +4091,8 @@
   "pricePaise": 35300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3833,7 +4106,8 @@
   "pricePaise": 600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3847,7 +4121,8 @@
   "pricePaise": 4000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3861,7 +4136,8 @@
   "pricePaise": 10500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3875,7 +4151,8 @@
   "pricePaise": 24000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3889,7 +4166,8 @@
   "pricePaise": 14200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3903,7 +4181,8 @@
   "pricePaise": 5500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3917,7 +4196,8 @@
   "pricePaise": 42000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3931,7 +4211,8 @@
   "pricePaise": 30000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3945,7 +4226,8 @@
   "pricePaise": 36000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -3959,7 +4241,8 @@
   "pricePaise": 33000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -3973,7 +4256,8 @@
   "pricePaise": 38500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -3987,7 +4271,8 @@
   "pricePaise": 370700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Action Tesa"
  },
  {
   "source": "homerun",
@@ -4001,7 +4286,8 @@
   "pricePaise": 375000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -4015,7 +4301,8 @@
   "pricePaise": 325000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -4029,7 +4316,8 @@
   "pricePaise": 221900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Schneider"
  },
  {
   "source": "homerun",
@@ -4043,7 +4331,8 @@
   "pricePaise": 4000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4057,7 +4346,8 @@
   "pricePaise": 28000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4071,7 +4361,8 @@
   "pricePaise": 12000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -4085,7 +4376,8 @@
   "pricePaise": 3100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -4099,7 +4391,8 @@
   "pricePaise": 28600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4113,7 +4406,8 @@
   "pricePaise": 159100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -4127,7 +4421,8 @@
   "pricePaise": 189900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Greenply"
  },
  {
   "source": "homerun",
@@ -4141,7 +4436,8 @@
   "pricePaise": 127000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -4155,7 +4451,8 @@
   "pricePaise": 57000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -4169,7 +4466,8 @@
   "pricePaise": 11500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Viking"
  },
  {
   "source": "homerun",
@@ -4183,7 +4481,8 @@
   "pricePaise": 12500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Kohinoor"
  },
  {
   "source": "homerun",
@@ -4197,7 +4496,8 @@
   "pricePaise": 77700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -4211,7 +4511,8 @@
   "pricePaise": 610000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -4225,7 +4526,8 @@
   "pricePaise": 18000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4239,7 +4541,8 @@
   "pricePaise": 13000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4253,7 +4556,8 @@
   "pricePaise": 20500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -4267,7 +4571,8 @@
   "pricePaise": 16500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -4281,7 +4586,8 @@
   "pricePaise": 389300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -4295,7 +4601,8 @@
   "pricePaise": 65000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4309,7 +4616,8 @@
   "pricePaise": 300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -4323,7 +4631,8 @@
   "pricePaise": 26800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Ebco"
  },
  {
   "source": "homerun",
@@ -4337,7 +4646,8 @@
   "pricePaise": 63000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Philips"
  },
  {
   "source": "homerun",
@@ -4351,7 +4661,8 @@
   "pricePaise": 350000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Supreme"
  },
  {
   "source": "homerun",
@@ -4365,7 +4676,8 @@
   "pricePaise": 105800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -4379,7 +4691,8 @@
   "pricePaise": 534100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -4393,7 +4706,8 @@
   "pricePaise": 121200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Archidply"
  },
  {
   "source": "homerun",
@@ -4407,7 +4721,8 @@
   "pricePaise": 140000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla White"
  },
  {
   "source": "homerun",
@@ -4421,7 +4736,8 @@
   "pricePaise": 225000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla White"
  },
  {
   "source": "homerun",
@@ -4435,7 +4751,8 @@
   "pricePaise": 29900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla White"
  },
  {
   "source": "homerun",
@@ -4449,7 +4766,8 @@
   "pricePaise": 94000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Roff"
  },
  {
   "source": "homerun",
@@ -4463,7 +4781,8 @@
   "pricePaise": 32000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4477,7 +4796,8 @@
   "pricePaise": 51000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Birla White"
  },
  {
   "source": "homerun",
@@ -4491,7 +4811,8 @@
   "pricePaise": 280000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -4505,7 +4826,8 @@
   "pricePaise": 153600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Archidply"
  },
  {
   "source": "homerun",
@@ -4519,7 +4841,8 @@
   "pricePaise": 30000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4533,7 +4856,8 @@
   "pricePaise": 399600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4547,7 +4871,8 @@
   "pricePaise": 698600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4561,7 +4886,8 @@
   "pricePaise": 876000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4575,7 +4901,8 @@
   "pricePaise": 468000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4589,7 +4916,8 @@
   "pricePaise": 1820000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4603,7 +4931,8 @@
   "pricePaise": 2040000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4617,7 +4946,8 @@
   "pricePaise": 672000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4631,7 +4961,8 @@
   "pricePaise": 1426000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4645,7 +4976,8 @@
   "pricePaise": 419900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Atomberg"
  },
  {
   "source": "homerun",
@@ -4659,7 +4991,8 @@
   "pricePaise": 286900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Greenply"
  },
  {
   "source": "homerun",
@@ -4673,7 +5006,8 @@
   "pricePaise": 37500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Acc"
  },
  {
   "source": "homerun",
@@ -4687,7 +5021,8 @@
   "pricePaise": 42000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Fevicol"
  },
  {
   "source": "homerun",
@@ -4701,7 +5036,8 @@
   "pricePaise": 504900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Fevicol"
  },
  {
   "source": "homerun",
@@ -4715,7 +5051,8 @@
   "pricePaise": 920000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Fevicol"
  },
  {
   "source": "homerun",
@@ -4729,7 +5066,8 @@
   "pricePaise": 154900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Crompton"
  },
  {
   "source": "homerun",
@@ -4743,7 +5081,8 @@
   "pricePaise": 244900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Crompton"
  },
  {
   "source": "homerun",
@@ -4757,7 +5096,8 @@
   "pricePaise": 360900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Atomberg"
  },
  {
   "source": "homerun",
@@ -4771,7 +5111,8 @@
   "pricePaise": 140900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Atomberg"
  },
  {
   "source": "homerun",
@@ -4785,7 +5126,8 @@
   "pricePaise": 98000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4799,7 +5141,8 @@
   "pricePaise": 904000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -4813,7 +5156,8 @@
   "pricePaise": 559900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Crompton"
  },
  {
   "source": "homerun",
@@ -4827,7 +5171,8 @@
   "pricePaise": 289900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Crompton"
  },
  {
   "source": "homerun",
@@ -4841,7 +5186,8 @@
   "pricePaise": 212900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -4855,7 +5201,8 @@
   "pricePaise": 424900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -4869,7 +5216,8 @@
   "pricePaise": 194900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4883,7 +5231,8 @@
   "pricePaise": 136800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Archidply"
  },
  {
   "source": "homerun",
@@ -4897,7 +5246,8 @@
   "pricePaise": 216400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4911,7 +5261,8 @@
   "pricePaise": 253400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4925,7 +5276,8 @@
   "pricePaise": 34400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4939,7 +5291,8 @@
   "pricePaise": 42800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4953,7 +5306,8 @@
   "pricePaise": 37600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4967,7 +5321,8 @@
   "pricePaise": 14100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4981,7 +5336,8 @@
   "pricePaise": 5600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -4995,7 +5351,8 @@
   "pricePaise": 9000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Hettich"
  },
  {
   "source": "homerun",
@@ -5009,7 +5366,8 @@
   "pricePaise": 325700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5023,7 +5381,8 @@
   "pricePaise": 981600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5037,7 +5396,8 @@
   "pricePaise": 136200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5051,7 +5411,8 @@
   "pricePaise": 197800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5065,7 +5426,8 @@
   "pricePaise": 225400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5079,7 +5441,8 @@
   "pricePaise": 230900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5093,7 +5456,8 @@
   "pricePaise": 12000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -5107,7 +5471,8 @@
   "pricePaise": 202500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -5121,7 +5486,8 @@
   "pricePaise": 30000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -5135,7 +5501,8 @@
   "pricePaise": 25500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -5149,7 +5516,8 @@
   "pricePaise": 79000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Myk Laticrete"
  },
  {
   "source": "homerun",
@@ -5163,7 +5531,8 @@
   "pricePaise": 71400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5177,7 +5546,8 @@
   "pricePaise": 76400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5191,7 +5561,8 @@
   "pricePaise": 236400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5205,7 +5576,8 @@
   "pricePaise": 61700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5219,7 +5591,8 @@
   "pricePaise": 166500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Finolex"
  },
  {
   "source": "homerun",
@@ -5233,7 +5606,8 @@
   "pricePaise": 269900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5247,7 +5621,8 @@
   "pricePaise": 494900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5261,7 +5636,8 @@
   "pricePaise": 212900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Havells"
  },
  {
   "source": "homerun",
@@ -5275,7 +5651,8 @@
   "pricePaise": 455400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5289,7 +5666,8 @@
   "pricePaise": 29900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5303,7 +5681,8 @@
   "pricePaise": 62900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5317,7 +5696,8 @@
   "pricePaise": 66900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5331,7 +5711,8 @@
   "pricePaise": 65900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5345,7 +5726,8 @@
   "pricePaise": 29900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5359,7 +5741,8 @@
   "pricePaise": 53900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5373,7 +5756,8 @@
   "pricePaise": 33900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5387,7 +5771,8 @@
   "pricePaise": 294400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5401,7 +5786,8 @@
   "pricePaise": 214760,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Parryware"
  },
  {
   "source": "homerun",
@@ -5415,7 +5801,8 @@
   "pricePaise": 1486000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Parryware"
  },
  {
   "source": "homerun",
@@ -5429,7 +5816,8 @@
   "pricePaise": 825100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Parryware"
  },
  {
   "source": "homerun",
@@ -5443,7 +5831,8 @@
   "pricePaise": 618674,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Parryware"
  },
  {
   "source": "homerun",
@@ -5457,7 +5846,8 @@
   "pricePaise": 129900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5471,7 +5861,8 @@
   "pricePaise": 9000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5485,7 +5876,8 @@
   "pricePaise": 9000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5499,7 +5891,8 @@
   "pricePaise": 28000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5513,7 +5906,8 @@
   "pricePaise": 26500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5527,7 +5921,8 @@
   "pricePaise": 266300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5541,7 +5936,8 @@
   "pricePaise": 465000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5555,7 +5951,8 @@
   "pricePaise": 172500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5569,7 +5966,8 @@
   "pricePaise": 172500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5583,7 +5981,8 @@
   "pricePaise": 693800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5597,7 +5996,8 @@
   "pricePaise": 1166300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5611,7 +6011,8 @@
   "pricePaise": 85500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5625,7 +6026,8 @@
   "pricePaise": 453800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5639,7 +6041,8 @@
   "pricePaise": 270500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5653,7 +6056,8 @@
   "pricePaise": 194100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5667,7 +6071,8 @@
   "pricePaise": 290700,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -5681,7 +6086,8 @@
   "pricePaise": 619900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5695,7 +6101,8 @@
   "pricePaise": 719000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5709,7 +6116,8 @@
   "pricePaise": 377500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5723,7 +6131,8 @@
   "pricePaise": 154900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5737,7 +6146,8 @@
   "pricePaise": 79900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5751,7 +6161,8 @@
   "pricePaise": 14900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5765,7 +6176,8 @@
   "pricePaise": 52900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5779,7 +6191,8 @@
   "pricePaise": 63900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5793,7 +6206,8 @@
   "pricePaise": 98900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5807,7 +6221,8 @@
   "pricePaise": 539900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5821,7 +6236,8 @@
   "pricePaise": 979900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5835,7 +6251,8 @@
   "pricePaise": 589900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5849,7 +6266,8 @@
   "pricePaise": 1089900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5863,7 +6281,8 @@
   "pricePaise": 1289900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5877,7 +6296,8 @@
   "pricePaise": 1359900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5891,7 +6311,8 @@
   "pricePaise": 629900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5905,7 +6326,8 @@
   "pricePaise": 55000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5919,7 +6341,8 @@
   "pricePaise": 56900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5933,7 +6356,8 @@
   "pricePaise": 230000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5947,7 +6371,8 @@
   "pricePaise": 185000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5961,7 +6386,8 @@
   "pricePaise": 3000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Pidilite"
  },
  {
   "source": "homerun",
@@ -5975,7 +6401,8 @@
   "pricePaise": 498900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -5989,7 +6416,8 @@
   "pricePaise": 20900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6003,7 +6431,8 @@
   "pricePaise": 215900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6017,7 +6446,8 @@
   "pricePaise": 359900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6031,7 +6461,8 @@
   "pricePaise": 186900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6045,7 +6476,8 @@
   "pricePaise": 249900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6059,7 +6491,8 @@
   "pricePaise": 34900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6073,7 +6506,8 @@
   "pricePaise": 249900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6087,7 +6521,8 @@
   "pricePaise": 399900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6101,7 +6536,8 @@
   "pricePaise": 16000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6115,7 +6551,8 @@
   "pricePaise": 67900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6129,7 +6566,8 @@
   "pricePaise": 12500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6143,7 +6581,8 @@
   "pricePaise": 338000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6157,7 +6596,8 @@
   "pricePaise": 415000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6171,7 +6611,8 @@
   "pricePaise": 570000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6185,7 +6626,8 @@
   "pricePaise": 343000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6199,7 +6641,8 @@
   "pricePaise": 425000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6213,7 +6656,8 @@
   "pricePaise": 580000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6227,7 +6671,8 @@
   "pricePaise": 392900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6241,7 +6686,8 @@
   "pricePaise": 519100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6255,7 +6701,8 @@
   "pricePaise": 470000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6269,7 +6716,8 @@
   "pricePaise": 590000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6283,7 +6731,8 @@
   "pricePaise": 135000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6297,7 +6746,8 @@
   "pricePaise": 165000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6311,7 +6761,8 @@
   "pricePaise": 930000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6325,7 +6776,8 @@
   "pricePaise": 165000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6339,7 +6791,8 @@
   "pricePaise": 47000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6353,7 +6806,8 @@
   "pricePaise": 4900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6367,7 +6821,8 @@
   "pricePaise": 5900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6381,7 +6836,8 @@
   "pricePaise": 98900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6395,7 +6851,8 @@
   "pricePaise": 1218000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Havells"
  },
  {
   "source": "homerun",
@@ -6409,7 +6866,8 @@
   "pricePaise": 359500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6423,7 +6881,8 @@
   "pricePaise": 774500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6437,7 +6896,8 @@
   "pricePaise": 914500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6451,7 +6911,8 @@
   "pricePaise": 1680000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6465,7 +6926,8 @@
   "pricePaise": 114900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6479,7 +6941,8 @@
   "pricePaise": 46000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6493,7 +6956,8 @@
   "pricePaise": 747150,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6507,7 +6971,8 @@
   "pricePaise": 436900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6521,7 +6986,8 @@
   "pricePaise": 721650,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6535,7 +7001,8 @@
   "pricePaise": 671600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -6549,7 +7016,8 @@
   "pricePaise": 1527200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -6563,7 +7031,8 @@
   "pricePaise": 828000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -6577,7 +7046,8 @@
   "pricePaise": 55000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6591,7 +7061,8 @@
   "pricePaise": 49000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6605,7 +7076,8 @@
   "pricePaise": 20000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6619,7 +7091,8 @@
   "pricePaise": 18000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "L&t"
  },
  {
   "source": "homerun",
@@ -6633,7 +7106,8 @@
   "pricePaise": 8600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6647,7 +7121,8 @@
   "pricePaise": 34900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6661,7 +7136,8 @@
   "pricePaise": 27900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6675,7 +7151,8 @@
   "pricePaise": 28800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6689,7 +7166,8 @@
   "pricePaise": 33900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6703,7 +7181,8 @@
   "pricePaise": 45900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6717,7 +7196,8 @@
   "pricePaise": 30900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6731,7 +7211,8 @@
   "pricePaise": 12900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6745,7 +7226,8 @@
   "pricePaise": 6900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6759,7 +7241,8 @@
   "pricePaise": 42900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6773,7 +7256,8 @@
   "pricePaise": 211600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -6787,7 +7271,8 @@
   "pricePaise": 65000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -6801,7 +7286,8 @@
   "pricePaise": 42300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6815,7 +7301,8 @@
   "pricePaise": 1224900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6829,7 +7316,8 @@
   "pricePaise": 15200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6843,7 +7331,8 @@
   "pricePaise": 9600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6857,7 +7346,8 @@
   "pricePaise": 5200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6871,7 +7361,8 @@
   "pricePaise": 42000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6885,7 +7376,8 @@
   "pricePaise": 12800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6899,7 +7391,8 @@
   "pricePaise": 253600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6913,7 +7406,8 @@
   "pricePaise": 329100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6927,7 +7421,8 @@
   "pricePaise": 276800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6941,7 +7436,8 @@
   "pricePaise": 479000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6955,7 +7451,8 @@
   "pricePaise": 508900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6969,7 +7466,8 @@
   "pricePaise": 493900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6983,7 +7481,8 @@
   "pricePaise": 1139900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -6997,7 +7496,8 @@
   "pricePaise": 1077500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7011,7 +7511,8 @@
   "pricePaise": 678500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7025,7 +7526,8 @@
   "pricePaise": 1077500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7039,7 +7541,8 @@
   "pricePaise": 986500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7053,7 +7556,8 @@
   "pricePaise": 1077500,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7067,7 +7571,8 @@
   "pricePaise": 601200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7081,7 +7586,8 @@
   "pricePaise": 440000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7095,7 +7601,8 @@
   "pricePaise": 334900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7109,7 +7616,8 @@
   "pricePaise": 397900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7123,7 +7631,8 @@
   "pricePaise": 398900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7137,7 +7646,8 @@
   "pricePaise": 14000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7151,7 +7661,8 @@
   "pricePaise": 2082900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7165,7 +7676,8 @@
   "pricePaise": 2841900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7179,7 +7691,8 @@
   "pricePaise": 249900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7193,7 +7706,8 @@
   "pricePaise": 379900,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7207,7 +7721,8 @@
   "pricePaise": 250800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7221,7 +7736,8 @@
   "pricePaise": 387800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7235,7 +7751,8 @@
   "pricePaise": 705400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7249,7 +7766,8 @@
   "pricePaise": 540600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7263,7 +7781,8 @@
   "pricePaise": 263200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7277,7 +7796,8 @@
   "pricePaise": 439400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7291,7 +7811,8 @@
   "pricePaise": 807400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7305,7 +7826,8 @@
   "pricePaise": 817400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7319,7 +7841,8 @@
   "pricePaise": 320800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7333,7 +7856,8 @@
   "pricePaise": 176000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7347,7 +7871,8 @@
   "pricePaise": 74400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7361,7 +7886,8 @@
   "pricePaise": 1369000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7375,7 +7901,8 @@
   "pricePaise": 1672600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7389,7 +7916,8 @@
   "pricePaise": 2249100,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7403,7 +7931,8 @@
   "pricePaise": 2276200,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7417,7 +7946,8 @@
   "pricePaise": 2670400,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7431,7 +7961,8 @@
   "pricePaise": 253000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7445,7 +7976,8 @@
   "pricePaise": 1269600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7459,7 +7991,8 @@
   "pricePaise": 192300,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7473,7 +8006,8 @@
   "pricePaise": 92000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7487,7 +8021,8 @@
   "pricePaise": 80000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7501,7 +8036,8 @@
   "pricePaise": 82000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7515,7 +8051,8 @@
   "pricePaise": 90000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7529,7 +8066,8 @@
   "pricePaise": 81000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7543,7 +8081,8 @@
   "pricePaise": 88000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7557,7 +8096,8 @@
   "pricePaise": 39000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7571,7 +8111,8 @@
   "pricePaise": 37000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7585,7 +8126,8 @@
   "pricePaise": 39000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Asian Paints"
  },
  {
   "source": "homerun",
@@ -7599,7 +8141,8 @@
   "pricePaise": 531000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7613,7 +8156,8 @@
   "pricePaise": 26000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7627,7 +8171,8 @@
   "pricePaise": 72000,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": null
  },
  {
   "source": "homerun",
@@ -7641,7 +8186,8 @@
   "pricePaise": 1205800,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7655,7 +8201,8 @@
   "pricePaise": 1579600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  },
  {
   "source": "homerun",
@@ -7669,6 +8216,7 @@
   "pricePaise": 2679600,
   "currency": "INR",
   "availability": "InStock",
-  "priceTiers": []
+  "priceTiers": [],
+  "brandGuess": "Jaquar"
  }
 ]
