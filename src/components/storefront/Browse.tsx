@@ -60,7 +60,7 @@ export function Browse({
         </p>
         <Link
           href={basePath}
-          className="mt-4 inline-block text-sm text-gold hover:text-gold-bright"
+          className="mt-4 inline-block text-sm text-accent hover:text-accent-bright"
         >
           Clear filters
         </Link>
@@ -88,7 +88,7 @@ export function Browse({
               aria-current={activeSort === s.id ? "true" : undefined}
               className={`rounded-full px-3 py-1 text-xs transition-colors ${
                 activeSort === s.id
-                  ? "bg-gold/15 text-gold"
+                  ? "bg-accent/15 text-accent"
                   : "text-muted hover:text-ink"
               }`}
             >
@@ -167,7 +167,7 @@ function PageLink({
     <Link
       href={href}
       aria-label={label}
-      className={`${className} border-line text-ink hover:border-gold hover:text-gold`}
+      className={`${className} border-line text-ink hover:border-accent hover:text-accent`}
     >
       {children}
     </Link>

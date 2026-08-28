@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Swatch } from "@/components/Swatch";
-import { Cart, Chevron, Crown, Grid, Sparkle } from "@/components/icons";
-import type { Banner, Category } from "@/lib/types/catalog";
+import { Chevron, Grid, Sparkle } from "@/components/icons";
+import type { Category } from "@/lib/types/catalog";
 
 /** Section heading. Sits flush with the content gutter on both layouts. */
 export function SectionHead({
@@ -27,32 +27,6 @@ export function SectionHead({
   );
 }
 
-export function BannerRail({ banners }: { banners: Banner[] }) {
-  return (
-    <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
-      {banners.map((b) => (
-        <Link
-          key={b.id}
-          href={b.href}
-          className={`relative flex h-60 w-44 flex-col overflow-hidden rounded-card border border-line-soft bg-gradient-to-br p-4 lg:h-56 lg:w-auto ${b.tone}`}
-        >
-          <span className="w-fit rounded-md bg-black/50 px-2 py-1 text-[10px] text-ink backdrop-blur-sm">
-            {b.eyebrow}
-          </span>
-          <h3 className="mt-4 text-xl font-semibold leading-tight text-ink">
-            {b.title}
-          </h3>
-          <p className="mt-1 text-xs leading-snug text-white/70">{b.subtitle}</p>
-          <span className="mt-auto flex items-center gap-1 text-xs text-gold">
-            Explore
-            <Chevron className="size-3.5" />
-          </span>
-        </Link>
-      ))}
-    </div>
-  );
-}
-
 export function CategoryGrid({ categories }: { categories: Category[] }) {
   return (
     <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
@@ -71,7 +45,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
             {c.images.map((img, i) => (
               <span
                 key={img}
-                className="overflow-hidden rounded-lg border border-white/10"
+                className="overflow-hidden rounded-lg border border-line-soft"
                 style={{ marginLeft: i === 0 ? 0 : -14, zIndex: i }}
               >
                 <Swatch swatchKey={img} label="" className="size-16" />
@@ -82,7 +56,10 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
           {/* "+0 more" says nothing. Until the category tree is populated
               there are no sub-categories to count, so the tile shows what
               it actually holds. */}
-          <span className="w-fit rounded-full bg-black/60 px-2.5 py-1 text-[11px] text-muted backdrop-blur-sm">
+          {/* "+0 more" says nothing. Until the category tree is populated
+              there are no sub-categories to count, so the tile shows what
+              it actually holds. */}
+          <span className="w-fit rounded-full bg-accent-wash px-2.5 py-1 text-[11px] text-accent">
             {c.moreCount > 0
               ? `+${c.moreCount} more`
               : `${c.productCount} ${c.productCount === 1 ? "product" : "products"}`}
@@ -113,46 +90,6 @@ export function WideLink({
         <Icon className="size-4 text-gold" />
         {label}
         <Chevron className="size-4 text-muted" />
-      </Link>
-    </div>
-  );
-}
-
-/**
- * Pro upsell and cart summary.
- *
- * On mobile these share a row exactly as in the reference. On desktop the
- * cart lives permanently in the top bar, so only the Pro pitch remains
- * and it stretches to full width.
- */
-export function ProAndCart({ cartCount }: { cartCount: number }) {
-  return (
-    <div className="flex gap-3 px-5 lg:px-0">
-      <Link
-        href="/pro"
-        className="flex flex-1 items-center gap-3 rounded-card border border-gold-edge bg-gold-wash p-3.5 transition-colors hover:bg-gold-wash/70"
-      >
-        <span className="grid size-9 shrink-0 place-items-center rounded-full border border-gold-edge text-gold">
-          <Crown className="size-[18px]" />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[13px] font-medium leading-snug text-ink">
-            Unlock professional benefits
-          </span>
-          <span className="block text-[10px] leading-snug text-muted">
-            Join Quoin Pro for exclusive pricing &amp; dedicated support
-          </span>
-        </span>
-        <Chevron className="size-4 shrink-0 text-gold" />
-      </Link>
-
-      <Link
-        href="/cart"
-        className="flex w-24 shrink-0 flex-col justify-center gap-0.5 rounded-card border border-line bg-surface p-3 transition-colors hover:bg-hover lg:hidden"
-      >
-        <Cart className="size-5 text-gold" />
-        <span className="text-[13px] text-ink">Cart</span>
-        <span className="text-[10px] text-muted">{cartCount} items</span>
       </Link>
     </div>
   );

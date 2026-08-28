@@ -2,15 +2,18 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { TabRail } from "@/components/storefront/TabRail";
 import {
-  BannerRail,
-  CategoryGrid,
-  ProAndCart,
-  SectionHead,
-  WideLink,
-} from "@/components/storefront/sections";
+  CategoryCards,
+  CategoryChips,
+  ConsultCta,
+  EntryTiles,
+  Hero,
+  ProBanner,
+  TrustBar,
+} from "@/components/storefront/home";
+import { SectionHead, WideLink } from "@/components/storefront/sections";
 import {
-  getBanners,
   getCategories,
+  getCategoryPriceFloors,
   getTabs,
   getTopPicks,
 } from "@/lib/data/catalog";
@@ -28,32 +31,43 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [tabs, banners, categories, picks] = await Promise.all([
+  const [tabs, categories, picks, priceFloors] = await Promise.all([
     getTabs(),
-    getBanners(),
     getCategories(),
     getTopPicks(),
+    getCategoryPriceFloors(),
   ]);
+
+  /* Four tiles is the row the design is built around; the rest of the
+     catalogue is one tap away under the section's own "See all". */
+  const featured = categories.slice(0, 4);
 
   return (
     <AppShell>
       <div className="space-y-8 pt-4 lg:space-y-10 lg:pt-0">
+        <EntryTiles />
+
+        <div className="px-5 lg:px-0">
+          <ConsultCta />
+        </div>
+
         <TabRail tabs={tabs} />
 
-        <section aria-label="Featured">
-          <BannerRail banners={banners} />
+        <section aria-label="Featured" className="px-5 lg:px-0">
+          <Hero />
+        </section>
+
+        <section className="px-5 lg:px-0">
+          <TrustBar />
         </section>
 
         <section>
           <SectionHead title="Shop by Category" href="/categories" />
-          <CategoryGrid categories={categories} />
-          <div className="mt-3">
-            <WideLink href="/categories" label="See all categories" />
-          </div>
+          <CategoryCards categories={featured} priceFloors={priceFloors} />
         </section>
 
         <section>
-          <SectionHead title="Top Picks for You" href="/products" />
+          <SectionHead title="Project Essentials" href="/products" />
           {/* Mobile scrolls horizontally like the reference; desktop breaks
               into a real grid rather than hiding product behind a swipe. */}
           <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 xl:grid-cols-5">
@@ -66,7 +80,12 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <ProAndCart cartCount={8} />
+        <section>
+          <SectionHead title="See all categories" href="/categories" />
+          <CategoryChips categories={categories} />
+        </section>
+
+        <ProBanner cartCount={8} />
       </div>
     </AppShell>
   );

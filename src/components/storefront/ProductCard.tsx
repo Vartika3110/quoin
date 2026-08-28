@@ -38,6 +38,13 @@ export function ProductCard({
   const badge = product.badges[0];
   const fulfil = FULFILMENT[product.fulfilment];
 
+  /* Only when there is a real saving. The catalogue import sets MRP equal
+     to the sell price, so this stays hidden until someone prices a
+     discount — a permanent "0% OFF" flash is worse than none. */
+  const off = price.strikethrough
+    ? Math.round(((price.strikethrough - price.amount) / price.strikethrough) * 100)
+    : 0;
+
   return (
     <article className="group flex w-[168px] flex-col overflow-hidden rounded-card border border-line-soft bg-surface transition-colors hover:border-line lg:w-auto">
       <div className="relative aspect-square overflow-hidden bg-raised">
@@ -48,22 +55,28 @@ export function ProductCard({
             className="size-full transition-transform duration-300 group-hover:scale-[1.03]"
           />
         </Link>
+        {off > 0 && (
+          <span className="absolute left-2 top-2 rounded-md bg-accent px-1.5 py-1 text-[10px] font-semibold leading-none text-white">
+            {off}% OFF
+          </span>
+        )}
+
         <button
           aria-label={`Save ${product.title}`}
-          className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-black/45 text-ink backdrop-blur-sm hover:text-gold"
+          className="absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm hover:text-accent"
         >
           <Heart className="size-4" />
         </button>
 
-        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/65 px-1.5 py-1 text-[10px] text-ink backdrop-blur-sm">
-          <fulfil.Icon className="size-3 text-gold" />
+        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md border border-line-soft bg-surface/90 px-1.5 py-1 text-[10px] text-ink backdrop-blur-sm">
+          <fulfil.Icon className="size-3 text-accent" />
           {fulfil.label(product.leadTimeDays)}
         </span>
       </div>
 
       <Link href={`/p/${product.slug}`} className="flex flex-1 flex-col gap-1.5 p-3">
         <div className="flex flex-wrap items-baseline gap-x-1.5">
-          <span className="text-base font-semibold text-gold">
+          <span className="text-base font-semibold text-accent">
             {formatPrice(price.amount)}
           </span>
           <span className="text-[11px] text-muted">
@@ -79,7 +92,7 @@ export function ProductCard({
         <h3 className="text-sm leading-snug text-ink">{product.title}</h3>
 
         {badge && (
-          <span className="mt-auto w-fit rounded-md bg-gold-wash px-2 py-1 text-[10px] text-gold">
+          <span className="mt-auto w-fit rounded-md bg-accent-wash px-2 py-1 text-[10px] text-accent">
             {BADGE_LABEL[badge]}
           </span>
         )}

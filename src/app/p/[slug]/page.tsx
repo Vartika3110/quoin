@@ -91,7 +91,7 @@ export default async function ProductPage({
               />
               <button
                 aria-label={`Save ${product.title}`}
-                className="absolute right-3 top-3 grid size-10 place-items-center rounded-full bg-black/45 text-ink backdrop-blur-sm hover:text-gold"
+                className="absolute right-3 top-3 grid size-10 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm hover:text-accent"
               >
                 <Heart className="size-5" />
               </button>
@@ -101,7 +101,7 @@ export default async function ProductPage({
           <div className="px-5 lg:px-0">
             <div className="pt-5 lg:pt-0">
               {product.brand && (
-                <p className="text-xs uppercase tracking-wide text-gold">
+                <p className="text-xs uppercase tracking-wide text-accent">
                   {product.brand}
                 </p>
               )}
@@ -114,7 +114,7 @@ export default async function ProductPage({
                   {product.badges.map((b) => (
                     <span
                       key={b}
-                      className="inline-flex items-center gap-1.5 rounded-md bg-gold-wash px-2 py-1 text-[11px] text-gold"
+                      className="inline-flex items-center gap-1.5 rounded-md bg-accent-wash px-2 py-1 text-[11px] text-accent"
                     >
                       <Shield className="size-3.5" />
                       {BADGE_LABEL[b]}
@@ -124,7 +124,7 @@ export default async function ProductPage({
               )}
 
               <div className="mt-5 flex items-start gap-3 rounded-card border border-line bg-surface p-4">
-                <promise.Icon className="mt-0.5 size-5 shrink-0 text-gold" />
+                <promise.Icon className="mt-0.5 size-5 shrink-0 text-accent" />
                 <div>
                   <p className="text-sm font-medium text-ink">
                     {promise.title(product.leadTimeDays)}

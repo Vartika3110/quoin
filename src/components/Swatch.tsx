@@ -5,6 +5,11 @@
  * `key` in, filled box out — but until then a flat grey box makes the
  * whole grid read as broken. These are deterministic per key so the
  * catalogue looks composed rather than randomised.
+ *
+ * Tuned for the warm light storefront: pale grounds that sit on a white
+ * card without turning the grid into a wall of dark rectangles. Every
+ * imported product falls back to `cement`, so that one carries most of
+ * the page and is the most neutral of the set.
  */
 
 type SwatchKey =
@@ -23,19 +28,19 @@ type SwatchKey =
   | "rug";
 
 const TONE: Record<SwatchKey, [string, string]> = {
-  marble: ["#e8e6e1", "#b8b4ad"],
-  paint: ["#3a3f52", "#1a1d27"],
-  pendant: ["#2a2723", "#0d0c0b"],
-  helmet: ["#4a4238", "#1c1917"],
-  cement: ["#5c5854", "#2a2827"],
-  steel: ["#6b6f73", "#2f3133"],
-  brick: ["#8a4a32", "#3d2118"],
-  switch: ["#d6d3cd", "#8f8c87"],
-  bulb: ["#c8a45c", "#3d3320"],
-  basin: ["#e2e0dc", "#a9a6a1"],
-  faucet: ["#9aa0a6", "#4a4e52"],
-  sofa: ["#6b5844", "#2b241c"],
-  rug: ["#7a5c48", "#33261e"],
+  marble: ["#f5f3ef", "#d9d4cb"],
+  paint: ["#e0e5ef", "#b4bdcd"],
+  pendant: ["#f0e8dc", "#ccbaa0"],
+  helmet: ["#fbe7ca", "#e4bf85"],
+  cement: ["#efebe5", "#d0c9c0"],
+  steel: ["#e9ebed", "#c3c8cd"],
+  brick: ["#f0d4c5", "#d09677"],
+  switch: ["#f4f2ee", "#d4d0c9"],
+  bulb: ["#fbefd2", "#e3c58b"],
+  basin: ["#f3f2ef", "#d5d2cc"],
+  faucet: ["#eaedef", "#c4cacf"],
+  sofa: ["#eaddca", "#c5a989"],
+  rug: ["#eedccc", "#caa687"],
 };
 
 export function Swatch({
@@ -74,8 +79,8 @@ export function Swatch({
 
 /** Per-material line work drawn over the gradient. */
 function Motif({ kind }: { kind: SwatchKey }) {
-  const ink = "rgba(0,0,0,0.28)";
-  const light = "rgba(255,255,255,0.30)";
+  const ink = "rgba(63,42,28,0.22)";
+  const light = "rgba(255,255,255,0.65)";
 
   switch (kind) {
     case "marble":

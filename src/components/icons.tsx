@@ -4,7 +4,7 @@ import type { SVGProps } from "react";
  * One stroke system for the whole storefront: 24px grid, 1.5 stroke,
  * round caps, `currentColor`. Icons never carry their own colour — the
  * consuming component sets it, which is what lets the same icon render
- * gold when active and muted when not.
+ * the accent colour when active and muted when not.
  */
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -260,3 +260,41 @@ export const TAB_ICONS = {
   sofa: Sofa,
   lamp: Lamp,
 } as const;
+
+/** Tower block — the design-platform tile. Windows read at 24px; a plain
+    outlined rectangle would be indistinguishable from a card icon. */
+export const Building = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 21V6.5a1.5 1.5 0 0 1 1.5-1.5h6A1.5 1.5 0 0 1 13 6.5V21" />
+    <path d="M13 21V11h5.5A1.5 1.5 0 0 1 20 12.5V21" />
+    <path d="M2.5 21h19" />
+    <path d="M6.5 9h1.5M9.5 9H11M6.5 12.5h1.5M9.5 12.5H11M6.5 16h1.5M9.5 16H11M16 14.5h1.5M16 18h1.5" />
+  </Svg>
+);
+
+/** Screen with a play mark — video consultation. */
+export const Video = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="2.5" y="4" width="19" height="13" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+    <path d="m10.5 8.5 4 2.5-4 2.5z" />
+  </Svg>
+);
+
+/** Two figures — industry partners. */
+export const Partners = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="8.5" cy="8" r="3" />
+    <path d="M2.5 19a6 6 0 0 1 12 0" />
+    <path d="M16 5.5a3 3 0 0 1 0 5.8" />
+    <path d="M17.5 13.6A6 6 0 0 1 21.5 19" />
+  </Svg>
+);
+
+/** Price tag — the deals tab. */
+export const Tag = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3.5 11.4V4.8a1.3 1.3 0 0 1 1.3-1.3h6.6a1.3 1.3 0 0 1 .92.38l8 8a1.3 1.3 0 0 1 0 1.84l-6.6 6.6a1.3 1.3 0 0 1-1.84 0l-8-8a1.3 1.3 0 0 1-.38-.92z" />
+    <circle cx="7.75" cy="7.75" r="1.25" />
+  </Svg>
+);

@@ -3,38 +3,48 @@
 /**
  * Quoin design tokens.
  *
- * The storefront is dark-first by design — this is a deliberate brand
- * choice, not a theme preference, so the palette is not wired to
- * `prefers-color-scheme`. A light theme, if it ever ships, belongs to
- * the Pro/ops console rather than the consumer storefront.
+ * Warm light: an off-white paper ground, white cards, terracotta accent
+ * and a deep brown ink. Not wired to `prefers-color-scheme` — this is the
+ * brand, not a theme preference, so it looks the same for everyone.
+ *
+ * `accent` was called `gold` while the storefront was dark. The name is
+ * deliberately neutral now so the next palette change is a value edit
+ * rather than a rename across every component.
  */
 :root {
-  /* Surfaces, darkest to lightest */
-  --quoin-bg: #000000;
-  --quoin-surface: #101010;
-  --quoin-surface-raised: #171717;
-  --quoin-surface-hover: #1f1f1f;
+  /* Surfaces, ground upward. Cards are pure white against warm paper so
+     they lift without needing a shadow on every tile. */
+  --quoin-bg: #f8f4ef;
+  --quoin-surface: #ffffff;
+  --quoin-surface-raised: #fffcf8;
+  --quoin-surface-hover: #f1e9e0;
 
-  /* Warm gold — wordmark, prices, active states, Pro affordances */
-  --quoin-gold: #c8a45c;
-  --quoin-gold-bright: #e0c088;
-  --quoin-gold-dim: #8a6f38;
-  /* Gold at low alpha for tinted chip backgrounds and hairlines */
-  --quoin-gold-wash: rgb(200 164 92 / 0.12);
-  --quoin-gold-edge: rgb(200 164 92 / 0.32);
+  /* Terracotta — wordmark flourish, prices, active states, primary CTAs */
+  --quoin-accent: #d95d24;
+  --quoin-accent-bright: #ef7038;
+  --quoin-accent-dim: #a8451a;
+  /* Accent at low alpha for tinted chips and hairlines */
+  --quoin-accent-wash: rgb(217 93 36 / 0.10);
+  --quoin-accent-edge: rgb(217 93 36 / 0.28);
+
+  /* Espresso — Pro affordances and the dark bands that break up the page */
+  --quoin-deep: #43281a;
+  --quoin-deep-soft: #5c3a27;
+  /* Gold survives for Pro only, where it still means "premium". */
+  --quoin-pro: #c8a45c;
 
   /* Type */
-  --quoin-text: #ffffff;
-  --quoin-text-muted: #a3a3a3;
-  --quoin-text-faint: #6b6b6b;
+  --quoin-text: #2b1b12;
+  --quoin-text-muted: #7c6355;
+  --quoin-text-faint: #a8968a;
 
   /* Lines */
-  --quoin-border: #262626;
-  --quoin-border-soft: #1c1c1c;
+  --quoin-border: #e6dace;
+  --quoin-border-soft: #efe6dc;
 
   /* Status */
-  --quoin-success: #4ade80;
-  --quoin-danger: #f87171;
+  --quoin-success: #2f8f57;
+  --quoin-danger: #c8452f;
 }
 
 @theme inline {
@@ -43,11 +53,15 @@
   --color-raised: var(--quoin-surface-raised);
   --color-hover: var(--quoin-surface-hover);
 
-  --color-gold: var(--quoin-gold);
-  --color-gold-bright: var(--quoin-gold-bright);
-  --color-gold-dim: var(--quoin-gold-dim);
-  --color-gold-wash: var(--quoin-gold-wash);
-  --color-gold-edge: var(--quoin-gold-edge);
+  --color-accent: var(--quoin-accent);
+  --color-accent-bright: var(--quoin-accent-bright);
+  --color-accent-dim: var(--quoin-accent-dim);
+  --color-accent-wash: var(--quoin-accent-wash);
+  --color-accent-edge: var(--quoin-accent-edge);
+
+  --color-deep: var(--quoin-deep);
+  --color-deep-soft: var(--quoin-deep-soft);
+  --color-pro: var(--quoin-pro);
 
   --color-ink: var(--quoin-text);
   --color-muted: var(--quoin-text-muted);
@@ -109,7 +123,7 @@ body {
 /* Visible focus for keyboard users only — the design has no room for
    permanent focus rings, but they must exist when tabbing. */
 :focus-visible {
-  outline: 2px solid var(--quoin-gold);
+  outline: 2px solid var(--quoin-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }

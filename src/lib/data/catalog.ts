@@ -1,5 +1,4 @@
 import type {
-  Banner,
   BadgeKind,
   CatalogTab,
   Category,
@@ -37,43 +36,6 @@ export const TABS: CatalogTab[] = [
   { id: "lighting", label: "Lighting", icon: "lamp" },
 ];
 
-/* Destinations are real routes, not the collection pages that were
-   sketched before browse existed — a featured tile that 404s is worse
-   than one that lands on a filtered listing. */
-export const BANNERS: Banner[] = [
-  {
-    id: "b_sourcing",
-    eyebrow: "Featured",
-    title: "Sourcing Solutions",
-    subtitle: "For Every Space",
-    href: "/products",
-    tone: "from-neutral-700 via-neutral-800 to-black",
-  },
-  {
-    id: "b_arrivals",
-    eyebrow: "Featured",
-    title: "New Arrivals",
-    subtitle: "Premium Materials & Products",
-    href: "/products?sort=newest",
-    tone: "from-stone-600 via-stone-800 to-black",
-  },
-  {
-    id: "b_consult",
-    eyebrow: "Featured",
-    title: "Expert Consultation",
-    subtitle: "Design. Plan. Build Better.",
-    href: "/c/services",
-    tone: "from-slate-700 via-slate-900 to-black",
-  },
-  {
-    id: "b_bespoke",
-    eyebrow: "Featured",
-    title: "Bespoke Living",
-    subtitle: "Curated for Your Space",
-    href: "/c/kitchen-wardrobe-fittings",
-    tone: "from-amber-800/70 via-neutral-900 to-black",
-  },
-];
 
 /** ---- Mapping ------------------------------------------------------------
  * Prisma spells enums in SCREAMING_SNAKE; the wire contract and the UI use
@@ -185,10 +147,6 @@ const CATEGORY_SWATCHES: Record<string, string[]> = {
 
 export async function getTabs(): Promise<CatalogTab[]> {
   return TABS;
-}
-
-export async function getBanners(): Promise<Banner[]> {
-  return BANNERS;
 }
 
 /** Top-level categories only; children render inside a category page. */
@@ -406,4 +364,22 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
     moreCount: Math.max(0, row._count.children - images.length),
     productCount: row._count.products,
   };
+}
+
+/**
+ * Cheapest sellable price per category, for the "From ₹49" pills.
+ *
+ * One grouped query rather than a cheapest-product lookup per tile: the
+ * home page renders every top-level category, so the per-tile version is
+ * fourteen round trips to Singapore before the page can paint.
+ */
+export async function getCategoryPriceFloors(): Promise<Map<string, number>> {
+  const rows = await db.$queryRaw<{ categoryId: string; floor: number }[]>`
+    SELECT p."categoryId" AS "categoryId", MIN(v."pricePaise")::int AS floor
+    FROM products p
+    JOIN product_variants v ON v."productId" = p.id AND v."isActive"
+    WHERE p."isActive" AND p."categoryId" IS NOT NULL
+    GROUP BY p."categoryId"
+  `;
+  return new Map(rows.map((r) => [r.categoryId, r.floor]));
 }

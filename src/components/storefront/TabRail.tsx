@@ -29,7 +29,7 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
             onClick={() => setActive(tab.id)}
             className="flex w-16 shrink-0 flex-col items-center gap-1.5 pb-2"
           >
-            <Icon className={`size-7 ${on ? "text-gold" : "text-ink"}`} />
+            <Icon className={`size-7 ${on ? "text-accent" : "text-ink"}`} />
             <span
               className={`text-center text-[11px] leading-tight ${
                 on ? "text-ink" : "text-muted"
@@ -39,7 +39,7 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
             </span>
             <span
               className={`h-0.5 w-8 rounded-full transition-colors ${
-                on ? "bg-gold" : "bg-transparent"
+                on ? "bg-accent" : "bg-transparent"
               }`}
             />
           </button>

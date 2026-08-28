@@ -77,7 +77,7 @@ export function PurchasePanel({
                   aria-pressed={on}
                   className={`rounded-xl border px-3 py-2 text-left transition-colors ${
                     on
-                      ? "border-gold bg-gold-wash"
+                      ? "border-accent bg-accent-wash"
                       : "border-line bg-surface hover:border-muted"
                   }`}
                 >
@@ -87,7 +87,7 @@ export function PurchasePanel({
                     {v.label}
                   </span>
                   <span
-                    className={`block text-xs ${on ? "text-gold" : "text-faint"}`}
+                    className={`block text-xs ${on ? "text-accent" : "text-faint"}`}
                   >
                     {formatPrice(vp.amount)}
                   </span>
@@ -118,7 +118,7 @@ export function PurchasePanel({
               <span
                 className={`grid size-5 shrink-0 place-items-center rounded-md border transition-colors ${
                   wastage
-                    ? "border-gold bg-gold text-black"
+                    ? "border-accent bg-accent text-black"
                     : "border-line text-transparent"
                 }`}
               >
@@ -190,7 +190,7 @@ export function PurchasePanel({
             {formatPrice(price.amount)} {PRICING_UNIT_LABEL[product.pricingUnit]}
             {!isBookable && ` × ${qty}`}
           </span>
-          <span className="text-xl font-semibold text-gold">
+          <span className="text-xl font-semibold text-accent">
             {formatPrice(total)}
           </span>
         </div>
@@ -207,14 +207,14 @@ export function PurchasePanel({
         )}
 
         {!isPro && saving && (
-          <p className="mt-2.5 rounded-lg bg-gold-wash px-3 py-2 text-[11px] leading-snug text-gold">
+          <p className="mt-2.5 rounded-lg bg-accent-wash px-3 py-2 text-[11px] leading-snug text-accent">
             Quoin Pro members pay {formatPrice(lineTotal(saving, qty))} less on
             this order.
           </p>
         )}
       </div>
 
-      <button className="w-full rounded-xl bg-gold py-3.5 text-sm font-semibold text-black transition-colors hover:bg-gold-bright">
+      <button className="w-full rounded-xl bg-accent py-3.5 text-sm font-semibold text-black transition-colors hover:bg-accent-bright">
         {isBookable ? "Book this visit" : "Add to cart"}
       </button>
     </div>
@@ -258,7 +258,7 @@ function Dimension({
         min={0}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none focus:border-gold"
+        className="w-full rounded-lg border border-line bg-raised px-3 py-2 text-sm text-ink outline-none focus:border-accent"
       />
     </label>
   );
@@ -335,10 +335,10 @@ function SlotPicker() {
                 onClick={() => setDay(d.key)}
                 aria-pressed={on}
                 className={`flex w-14 flex-col items-center gap-0.5 rounded-xl border py-2 transition-colors ${
-                  on ? "border-gold bg-gold-wash" : "border-line hover:border-muted"
+                  on ? "border-accent bg-accent-wash" : "border-line hover:border-muted"
                 }`}
               >
-                <span className={`text-[10px] ${on ? "text-gold" : "text-faint"}`}>
+                <span className={`text-[10px] ${on ? "text-accent" : "text-faint"}`}>
                   {d.day}
                 </span>
                 <span className={`text-sm ${on ? "text-ink" : "text-muted"}`}>
@@ -359,7 +359,7 @@ function SlotPicker() {
                 aria-pressed={on}
                 className={`flex items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs transition-colors ${
                   on
-                    ? "border-gold bg-gold-wash text-gold"
+                    ? "border-accent bg-accent-wash text-accent"
                     : "border-line text-muted hover:border-muted"
                 }`}
               >
