@@ -41,9 +41,10 @@ Import the GitHub repo at [vercel.com/new](https://vercel.com/new). Private
 repos are supported. Framework detection picks up Next.js; the build
 command in `package.json` is already correct and needs no override.
 
-Set the function region to **Mumbai (`bom1`)** in *Settings → Functions*.
-The default is US East, which puts every database round trip across an
-ocean from both your users and your database.
+The function region is pinned to Mumbai (`bom1`) in `vercel.json`, so there
+is nothing to set in the dashboard. Vercel's default is US East, which
+would put every database round trip across an ocean from both the users
+and the database.
 
 Environment variables, for Production and Preview:
 
