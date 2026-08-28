@@ -36,3 +36,49 @@ assortment. Prices, SKUs and stock states are facts and are used as such.
 The product **descriptions and images referenced here belong to the two
 companies**. They are kept for comparison only and must not be copied into the
 Quoin catalogue — Quoin needs its own copy and its own photography.
+
+## Classifying the uncategorised
+
+548 of the 884 products arrived with no category — every row from the
+source that publishes none. That was more than half the catalogue and
+unbrowsable, so `classify-uncategorised.py` fills it in from two signals,
+in order of trust:
+
+1. **The merchant's own collection membership.** A product listed under
+   `tile-adhesive` is a tile adhesive — that is a merchandiser's
+   judgement, not a guess. `crawl-collections.py` reads the 140
+   merchandising collections (brand-only and operational ones carry no
+   category signal and are excluded) and records which products appear in
+   each. Collections are weighted by specificity so a precise one
+   outranks a catch-all. This resolves **464 of 548**.
+2. **Keywords in the product name**, used only where no collection
+   applies. This resolves the remaining **84**.
+
+A short correction pass then overrules the vote where a name is
+unambiguous — "pullout" otherwise files a pullout *faucet* with the
+drawer pullouts.
+
+```bash
+python3 research/crawl-collections.py <scratch-dir>       # refresh membership
+python3 research/classify-uncategorised.py <scratch-dir>  # regenerate the map
+```
+
+The output is `data/category-map.json`, keyed by product-URL slug. It is
+data rather than code on purpose: merchandising corrects a bad call by
+editing one line and re-importing, with no deploy. `prisma/import-catalogue.ts`
+reads it and falls back to it only where the export itself is silent — a
+category the source states always wins.
+
+### Taxonomy
+
+Six categories were added, because the original eight came from a
+competitor whose range stops well short of this catalogue: **Kitchen &
+wardrobe fittings** (78), **Tools & safety** (72), **Home appliances &
+security** (40), **Kitchen sinks & faucets** (22), **Gypsum & false
+ceiling** (1) and **Services** (1).
+
+The last two hold one product each and are not worth surfacing as
+storefront categories yet — they are correct, not useful. `Services` is
+worth keeping regardless: "Unloading Service" is bookable rather than
+stocked, and filing it as goods would put a non-deliverable line in a
+delivery cart.

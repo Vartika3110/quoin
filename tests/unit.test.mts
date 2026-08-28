@@ -16,7 +16,67 @@ const { normalizeQty, areaFromDimensions, applyWastage, lineTotal } =
   await import("@/lib/cart/quantity");
 const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
   await import("@/lib/types/catalog");
-const { PRODUCTS } = await import("@/lib/data/catalog");
+type CatalogProduct = import("@/lib/types/catalog").Product;
+
+/**
+ * Fixtures live here rather than in the data layer, which now reads the
+ * catalogue from Postgres. These two exercise every branch the pure
+ * pricing and quantity functions have: multiple variants with and without
+ * a Pro rate, and a minimum/step grid that is not 1/1.
+ */
+const MARBLE: CatalogProduct = {
+  id: "p_marble",
+  slug: "italian-marble-statuario",
+  title: "Italian Marble Statuario",
+  brand: "Quoin Select",
+  categoryId: "c_construction",
+  fulfilment: "made_to_order",
+  pricingUnit: "per_sqft",
+  badges: ["premium_quality"],
+  image: "marble",
+  leadTimeDays: 7,
+  variants: [
+    {
+      id: "v_statuario_16",
+      label: "16mm slab",
+      mrp: 18900,
+      price: 14900,
+      proPrice: 13400,
+      sku: "MAT-MRB-ST16",
+      /* Sold by the slab, not the square foot — a 20 sq.ft. minimum
+         prevents orders that cannot physically be cut. */
+      minQty: 20,
+      stepQty: 5,
+    },
+    {
+      id: "v_statuario_20",
+      label: "20mm slab",
+      mrp: 22900,
+      price: 18900,
+      proPrice: 17000,
+      sku: "MAT-MRB-ST20",
+      minQty: 20,
+      stepQty: 5,
+    },
+  ],
+};
+
+const PAINT: CatalogProduct = {
+  id: "p_paint",
+  slug: "asian-paints-royale-luxury-emulsion",
+  title: "Asian Paints Royale Luxury Emulsion",
+  brand: "Asian Paints",
+  categoryId: "c_construction",
+  fulfilment: "instant",
+  pricingUnit: "per_litre",
+  badges: ["top_brand"],
+  image: "paint",
+  variants: [
+    { id: "v_royale_1l", label: "1 L", mrp: 19900, price: 15500, sku: "PNT-RYL-1L", minQty: 1, stepQty: 1 },
+    { id: "v_royale_4l", label: "4 L", mrp: 72900, price: 58900, proPrice: 54900, sku: "PNT-RYL-4L", minQty: 1, stepQty: 1 },
+    { id: "v_royale_10l", label: "10 L", mrp: 169900, price: 139900, proPrice: 129900, sku: "PNT-RYL-10L", minQty: 1, stepQty: 1 },
+  ],
+};
 
 describe("phone normalisation", () => {
   it("collapses every Indian input format onto one E.164 value", () => {
@@ -126,8 +186,7 @@ describe("serviceability", () => {
 });
 
 describe("quantity grid", () => {
-  const marble = PRODUCTS.find((p) => p.slug === "italian-marble-statuario")!;
-  const variant = marble.variants[0]; // min 20, step 5
+  const variant = MARBLE.variants[0]; // min 20, step 5
 
   it("never sells below the minimum", () => {
     assert.equal(normalizeQty(variant, 0), 20);
@@ -163,10 +222,8 @@ describe("quantity grid", () => {
 });
 
 describe("price resolution", () => {
-  const marble = PRODUCTS.find((p) => p.slug === "italian-marble-statuario")!;
-  const paint = PRODUCTS.find(
-    (p) => p.slug === "asian-paints-royale-luxury-emulsion",
-  )!;
+  const marble = MARBLE;
+  const paint = PAINT;
 
   it("shows the cheapest variant, flagged as a from-price", () => {
     const p = resolvePrice(paint, false);

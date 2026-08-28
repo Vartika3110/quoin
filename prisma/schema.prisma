@@ -123,3 +123,194 @@ model Store {
 
   @@map("stores")
 }
+
+/// ---------------------------------------------------------------------
+/// Catalogue — module 2.
+///
+/// Ported from the Django `catalog` app, which has been removed. The
+/// decisions carried over unchanged: money in integer paise, fulfilment
+/// modelled per product rather than assumed, and imported provenance
+/// quarantined behind `source*` fields that are reference data for
+/// pricing and are never rendered to a customer.
+/// ---------------------------------------------------------------------
+
+/// How a listing reaches the customer. Drives cart splitting at checkout.
+enum Fulfilment {
+  /// In a dark store within a `Store` radius. The "18 minutes" promise.
+  INSTANT
+  /// Real stock, delivered on a chosen date — heavy or bulk goods.
+  SCHEDULED
+  /// No stock at all. Consumes a professional's time slot.
+  BOOKABLE
+  /// Cut or manufactured after the order is placed.
+  MADE_TO_ORDER
+}
+
+/// How the price is expressed to the customer. Drives the add-to-cart UI.
+enum PricingUnit {
+  PER_PIECE
+  PER_SQFT
+  PER_RUNNING_FT
+  PER_VISIT
+  PER_BAG
+  PER_LITRE
+  PER_KG
+}
+
+/// Trust markers rendered as chips on product cards.
+enum BadgeKind {
+  EXPERTS_VERIFIED
+  PREMIUM_QUALITY
+  TOP_BRAND
+  PREMIUM_FINISH
+  BESTSELLER
+}
+
+model Brand {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  isActive Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("brands")
+}
+
+model Category {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+
+  /// Self-referential tree. Restrict rather than cascade: deleting a
+  /// parent must never silently delete the products filed beneath it.
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+  children Category[] @relation("CategoryTree")
+
+  /// Swatch keys composited into the storefront category tile. Real
+  /// artwork replaces these; the column holds keys, not URLs, so the
+  /// fallback renderer keeps working until photography exists.
+  images String[] @default([])
+
+  /// Manual sort order on the storefront; ties break by name.
+  position Int     @default(0)
+  isActive Boolean @default(true)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+model Product {
+  id   String @id @default(cuid())
+  sku  String @unique
+  name String
+  slug String @unique
+
+  brandId String?
+  brand   Brand?  @relation(fields: [brandId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  description String @default("")
+
+  fulfilment  Fulfilment  @default(SCHEDULED)
+  pricingUnit PricingUnit @default(PER_PIECE)
+
+  /// GST slab as a percentage: 0, 5, 12, 18 or 28. An integer rather than
+  /// an enum because it is arithmetic on every invoice line, and an enum
+  /// would only be unwrapped back to a number at each use.
+  gstRatePct Int @default(18)
+
+  badges BadgeKind[] @default([])
+
+  /// Quoin's own photography. Empty until it exists — the storefront
+  /// draws a generated swatch rather than borrowing a competitor's image.
+  image String @default("")
+
+  /// Meaningful only for `SCHEDULED` and `MADE_TO_ORDER`.
+  leadTimeDays Int?
+
+  isActive Boolean @default(true)
+
+  variants ProductVariant[]
+
+  /// ---- provenance: reference only, never customer-facing ------------
+  /// Where an imported row came from and what the competitor charged.
+  /// Never rendered, never treated as Quoin stock or imagery.
+  sourceName         String?
+  sourceUrl          String?
+  sourceImageUrl     String?
+  sourceAvailability String?
+  sourcePricePaise   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId, isActive])
+  @@index([brandId])
+  @@map("products")
+}
+
+/// A purchasable option. Every product has at least one. Products with
+/// more than one display the cheapest as "₹X Onwards" rather than an
+/// exact price — see `resolvePrice()` in src/lib/types/catalog.ts.
+model ProductVariant {
+  id String @id @default(cuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  label String @default("Standard")
+  sku   String @unique
+
+  /// List price before discount.
+  mrpPaise   Int
+  /// Sell price for a standard customer.
+  pricePaise Int
+  /// Quoin Pro trade rate. Null means Pro pays `pricePaise`.
+  proPricePaise Int?
+
+  /// Marble is not sold by the single sq.ft., nor cement by the bag.
+  minQty  Int @default(1)
+  stepQty Int @default(1)
+
+  isDefault Boolean @default(true)
+  isActive  Boolean @default(true)
+
+  priceTiers PriceTier[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+/// Volume break. Contractors buy cement by the hundred bags.
+model PriceTier {
+  id String @id @default(cuid())
+
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  minQty Int
+  /// Null means no upper bound.
+  maxQty Int?
+
+  pricePaise Int
+
+  @@unique([variantId, minQty])
+  @@index([variantId])
+  @@map("price_tiers")
+}

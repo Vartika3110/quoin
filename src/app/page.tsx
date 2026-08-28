@@ -15,6 +15,18 @@ import {
   getTopPicks,
 } from "@/lib/data/catalog";
 
+/**
+ * Rendered per request.
+ *
+ * The catalogue lives in Postgres, and a static prerender would run those
+ * queries during `next build`, where the database is deliberately not
+ * reachable — `env.ts` skips validation in the build phase because hosts
+ * inject `DATABASE_URL` at runtime. It would also mean rebuilding the site
+ * to correct a price. Once the traffic justifies it, this becomes `use
+ * cache` with a short `cacheLife` rather than a build-time prerender.
+ */
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [tabs, banners, categories, picks] = await Promise.all([
     getTabs(),

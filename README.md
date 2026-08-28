@@ -10,6 +10,7 @@ projects behind one catalogue.
 | --- | --- |
 | Framework | Next.js 16 (App Router) + React 19 |
 | Language | TypeScript (strict) |
+| Database | Postgres via Prisma 6 |
 | Styling | Tailwind CSS v4, CSS-first tokens in `src/app/globals.css` |
 | Fonts | Cormorant Garamond (wordmark/display), Inter (UI) |
 
@@ -18,8 +19,14 @@ projects behind one catalogue.
 A single Next.js deployment, but the web app is treated as **the first client
 of an API, not the only one.** Data access goes through async accessors in
 `src/lib/data/` whose signatures match the `/api/v1` endpoints that will
-replace them. When the backend lands, those functions become `fetch` calls and
-no component changes. A native mobile client consumes the same contract.
+replace them. Those functions become `fetch` calls without a component change,
+and a native mobile client consumes the same contract.
+
+**One backend, in this repo.** A separate Django + DRF service briefly held the
+catalogue; it was removed and its models, importer and query semantics folded
+into Prisma. Two backends meant two deploy targets, two connection pools and two
+places for money to be rounded differently. See
+[`docs/django-to-prisma.md`](docs/django-to-prisma.md).
 
 ### Why not server actions everywhere
 
@@ -96,13 +103,35 @@ npm run build
 npx tsc --noEmit
 ```
 
+### Database
+
+Copy `.env.example` to `.env.local` and point `DATABASE_URL` at a Postgres
+instance, then:
+
+```bash
+npm run db:migrate
+```
+
+```bash
+npm run db:seed
+```
+
+```bash
+npm run db:import
+```
+
+`db:seed` writes the dark stores serviceability is computed against;
+`db:import` loads ~880 products from `research/data/all-products.csv` and is
+idempotent, so it can be re-run after a fresh export. Without the import the
+storefront renders correctly but empty.
+
 ## Status
 
-The home storefront is built against fixture data in `src/lib/data/catalog.ts`.
-Backend modules are not yet implemented — planned delivery order:
+Modules 1 and 2 are implemented. Planned delivery order:
 
-1. Identity + address (phone OTP, saved addresses, serviceability)
-2. Catalog (categories, products, variants, pricing, media)
+1. ~~Identity + address (phone OTP, saved addresses, serviceability)~~ — done
+2. ~~Catalog (categories, products, variants, pricing)~~ — schema, importer and
+   storefront reads done; `/api/v1/products` and media outstanding
 3. Inventory + serviceability (per-store stock, geo radius, promise engine)
 4. Cart + checkout (multi-fulfilment splitting, price resolution)
 5. Orders + payments (Razorpay, order state machine, invoices)

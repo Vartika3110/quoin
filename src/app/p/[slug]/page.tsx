@@ -7,11 +7,7 @@ import { PurchasePanel } from "@/components/storefront/PurchasePanel";
 import { SectionHead } from "@/components/storefront/sections";
 import { Swatch } from "@/components/Swatch";
 import { Back, Calendar, Clock, Heart, Ruler, Shield, Truck } from "@/components/icons";
-import {
-  getAllProductSlugs,
-  getProductBySlug,
-  getRelatedProducts,
-} from "@/lib/data/catalog";
+import { getProductBySlug, getRelatedProducts } from "@/lib/data/catalog";
 import { BADGE_LABEL, type FulfilmentType } from "@/lib/types/catalog";
 
 /** The full promise, spelled out — the card only has room for a chip. */
@@ -41,10 +37,8 @@ const PROMISE: Record<
   },
 };
 
-export async function generateStaticParams() {
-  const slugs = await getAllProductSlugs();
-  return slugs.map((slug) => ({ slug }));
-}
+/** Priced from the database on every request — see the note in page.tsx. */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

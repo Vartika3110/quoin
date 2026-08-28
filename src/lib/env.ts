@@ -68,8 +68,13 @@ function load(): Env {
   const env = parsed.data;
 
   /* A production deploy that silently logs OTPs to stdout instead of
-     sending them would let anyone with log access take over an account. */
-  if (env.NODE_ENV === "production" && !env.MSG91_AUTH_KEY) {
+     sending them would let anyone with log access take over an account.
+     Skipped during the build for the same reason the parse above is:
+     `next build` runs with NODE_ENV=production and imports every route to
+     collect page data, so enforcing this here would fail the build of any
+     deploy whose SMS credentials are supplied at runtime. The check still
+     runs on server boot, which is where it does its job. */
+  if (!isBuildPhase && env.NODE_ENV === "production" && !env.MSG91_AUTH_KEY) {
     throw new Error(
       "MSG91_AUTH_KEY is required in production — refusing to start with " +
         "the console OTP sender, which prints login codes to the server log.",
