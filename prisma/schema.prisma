@@ -314,3 +314,50 @@ model PriceTier {
   @@index([variantId])
   @@map("price_tiers")
 }
+
+/// A named locality Quoin serves, with the pincodes that reach it.
+///
+/// Deliberately *not* the source of truth for the delivery promise —
+/// `Store.serviceRadiusKm` still decides that, because a pincode straddles
+/// store radii and half of 110063 can be outside the eighteen minutes
+/// while the other half is inside. This table answers a different and
+/// coarser question: "do you operate in my area at all", which is what a
+/// customer types a pincode into a box to find out, and it gives that
+/// area a name to show back to them.
+model ServiceArea {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  city  String @default("New Delhi")
+  state String @default("Delhi")
+
+  /// Cleared to switch an area off without deleting its pincodes.
+  isActive Boolean @default(true)
+
+  pincodes ServicePincode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("service_areas")
+}
+
+/// One postal code, belonging to exactly one serviceable area.
+///
+/// `pincode` is unique: a code that mapped to two areas would make the
+/// lookup ambiguous at the only moment it is used, and the customer would
+/// get whichever row the database happened to return first.
+model ServicePincode {
+  id String @id @default(cuid())
+
+  pincode String @unique
+
+  areaId String
+  area   ServiceArea @relation(fields: [areaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([areaId])
+  @@map("service_pincodes")
+}

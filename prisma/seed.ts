@@ -36,6 +36,26 @@ const STORES = [
   },
 ];
 
+/**
+ * Serviceable localities.
+ *
+ * The area a customer types a pincode to find, not the delivery promise —
+ * `Store.serviceRadiusKm` still decides that, and an address inside
+ * 110063 can sit outside every store radius.
+ *
+ * Only each locality's primary pincode is listed. Extension codes
+ * (Paschim Vihar Extn., the Pitampura side of 110088) are deliberately
+ * absent: seeding a code Quoin cannot actually reach tells a customer
+ * their order will arrive when it will not. Add them once operations
+ * confirms coverage.
+ */
+const SERVICE_AREAS = [
+  { name: "Janakpuri", slug: "janakpuri", pincodes: ["110058"] },
+  { name: "Paschim Vihar", slug: "paschim-vihar", pincodes: ["110063"] },
+  { name: "Pitampura", slug: "pitampura", pincodes: ["110034"] },
+  { name: "Rajendra Nagar", slug: "rajendra-nagar", pincodes: ["110060"] },
+];
+
 async function main() {
   for (const store of STORES) {
     await db.store.upsert({
@@ -45,6 +65,25 @@ async function main() {
     });
   }
   console.info(`Seeded ${STORES.length} stores.`);
+
+  for (const { pincodes, ...area } of SERVICE_AREAS) {
+    const row = await db.serviceArea.upsert({
+      where: { slug: area.slug },
+      update: { name: area.name, isActive: true },
+      create: area,
+    });
+
+    for (const pincode of pincodes) {
+      /* Keyed on the pincode, so moving one between areas is an update
+         rather than a unique-constraint failure on the next seed. */
+      await db.servicePincode.upsert({
+        where: { pincode },
+        update: { areaId: row.id },
+        create: { pincode, areaId: row.id },
+      });
+    }
+  }
+  console.info(`Seeded ${SERVICE_AREAS.length} service areas.`);
 }
 
 main()
