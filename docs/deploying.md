@@ -5,10 +5,10 @@ be done on free tiers, which is enough to share a working link.
 
 ## 1. Database
 
-Create a Postgres instance. [Neon](https://neon.tech) and
-[Supabase](https://supabase.com) both have a free tier; pick the region
-closest to your users — Quoin's customers, pricing and SMS are all in
-India, so a Mumbai or Singapore region matters more here than usual.
+Neon, Singapore (`ap-southeast-1`) — the closest region Neon offers to
+India. [Supabase](https://supabase.com) has a Mumbai region if co-locating
+with customers ever matters more than the free tier's behaviour; note that
+Supabase pauses idle projects on the free tier and Neon does not.
 
 Copy the **pooled** connection string, not the direct one. Serverless
 functions open a connection per invocation and will exhaust a direct
@@ -41,10 +41,17 @@ Import the GitHub repo at [vercel.com/new](https://vercel.com/new). Private
 repos are supported. Framework detection picks up Next.js; the build
 command in `package.json` is already correct and needs no override.
 
-The function region is pinned to Mumbai (`bom1`) in `vercel.json`, so there
-is nothing to set in the dashboard. Vercel's default is US East, which
-would put every database round trip across an ocean from both the users
-and the database.
+The function region is pinned to Singapore (`sin1`) in `vercel.json`, so
+there is nothing to set in the dashboard.
+
+It tracks the database, not the customers. Neon has no India region, so the
+database sits in Singapore, and rendering one page runs several queries in
+sequence — each paying the full round trip — while the customer pays it
+once for the response. Functions in Mumbai would put every one of those
+queries across ~2,000 km to save a single hop on the way back.
+
+Move both to Mumbai together if the database ever does; splitting them is
+the case worth avoiding.
 
 Environment variables, for Production and Preview:
 
