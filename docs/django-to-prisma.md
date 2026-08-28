@@ -64,17 +64,21 @@ npm run db:import -- path/to.csv   # any file with the same header
 Idempotent — products are matched on `sku` and updated in place. Slugs are
 assigned **on creation only**, so re-importing never changes a URL that has
 been indexed. Current result on the committed CSV: **883 created, 1 skipped**
-(one row has no readable price), **85 brands, 9 categories**.
+(one row has no readable price), **85 brands, 14 categories**.
 
-Two known data-quality gaps, both inherited from the source export, both
-worth fixing before launch:
+**Categories are resolved.** 548 of the 884 rows arrived with no category —
+every `homerun` row. They are now filled in from
+`research/data/category-map.json`, built by
+`research/classify-uncategorised.py`: 464 from the merchant's own collection
+membership (a merchandiser's judgement, not a guess) and 84 from name
+keywords. The importer applies the map only where the export itself is
+silent, so a real category in the CSV always wins. See `research/README.md`.
 
-1. **548 of 884 rows have no category** and are filed under `Uncategorised`
-   — every `homerun` row. They need categorising before category browse is
-   useful.
-2. **Unit inference is name-based** and conservative: 790 land on
-   `PER_PIECE`, 68 `PER_KG`, 17 `PER_LITRE`, 7 `PER_RUNNING_FT`, 1
-   `PER_VISIT`. Nothing infers `PER_SQFT` or `PER_BAG` from this export.
+One data-quality gap remains: **unit inference is name-based** and
+conservative — 790 rows land on `PER_PIECE`, 68 `PER_KG`, 17 `PER_LITRE`, 7
+`PER_RUNNING_FT`, 1 `PER_VISIT`. Nothing infers `PER_SQFT` or `PER_BAG` from
+this export, so anything sold by area or by the bag is currently priced per
+piece.
 
 ## Rendering
 
@@ -120,7 +124,8 @@ picks up merchandising needs to know the gap is real and unsolved.
   carried a comment that without it a 24-product page cost 25 queries, and
   Prisma has the same trap.
 - **Category tree.** `Category.parentId` exists and is unused; the import
-  creates a flat list. `getCategories()` returns top-level rows only.
+  creates a flat list of 14. `getCategories()` returns top-level rows only,
+  so with no parents set every category is top-level.
 - **Storefront tabs are still fixtures.** `TABS` in
   `src/lib/data/catalog.ts` (`all`, `services`, `materials`, `premium`,
   `interiors`, `lighting`) has no mapping onto real categories yet, so tab
