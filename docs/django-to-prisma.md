@@ -24,7 +24,7 @@ architecture note already assumed one deployment.
 | `catalog/models.py` | `prisma/schema.prisma` — `Brand`, `Category`, `Product`, `ProductVariant`, `PriceTier` |
 | `Fulfilment`, `PricingUnit`, `GstRate` choices | Prisma enums `Fulfilment`, `PricingUnit`, `BadgeKind`; GST is `Product.gstRatePct` (`Int`) |
 | `management/commands/import_catalogue.py` | `prisma/import-catalogue.ts` (`npm run db:import`) |
-| `catalog/views.py`, `serializers.py` | not yet ported — see [Outstanding](#outstanding) |
+| `catalog/views.py`, `serializers.py` | `src/app/api/v1/{products,categories,brands}/` — see [The API](#the-api) |
 | SQLite dev fallback | none; Postgres only, `DATABASE_URL` required |
 | `manage.py migrate` | `npm run db:migrate` (Prisma migrations) |
 
@@ -96,6 +96,37 @@ on the accessors), **not** a build-time prerender. Read
 `node_modules/next/dist/docs/01-app/01-getting-started/08-caching.md` first —
 this Next version's caching model differs from older ones.
 
+## The API
+
+The Django viewsets are reproduced as route handlers, so a client written
+against the old API keeps working:
+
+| Endpoint | Notes |
+| --- | --- |
+| `GET /api/v1/products` | `?category=` `?brand=` slugs, `?fulfilment=`, `?q=` search, `?sort=name\|newest\|price`, `?page=` `?pageSize=` |
+| `GET /api/v1/products/{slug}` | product plus its cross-sell, in one round trip |
+| `GET /api/v1/categories` | unpaginated, as before |
+| `GET /api/v1/brands` | only brands with something sellable |
+
+All four are public — browse has to work before sign-in — and all answer in
+the `{ data }` / `{ error }` envelope from `src/lib/http.ts`.
+
+Page size defaults to 24, matching Django's `PAGE_SIZE`. Search covers name,
+SKU, brand name and category name. Variants are loaded with `include`, not
+per row: the Django code carried a comment that without prefetching, a
+24-product page cost 25 queries, and Prisma has exactly the same trap.
+
+`sort=price` orders by each product's cheapest active variant. Prisma cannot
+order by an aggregate over a relation, so that one ordering drops to SQL —
+but only the *ordering* does. The matching ids still come from the Prisma
+filter, so there is one definition of what matches rather than a filter
+clause restated in two languages. The trade is that the matching id set is
+sent to the database; at catalogue sizes in the low thousands that is fine,
+and past that it wants a maintained cheapest-price column instead.
+
+A bad `sort` or `page` falls back to the default listing rather than
+returning a 400 — a stale shared link should still show products.
+
 ## What this port gave up
 
 The Django service's own README made one substantive argument for its
@@ -116,13 +147,6 @@ picks up merchandising needs to know the gap is real and unsolved.
 
 ## Outstanding
 
-- **`/api/v1/products` and `/api/v1/categories` route handlers.** The Django
-  viewsets defined semantics worth reproducing exactly: filter by
-  `category`, `brand` and `fulfilment` slug; search across name, sku, brand
-  name and category name; order by name, creation, or cheapest variant
-  price; page size 24. Prefetch variants in one query — the Django code
-  carried a comment that without it a 24-product page cost 25 queries, and
-  Prisma has the same trap.
 - **Category tree.** `Category.parentId` exists and is unused; the import
   creates a flat list of 14. `getCategories()` returns top-level rows only,
   so with no parents set every category is top-level.
@@ -130,8 +154,9 @@ picks up merchandising needs to know the gap is real and unsolved.
   `src/lib/data/catalog.ts` (`all`, `services`, `materials`, `premium`,
   `interiors`, `lighting`) has no mapping onto real categories yet, so tab
   filtering does nothing.
-- **`Category.images`** holds swatch keys and is empty on import, so
-  category tiles render bare until keys or real artwork are set.
+- **`Category.images`** is empty on every imported row. `getCategories()`
+  falls back to `CATEGORY_SWATCHES` in `src/lib/data/catalog.ts` so tiles
+  are not blank; delete that map once real artwork exists.
 - **Badges are never set by the import.** `Product.badges` is merchandising
   input.
 

@@ -130,8 +130,9 @@ storefront renders correctly but empty.
 Modules 1 and 2 are implemented. Planned delivery order:
 
 1. ~~Identity + address (phone OTP, saved addresses, serviceability)~~ — done
-2. ~~Catalog (categories, products, variants, pricing)~~ — schema, importer and
-   storefront reads done; `/api/v1/products` and media outstanding
+2. ~~Catalog (categories, products, variants, pricing)~~ — schema, importer,
+   storefront reads and the `/api/v1` browse endpoints done; media and the
+   merchandising admin outstanding
 3. Inventory + serviceability (per-store stock, geo radius, promise engine)
 4. Cart + checkout (multi-fulfilment splitting, price resolution)
 5. Orders + payments (Razorpay, order state machine, invoices)

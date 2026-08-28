@@ -8,6 +8,7 @@ import type {
   Product,
   Variant,
 } from "@/lib/types/catalog";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import type {
   BadgeKind as DbBadge,
@@ -151,6 +152,32 @@ function toProduct(row: ProductRow): Product {
   };
 }
 
+/**
+ * Category artwork, until there is any.
+ *
+ * `Category.images` is empty on every imported row, and a category tile
+ * with no thumbnails renders as an empty box. These are swatch keys for
+ * `Swatch.tsx`, not URLs — the same stand-in the product grid uses. A
+ * category with real images in the column keeps them; this only fills the
+ * gap, and the whole map is deleted once photography exists.
+ */
+const CATEGORY_SWATCHES: Record<string, string[]> = {
+  "electricals-lighting": ["switch", "bulb", "pendant"],
+  "bathware-plumbing": ["basin", "faucet"],
+  "kitchen-wardrobe-fittings": ["steel", "sofa"],
+  "kitchen-sinks-faucets": ["faucet", "basin"],
+  "tools-safety": ["helmet", "steel"],
+  "tiling-adhesives": ["marble", "brick"],
+  "home-appliances-security": ["switch", "steel"],
+  "paints-finishes": ["paint", "brick"],
+  "cement-steel": ["cement", "steel", "brick"],
+  "plywood-laminates": ["sofa", "rug"],
+  "hardware-locks": ["steel", "switch"],
+  waterproofing: ["paint", "cement"],
+  "gypsum-false-ceiling": ["cement", "pendant"],
+  services: ["helmet"],
+};
+
 /** ---- Accessors ---------------------------------------------------------- */
 
 export async function getTabs(): Promise<CatalogTab[]> {
@@ -169,14 +196,19 @@ export async function getCategories(): Promise<Category[]> {
     include: { _count: { select: { children: true } } },
   });
 
-  return rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    title: row.name,
-    images: row.images,
-    /* The tile shows three thumbnails; "+N more" counts the rest. */
-    moreCount: Math.max(0, row._count.children - row.images.length),
-  }));
+  return rows.map((row) => {
+    const images = row.images.length ? row.images : (CATEGORY_SWATCHES[row.slug] ?? []);
+    return {
+      id: row.id,
+      slug: row.slug,
+      title: row.name,
+      images,
+      /* The tile shows the thumbnails above; "+N more" counts the
+         sub-categories beyond them. The import creates a flat list, so
+         this is zero until the tree is populated. */
+      moreCount: Math.max(0, row._count.children - images.length),
+    };
+  });
 }
 
 /**
@@ -216,4 +248,138 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
     take: 8,
   });
   return rows.map(toProduct);
+}
+
+/** ---- Browse -------------------------------------------------------------
+ * Backs `GET /api/v1/products`. The filters, the search fields and the
+ * three sort orders are the ones the removed Django viewset defined; they
+ * are reproduced here so a client written against that API keeps working.
+ */
+
+export type ProductSort = "name" | "newest" | "price";
+
+export interface ProductQuery {
+  categorySlug?: string;
+  brandSlug?: string;
+  fulfilment?: FulfilmentType;
+  /** Matched against product name, SKU, brand name and category name. */
+  search?: string;
+  sort?: ProductSort;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ProductPage {
+  items: Product[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
+/** Django's `PAGE_SIZE`. Kept so paging behaves identically. */
+export const DEFAULT_PAGE_SIZE = 24;
+const MAX_PAGE_SIZE = 100;
+
+const DB_FULFILMENT: Record<FulfilmentType, DbFulfilment> = {
+  instant: "INSTANT",
+  scheduled: "SCHEDULED",
+  bookable: "BOOKABLE",
+  made_to_order: "MADE_TO_ORDER",
+};
+
+export async function listProducts(query: ProductQuery = {}): Promise<ProductPage> {
+  const pageSize = Math.min(Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
+  const page = Math.max(1, query.page ?? 1);
+  const skip = (page - 1) * pageSize;
+
+  const search = query.search?.trim();
+
+  /* The single source of truth for what matches. Both the count and the
+     price-ordered path below derive from this object rather than
+     restating the conditions, so a filter can never apply to one and not
+     the other. */
+  const where = {
+    ...PRODUCT_QUERY.where,
+    ...(query.categorySlug ? { category: { slug: query.categorySlug } } : {}),
+    ...(query.brandSlug ? { brand: { slug: query.brandSlug } } : {}),
+    ...(query.fulfilment ? { fulfilment: DB_FULFILMENT[query.fulfilment] } : {}),
+    ...(search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { sku: { contains: search, mode: "insensitive" as const } },
+            { brand: { name: { contains: search, mode: "insensitive" as const } } },
+            { category: { name: { contains: search, mode: "insensitive" as const } } },
+          ],
+        }
+      : {}),
+  };
+
+  const total = await db.product.count({ where });
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const rows =
+    query.sort === "price"
+      ? await byCheapestVariant(where, skip, pageSize)
+      : await db.product.findMany({
+          ...PRODUCT_QUERY,
+          where,
+          orderBy: query.sort === "newest" ? { createdAt: "desc" } : { name: "asc" },
+          skip,
+          take: pageSize,
+        });
+
+  return { items: rows.map(toProduct), page, pageSize, total, totalPages };
+}
+
+/**
+ * Ordering by a product's cheapest variant.
+ *
+ * Prisma cannot order by an aggregate over a relation, so the ordering is
+ * done in SQL. Only the ordering is: the matching ids come from the Prisma
+ * filter above, and this query sorts and pages within them. That keeps one
+ * definition of what matches, at the cost of sending the matching id set
+ * to the database. Fine at catalogue sizes in the low thousands; past that
+ * this needs a maintained cheapest-price column to sort on directly.
+ */
+async function byCheapestVariant(
+  where: typeof PRODUCT_QUERY.where,
+  skip: number,
+  take: number,
+): Promise<ProductRow[]> {
+  const matching = await db.product.findMany({ where, select: { id: true } });
+  if (matching.length === 0) return [];
+
+  const ordered = await db.$queryRaw<{ id: string }[]>`
+    SELECT p.id
+    FROM products p
+    JOIN LATERAL (
+      SELECT MIN(v."pricePaise") AS cheapest
+      FROM product_variants v
+      WHERE v."productId" = p.id AND v."isActive"
+    ) v ON TRUE
+    WHERE p.id IN (${Prisma.join(matching.map((m) => m.id))})
+    ORDER BY v.cheapest ASC, p.name ASC
+    LIMIT ${take} OFFSET ${skip}
+  `;
+
+  const rows = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: { id: { in: ordered.map((o) => o.id) } },
+  });
+
+  /* `IN` does not preserve order, so restore the one SQL decided. */
+  const bySlot = new Map(rows.map((row) => [row.id, row]));
+  return ordered.flatMap((o) => bySlot.get(o.id) ?? []);
+}
+
+/** Brands that have something to sell, for the filter rail. */
+export async function listBrands(): Promise<{ id: string; slug: string; name: string }[]> {
+  const rows = await db.brand.findMany({
+    where: { isActive: true, products: { some: PRODUCT_QUERY.where } },
+    orderBy: { name: "asc" },
+    select: { id: true, slug: true, name: true },
+  });
+  return rows;
 }
