@@ -79,8 +79,13 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
             ))}
           </div>
 
+          {/* "+0 more" says nothing. Until the category tree is populated
+              there are no sub-categories to count, so the tile shows what
+              it actually holds. */}
           <span className="w-fit rounded-full bg-black/60 px-2.5 py-1 text-[11px] text-muted backdrop-blur-sm">
-            +{c.moreCount} more
+            {c.moreCount > 0
+              ? `+${c.moreCount} more`
+              : `${c.productCount} ${c.productCount === 1 ? "product" : "products"}`}
           </span>
         </Link>
       ))}

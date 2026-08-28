@@ -196,7 +196,7 @@ export async function getCategories(): Promise<Category[]> {
   const rows = await db.category.findMany({
     where: { isActive: true, parentId: null },
     orderBy: [{ position: "asc" }, { name: "asc" }],
-    include: { _count: { select: { children: true } } },
+    include: { _count: { select: { children: true, products: true } } },
   });
 
   return rows.map((row) => {
@@ -208,8 +208,10 @@ export async function getCategories(): Promise<Category[]> {
       images,
       /* The tile shows the thumbnails above; "+N more" counts the
          sub-categories beyond them. The import creates a flat list, so
-         this is zero until the tree is populated. */
+         this is zero until the tree is populated, and the tile falls back
+         to the product count. */
       moreCount: Math.max(0, row._count.children - images.length),
+      productCount: row._count.products,
     };
   });
 }
@@ -391,7 +393,7 @@ export async function listBrands(): Promise<{ id: string; slug: string; name: st
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const row = await db.category.findFirst({
     where: { slug, isActive: true },
-    include: { _count: { select: { children: true } } },
+    include: { _count: { select: { children: true, products: true } } },
   });
   if (!row) return null;
 
@@ -402,5 +404,6 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
     title: row.name,
     images,
     moreCount: Math.max(0, row._count.children - images.length),
+    productCount: row._count.products,
   };
 }

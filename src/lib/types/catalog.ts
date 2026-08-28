@@ -109,6 +109,8 @@ export interface Category {
   images: string[];
   /** Count of sub-categories beyond those shown — renders as "+6 more". */
   moreCount: number;
+  /** Active, sellable products filed under it. */
+  productCount: number;
 }
 
 /** Top-level storefront filter tabs. `all` is a pseudo-category. */
