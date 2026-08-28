@@ -37,13 +37,16 @@ export const TABS: CatalogTab[] = [
   { id: "lighting", label: "Lighting", icon: "lamp" },
 ];
 
+/* Destinations are real routes, not the collection pages that were
+   sketched before browse existed — a featured tile that 404s is worse
+   than one that lands on a filtered listing. */
 export const BANNERS: Banner[] = [
   {
     id: "b_sourcing",
     eyebrow: "Featured",
     title: "Sourcing Solutions",
     subtitle: "For Every Space",
-    href: "/collections/sourcing",
+    href: "/products",
     tone: "from-neutral-700 via-neutral-800 to-black",
   },
   {
@@ -51,7 +54,7 @@ export const BANNERS: Banner[] = [
     eyebrow: "Featured",
     title: "New Arrivals",
     subtitle: "Premium Materials & Products",
-    href: "/collections/new",
+    href: "/products?sort=newest",
     tone: "from-stone-600 via-stone-800 to-black",
   },
   {
@@ -59,7 +62,7 @@ export const BANNERS: Banner[] = [
     eyebrow: "Featured",
     title: "Expert Consultation",
     subtitle: "Design. Plan. Build Better.",
-    href: "/consult",
+    href: "/c/services",
     tone: "from-slate-700 via-slate-900 to-black",
   },
   {
@@ -67,7 +70,7 @@ export const BANNERS: Banner[] = [
     eyebrow: "Featured",
     title: "Bespoke Living",
     subtitle: "Curated for Your Space",
-    href: "/collections/bespoke",
+    href: "/c/kitchen-wardrobe-fittings",
     tone: "from-amber-800/70 via-neutral-900 to-black",
   },
 ];
@@ -382,4 +385,22 @@ export async function listBrands(): Promise<{ id: string; slug: string; name: st
     select: { id: true, slug: true, name: true },
   });
   return rows;
+}
+
+/** One category by slug, for the category browse page. Null becomes a 404. */
+export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+  const row = await db.category.findFirst({
+    where: { slug, isActive: true },
+    include: { _count: { select: { children: true } } },
+  });
+  if (!row) return null;
+
+  const images = row.images.length ? row.images : (CATEGORY_SWATCHES[row.slug] ?? []);
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.name,
+    images,
+    moreCount: Math.max(0, row._count.children - images.length),
+  };
 }
