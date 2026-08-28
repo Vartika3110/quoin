@@ -76,7 +76,7 @@ const VARIANT_QUERY = {
 
 const PRODUCT_QUERY = {
   where: { isActive: true, variants: { some: { isActive: true } } },
-  include: { brand: true, variants: VARIANT_QUERY },
+  include: { brand: true, category: { select: { slug: true } }, variants: VARIANT_QUERY },
 } as const;
 
 type ProductRow = Awaited<ReturnType<typeof db.product.findMany<typeof PRODUCT_QUERY>>>[number];
@@ -112,7 +112,9 @@ function toProduct(row: ProductRow): Product {
     pricingUnit: PRICING_UNIT[row.pricingUnit],
     variants: row.variants.map(toVariant),
     badges: row.badges.map((b) => BADGE[b]),
-    image: row.image,
+    image:
+      row.image ||
+      (row.category ? (PRODUCT_SWATCH_BY_CATEGORY[row.category.slug] ?? "cement") : "cement"),
     leadTimeDays: row.leadTimeDays ?? undefined,
   };
 }
@@ -141,6 +143,34 @@ const CATEGORY_SWATCHES: Record<string, string[]> = {
   waterproofing: ["paint", "cement"],
   "gypsum-false-ceiling": ["cement", "pendant"],
   services: ["helmet"],
+};
+
+/**
+ * Stand-in artwork per category.
+ *
+ * Every imported product has an empty `image`, so without this the whole
+ * catalogue falls back to one swatch and 883 cards render as the same
+ * grey box repeated. Deriving the key from the category at least makes a
+ * grid of taps look like taps and a grid of wiring look like wiring.
+ *
+ * A product with its own `image` always wins; this only fills the gap,
+ * and the map goes away when photography lands.
+ */
+const PRODUCT_SWATCH_BY_CATEGORY: Record<string, string> = {
+  "bathware-plumbing": "basin",
+  "kitchen-sinks-faucets": "faucet",
+  "electricals-lighting": "bulb",
+  "home-appliances-security": "switch",
+  "hardware-locks": "steel",
+  "kitchen-wardrobe-fittings": "steel",
+  "tools-safety": "helmet",
+  "tiling-adhesives": "marble",
+  "paints-finishes": "paint",
+  "cement-steel": "cement",
+  "plywood-laminates": "sofa",
+  "waterproofing": "paint",
+  "gypsum-false-ceiling": "pendant",
+  services: "helmet",
 };
 
 /** ---- Accessors ---------------------------------------------------------- */

@@ -122,16 +122,52 @@ function Motif({ kind }: { kind: SwatchKey }) {
       );
     case "bulb":
       return (
-        <g fill="none" stroke={light} strokeWidth="2.5">
-          <circle cx="60" cy="52" r="20" />
-          <path d="M52 76h16M54 84h12" />
+        <g>
+          <circle cx="60" cy="50" r="22" fill={light} opacity=".75" />
+          <path
+            d="M60 28a22 22 0 0 0-12 40v6h24v-6a22 22 0 0 0-12-40z"
+            fill="none"
+            stroke={ink}
+            strokeWidth="2.5"
+          />
+          {/* Filament — the detail that makes it a lamp rather than a balloon. */}
+          <path
+            d="M54 50c0-6 4-6 4 0s4 6 4 0 4-6 4 0"
+            fill="none"
+            stroke={ink}
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <g stroke={ink} strokeWidth="2.2" strokeLinecap="round">
+            <path d="M50 80h20M51 86h18M54 92h12" />
+          </g>
         </g>
       );
     case "basin":
       return (
         <g>
-          <ellipse cx="60" cy="64" rx="38" ry="16" fill={light} opacity=".7" />
-          <path d="M22 64c0 14 17 24 38 24s38-10 38-24" fill="none" stroke={ink} strokeWidth="2" />
+          {/* Spout first, so the bowl paints over its foot. */}
+          <path
+            d="M60 22v10a8 8 0 0 1 8 8v6"
+            fill="none"
+            stroke={ink}
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+          <ellipse cx="60" cy="58" rx="36" ry="14" fill={light} opacity=".85" />
+          <path
+            d="M24 58c0 16 16 26 36 26s36-10 36-26"
+            fill={light}
+            opacity=".45"
+          />
+          <path
+            d="M24 58c0 16 16 26 36 26s36-10 36-26"
+            fill="none"
+            stroke={ink}
+            strokeWidth="2"
+          />
+          <ellipse cx="60" cy="58" rx="24" ry="8" fill="none" stroke={ink} strokeWidth="1.2" opacity=".6" />
+          <path d="M52 84h16v14H52z" fill={ink} opacity=".18" />
         </g>
       );
     case "faucet":
@@ -155,9 +191,22 @@ function Motif({ kind }: { kind: SwatchKey }) {
       );
     case "steel":
       return (
-        <g stroke={light} strokeWidth="2" fill="none">
-          {[30, 46, 62, 78].map((y) => (
-            <path key={y} d={`M12 ${y}h96`} />
+        <g>
+          {/* A stack of bar ends: circles in section read as steel where
+              parallel lines read as a ruled page. */}
+          {[
+            [42, 44],
+            [66, 44],
+            [90, 44],
+            [54, 66],
+            [78, 66],
+            [66, 88],
+          ].map(([cx, cy]) => (
+            <g key={`${cx}-${cy}`}>
+              <circle cx={cx} cy={cy} r="11" fill={light} opacity=".8" />
+              <circle cx={cx} cy={cy} r="11" fill="none" stroke={ink} strokeWidth="1.6" />
+              <circle cx={cx} cy={cy} r="4" fill="none" stroke={ink} strokeWidth="1" opacity=".6" />
+            </g>
           ))}
         </g>
       );

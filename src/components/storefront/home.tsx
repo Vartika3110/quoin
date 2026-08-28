@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Swatch } from "@/components/Swatch";
+import { HeroArt } from "@/components/storefront/HeroArt";
 import {
   Building,
   Chevron,
@@ -83,15 +84,19 @@ export function ConsultCta() {
   return (
     <Link
       href="/consult"
-      className="flex items-center justify-between gap-3 rounded-card border border-line-soft bg-surface px-4 py-3 transition-colors hover:border-accent-edge"
+      className="flex items-center gap-3 rounded-card border border-line-soft bg-surface px-4 py-3 transition-colors hover:border-accent-edge"
     >
-      <div>
-        <p className="text-sm font-semibold leading-tight text-accent">
+      <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-wash text-accent">
+        <Video className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold leading-tight text-accent">
           Video consultation
-        </p>
-        <p className="text-xs text-muted">Talk to our experts</p>
-      </div>
-      <Video className="size-8 shrink-0 text-deep" />
+        </span>
+        <span className="block text-xs text-muted">
+          Talk to an expert about your project before you buy
+        </span>
+      </span>
       <Chevron className="size-4 shrink-0 text-muted" />
     </Link>
   );
@@ -102,13 +107,19 @@ export function ConsultCta() {
 /**
  * The headline promise.
  *
- * The reference carries a photograph here. Until Quoin has one it is a
- * warm gradient — deliberately not a competitor's building shot — and the
- * type is sized to survive the swap without reflowing.
+ * The illustration fills the half of the band the reference gives to a
+ * photograph, and sits in the same box one would occupy. On narrow
+ * screens it drops away rather than competing with the type for the
+ * width the headline needs.
  */
 export function Hero() {
   return (
     <div className="relative overflow-hidden rounded-card bg-gradient-to-br from-[#f3e6d8] via-[#eddcc9] to-[#e2c9ae] px-6 py-7 lg:px-10 lg:py-10">
+      <HeroArt className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 sm:block" />
+      {/* The art runs under the type at the seam; this fades it out so the
+          headline never sits on a window mullion. */}
+      <div className="pointer-events-none absolute inset-y-0 right-1/2 hidden w-24 bg-gradient-to-r from-transparent to-[#eddcc9] sm:block" />
+
       <div className="relative max-w-md">
         <h2 className="font-display text-3xl leading-[1.1] text-deep lg:text-4xl">
           Repair.
