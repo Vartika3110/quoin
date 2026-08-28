@@ -125,6 +125,12 @@ npm run db:import
 idempotent, so it can be re-run after a fresh export. Without the import the
 storefront renders correctly but empty.
 
+## Deploying
+
+One Next.js deployment plus a managed Postgres — see
+[`docs/deploying.md`](docs/deploying.md). The one non-obvious step: the app
+refuses to boot in production without `MSG91_AUTH_KEY`, by design.
+
 ## Status
 
 Modules 1 and 2 are implemented. Planned delivery order:
