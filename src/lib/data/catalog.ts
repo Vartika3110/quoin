@@ -424,3 +424,54 @@ export async function getCategoryPriceFloors(): Promise<Map<string, number>> {
   `;
   return new Map(rows.map((r) => [r.categoryId, r.floor]));
 }
+
+/** ---- Merchandising -------------------------------------------------------
+ * Products that exist but cannot be sold. A catalogue import brings in a
+ * name, a photograph and a manufacturer code; the price is a decision
+ * nobody but a merchandiser can make, so those rows arrive without a
+ * variant and stay out of the storefront until one is added.
+ */
+
+export interface UnpricedProduct {
+  id: string;
+  sku: string;
+  title: string;
+  brand: string | null;
+  category: string | null;
+  photo?: string;
+  image: string;
+}
+
+export async function listUnpricedProducts(
+  page = 1,
+  pageSize = 24,
+): Promise<{ items: UnpricedProduct[]; total: number; totalPages: number }> {
+  const where = { isActive: true, variants: { none: {} } };
+
+  const [total, rows] = await Promise.all([
+    db.product.count({ where }),
+    db.product.findMany({
+      where,
+      include: { brand: true, category: { select: { name: true, slug: true } } },
+      orderBy: { name: "asc" },
+      skip: (Math.max(1, page) - 1) * pageSize,
+      take: pageSize,
+    }),
+  ]);
+
+  return {
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    items: rows.map((row) => ({
+      id: row.id,
+      sku: row.sku,
+      title: row.name,
+      brand: row.brand?.name ?? null,
+      category: row.category?.name ?? null,
+      photo: row.image || undefined,
+      image: row.category
+        ? (PRODUCT_SWATCH_BY_CATEGORY[row.category.slug] ?? "cement")
+        : "cement",
+    })),
+  };
+}

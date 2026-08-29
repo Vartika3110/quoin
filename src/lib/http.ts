@@ -145,11 +145,28 @@ export async function requireUser() {
       email: true,
       tier: true,
       walletPaise: true,
+      isStaff: true,
     },
   });
 
   /* Token valid but the account is gone — treat as signed out. */
   if (!user) throw new ApiError("unauthorized", "Sign in to continue");
 
+  return user;
+}
+
+/**
+ * Loads the signed-in user and refuses anyone who is not staff.
+ *
+ * Read from the row for the same reason `requireUser` is: the session
+ * token cannot be revoked before it expires, so a token minted while
+ * someone had access would keep working after it was taken away.
+ *
+ * 404-shaped message on purpose. Confirming that an internal tool exists
+ * at this path, to someone who cannot use it, is free reconnaissance.
+ */
+export async function requireStaff() {
+  const user = await requireUser();
+  if (!user.isStaff) throw new ApiError("not_found", "Not found");
   return user;
 }

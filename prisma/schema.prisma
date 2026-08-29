@@ -35,6 +35,14 @@ model User {
   /// derived sum over a ledger table when refunds and credits land.
   walletPaise Int @default(0)
 
+  /// Access to the internal tools that change what the storefront sells.
+  ///
+  /// Deliberately not grantable through any route: it is set directly on
+  /// the row, out of band, by someone with database access. An admin flag
+  /// that some endpoint can flip is a privilege-escalation bug waiting
+  /// for the endpoint that forgets to check who is asking.
+  isStaff Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
