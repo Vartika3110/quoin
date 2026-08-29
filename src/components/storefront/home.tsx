@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Swatch } from "@/components/Swatch";
+import { BRAND_LOGOS } from "@/lib/brand-logos";
 import { HeroArt } from "@/components/storefront/HeroArt";
 import {
   Building,
@@ -259,13 +260,19 @@ export function CategoryChips({ categories }: { categories: Category[] }) {
 /* ----------------------------------------------------------- brand strip */
 
 /**
- * Associated brands.
+ * Associated brands, one line deep.
  *
- * Wordmarks, not logos: a manufacturer's mark is its trademark, and the
- * catalogue holds no artwork for one in any case — `Brand` is a name and a
- * slug. Static by design, unlike the scrolling ribbon this is modelled on:
- * a moving row slides a name out from under the pointer between reading it
- * and reaching for it, and every tile here is a link into the catalogue.
+ * A rail rather than a grid: eighteen plates stacked three rows high gave
+ * a footnote the vertical weight of a category section. What does not fit
+ * scrolls, and the row stays still while it does — the ribbon this is
+ * modelled on slides a name out from under the pointer between reading it
+ * and reaching for it.
+ *
+ * Each plate carries the manufacturer's own mark where `BRAND_LOGOS` has
+ * the artwork and the brand's name set in type where it does not. The
+ * second case is not a placeholder waiting to be fixed: a logo is a
+ * trademark, so a mark appears only once we hold the file and the right
+ * to show it, and a name is the honest way to say the rest.
  */
 export function BrandStrip({
   brands,
@@ -273,20 +280,35 @@ export function BrandStrip({
   brands: { id: string; slug: string; name: string }[];
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2 px-5 sm:grid-cols-4 lg:grid-cols-6 lg:px-0">
-      {brands.map((b) => (
-        <Link
-          key={b.id}
-          href={`/products?brand=${b.slug}`}
-          className="group grid h-16 place-items-center rounded-card border border-line-soft bg-surface px-2 text-center transition-colors hover:border-accent-edge"
-        >
-          {/* Balanced rather than left-ragged: a two-word name breaks in
-              the middle of the tile instead of leaving one word alone. */}
-          <span className="text-pretty text-[13px] font-medium leading-tight text-deep-soft transition-colors group-hover:text-accent">
-            {b.name}
-          </span>
-        </Link>
-      ))}
+    <div className="rail gap-2 px-5 lg:px-0">
+      {brands.map((b) => {
+        const logo = BRAND_LOGOS[b.slug];
+        return (
+          <Link
+            key={b.id}
+            href={`/products?brand=${b.slug}`}
+            className="group grid h-12 w-28 place-items-center rounded-xl border border-line-soft bg-surface px-3 transition-colors hover:border-accent-edge"
+          >
+            {logo ? (
+              /* Not next/image: these are already optimised vector files a
+                 few kilobytes each, and routing them through the image
+                 pipeline rasterises artwork drawn to stay sharp. */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logo}
+                alt={b.name}
+                loading="lazy"
+                decoding="async"
+                className="max-h-6 max-w-full object-contain"
+              />
+            ) : (
+              <span className="max-w-full truncate text-[13px] font-medium text-deep-soft transition-colors group-hover:text-accent">
+                {b.name}
+              </span>
+            )}
+          </Link>
+        );
+      })}
     </div>
   );
 }

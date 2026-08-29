@@ -19,7 +19,8 @@
     "images:generate": "tsx scripts/generate-product-images.ts",
     "db:import-brand": "tsx prisma/import-brand-catalogue.ts",
     "admin:grant": "tsx scripts/grant-staff.ts",
-    "images:pair": "tsx scripts/pair-images-by-code.ts"
+    "images:pair": "tsx scripts/pair-images-by-code.ts",
+    "db:retire-scraped": "tsx scripts/retire-scraped.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

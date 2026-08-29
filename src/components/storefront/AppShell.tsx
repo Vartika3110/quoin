@@ -61,7 +61,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <div className="lg:mx-auto lg:flex lg:max-w-[1400px] lg:gap-8 lg:px-6">
         <DesktopSidebar />
         {/* Bottom padding clears the fixed mobile nav; removed at lg. */}
-        <main className="pb-28 lg:flex-1 lg:pb-16 lg:pt-6">{children}</main>
+        {/* `lg:min-w-0`: as a flex item this defaults to min-width auto,
+            which sizes it to its widest content and lets a horizontal rail
+            push the whole page sideways instead of scrolling inside its
+            own box. */}
+        <main className="pb-28 lg:min-w-0 lg:flex-1 lg:pb-16 lg:pt-6">{children}</main>
       </div>
 
       <MobileBottomNav />
