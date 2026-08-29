@@ -26,6 +26,8 @@ const db = new PrismaClient();
 interface Record {
   code: string;
   description: string | null;
+  /** Size or finish, where the catalogue lists several under one code. */
+  variant?: string | null;
   pricePaise: number | null;
   page: number;
   image: string | null;
@@ -44,6 +46,7 @@ const PUBLIC_DIR = path.join("public", "catalogue");
 const BRAND_DEFAULTS: Record_<string, { brand: string; category: string; gstRatePct: number }> = {
   jaquar: { brand: "Jaquar", category: "Bathware & plumbing", gstRatePct: 18 },
   "jaquar-technical": { brand: "Jaquar", category: "Bathware & plumbing", gstRatePct: 18 },
+  ebco: { brand: "Ebco", category: "Kitchen & wardrobe fittings", gstRatePct: 18 },
 };
 
 /**
@@ -113,8 +116,19 @@ async function main() {
   const usable = manifest.products.filter((p) => p.description);
   const priced = usable.filter((p) => p.pricePaise);
 
+  /* One product per code, one variant per row. A catalogue that lists a
+     range in sizes repeats the code down the page with a different size
+     and price on each line; importing those as separate products would
+     make one drawer system look like six, and keying them all on the same
+     SKU would let each overwrite the last. */
+  const grouped = new Map<string, Record[]>();
+  for (const row of usable) {
+    grouped.set(row.code, [...(grouped.get(row.code) ?? []), row]);
+  }
+
   console.info(
-    `${manifest.products.length} in manifest · ${usable.length} described · ${priced.length} priced`,
+    `${manifest.products.length} in manifest · ${usable.length} described · ` +
+      `${priced.length} priced · ${grouped.size} distinct product(s)`,
   );
 
   if (dryRun) {
@@ -169,7 +183,10 @@ async function main() {
   let reconciled = 0;
   let unmatched = 0;
 
-  for (const row of usable) {
+  for (const [, rows] of grouped) {
+    /* The first row carries the product; every row carries a variant. */
+    const row = rows[0];
+
     let existing = await db.product.findUnique({ where: { sku: row.code } });
 
     /* Not found by its own code — try the other catalogue's spelling. */
@@ -237,26 +254,35 @@ async function main() {
       created++;
     }
 
-    if (row.pricePaise) {
-      /* The catalogue price is the MRP. Sell price starts equal to it;
-         margin is a merchandising decision, not something to invent. */
+    let anyPriced = false;
+    for (const [i, r] of rows.entries()) {
+      if (!r.pricePaise) continue;
+      anyPriced = true;
+
+      const label = r.variant?.trim() || "Standard";
+      /* The variant's own identity, not just the product's: the same code
+         appears once per size, and they must not collide. */
+      const variantSku = rows.length === 1 ? `${r.code}-STD` : `${r.code}-${i + 1}`;
+
       await db.productVariant.upsert({
-        where: { sku: `${row.code}-STD` },
-        update: { mrpPaise: row.pricePaise, pricePaise: row.pricePaise },
+        where: { sku: variantSku },
+        /* The catalogue price is the MRP. Sell price starts equal to it;
+           margin is a merchandising decision, not something to invent. */
+        update: { mrpPaise: r.pricePaise, pricePaise: r.pricePaise, label },
         create: {
-          sku: `${row.code}-STD`,
+          sku: variantSku,
           productId: product.id,
-          label: "Standard",
-          mrpPaise: row.pricePaise,
-          pricePaise: row.pricePaise,
+          label,
+          mrpPaise: r.pricePaise,
+          pricePaise: r.pricePaise,
           minQty: 1,
           stepQty: 1,
-          isDefault: true,
+          isDefault: i === 0,
         },
       });
-    } else {
-      awaitingPrice++;
     }
+
+    if (!anyPriced) awaitingPrice++;
   }
 
   console.info(

@@ -44,7 +44,13 @@ BRANDS = {
         "code": re.compile(r"^[A-Z]{2,4}-[A-Z0-9]{3,}$"),
         "price": re.compile(r"Rs\.?\s*([\d,]+)"),
     },
+    # A table, not a grid: code, description and price run across a row,
+    # and one line frequently carries two products side by side.
     "ebco": {
+        "layout": "table",
+        "row": re.compile(
+            r"([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)\s+(.*?)[`₹]\s*([\d,]+)"
+        ),
         "code": re.compile(r"^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$"),
         "price": re.compile(r"[`₹]\s*([\d,]+)"),
     },
@@ -112,6 +118,83 @@ def cell_words(words, code_word, column_codes, page_bottom, bounds):
         # a word counts as in-column when its own centre is
         and left <= (w["x0"] + w["x1"]) / 2 <= right
     ]
+
+
+#: Column headers and page furniture, never a product name.
+NOT_A_HEADING = re.compile(
+    r"^(product code|description|mrp|key features|specifications|note|page)\b", re.I
+)
+
+
+def is_heading(line):
+    """A section title: the product name, printed once above its table.
+
+    Ebco names a range in a heading and then lists only sizes and finishes
+    in the rows beneath, so without this every product is called "500MM
+    ANTHGREY". Headings are set in capitals, which is what separates them
+    from the sentence-case prose around them.
+    """
+    text = line.strip()
+    if len(text) < 8 or "`" in text or NOT_A_HEADING.match(text):
+        return False
+
+    letters = [c for c in text if c.isalpha()]
+    if len(letters) < 6:
+        return False
+
+    return sum(1 for c in letters if c.isupper()) / len(letters) > 0.85
+
+
+def tidy_heading(line):
+    """Strips the doubled-letter "NNeeww" flash the catalogue overlays."""
+    text = re.sub(r"\b(?:NN?ee?ww?|New)\b", "", line).strip()
+    text = re.sub(r"(.)\1{2,}", r"\1", text)
+    return re.sub(r"\s+", " ", text).strip(" -|")
+
+
+def extract_table(brand, pdf_path, out_dir):
+    """Read a priced table, one product per match rather than per cell.
+
+    Ebco publishes rows — code, description, price, left to right — and
+    often two products on one printed line. The cell reader used for
+    Jaquar looks *below* a code for its price and finds nothing here.
+
+    Photographs are not claimed per row. A table like this carries one
+    picture for a whole family of variants, so attaching it to each code
+    would put the same image on products that differ in exactly the way
+    the picture would need to show. They go to the pairing screen instead.
+    """
+    spec = BRANDS[brand]
+    records = []
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_no, page in enumerate(pdf.pages, start=1):
+            heading = None
+
+            for line in (page.extract_text() or "").split("\n"):
+                if is_heading(line):
+                    heading = tidy_heading(line)
+                    continue
+
+                for code, middle, price in spec["row"].findall(line):
+                    variant = re.sub(r"\s+", " ", middle).strip(" .,-")
+                    records.append(
+                        {
+                            "code": code,
+                            # The row says "500MM ANTHGREY"; what the thing
+                            # *is* was printed once, in the heading above.
+                            "description": heading,
+                            "variant": variant or None,
+                            "pricePaise": to_paise(price),
+                            "page": page_no,
+                            "image": None,
+                        }
+                    )
+
+            if page_no % 25 == 0:
+                print(f"  page {page_no}: {len(records)} products so far", flush=True)
+
+    return records
 
 
 def extract(brand, pdf_path, out_dir):
@@ -314,7 +397,10 @@ def main():
         sys.exit(f"unknown brand '{brand}' — known: {', '.join(BRANDS)}")
 
     print(f"reading {pdf_path}")
-    records = extract(brand, pdf_path, out_dir)
+    if BRANDS[brand].get("layout") == "table":
+        records = extract_table(brand, pdf_path, out_dir)
+    else:
+        records = extract(brand, pdf_path, out_dir)
 
     priced = [r for r in records if r["pricePaise"]]
     with_image = [r for r in records if r["image"]]

@@ -38,9 +38,10 @@ export default async function HomePage() {
     getCategories(),
     getTopPicks(),
     getCategoryPriceFloors(),
-    /* Three rows of six on desktop. Twelve stopped just short of the
-       electrical brands, which is half of what the catalogue sells. */
-    getFeaturedBrands(18),
+    /* Eight is what fits the desktop rail without scrolling, and a brand
+       nobody scrolls to is not on the page. The rest are one tap away
+       under the section's own "See all". */
+    getFeaturedBrands(8),
   ]);
 
   /* Four tiles is the row the design is built around; the rest of the
