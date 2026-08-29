@@ -16,7 +16,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:import": "tsx prisma/import-catalogue.ts",
-    "images:generate": "tsx scripts/generate-product-images.ts"
+    "images:generate": "tsx scripts/generate-product-images.ts",
+    "db:import-brand": "tsx prisma/import-brand-catalogue.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

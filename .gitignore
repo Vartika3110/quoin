@@ -50,3 +50,9 @@ next-env.d.ts
 # Generated product imagery: run output, not source. Regenerate with
 # `npm run images:generate`, or serve from object storage in production.
 /public/generated
+
+# Catalogue imagery: extracted from brand PDFs and copied into public/ at
+# import time. Regenerate with research/extract-brand-catalogue.py rather
+# than carrying ~11MB of derived binaries per brand in the repo.
+/public/catalogue
+/research/data/catalogues/*/images/
