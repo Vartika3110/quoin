@@ -68,8 +68,9 @@ function MobileHeader() {
           <div className="min-w-0">
             {/* Kept on one line down to 360px — the chip qualifies the
                 promise, so wrapping it away from "18 minutes" reads as an
-                unrelated badge. */}
-            <div className="flex items-center gap-2">
+                unrelated badge. Below that it has to wrap: on a 320px
+                phone the chip and the wallet button overlap otherwise. */}
+            <div className="flex flex-wrap items-center gap-2 max-[359px]:gap-y-1.5 min-[360px]:flex-nowrap">
               <span className="text-[26px] font-semibold leading-none text-ink max-[380px]:text-[22px]">
                 18 minutes
               </span>
