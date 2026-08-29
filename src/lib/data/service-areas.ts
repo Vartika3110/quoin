@@ -81,10 +81,17 @@ export interface AreaChoice {
   storeName: string | null;
 }
 
-/** Every area a customer may choose, with the promise attached to it. */
+/**
+ * Every area a customer may choose, with the promise attached to it.
+ *
+ * An area with no live store is not offered at all. The picker shows
+ * names alone, so nothing on the row could warn that a particular one
+ * cannot actually be delivered to — better to leave it off the list than
+ * to let someone select it and find out later.
+ */
 export async function listAreaChoices(): Promise<AreaChoice[]> {
   const rows = await db.serviceArea.findMany({
-    where: { isActive: true },
+    where: { isActive: true, store: { is: { isActive: true } } },
     orderBy: { name: "asc" },
     include: { store: { select: { name: true, baseEtaMinutes: true, isActive: true } } },
   });

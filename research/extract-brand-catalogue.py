@@ -253,7 +253,59 @@ def save_image(page, box, code, images_dir, seen, words=()):
     return name
 
 
+def harvest(pdf_path, out_dir):
+    """Pull every product-sized image out, without claiming to know what it is.
+
+    Most manufacturer catalogues are not the priced grid Jaquar publishes:
+    Häfele lists five finish article numbers per table row, Simonswerk
+    outlines its text as artwork, and the CPVC document extracts mirrored.
+    Guessing a code for an image out of those would attach the wrong
+    photograph to a real SKU, which is worse than attaching none.
+
+    So this takes the photographs and records only what it actually knows
+    — which page each came from — leaving a human to say what they are.
+    """
+    images_dir = Path(out_dir) / "images"
+    images_dir.mkdir(parents=True, exist_ok=True)
+
+    seen = {}
+    records = []
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_no, page in enumerate(pdf.pages, start=1):
+            words = page.extract_words()
+            pictures = [
+                im
+                for im in page.images
+                if (im["x1"] - im["x0"]) >= MIN_IMAGE_PX
+                and (im["bottom"] - im["top"]) >= MIN_IMAGE_PX
+            ]
+            for i, box in enumerate(pictures):
+                name = save_image(page, box, f"p{page_no:04d}-{i:02d}", images_dir, seen, words)
+                if name:
+                    records.append({"image": name, "page": page_no})
+
+            if page_no % 50 == 0:
+                print(f"  page {page_no}: {len(records)} images", flush=True)
+
+    return records
+
+
 def main():
+    if "--harvest" in sys.argv:
+        args = [a for a in sys.argv[1:] if not a.startswith("--")]
+        if len(args) < 3:
+            sys.exit("usage: --harvest <name> <catalogue.pdf> <out-dir>")
+        name, pdf_path, out_dir = args[0], args[1], args[2]
+
+        print(f"harvesting images from {pdf_path}")
+        records = harvest(pdf_path, out_dir)
+
+        manifest = Path(out_dir) / f"{name}-images.json"
+        manifest.write_text(json.dumps({"brand": name, "images": records}, indent=1))
+        print(f"\n{len(records)} distinct images -> {manifest}")
+        return
+
     if len(sys.argv) < 4:
         sys.exit(f"usage: {sys.argv[0]} <{'|'.join(BRANDS)}> <catalogue.pdf> <out-dir>")
 

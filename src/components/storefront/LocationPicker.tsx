@@ -100,18 +100,15 @@ export function LocationPicker({
                     aria-selected={active}
                     disabled={saving !== null}
                     onClick={() => choose(area.slug)}
-                    className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-hover disabled:opacity-60 ${
+                    className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-hover disabled:opacity-60 ${
                       active ? "bg-accent-wash" : ""
                     }`}
                   >
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm text-ink">{area.name}</span>
-                      <span className="block text-[11px] text-muted">
-                        {area.etaMinutes
-                          ? `${area.etaMinutes} min from ${area.storeName}`
-                          : "No store here yet"}
-                      </span>
-                    </span>
+                    {/* The name and nothing else. The delivery time belongs
+                        in the header, where it applies to the area actually
+                        chosen — repeating it against every option turns a
+                        short list into a wall of numbers to compare. */}
+                    <span className="min-w-0 truncate text-sm text-ink">{area.name}</span>
                     {active && <Check className="size-4 shrink-0 text-accent" />}
                   </button>
                 </li>
