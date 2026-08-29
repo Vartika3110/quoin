@@ -46,3 +46,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated product imagery: run output, not source. Regenerate with
+# `npm run images:generate`, or serve from object storage in production.
+/public/generated

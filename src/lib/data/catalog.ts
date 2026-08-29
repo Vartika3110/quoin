@@ -113,13 +113,19 @@ function toProduct(row: ProductRow): Product {
     pricingUnit: PRICING_UNIT[row.pricingUnit],
     variants: row.variants.map(toVariant),
     badges: row.badges.map((b) => BADGE[b]),
-    image:
+    /* Always a swatch key, never a URL: this is what renders when there
+       is no picture at all, and what a failed image load falls back to. */
+    image: row.category
+      ? (PRODUCT_SWATCH_BY_CATEGORY[row.category.slug] ?? "cement")
+      : "cement",
+    /* Quoin's own image — photographed or generated — always wins. The
+       captured source photography is the last resort, and gated at the
+       mapper rather than in the component: with the flag off that URL
+       never reaches the rendered HTML or an API response at all. */
+    photo:
       row.image ||
-      (row.category ? (PRODUCT_SWATCH_BY_CATEGORY[row.category.slug] ?? "cement") : "cement"),
-    /* Gated at the mapper, not at the component: with the flag off the
-       URL never reaches the rendered HTML or the API response at all,
-       rather than being present and merely unused. */
-    photo: env.SHOW_SOURCE_IMAGES ? (row.sourceImageUrl ?? undefined) : undefined,
+      (env.SHOW_SOURCE_IMAGES ? (row.sourceImageUrl ?? undefined) : undefined),
+    photoIsIllustration: row.image ? row.imageIsGenerated : false,
     leadTimeDays: row.leadTimeDays ?? undefined,
   };
 }

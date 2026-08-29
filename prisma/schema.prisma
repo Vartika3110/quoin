@@ -234,9 +234,17 @@ model Product {
 
   badges BadgeKind[] @default([])
 
-  /// Quoin's own photography. Empty until it exists — the storefront
-  /// draws a generated swatch rather than borrowing a competitor's image.
+  /// Quoin's own image: a URL, empty until one exists. Takes precedence
+  /// over everything else the storefront could draw.
   image String @default("")
+
+  /// True when `image` came from an image model rather than a camera.
+  ///
+  /// Load-bearing, not bookkeeping: a generated picture of a real SKU has
+  /// to be labelled as an illustration wherever it appears, or the
+  /// storefront is telling a customer they will receive something nobody
+  /// has photographed. The storefront reads this to render that label.
+  imageIsGenerated Boolean @default(false)
 
   /// Meaningful only for `SCHEDULED` and `MADE_TO_ORDER`.
   leadTimeDays Int?

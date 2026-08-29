@@ -55,6 +55,14 @@ export function ProductCard({
             label={product.title}
             className="size-full transition-transform duration-300 group-hover:scale-[1.03]"
           />
+          {product.photoIsIllustration && (
+            /* Says what the picture is. A generated image of a real SKU
+               shown without this is a claim about goods the customer will
+               receive that nobody has photographed. */
+            <span className="absolute inset-x-0 bottom-0 bg-deep/75 px-2 py-1 text-center text-[9px] leading-tight text-white backdrop-blur-sm">
+              Illustration · actual product may vary
+            </span>
+          )}
         </Link>
         {off > 0 && (
           <span className="absolute left-2 top-2 rounded-md bg-accent px-1.5 py-1 text-[10px] font-semibold leading-none text-white">

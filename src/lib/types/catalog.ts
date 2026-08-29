@@ -99,10 +99,17 @@ export interface Product {
   /** Swatch key for the generated stand-in. Always present. */
   image: string;
   /**
-   * A real photograph, when one is available and permitted. Populated
-   * only where the deployment opts in — see `SHOW_SOURCE_IMAGES`.
+   * The best available picture: Quoin's own or generated first, then the
+   * captured source photography where the deployment opts in — see
+   * `SHOW_SOURCE_IMAGES`. Absent means the swatch is all there is.
    */
   photo?: string;
+  /**
+   * True when `photo` came from an image model. The card and the detail
+   * page must say so — it is an illustration of the kind of product, not
+   * a photograph of the item being sold.
+   */
+  photoIsIllustration?: boolean;
   /** Populated only when `fulfilment` is `made_to_order` or `scheduled`. */
   leadTimeDays?: number;
 }

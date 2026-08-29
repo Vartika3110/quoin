@@ -90,6 +90,12 @@ export default async function ProductPage({
                 label={product.title}
                 className="size-full"
               />
+              {product.photoIsIllustration && (
+                <p className="absolute inset-x-0 bottom-0 bg-deep/75 px-4 py-2 text-center text-[11px] text-white backdrop-blur-sm">
+                  Illustration only — the product you receive may differ in
+                  appearance.
+                </p>
+              )}
               <button
                 aria-label={`Save ${product.title}`}
                 className="absolute right-3 top-3 grid size-10 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm hover:text-accent"
