@@ -5,7 +5,7 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { PurchasePanel } from "@/components/storefront/PurchasePanel";
 import { SectionHead } from "@/components/storefront/sections";
-import { Swatch } from "@/components/Swatch";
+import { ProductImage } from "@/components/storefront/ProductImage";
 import { Back, Calendar, Clock, Heart, Ruler, Shield, Truck } from "@/components/icons";
 import { getProductBySlug, getRelatedProducts } from "@/lib/data/catalog";
 import { BADGE_LABEL, type FulfilmentType } from "@/lib/types/catalog";
@@ -84,7 +84,8 @@ export default async function ProductPage({
         <div className="mt-3 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-10">
           <div>
             <div className="relative aspect-square overflow-hidden bg-raised lg:rounded-card">
-              <Swatch
+              <ProductImage
+                photo={product.photo}
                 swatchKey={product.image}
                 label={product.title}
                 className="size-full"

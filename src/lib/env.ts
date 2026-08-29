@@ -31,6 +31,21 @@ const schema = z.object({
   MSG91_AUTH_KEY: z.string().optional(),
   MSG91_TEMPLATE_ID: z.string().optional(),
   MSG91_SENDER_ID: z.string().optional(),
+
+  /**
+   * Renders the competitor product photography captured in
+   * `Product.sourceImageUrl`.
+   *
+   * Off unless explicitly set. Those images belong to the sites they were
+   * scraped from and to the manufacturers, and serving them also hotlinks
+   * someone else's CDN — fine behind a private demo link, not something to
+   * leave on for a public storefront. Turning it on is a deliberate act,
+   * which is why it is an environment variable rather than a default.
+   */
+  SHOW_SOURCE_IMAGES: z
+    .enum(["0", "1"])
+    .default("0")
+    .transform((v) => v === "1"),
 });
 
 type Env = z.infer<typeof schema>;
@@ -56,6 +71,7 @@ function load(): Env {
         MSG91_AUTH_KEY: process.env.MSG91_AUTH_KEY,
         MSG91_TEMPLATE_ID: process.env.MSG91_TEMPLATE_ID,
         MSG91_SENDER_ID: process.env.MSG91_SENDER_ID,
+        SHOW_SOURCE_IMAGES: process.env.SHOW_SOURCE_IMAGES === "1",
       };
     }
 

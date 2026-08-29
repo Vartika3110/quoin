@@ -96,7 +96,13 @@ export interface Product {
   pricingUnit: PricingUnit;
   variants: Variant[];
   badges: BadgeKind[];
+  /** Swatch key for the generated stand-in. Always present. */
   image: string;
+  /**
+   * A real photograph, when one is available and permitted. Populated
+   * only where the deployment opts in — see `SHOW_SOURCE_IMAGES`.
+   */
+  photo?: string;
   /** Populated only when `fulfilment` is `made_to_order` or `scheduled`. */
   leadTimeDays?: number;
 }

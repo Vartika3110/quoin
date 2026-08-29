@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Swatch } from "@/components/Swatch";
+import { ProductImage } from "@/components/storefront/ProductImage";
 import { Calendar, Clock, Heart, Ruler, Truck } from "@/components/icons";
 import {
   BADGE_LABEL,
@@ -49,7 +49,8 @@ export function ProductCard({
     <article className="group flex w-[168px] flex-col overflow-hidden rounded-card border border-line-soft bg-surface transition-colors hover:border-line lg:w-auto">
       <div className="relative aspect-square overflow-hidden bg-raised">
         <Link href={`/p/${product.slug}`} className="block size-full">
-          <Swatch
+          <ProductImage
+            photo={product.photo}
             swatchKey={product.image}
             label={product.title}
             className="size-full transition-transform duration-300 group-hover:scale-[1.03]"

@@ -9,6 +9,7 @@ import type {
 } from "@/lib/types/catalog";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import { env } from "@/lib/env";
 import type {
   BadgeKind as DbBadge,
   Fulfilment as DbFulfilment,
@@ -115,6 +116,10 @@ function toProduct(row: ProductRow): Product {
     image:
       row.image ||
       (row.category ? (PRODUCT_SWATCH_BY_CATEGORY[row.category.slug] ?? "cement") : "cement"),
+    /* Gated at the mapper, not at the component: with the flag off the
+       URL never reaches the rendered HTML or the API response at all,
+       rather than being present and merely unused. */
+    photo: env.SHOW_SOURCE_IMAGES ? (row.sourceImageUrl ?? undefined) : undefined,
     leadTimeDays: row.leadTimeDays ?? undefined,
   };
 }
