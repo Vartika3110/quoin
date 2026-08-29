@@ -61,3 +61,45 @@ export async function findAreaByPincode(
     pincodes: row.area.pincodes.map((p) => p.pincode),
   };
 }
+
+/**
+ * The name of the cookie holding the customer's chosen locality.
+ *
+ * A cookie rather than localStorage because the header is rendered on the
+ * server: reading the choice on the client would mean shipping a default
+ * first and correcting it after hydration, which shows every visitor the
+ * wrong area for a moment.
+ */
+export const AREA_COOKIE = "quoin_area";
+
+export interface AreaChoice {
+  slug: string;
+  name: string;
+  city: string;
+  /** From the store serving it. Null when no store is attached yet. */
+  etaMinutes: number | null;
+  storeName: string | null;
+}
+
+/** Every area a customer may choose, with the promise attached to it. */
+export async function listAreaChoices(): Promise<AreaChoice[]> {
+  const rows = await db.serviceArea.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+    include: { store: { select: { name: true, baseEtaMinutes: true, isActive: true } } },
+  });
+
+  return rows.map((row) => ({
+    slug: row.slug,
+    name: row.name,
+    city: row.city,
+    etaMinutes: row.store?.isActive ? row.store.baseEtaMinutes : null,
+    storeName: row.store?.isActive ? row.store.name : null,
+  }));
+}
+
+/** One choice by slug, or null when the slug is stale or switched off. */
+export async function getAreaChoice(slug: string | undefined): Promise<AreaChoice | null> {
+  if (!slug) return null;
+  return (await listAreaChoices()).find((a) => a.slug === slug) ?? null;
+}

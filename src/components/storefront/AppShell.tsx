@@ -1,15 +1,21 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { LocationPicker } from "@/components/storefront/LocationPicker";
+import {
+  AREA_COOKIE,
+  getAreaChoice,
+  listAreaChoices,
+  type AreaChoice,
+} from "@/lib/data/service-areas";
 import {
   Cart,
   Chevron,
-  ChevronDown,
   Clock,
   Grid,
   Headset,
   Home,
   Mic,
   Box,
-  Pin,
   QMark,
   Search,
   User,
@@ -36,14 +42,21 @@ const NAV = [
   { href: "/studio", label: "Quoin Studio", Icon: QMark },
 ];
 
-const ADDRESS = "27, Vasant Vihar, New Delhi";
 const CART_COUNT = 8;
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export async function AppShell({ children }: { children: React.ReactNode }) {
+  /* Read on the server so the first paint already shows the right area.
+     Doing this on the client would render a default for everyone and
+     correct it after hydration. */
+  const [areas, chosen] = await Promise.all([
+    listAreaChoices(),
+    cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
+  ]);
+
   return (
     <div className="min-h-screen bg-bg">
-      <MobileHeader />
-      <DesktopTopBar />
+      <MobileHeader areas={areas} chosen={chosen} />
+      <DesktopTopBar areas={areas} chosen={chosen} />
 
       <div className="lg:mx-auto lg:flex lg:max-w-[1400px] lg:gap-8 lg:px-6">
         <DesktopSidebar />
@@ -58,7 +71,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 /* ---------------------------------------------------------------- mobile */
 
-function MobileHeader() {
+function MobileHeader({ areas, chosen }: { areas: AreaChoice[]; chosen: AreaChoice | null }) {
   return (
     <header className="lg:hidden">
       <div className="px-5 pt-4">
@@ -72,24 +85,24 @@ function MobileHeader() {
                 phone the chip and the wallet button overlap otherwise. */}
             <div className="flex flex-wrap items-center gap-2 max-[359px]:gap-y-1.5 min-[360px]:flex-nowrap">
               <span className="text-[26px] font-semibold leading-none text-ink max-[380px]:text-[22px]">
-                18 minutes
+                {chosen?.etaMinutes ? `${chosen.etaMinutes} minutes` : "Pick your area"}
               </span>
-              <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-line bg-surface px-2 py-1 text-[10px] text-muted">
-                <Clock className="size-3" />
-                1.1 km away
-              </span>
+              {chosen?.storeName && (
+                <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border border-line bg-surface px-2 py-1 text-[10px] text-muted">
+                  <Clock className="size-3" />
+                  {chosen.storeName}
+                </span>
+              )}
             </div>
             {/* Honest scoping of the promise — marble and site visits do
                 not arrive in 18 minutes, and the header must not imply it. */}
             <p className="mt-1 text-[11px] text-faint">
-              on in-stock items near you
+              {chosen
+                ? "on in-stock items near you"
+                : "to see delivery times where you are"}
             </p>
 
-            <button className="mt-2 flex items-center gap-1.5 text-left text-sm text-ink">
-              <Pin className="size-4 shrink-0 text-accent" />
-              <span className="truncate">{ADDRESS}</span>
-              <ChevronDown className="size-4 shrink-0 text-muted" />
-            </button>
+            <LocationPicker areas={areas} selected={chosen} className="mt-2" />
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
@@ -137,7 +150,7 @@ function MobileBottomNav() {
 
 /* --------------------------------------------------------------- desktop */
 
-function DesktopTopBar() {
+function DesktopTopBar({ areas, chosen }: { areas: AreaChoice[]; chosen: AreaChoice | null }) {
   return (
     <header className="sticky top-0 z-40 hidden border-b border-line bg-bg/90 backdrop-blur lg:block">
       <div className="mx-auto flex max-w-[1400px] items-center gap-6 px-6 py-4">
@@ -145,19 +158,19 @@ function DesktopTopBar() {
           QUOIN
         </Link>
 
-        <button className="flex shrink-0 items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-sm">
-          <Pin className="size-4 text-accent" />
-          <span className="max-w-[190px] truncate text-ink">{ADDRESS}</span>
-          <ChevronDown className="size-4 text-muted" />
-        </button>
+        <div className="shrink-0 rounded-xl border border-line bg-surface px-3 py-2">
+          <LocationPicker areas={areas} selected={chosen} />
+        </div>
 
         <SearchField className="min-w-0 flex-1" />
 
         <div className="flex shrink-0 items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-xs text-muted">
-            <Clock className="size-4 text-accent" />
-            18 min
-          </span>
+          {chosen?.etaMinutes && (
+            <span className="inline-flex items-center gap-1.5 rounded-xl border border-line bg-surface px-3 py-2 text-xs text-muted">
+              <Clock className="size-4 text-accent" />
+              {chosen.etaMinutes} min
+            </span>
+          )}
           <button className="flex items-center gap-1.5 rounded-xl border border-accent-edge bg-accent-wash px-3 py-2 text-sm text-accent">
             <Wallet className="size-4" />
             ₹0

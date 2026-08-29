@@ -12,32 +12,53 @@ const db = new PrismaClient();
  * Vasant Vihar address in the storefront header sits inside the South
  * Delhi store radius, and somewhere like Gurugram falls outside it.
  */
+/**
+ * Dark stores, one per serviceable locality.
+ *
+ * Coordinates are the centre of each locality, not a shop doorway — good
+ * enough for the radius check to behave sensibly and wrong by a few
+ * hundred metres. Replace them with the real addresses before the
+ * "1.1 km away" line is shown to a paying customer.
+ */
 const STORES = [
   {
-    code: "DEL-VV",
-    name: "Quoin South Delhi",
-    lat: 28.5601,
-    lng: 77.1591,
-    serviceRadiusKm: 6,
+    code: "DEL-JNK",
+    name: "Quoin Janakpuri",
+    area: "janakpuri",
+    lat: 28.6219,
+    lng: 77.0878,
+    serviceRadiusKm: 5,
     baseEtaMinutes: 18,
   },
   {
-    code: "DEL-OKH",
-    name: "Quoin Okhla",
-    lat: 28.5355,
-    lng: 77.2731,
-    serviceRadiusKm: 7,
-    baseEtaMinutes: 22,
+    code: "DEL-PVR",
+    name: "Quoin Paschim Vihar",
+    area: "paschim-vihar",
+    lat: 28.6692,
+    lng: 77.1025,
+    serviceRadiusKm: 5,
+    baseEtaMinutes: 18,
   },
   {
-    code: "GGN-SEC44",
-    name: "Quoin Gurugram",
-    lat: 28.4463,
-    lng: 77.0724,
-    serviceRadiusKm: 8,
-    baseEtaMinutes: 25,
+    code: "DEL-PTP",
+    name: "Quoin Pitampura",
+    area: "pitampura",
+    lat: 28.6942,
+    lng: 77.1314,
+    serviceRadiusKm: 5,
+    baseEtaMinutes: 20,
+  },
+  {
+    code: "DEL-RJN",
+    name: "Quoin Rajendra Nagar",
+    area: "rajendra-nagar",
+    lat: 28.6438,
+    lng: 77.1795,
+    serviceRadiusKm: 5,
+    baseEtaMinutes: 20,
   },
 ];
+
 
 /**
  * Serviceable localities.
@@ -60,14 +81,19 @@ const SERVICE_AREAS = [
 ];
 
 async function main() {
-  for (const store of STORES) {
-    await db.store.upsert({
-      where: { code: store.code },
-      update: store,
-      create: store,
-    });
+  /* The earlier placeholders — Vasant Vihar, Okhla, Gurugram — were
+     invented before the real localities were known, and the header was
+     promising eighteen minutes to an address Quoin does not serve.
+     Deactivated rather than deleted: serviceability only considers active
+     stores, and a wrong row is easier to inspect than a missing one. */
+  const live = STORES.map((s) => s.code);
+  const retired = await db.store.updateMany({
+    where: { code: { notIn: live }, isActive: true },
+    data: { isActive: false },
+  });
+  if (retired.count) {
+    console.info(`Retired ${retired.count} placeholder store(s).`);
   }
-  console.info(`Seeded ${STORES.length} stores.`);
 
   for (const { pincodes, ...area } of SERVICE_AREAS) {
     const row = await db.serviceArea.upsert({
@@ -87,6 +113,16 @@ async function main() {
     }
   }
   console.info(`Seeded ${SERVICE_AREAS.length} service areas.`);
+
+  for (const { area, ...store } of STORES) {
+    const serviceArea = await db.serviceArea.findUnique({ where: { slug: area } });
+    await db.store.upsert({
+      where: { code: store.code },
+      update: { ...store, isActive: true, serviceAreaId: serviceArea?.id ?? null },
+      create: { ...store, serviceAreaId: serviceArea?.id ?? null },
+    });
+  }
+  console.info(`Seeded ${STORES.length} stores, one per serviceable area.`);
 }
 
 main()

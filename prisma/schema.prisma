@@ -126,6 +126,14 @@ model Store {
 
   isActive Boolean @default(true)
 
+  /// The locality this store serves, when it maps cleanly onto one.
+  ///
+  /// Serviceability is still decided by distance — the radius is what
+  /// makes the promise true — but a customer picks an area by name, and
+  /// this is what turns that choice into a store and an ETA.
+  serviceAreaId String?      @unique
+  serviceArea   ServiceArea? @relation(fields: [serviceAreaId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -352,6 +360,7 @@ model ServiceArea {
   isActive Boolean @default(true)
 
   pincodes ServicePincode[]
+  store    Store?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
