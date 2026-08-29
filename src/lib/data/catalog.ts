@@ -388,6 +388,62 @@ export async function listBrands(): Promise<{ id: string; slug: string; name: st
   return rows;
 }
 
+/**
+ * Names the catalogue carries but no manufacturer answers for.
+ *
+ * The source export always writes something in the brand column, so
+ * unbranded rows arrive as `Generic`, `Local` or `India`, and the rows
+ * scraped from the merchant that seeded the catalogue arrive as
+ * `HomeRun` — a competitor, and the last name that belongs on a shelf of
+ * partners. A denylist rather than an allowlist: a real brand that
+ * arrives with the next import should appear without a code change, and
+ * the long tail of one-off oddities never ranks high enough to show.
+ */
+const NON_BRANDS = new Set(["generic", "local", "india", "homerun"]);
+
+/** Case- and punctuation-insensitive, so `Dr Fixit` and `Dr. Fixit` collide. */
+function brandKey(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/**
+ * The brands worth naming on the home page, deepest catalogue first.
+ *
+ * Ranked by how much of each brand is actually sellable rather than by a
+ * hand-kept list, so the row can never advertise a partner whose products
+ * have all gone inactive.
+ *
+ * The importer has left near-duplicate rows behind (`MYK Laticrete` and
+ * `Myk Laticrete` are one company), so entries that normalise to the same
+ * name are folded together and the fuller of the two wins the link — the
+ * counts are deliberately not summed, since the link can only lead to one
+ * of them.
+ */
+export async function getFeaturedBrands(limit = 12): Promise<{ id: string; slug: string; name: string }[]> {
+  const rows = await db.brand.findMany({
+    where: { isActive: true, products: { some: PRODUCT_QUERY.where } },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      _count: { select: { products: { where: PRODUCT_QUERY.where } } },
+    },
+  });
+
+  const best = new Map<string, (typeof rows)[number]>();
+  for (const row of rows) {
+    const key = brandKey(row.name);
+    if (NON_BRANDS.has(key)) continue;
+    const held = best.get(key);
+    if (!held || held._count.products < row._count.products) best.set(key, row);
+  }
+
+  return [...best.values()]
+    .sort((a, b) => b._count.products - a._count.products || a.name.localeCompare(b.name))
+    .slice(0, limit)
+    .map(({ id, slug, name }) => ({ id, slug, name }));
+}
+
 /** One category by slug, for the category browse page. Null becomes a 404. */
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const row = await db.category.findFirst({

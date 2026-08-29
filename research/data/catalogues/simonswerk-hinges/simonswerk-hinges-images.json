@@ -1,0 +1,421 @@
+{
+ "brand": "simonswerk-hinges",
+ "images": [
+  {
+   "image": "p0006-00.jpg",
+   "page": 6
+  },
+  {
+   "image": "p0006-01.jpg",
+   "page": 6
+  },
+  {
+   "image": "p0012-00.jpg",
+   "page": 12
+  },
+  {
+   "image": "p0012-01.jpg",
+   "page": 12
+  },
+  {
+   "image": "p0012-02.jpg",
+   "page": 12
+  },
+  {
+   "image": "p0013-00.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-01.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-02.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-03.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-04.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-05.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-06.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-07.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-08.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0013-09.jpg",
+   "page": 13
+  },
+  {
+   "image": "p0014-00.jpg",
+   "page": 14
+  },
+  {
+   "image": "p0014-01.jpg",
+   "page": 14
+  },
+  {
+   "image": "p0015-00.jpg",
+   "page": 15
+  },
+  {
+   "image": "p0015-01.jpg",
+   "page": 15
+  },
+  {
+   "image": "p0015-02.jpg",
+   "page": 15
+  },
+  {
+   "image": "p0016-00.jpg",
+   "page": 16
+  },
+  {
+   "image": "p0016-01.jpg",
+   "page": 16
+  },
+  {
+   "image": "p0016-02.jpg",
+   "page": 16
+  },
+  {
+   "image": "p0016-03.jpg",
+   "page": 16
+  },
+  {
+   "image": "p0016-00.jpg",
+   "page": 17
+  },
+  {
+   "image": "p0017-01.jpg",
+   "page": 17
+  },
+  {
+   "image": "p0017-02.jpg",
+   "page": 17
+  },
+  {
+   "image": "p0017-03.jpg",
+   "page": 17
+  },
+  {
+   "image": "p0018-00.jpg",
+   "page": 18
+  },
+  {
+   "image": "p0018-01.jpg",
+   "page": 18
+  },
+  {
+   "image": "p0018-02.jpg",
+   "page": 18
+  },
+  {
+   "image": "p0019-00.jpg",
+   "page": 19
+  },
+  {
+   "image": "p0019-01.jpg",
+   "page": 19
+  },
+  {
+   "image": "p0019-02.jpg",
+   "page": 19
+  },
+  {
+   "image": "p0020-00.jpg",
+   "page": 20
+  },
+  {
+   "image": "p0020-01.jpg",
+   "page": 20
+  },
+  {
+   "image": "p0020-02.jpg",
+   "page": 20
+  },
+  {
+   "image": "p0022-00.jpg",
+   "page": 22
+  },
+  {
+   "image": "p0022-01.jpg",
+   "page": 22
+  },
+  {
+   "image": "p0022-02.jpg",
+   "page": 22
+  },
+  {
+   "image": "p0022-03.jpg",
+   "page": 22
+  },
+  {
+   "image": "p0022-04.jpg",
+   "page": 22
+  },
+  {
+   "image": "p0023-00.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0023-01.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0023-02.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0023-03.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0023-04.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0023-05.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0023-06.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0023-07.jpg",
+   "page": 23
+  },
+  {
+   "image": "p0025-00.jpg",
+   "page": 25
+  },
+  {
+   "image": "p0025-01.jpg",
+   "page": 25
+  },
+  {
+   "image": "p0025-02.jpg",
+   "page": 25
+  },
+  {
+   "image": "p0025-03.jpg",
+   "page": 25
+  },
+  {
+   "image": "p0025-04.jpg",
+   "page": 25
+  },
+  {
+   "image": "p0025-02.jpg",
+   "page": 25
+  },
+  {
+   "image": "p0018-00.jpg",
+   "page": 27
+  },
+  {
+   "image": "p0027-01.jpg",
+   "page": 27
+  },
+  {
+   "image": "p0027-02.jpg",
+   "page": 27
+  },
+  {
+   "image": "p0027-03.jpg",
+   "page": 27
+  },
+  {
+   "image": "p0028-01.jpg",
+   "page": 28
+  },
+  {
+   "image": "p0028-02.jpg",
+   "page": 28
+  },
+  {
+   "image": "p0029-00.jpg",
+   "page": 29
+  },
+  {
+   "image": "p0029-01.jpg",
+   "page": 29
+  },
+  {
+   "image": "p0029-02.jpg",
+   "page": 29
+  },
+  {
+   "image": "p0029-03.jpg",
+   "page": 29
+  },
+  {
+   "image": "p0031-00.jpg",
+   "page": 31
+  },
+  {
+   "image": "p0031-01.jpg",
+   "page": 31
+  },
+  {
+   "image": "p0031-02.jpg",
+   "page": 31
+  },
+  {
+   "image": "p0033-00.jpg",
+   "page": 33
+  },
+  {
+   "image": "p0033-01.jpg",
+   "page": 33
+  },
+  {
+   "image": "p0033-02.jpg",
+   "page": 33
+  },
+  {
+   "image": "p0018-00.jpg",
+   "page": 35
+  },
+  {
+   "image": "p0035-01.jpg",
+   "page": 35
+  },
+  {
+   "image": "p0035-02.jpg",
+   "page": 35
+  },
+  {
+   "image": "p0036-00.jpg",
+   "page": 36
+  },
+  {
+   "image": "p0036-01.jpg",
+   "page": 36
+  },
+  {
+   "image": "p0036-02.jpg",
+   "page": 36
+  },
+  {
+   "image": "p0037-00.jpg",
+   "page": 37
+  },
+  {
+   "image": "p0037-01.jpg",
+   "page": 37
+  },
+  {
+   "image": "p0037-02.jpg",
+   "page": 37
+  },
+  {
+   "image": "p0037-03.jpg",
+   "page": 37
+  },
+  {
+   "image": "p0038-00.jpg",
+   "page": 38
+  },
+  {
+   "image": "p0038-01.jpg",
+   "page": 38
+  },
+  {
+   "image": "p0038-02.jpg",
+   "page": 38
+  },
+  {
+   "image": "p0039-00.jpg",
+   "page": 39
+  },
+  {
+   "image": "p0040-00.jpg",
+   "page": 40
+  },
+  {
+   "image": "p0041-00.jpg",
+   "page": 41
+  },
+  {
+   "image": "p0041-01.jpg",
+   "page": 41
+  },
+  {
+   "image": "p0041-02.jpg",
+   "page": 41
+  },
+  {
+   "image": "p0042-00.jpg",
+   "page": 42
+  },
+  {
+   "image": "p0043-00.jpg",
+   "page": 43
+  },
+  {
+   "image": "p0043-01.jpg",
+   "page": 43
+  },
+  {
+   "image": "p0043-02.jpg",
+   "page": 43
+  },
+  {
+   "image": "p0045-00.jpg",
+   "page": 45
+  },
+  {
+   "image": "p0045-01.jpg",
+   "page": 45
+  },
+  {
+   "image": "p0045-02.jpg",
+   "page": 45
+  },
+  {
+   "image": "p0045-03.jpg",
+   "page": 45
+  },
+  {
+   "image": "p0045-04.jpg",
+   "page": 45
+  },
+  {
+   "image": "p0045-05.jpg",
+   "page": 45
+  },
+  {
+   "image": "p0047-00.jpg",
+   "page": 47
+  },
+  {
+   "image": "p0047-01.jpg",
+   "page": 47
+  },
+  {
+   "image": "p0047-02.jpg",
+   "page": 47
+  },
+  {
+   "image": "p0047-03.jpg",
+   "page": 47
+  }
+ ]
+}

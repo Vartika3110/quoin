@@ -2,6 +2,7 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { TabRail } from "@/components/storefront/TabRail";
 import {
+  BrandStrip,
   CategoryCards,
   CategoryChips,
   ConsultCta,
@@ -14,6 +15,7 @@ import { SectionHead, WideLink } from "@/components/storefront/sections";
 import {
   getCategories,
   getCategoryPriceFloors,
+  getFeaturedBrands,
   getTabs,
   getTopPicks,
 } from "@/lib/data/catalog";
@@ -31,11 +33,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [tabs, categories, picks, priceFloors] = await Promise.all([
+  const [tabs, categories, picks, priceFloors, brands] = await Promise.all([
     getTabs(),
     getCategories(),
     getTopPicks(),
     getCategoryPriceFloors(),
+    getFeaturedBrands(),
   ]);
 
   /* Four tiles is the row the design is built around; the rest of the
@@ -83,6 +86,11 @@ export default async function HomePage() {
         <section>
           <SectionHead title="See all categories" href="/categories" />
           <CategoryChips categories={categories} />
+        </section>
+
+        <section>
+          <SectionHead title="Associated brands" href="/products" />
+          <BrandStrip brands={brands} />
         </section>
 
         <ProBanner cartCount={8} />

@@ -256,6 +256,41 @@ export function CategoryChips({ categories }: { categories: Category[] }) {
   );
 }
 
+/* ----------------------------------------------------------- brand strip */
+
+/**
+ * Associated brands.
+ *
+ * Wordmarks, not logos: a manufacturer's mark is its trademark, and the
+ * catalogue holds no artwork for one in any case — `Brand` is a name and a
+ * slug. Static by design, unlike the scrolling ribbon this is modelled on:
+ * a moving row slides a name out from under the pointer between reading it
+ * and reaching for it, and every tile here is a link into the catalogue.
+ */
+export function BrandStrip({
+  brands,
+}: {
+  brands: { id: string; slug: string; name: string }[];
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-2 px-5 sm:grid-cols-4 lg:grid-cols-6 lg:px-0">
+      {brands.map((b) => (
+        <Link
+          key={b.id}
+          href={`/products?brand=${b.slug}`}
+          className="group grid h-16 place-items-center rounded-card border border-line-soft bg-surface px-2 text-center transition-colors hover:border-accent-edge"
+        >
+          {/* Balanced rather than left-ragged: a two-word name breaks in
+              the middle of the tile instead of leaving one word alone. */}
+          <span className="text-pretty font-display text-[13px] leading-tight text-deep-soft transition-colors group-hover:text-accent">
+            {b.name}
+          </span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------- pro banner */
 
 export function ProBanner({ cartCount }: { cartCount: number }) {
