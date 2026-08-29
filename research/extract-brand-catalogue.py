@@ -37,6 +37,13 @@ BRANDS = {
         "code": re.compile(r"^[A-Z]{2,4}-[A-Z0-9]{2,}-[A-Z0-9]{2,}$"),
         "price": re.compile(r"Rs\.?\s*([\d,]+)"),
     },
+    # The technical catalogue omits the finish segment the price list
+    # carries: ARI-39441K here is ARI-CHR-39441K there. Same products,
+    # and the importer reconciles the two forms.
+    "jaquar-technical": {
+        "code": re.compile(r"^[A-Z]{2,4}-[A-Z0-9]{3,}$"),
+        "price": re.compile(r"Rs\.?\s*([\d,]+)"),
+    },
     "ebco": {
         "code": re.compile(r"^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$"),
         "price": re.compile(r"[`₹]\s*([\d,]+)"),
