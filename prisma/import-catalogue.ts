@@ -14,6 +14,9 @@
  *   npx tsx prisma/import-catalogue.ts --dry-run
  *   npx tsx prisma/import-catalogue.ts research/data/all-products.csv
  */
+/* Must be first: populates process.env before Prisma is constructed. */
+import "../src/lib/load-env-file";
+
 import { readFileSync } from "node:fs";
 import path from "node:path";
 

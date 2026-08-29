@@ -13,6 +13,9 @@
  * Everything written here is flagged `imageIsGenerated`, and the
  * storefront labels those as illustrations. See src/lib/images/generator.ts.
  */
+/* Must be first: populates process.env before Prisma is constructed. */
+import "../src/lib/load-env-file";
+
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 

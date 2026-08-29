@@ -1,3 +1,6 @@
+/* Must be first: populates process.env before Prisma is constructed. */
+import "../src/lib/load-env-file";
+
 import { PrismaClient } from "@prisma/client";
 
 const db = new PrismaClient();
