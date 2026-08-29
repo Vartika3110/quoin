@@ -51,8 +51,12 @@ next-env.d.ts
 # `npm run images:generate`, or serve from object storage in production.
 /public/generated
 
-# Catalogue imagery: extracted from brand PDFs and copied into public/ at
-# import time. Regenerate with research/extract-brand-catalogue.py rather
-# than carrying ~11MB of derived binaries per brand in the repo.
-/public/catalogue
+# Harvested catalogue images: the raw pool the pairing screen draws from.
+# Regenerate with research/extract-brand-catalogue.py --harvest rather than
+# carrying thousands of unattached binaries in the repo.
 /research/data/catalogues/*/images/
+
+# public/catalogue is deliberately NOT ignored. Those are the photographs
+# the storefront actually serves, and a deploy without them shows a swatch
+# where half the catalogue should be. They belong in object storage once
+# there is somewhere to put them; until then the repo is that somewhere.
