@@ -531,3 +531,69 @@ export async function listUnpricedProducts(
     })),
   };
 }
+
+/**
+ * Products with no photograph of their own.
+ *
+ * The swatch stands in for these on the storefront, which is honest but
+ * plain. Filterable by brand because the person pairing them can tell a
+ * Häfele bracket from a Jaquar tap on sight, and mixing brands into one
+ * list makes that harder rather than easier.
+ */
+export async function listProductsWithoutPhoto(
+  page = 1,
+  pageSize = 12,
+  brandSlug?: string,
+): Promise<{ items: UnpricedProduct[]; total: number; totalPages: number }> {
+  const where = {
+    isActive: true,
+    image: "",
+    ...(brandSlug ? { brand: { slug: brandSlug } } : {}),
+  };
+
+  const [total, rows] = await Promise.all([
+    db.product.count({ where }),
+    db.product.findMany({
+      where,
+      include: { brand: true, category: { select: { name: true, slug: true } } },
+      orderBy: { name: "asc" },
+      skip: (Math.max(1, page) - 1) * pageSize,
+      take: pageSize,
+    }),
+  ]);
+
+  return {
+    total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    items: rows.map((row) => ({
+      id: row.id,
+      sku: row.sku,
+      title: row.name,
+      brand: row.brand?.name ?? null,
+      category: row.category?.name ?? null,
+      photo: undefined,
+      image: row.category
+        ? (PRODUCT_SWATCH_BY_CATEGORY[row.category.slug] ?? "cement")
+        : "cement",
+    })),
+  };
+}
+
+/** Brands that still have products without a photograph, for the filter. */
+export async function listBrandsMissingPhotos(): Promise<
+  { slug: string; name: string; missing: number }[]
+> {
+  const rows = await db.brand.findMany({
+    where: { products: { some: { isActive: true, image: "" } } },
+    select: {
+      slug: true,
+      name: true,
+      _count: { select: { products: { where: { isActive: true, image: "" } } } },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  return rows
+    .map((r) => ({ slug: r.slug, name: r.name, missing: r._count.products }))
+    .sort((a, b) => b.missing - a.missing);
+}

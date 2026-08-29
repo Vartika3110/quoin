@@ -166,7 +166,16 @@ export async function requireUser() {
  * at this path, to someone who cannot use it, is free reconnaissance.
  */
 export async function requireStaff() {
-  const user = await requireUser();
+  /* Signed out and signed in without access answer identically. A 401
+     here would confirm that an internal tool lives at this path to anyone
+     who asked, which is the disclosure the 404 exists to avoid. */
+  let user;
+  try {
+    user = await requireUser();
+  } catch {
+    throw new ApiError("not_found", "Not found");
+  }
+
   if (!user.isStaff) throw new ApiError("not_found", "Not found");
   return user;
 }

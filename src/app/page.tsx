@@ -38,7 +38,9 @@ export default async function HomePage() {
     getCategories(),
     getTopPicks(),
     getCategoryPriceFloors(),
-    getFeaturedBrands(),
+    /* Three rows of six on desktop. Twelve stopped just short of the
+       electrical brands, which is half of what the catalogue sells. */
+    getFeaturedBrands(18),
   ]);
 
   /* Four tiles is the row the design is built around; the rest of the

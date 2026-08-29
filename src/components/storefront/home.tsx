@@ -282,7 +282,7 @@ export function BrandStrip({
         >
           {/* Balanced rather than left-ragged: a two-word name breaks in
               the middle of the tile instead of leaving one word alone. */}
-          <span className="text-pretty font-display text-[13px] leading-tight text-deep-soft transition-colors group-hover:text-accent">
+          <span className="text-pretty text-[13px] font-medium leading-tight text-deep-soft transition-colors group-hover:text-accent">
             {b.name}
           </span>
         </Link>
