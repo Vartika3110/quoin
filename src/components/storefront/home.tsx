@@ -25,48 +25,71 @@ import { formatPrice, type Category } from "@/lib/types/catalog";
 
 /* ------------------------------------------------------------ entry tiles */
 
+/**
+ * The four ways in.
+ *
+ * Each carries its own ground rather than the white card the rest of the
+ * page uses. Four identical white boxes in a row, distinguished only by a
+ * word and a line drawing, make the reader stop and read all four to find
+ * out which is which — the tint does that work before the type is read,
+ * and the four grounds are drawn from the same warm palette as the hero
+ * so the row still belongs to the page.
+ */
 const ENTRIES = [
-  { href: "/studio", eyebrow: "QUOIN", label: "Your Design Platform", Icon: Building },
+  {
+    href: "/studio",
+    eyebrow: "QUOIN",
+    label: "Your Design Platform",
+    Icon: Building,
+    tint: "linear-gradient(150deg, #f8efe6 0%, #eedcc8 100%)",
+  },
   {
     href: "/c/services",
     eyebrow: "SERVICES",
     label: "Professional Services",
     Icon: Helmet,
+    tint: "linear-gradient(150deg, #f4f1ea 0%, #e0dbd0 100%)",
   },
   {
     href: "/products",
     eyebrow: "PRODUCTS",
     label: "Construction Materials",
     Icon: Bricks,
+    tint: "linear-gradient(150deg, #fbeee7 0%, #f2d8c8 100%)",
   },
   {
     href: "/products?sort=price",
     eyebrow: "ARCHITECTURAL PREMIUM STUDIO",
     label: "Bespoke Products",
     Icon: Lamp,
+    tint: "linear-gradient(150deg, #f8f1de 0%, #ecdcb6 100%)",
   },
 ];
 
-/** The four ways into the catalogue, above everything else on the page. */
 export function EntryTiles() {
   return (
     <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
-      {ENTRIES.map(({ href, eyebrow, label, Icon }) => (
+      {ENTRIES.map(({ href, eyebrow, label, Icon, tint }) => (
         <Link
           key={eyebrow}
           href={href}
-          className="group relative flex w-44 flex-col items-center gap-2 rounded-card border border-line-soft bg-surface px-3 pb-9 pt-4 text-center transition-colors hover:border-accent-edge lg:w-auto"
+          style={{ background: tint }}
+          className="group relative flex w-44 flex-col items-center gap-3 overflow-hidden rounded-card px-3 pb-10 pt-5 text-center transition-transform duration-200 hover:-translate-y-0.5 lg:w-auto"
         >
-          {/* Two lines of headroom so a long name does not shove the icon
+          {/* Two lines of headroom so a long name does not shove the mark
               down and break alignment across the row. */}
-          <p className="flex min-h-8 items-center text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink">
+          <p className="flex min-h-8 items-center text-[11px] font-semibold uppercase leading-tight tracking-wide text-deep">
             {eyebrow}
           </p>
-          {/* Drawn large. At `size-9` the mark was a footnote under the
-              eyebrow; the tile is mostly empty card, and the icon is the
-              only thing in it doing any work. */}
-          <Icon className="size-12 shrink-0 text-deep" />
-          <p className="text-[11px] leading-tight text-muted">{label}</p>
+
+          {/* The mark sits on a lifted plate rather than straight on the
+              tint. Against a gradient a bare line drawing loses its
+              lighter strokes wherever the ground darkens under it. */}
+          <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/75 text-deep shadow-sm ring-1 ring-white/60 transition-colors group-hover:bg-white">
+            <Icon className="size-9" />
+          </span>
+
+          <p className="text-[11px] leading-tight text-deep-soft">{label}</p>
 
           <span className="absolute bottom-3 right-3 grid size-6 place-items-center rounded-full bg-accent text-surface transition-colors group-hover:bg-accent-bright">
             <Chevron className="size-3.5" />
