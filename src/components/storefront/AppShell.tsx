@@ -101,13 +101,13 @@ function MobileHeader({ areas, chosen }: { areas: AreaChoice[]; chosen: AreaChoi
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
-            <button className="flex items-center gap-1.5 rounded-xl border border-accent-edge bg-accent-wash px-2.5 py-1.5 text-[13px] text-accent">
+            <button className="flex min-h-11 items-center gap-1.5 rounded-xl border border-accent-edge bg-accent-wash px-2.5 text-[13px] text-accent">
               <Wallet className="size-4" />
               ₹0
             </button>
             <button
               aria-label="Account"
-              className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink"
+              className="grid size-11 shrink-0 place-items-center rounded-full border border-line text-ink"
             >
               <User className="size-5" />
             </button>
@@ -201,10 +201,17 @@ function SearchField({ className = "" }: { className?: string }) {
           id="q"
           type="search"
           placeholder={'Search for "tiles", "lights", "consultation"'}
-          className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+          /* 16px on a phone: iOS Safari zooms the page in on focus for
+             anything smaller, and zoom is deliberately left enabled here. */
+          className="-my-3 h-11 min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-faint lg:text-sm"
         />
         <span className="h-5 w-px bg-line" aria-hidden />
-        <button aria-label="Search by voice" className="shrink-0 text-muted hover:text-accent">
+        {/* `-my-3` cancels the row's own padding, so the button is a real
+            44px square for a thumb while the row stays 44px tall. */}
+        <button
+          aria-label="Search by voice"
+          className="-my-3 grid size-11 shrink-0 place-items-center text-muted hover:text-accent"
+        >
           <Mic className="size-5" />
         </button>
       </div>

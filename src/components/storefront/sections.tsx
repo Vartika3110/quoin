@@ -19,7 +19,7 @@ export function SectionHead({
       {href && (
         <Link
           href={href}
-          className="flex shrink-0 items-center gap-0.5 text-xs text-gold hover:text-gold-bright"
+          className="tap-target relative flex shrink-0 items-center gap-0.5 text-xs text-accent hover:text-accent-bright"
         >
           See all
           <Chevron className="size-3.5" />
@@ -47,16 +47,25 @@ export function SectionHead({
 export function CategoryTile({
   category,
   caption,
+  fill = false,
 }: {
   category: Category;
   caption: string;
+  /**
+   * `true` when the tile is a grid item and the column already sets its
+   * width. The default keeps the fixed 176px a scrolling rail needs,
+   * because `.rail > *` refuses to shrink.
+   */
+  fill?: boolean;
 }) {
   const photo = CATEGORY_PHOTOS[category.slug];
 
   return (
     <Link
       href={`/c/${category.slug}`}
-      className="group relative flex aspect-[4/5] w-44 shrink-0 flex-col justify-end overflow-hidden rounded-card lg:w-auto"
+      className={`group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-card lg:w-auto ${
+        fill ? "w-full" : "w-44 shrink-0"
+      }`}
     >
       {photo ? (
         <Image

@@ -26,9 +26,10 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
         <div
           role="tablist"
           aria-label="Product categories"
-          /* Spread across the card once there is room for all six, and
-             fall back to a scrolling rail when there is not. */
-          className="rail gap-5 sm:justify-between sm:gap-2"
+          /* Three across then three under on a phone, one row of six once
+             there is room. Six is a small enough set to show whole, and a
+             tab you have to swipe to find is a tab that does not get used. */
+          className="grid grid-cols-3 gap-x-2 gap-y-4 sm:grid-cols-6 sm:gap-x-1"
         >
           {tabs.map((tab) => {
             const Icon = TAB_ICONS[tab.icon as keyof typeof TAB_ICONS] ?? TAB_ICONS.grid;
@@ -40,18 +41,16 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
                 role="tab"
                 aria-selected={on}
                 onClick={() => setActive(tab.id)}
-                className="flex w-28 shrink-0 flex-col items-center gap-1"
+                className="flex min-w-0 flex-col items-center gap-1"
               >
                 <Icon className={`size-14 ${on ? "text-accent" : "text-ink"}`} />
-                {/* `whitespace-nowrap`, and the tab widened to fit the
-                    longest label on one line. "Premium Products" wrapping
-                    to two set the height of the whole row — flex stretches
-                    every tab to the tallest — so five single-line tabs each
-                    carried a second line of empty space to accommodate the
-                    sixth. Wider and shorter is the better trade: the rail
-                    scrolls horizontally on a phone anyway. */}
+                {/* Labels wrap now. They used to be held on one line with
+                    the tab widened to fit the longest, because in a flex
+                    row "Premium Products" going to two lines stretched all
+                    six to that height. In a grid only its own row grows,
+                    and there is no width to spare on a 320px phone. */}
                 <span
-                  className={`whitespace-nowrap text-center text-[11px] leading-tight ${
+                  className={`text-center text-[11px] leading-tight ${
                     on ? "text-accent" : "text-muted"
                   }`}
                 >

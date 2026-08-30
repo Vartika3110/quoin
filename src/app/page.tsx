@@ -73,11 +73,12 @@ export default async function HomePage() {
 
         <section>
           <SectionHead title="Project Essentials" href="/products" />
-          {/* Mobile scrolls horizontally like the reference; desktop breaks
-              into a real grid rather than hiding product behind a swipe. */}
-          <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 xl:grid-cols-5">
+          {/* A grid at every width, two across on a phone — the same shape
+              the browse pages use, so a pick here and the same product on
+              /products are the same object rather than two. */}
+          <div className="grid grid-cols-2 gap-3 px-5 sm:grid-cols-3 lg:grid-cols-4 lg:px-0 xl:grid-cols-5">
             {picks.map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} fill />
             ))}
           </div>
           <div className="mt-3">

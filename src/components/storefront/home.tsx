@@ -68,13 +68,16 @@ const ENTRIES = [
 
 export function EntryTiles() {
   return (
-    <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
+    /* A grid at every width. These four are the top of the page and the
+       whole point of it — two of them parked off-screen behind a swipe is
+       two entry points most people never see. */
+    <div className="grid grid-cols-2 gap-3 px-5 sm:grid-cols-4 lg:px-0">
       {ENTRIES.map(({ href, eyebrow, label, Icon, tint }) => (
         <Link
           key={eyebrow}
           href={href}
           style={{ background: tint }}
-          className="group relative flex w-44 flex-col items-center gap-3 overflow-hidden rounded-card px-3 pb-10 pt-5 text-center transition-transform duration-200 hover:-translate-y-0.5 lg:w-auto"
+          className="group relative flex flex-col items-center gap-3 overflow-hidden rounded-card px-3 pb-10 pt-5 text-center transition-transform duration-200 hover:-translate-y-0.5"
         >
           {/* Two lines of headroom so a long name does not shove the mark
               down and break alignment across the row. */}
@@ -212,7 +215,7 @@ export function Hero() {
 
         <Link
           href="/products"
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-deep px-5 py-2.5 text-xs font-medium text-white transition-colors hover:bg-deep-soft"
+          className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-deep px-5 text-xs font-medium text-white transition-colors hover:bg-deep-soft"
         >
           Explore the catalogue
           <Chevron className="size-3.5" />
@@ -284,13 +287,14 @@ export function CategoryCards({
   priceFloors: Map<string, number>;
 }) {
   return (
-    <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
+    <div className="grid grid-cols-2 gap-3 px-5 sm:grid-cols-4 lg:px-0">
       {categories.map((c) => {
         const floor = priceFloors.get(c.id);
         return (
           <CategoryTile
             key={c.id}
             category={c}
+            fill
             caption={
               floor != null ? `From ${formatPrice(floor)}` : `${c.productCount} products`
             }
@@ -306,11 +310,12 @@ export function CategoryCards({
 /**
  * Associated brands, one line deep.
  *
- * A rail rather than a grid: eighteen plates stacked three rows high gave
- * a footnote the vertical weight of a category section. What does not fit
- * scrolls, and the row stays still while it does — the ribbon this is
- * modelled on slides a name out from under the pointer between reading it
- * and reaching for it.
+ * Three across on a phone, one line of eight on a desktop. This was a
+ * scrolling rail, on the argument that eighteen plates stacked three rows
+ * high gave a footnote the vertical weight of a category section. Only
+ * eight are fetched now, so that reasoning no longer holds, and the page
+ * asks for no sideways swipe anywhere — a brand nobody scrolls to is not
+ * on the page.
  *
  * Each plate carries the manufacturer's own mark where `BRAND_LOGOS` has
  * the artwork and the brand's name set in type where it does not. The
@@ -324,14 +329,14 @@ export function BrandStrip({
   brands: { id: string; slug: string; name: string }[];
 }) {
   return (
-    <div className="rail gap-2 px-5 lg:px-0">
+    <div className="grid grid-cols-3 gap-2 px-5 sm:grid-cols-4 lg:grid-cols-8 lg:px-0">
       {brands.map((b) => {
         const logo = BRAND_LOGOS[b.slug];
         return (
           <Link
             key={b.id}
             href={`/products?brand=${b.slug}`}
-            className="group grid h-12 w-28 place-items-center rounded-xl border border-line-soft bg-surface px-3 transition-colors hover:border-accent-edge"
+            className="group grid h-12 w-full place-items-center rounded-xl border border-line-soft bg-surface px-3 transition-colors hover:border-accent-edge"
           >
             {logo ? (
               /* Not next/image: these are already optimised vector files a

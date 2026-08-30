@@ -120,6 +120,25 @@ body {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
+/**
+ * Grows a control's touch target to 44px square without changing what is
+ * drawn — for the few controls whose size is the design (a heart tucked
+ * into a card corner, a mic inside the search field), where scaling the
+ * visible box up to 44px would redraw the component.
+ *
+ * The element itself must establish a containing block: pair this with
+ * `relative`, or use it on something already positioned.
+ */
+.tap-target::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 44px;
+  width: 44px;
+  transform: translate(-50%, -50%);
+}
+
 /* Visible focus for keyboard users only — the design has no room for
    permanent focus rings, but they must exist when tabbing. */
 :focus-visible {

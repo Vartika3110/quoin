@@ -72,7 +72,9 @@ export function LocationPicker({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
-        className="flex max-w-full items-center gap-1.5 text-left text-sm text-ink"
+        /* 44px tall for a thumb on a phone; back to its natural height in
+           the desktop top bar, which is a pointer target inside a chip. */
+        className="flex min-h-11 max-w-full items-center gap-1.5 text-left text-sm text-ink lg:min-h-0"
       >
         <Pin className="size-4 shrink-0 text-accent" />
         <span className="truncate">

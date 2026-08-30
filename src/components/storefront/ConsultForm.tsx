@@ -377,7 +377,7 @@ function ModeChooser({
           return (
             <label
               key={id}
-              className={`flex cursor-pointer gap-3 rounded-card border p-4 transition-colors ${
+              className={`relative flex cursor-pointer gap-3 rounded-card border p-4 transition-colors ${
                 on
                   ? "border-accent bg-accent-wash"
                   : "border-line-soft bg-surface hover:border-accent-edge"
@@ -457,7 +457,12 @@ function DayChip({
 }) {
   return (
     <label
-      className={`cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-2 text-xs transition-colors ${
+      /* `relative`: the radio below is `sr-only`, which is
+         `position: absolute`. Without a positioned ancestor its containing
+         block is the page, not this label, so the rail's `overflow-x` never
+         clips it — it lands at its static x, up to 1.5k px out, and the
+         whole document scrolls sideways on a phone. */
+      className={`relative cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-2 text-xs transition-colors ${
         active
           ? "border-accent bg-accent text-white"
           : "border-line bg-surface text-ink hover:border-accent-edge"
@@ -489,7 +494,7 @@ function Chip({
 }) {
   return (
     <label
-      className={`cursor-pointer rounded-full border px-3.5 py-2 text-xs transition-colors ${
+      className={`relative cursor-pointer rounded-full border px-3.5 py-2 text-xs transition-colors ${
         checked
           ? "border-accent bg-accent-wash text-accent"
           : "border-line bg-surface text-ink hover:border-accent-edge"
@@ -524,8 +529,13 @@ function Label({
   );
 }
 
+/* `text-base` on a phone rather than `text-sm`: iOS Safari zooms the page
+   in when a field under 16px takes focus, and the viewport deliberately
+   leaves zoom enabled, so the only fix is to size the type. It also takes
+   the fields to a 44px touch height. `lg:text-sm` keeps the desktop form
+   at the size it was drawn at. */
 const BOX =
-  "w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none placeholder:text-faint";
+  "w-full rounded-xl border bg-surface px-3.5 py-2.5 text-base text-ink outline-none placeholder:text-faint lg:text-sm";
 
 function Input({
   name,

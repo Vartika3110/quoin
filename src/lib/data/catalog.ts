@@ -220,31 +220,72 @@ export async function getCategories(): Promise<Category[]> {
  * personalise on. Until then it is the newest active catalogue, capped so
  * the home page never renders the whole 800-row import.
  */
+const TOP_PICKS = 12;
+
+/* Several candidates per category rather than one, so a category whose
+   newest product repeats a photograph already on the row has something
+   else to offer instead of dropping off it. */
+const TOP_PICK_POOL = 4;
+
 export async function getTopPicks(): Promise<Product[]> {
-  /* Only products that have a photograph. Newest-first alone put whichever
-     catalogue was imported last across the whole row, and the most recent
-     import was the one whose pages carry a picture per family of variants
-     rather than per product — so the storefront led with twelve swatches.
-     A featured row is a recommendation, and a product nobody can see is
-     not a recommendation. */
-  const rows = await db.product.findMany({
-    ...PRODUCT_QUERY,
-    where: { ...PRODUCT_QUERY.where, NOT: { image: "" } },
-    orderBy: { createdAt: "desc" },
-    take: 12,
-  });
+  /* Photographed products only — not illustrated ones, and not the swatch
+     fallback. A featured row is a recommendation, the picture is what does
+     the recommending, so it has to be the actual goods.
 
-  /* Before any photography exists at all, showing swatches beats showing
-     an empty section. */
-  if (rows.length >= 12) return rows.map(toProduct);
+     `NOT: { image: "" }` drops anything with no Quoin image at all, which
+     also excludes rows whose only picture is the quarantined
+     `sourceImageUrl`. `imageIsGenerated: false` drops the illustrated
+     ones: they are labelled honestly on a card someone went looking for,
+     but they should not be what the storefront leads with. */
+  const categories = await db.category.findMany({ select: { id: true } });
 
-  const filler = await db.product.findMany({
-    ...PRODUCT_QUERY,
-    where: { ...PRODUCT_QUERY.where, image: "" },
-    orderBy: { createdAt: "desc" },
-    take: 12 - rows.length,
-  });
-  return [...rows, ...filler].map(toProduct);
+  const pools = await Promise.all(
+    categories.map((category) =>
+      db.product.findMany({
+        ...PRODUCT_QUERY,
+        where: {
+          ...PRODUCT_QUERY.where,
+          categoryId: category.id,
+          NOT: { image: "" },
+          imageIsGenerated: false,
+        },
+        orderBy: { createdAt: "desc" },
+        take: TOP_PICK_POOL,
+      }),
+    ),
+  );
+
+  /* Newest first across the whole catalogue, then take the first product
+     that brings both a category and a photograph the row does not have.
+
+     Both caps are needed, and neither implies the other. Ordering by date
+     alone gave a row of ten Artificial Marble Ledge variants, because a
+     single import is a single day: the category cap fixes that. And that
+     family shares one photograph between several sizes, so a row could
+     still repeat a picture across two categories: the image cap fixes
+     that. Skipping a candidate does not spend its category — the next
+     product from it is still eligible further down the list. */
+  const candidates = pools
+    .flat()
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+  const picks: ProductRow[] = [];
+  const seenCategories = new Set<string>();
+  const seenImages = new Set<string>();
+
+  for (const row of candidates) {
+    if (picks.length === TOP_PICKS) break;
+    const category = row.categoryId ?? "";
+    if (seenCategories.has(category) || seenImages.has(row.image)) continue;
+    seenCategories.add(category);
+    seenImages.add(row.image);
+    picks.push(row);
+  }
+
+  /* No swatch filler behind these. If there is not enough photography the
+     section comes back short, or empty, rather than padded with pictures
+     that are not of the product. */
+  return picks.map(toProduct);
 }
 
 /** Null rather than throwing — the route turns a miss into a 404. */

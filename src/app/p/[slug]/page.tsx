@@ -72,7 +72,7 @@ export default async function ProductPage({
         <div className="px-5 pt-3 lg:px-0 lg:pt-0">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink"
+            className="inline-flex min-h-11 items-center gap-1.5 text-xs text-muted hover:text-ink"
           >
             <Back className="size-4" />
             Back
@@ -98,7 +98,7 @@ export default async function ProductPage({
               )}
               <button
                 aria-label={`Save ${product.title}`}
-                className="absolute right-3 top-3 grid size-10 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm hover:text-accent"
+                className="tap-target absolute right-3 top-3 grid size-10 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm hover:text-accent"
               >
                 <Heart className="size-5" />
               </button>

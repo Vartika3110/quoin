@@ -30,9 +30,20 @@ const FULFILMENT: Record<
 export function ProductCard({
   product,
   isPro = false,
+  fill = false,
 }: {
   product: Product;
   isPro?: boolean;
+  /**
+   * `false` (the default) is the horizontal rail: a flex child that must
+   * carry its own width, because `.rail > *` refuses to shrink.
+   *
+   * `true` is the two-column grid on the browse pages, where the column
+   * already sets the width. A fixed 168px there overflows the column on a
+   * 320px phone — two 168px cards plus the gap need 348px and the padded
+   * content box is 280px — and pushes the whole page sideways.
+   */
+  fill?: boolean;
 }) {
   const price = resolvePrice(product, isPro);
   const badge = product.badges[0];
@@ -46,7 +57,11 @@ export function ProductCard({
     : 0;
 
   return (
-    <article className="group flex w-[168px] flex-col overflow-hidden rounded-card border border-line-soft bg-surface transition-colors hover:border-line lg:w-auto">
+    <article
+      className={`group flex flex-col overflow-hidden rounded-card border border-line-soft bg-surface transition-colors hover:border-line lg:w-auto ${
+        fill ? "w-full" : "w-[168px]"
+      }`}
+    >
       <div className="relative aspect-square overflow-hidden bg-raised">
         <Link href={`/p/${product.slug}`} className="block size-full">
           <ProductImage
@@ -72,7 +87,9 @@ export function ProductCard({
 
         <button
           aria-label={`Save ${product.title}`}
-          className="absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm hover:text-accent"
+          /* `tap-target`: 32px is the drawn size the card is built around,
+             so the touch area is grown to 44px behind it instead. */
+          className="tap-target absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm hover:text-accent"
         >
           <Heart className="size-4" />
         </button>

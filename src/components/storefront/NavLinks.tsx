@@ -50,7 +50,7 @@ export function MobileBottomNav() {
             key={href}
             href={href}
             aria-current={on ? "page" : undefined}
-            className={`flex flex-col items-center gap-1 px-1 text-[10px] ${
+            className={`flex min-h-11 flex-col items-center justify-center gap-1 px-1 text-[10px] ${
               on ? "text-accent" : "text-muted"
             }`}
           >

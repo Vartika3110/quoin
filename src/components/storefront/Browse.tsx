@@ -86,7 +86,7 @@ export function Browse({
               key={s.id}
               href={withParam(basePath, params, "sort", s.id)}
               aria-current={activeSort === s.id ? "true" : undefined}
-              className={`rounded-full px-3 py-1 text-xs transition-colors ${
+              className={`tap-target relative rounded-full px-3 py-1 text-xs transition-colors ${
                 activeSort === s.id
                   ? "bg-accent/15 text-accent"
                   : "text-muted hover:text-ink"
@@ -100,7 +100,7 @@ export function Browse({
 
       <div className="grid grid-cols-2 gap-3 px-5 lg:grid-cols-4 lg:px-0 xl:grid-cols-5">
         {items.map((p) => (
-          <ProductCard key={p.id} product={p} isPro={isPro} />
+          <ProductCard key={p.id} product={p} isPro={isPro} fill />
         ))}
       </div>
 
@@ -148,7 +148,7 @@ function PageLink({
   children: React.ReactNode;
 }) {
   const className =
-    "flex items-center gap-1 rounded-full border px-4 py-2 text-xs transition-colors";
+    "flex min-h-11 items-center gap-1 rounded-full border px-4 text-xs transition-colors";
 
   /* A disabled control must not be a link — a span cannot be focused or
      followed, which is the behaviour screen readers and keyboards expect. */

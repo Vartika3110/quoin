@@ -280,7 +280,7 @@ function Stepper({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="grid size-9 place-items-center rounded-lg text-ink transition-colors hover:bg-hover disabled:text-faint disabled:hover:bg-transparent"
+      className="grid size-11 place-items-center rounded-lg text-ink transition-colors hover:bg-hover disabled:text-faint disabled:hover:bg-transparent"
     >
       {children}
     </button>
