@@ -46,7 +46,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  addresses Address[]
+  addresses       Address[]
+  consultRequests ConsultRequest[]
 
   @@map("users")
 }
@@ -217,7 +218,8 @@ model Category {
   position Int     @default(0)
   isActive Boolean @default(true)
 
-  products Product[]
+  products        Product[]
+  consultRequests ConsultRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -299,9 +301,9 @@ model ProductVariant {
   sku   String @unique
 
   /// List price before discount.
-  mrpPaise   Int
+  mrpPaise      Int
   /// Sell price for a standard customer.
-  pricePaise Int
+  pricePaise    Int
   /// Quoin Pro trade rate. Null means Pro pays `pricePaise`.
   proPricePaise Int?
 
@@ -359,8 +361,9 @@ model ServiceArea {
   /// Cleared to switch an area off without deleting its pincodes.
   isActive Boolean @default(true)
 
-  pincodes ServicePincode[]
-  store    Store?
+  pincodes        ServicePincode[]
+  store           Store?
+  consultRequests ConsultRequest[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -385,4 +388,113 @@ model ServicePincode {
 
   @@index([areaId])
   @@map("service_pincodes")
+}
+
+/// ---------------------------------------------------------------------
+/// Consultations — the first slice of module 6.
+///
+/// A consultation is not a booking. Nothing here reserves a professional's
+/// time, because there is no professional roster to reserve from yet: the
+/// customer states a mode, a day and a half-day window they would prefer,
+/// and Quoin calls back to confirm. The model is shaped around that
+/// honesty — `preferredDate`/`preferredSlot` are a request, and `status`
+/// only reaches `SCHEDULED` when a human has actually agreed a time.
+///
+/// When the roster lands, a `ConsultBooking` joins this table to a
+/// professional and a real slot. This row stays what it is: the demand.
+/// ---------------------------------------------------------------------
+
+/// How the expert meets the customer.
+enum ConsultMode {
+  /// A scheduled video call. Costs Quoin nothing but the expert's time,
+  /// so it is the free one, and it cannot measure anything.
+  VIDEO
+  /// An expert at the site. The only mode that can measure, survey and
+  /// quote real work, and the only one that is chargeable.
+  SITE_VISIT
+}
+
+/// The half-day window a customer asks for.
+///
+/// Deliberately coarse. An exact time would be a promise nothing in the
+/// system can keep — there is no roster, no travel time and no capacity
+/// model — and a slot picker that offers "11:30" implies all three.
+enum ConsultSlot {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum ConsultStatus {
+  /// Submitted by the customer, nobody has called back yet.
+  REQUESTED
+  /// A time has been agreed with the customer by a human.
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model ConsultRequest {
+  id String @id @default(cuid())
+
+  /// The code the customer is shown and reads out on the phone. Generated
+  /// from an alphabet with no O/0 or I/1 for exactly that reason.
+  reference String @unique
+
+  mode   ConsultMode
+  status ConsultStatus @default(REQUESTED)
+
+  name String
+
+  /// E.164, normalised by `normalizePhone` before it gets here — the same
+  /// treatment auth gives it, so a customer who later signs in with the
+  /// same number matches this row rather than sitting beside it.
+  ///
+  /// Unverified: no OTP is required to ask for a call back, because
+  /// demanding one at the top of the funnel loses the customer at the only
+  /// step that matters. Rate limiting on this column is what keeps that
+  /// affordable — see the POST handler.
+  phone String
+
+  email String?
+
+  /// Set when the request came from a signed-in session. Null is the
+  /// ordinary case today; the storefront has no sign-in screen yet.
+  ///
+  /// SetNull rather than Cascade: a deleted account must not silently take
+  /// an outstanding site visit off the operations list.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Where the work is. The area is the coarse locality Quoin operates in;
+  /// the pincode is what the customer actually knows about their site, and
+  /// is kept as text because a consultation may be asked for from outside
+  /// the serviceable list — that is a lead, not an error.
+  areaId  String?
+  area    ServiceArea? @relation(fields: [areaId], references: [id], onDelete: SetNull)
+  pincode String?
+
+  /// What the project is about, when it maps onto one catalogue category.
+  /// SetNull rather than Restrict: `notes` carries the intent in the
+  /// customer's own words, so losing the tidy label costs little, and a
+  /// retired category must not block itself from being retired.
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  notes String?
+
+  /// The day asked for. `@db.Date` because this is a calendar day in the
+  /// customer's head, not an instant — storing it as a timestamp would put
+  /// a request for the 3rd on the 2nd for anyone reading it in UTC.
+  preferredDate DateTime?    @db.Date
+  preferredSlot ConsultSlot?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Rate limiting reads by phone and recency; ops reads the queue by
+  /// status and recency. Both are the hot paths, so both are indexed.
+  @@index([phone, createdAt])
+  @@index([status, createdAt])
+  @@map("consult_requests")
 }

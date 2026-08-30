@@ -298,3 +298,10 @@ export const Tag = (p: IconProps) => (
     <circle cx="7.75" cy="7.75" r="1.25" />
   </Svg>
 );
+
+/** Handset — the call back a consultation request earns. */
+export const Phone = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z" />
+  </Svg>
+);

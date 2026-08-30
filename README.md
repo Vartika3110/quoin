@@ -142,6 +142,8 @@ Modules 1 and 2 are implemented. Planned delivery order:
 3. Inventory + serviceability (per-store stock, geo radius, promise engine)
 4. Cart + checkout (multi-fulfilment splitting, price resolution)
 5. Orders + payments (Razorpay, order state machine, invoices)
-6. Services + bookings (professionals, slots, consultations)
+6. Services + bookings (professionals, slots, consultations) — the
+   consultation request flow at `/consult` is in, so demand can be
+   captured; the professional roster and real slot booking are not
 7. Project Hub (aggregate over orders, bookings and quotes)
 8. Admin / ops console

@@ -16,6 +16,7 @@ const { normalizeQty, areaFromDimensions, applyWastage, lineTotal } =
   await import("@/lib/cart/quantity");
 const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
   await import("@/lib/types/catalog");
+const { istDay, addDays, formatConsultDay } = await import("@/lib/types/consult");
 type CatalogProduct = import("@/lib/types/catalog").Product;
 
 /**
@@ -253,5 +254,41 @@ describe("price resolution", () => {
 
   it("groups rupees the Indian way", () => {
     assert.equal(formatPrice(100000000), "₹10,00,000");
+  });
+});
+
+describe("consultation days", () => {
+  /**
+   * The whole reason `istDay` exists. Half of every Indian day is the
+   * previous day in UTC, so the obvious `toISOString().slice(0, 10)` books
+   * a customer who asks for "today" just after midnight onto yesterday —
+   * a date the API then rejects as being in the past.
+   */
+  it("reads the calendar day in India, not in UTC", () => {
+    const justAfterMidnightIST = new Date("2026-08-29T18:35:00Z");
+    assert.equal(justAfterMidnightIST.toISOString().slice(0, 10), "2026-08-29");
+    assert.equal(istDay(justAfterMidnightIST), "2026-08-30");
+  });
+
+  it("does not roll the day over early", () => {
+    /* 23:59 IST on the 29th is still the 29th. */
+    assert.equal(istDay(new Date("2026-08-29T18:29:00Z")), "2026-08-29");
+  });
+
+  it("steps whole days across a month boundary", () => {
+    assert.equal(addDays("2026-08-29", 0), "2026-08-29");
+    assert.equal(addDays("2026-08-29", 3), "2026-09-01");
+    assert.equal(addDays("2026-08-29", 14), "2026-09-12");
+  });
+
+  it("steps across a leap day", () => {
+    assert.equal(addDays("2028-02-28", 1), "2028-02-29");
+    assert.equal(addDays("2028-02-28", 2), "2028-03-01");
+  });
+
+  /* The chip label must name the day the customer picked, whatever the
+     timezone of the machine rendering it. */
+  it("labels a day without shifting it", () => {
+    assert.equal(formatConsultDay("2026-09-01"), "Tue, 1 Sept");
   });
 });
