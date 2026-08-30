@@ -8,43 +8,58 @@ import type { CatalogTab } from "@/lib/types/catalog";
  * Top-level catalogue filter. Client-side today because the fixture data
  * is already loaded; once the catalogue is served this becomes a link
  * list writing `?tab=` so each tab is shareable and crawlable.
+ *
+ * The row sits on its own card rather than bare on the page ground. Six
+ * icons floating between the tiles above and the hero below read as
+ * decoration in the gap; on a surface they read as a control, and the
+ * card's edge is what says where the control begins and ends.
  */
 export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
   const [active, setActive] = useState(tabs[0]?.id);
 
   return (
-    <div
-      role="tablist"
-      aria-label="Product categories"
-      className="rail gap-7 px-5 lg:gap-8 lg:px-0"
-    >
-      {tabs.map((tab) => {
-        const Icon = TAB_ICONS[tab.icon as keyof typeof TAB_ICONS] ?? TAB_ICONS.grid;
-        const on = tab.id === active;
-        return (
-          <button
-            key={tab.id}
-            role="tab"
-            aria-selected={on}
-            onClick={() => setActive(tab.id)}
-            className="flex w-16 shrink-0 flex-col items-center gap-1.5 pb-2"
-          >
-            <Icon className={`size-7 ${on ? "text-accent" : "text-ink"}`} />
-            <span
-              className={`text-center text-[11px] leading-tight ${
-                on ? "text-ink" : "text-muted"
-              }`}
-            >
-              {tab.label}
-            </span>
-            <span
-              className={`h-0.5 w-8 rounded-full transition-colors ${
-                on ? "bg-accent" : "bg-transparent"
-              }`}
-            />
-          </button>
-        );
-      })}
+    <div className="px-5 lg:px-0">
+      {/* The card, not the rail, carries the padding: a scrolling row with
+          horizontal padding drops it at the scroll extremes, so the last
+          tab ends flush against the edge it was meant to be inset from. */}
+      <div className="rounded-card border border-line-soft bg-surface px-3 py-3 lg:px-5">
+        <div
+          role="tablist"
+          aria-label="Product categories"
+          /* Spread across the card once there is room for all six, and
+             fall back to a scrolling rail when there is not. */
+          className="rail gap-5 sm:justify-between sm:gap-2"
+        >
+          {tabs.map((tab) => {
+            const Icon = TAB_ICONS[tab.icon as keyof typeof TAB_ICONS] ?? TAB_ICONS.grid;
+            const on = tab.id === active;
+
+            return (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={on}
+                onClick={() => setActive(tab.id)}
+                className="flex w-20 shrink-0 flex-col items-center gap-1.5"
+              >
+                <Icon className={`size-14 ${on ? "text-accent" : "text-ink"}`} />
+                <span
+                  className={`text-center text-[11px] leading-tight ${
+                    on ? "text-accent" : "text-muted"
+                  }`}
+                >
+                  {tab.label}
+                </span>
+                <span
+                  className={`h-0.5 w-8 rounded-full transition-colors ${
+                    on ? "bg-accent" : "bg-transparent"
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

@@ -26,12 +26,7 @@ import { formatPrice, type Category } from "@/lib/types/catalog";
 /* ------------------------------------------------------------ entry tiles */
 
 const ENTRIES = [
-  {
-    href: "/studio",
-    eyebrow: "QUOIN",
-    label: "Your Design Platform",
-    Icon: Building,
-  },
+  { href: "/studio", eyebrow: "QUOIN", label: "Your Design Platform", Icon: Building },
   {
     href: "/c/services",
     eyebrow: "SERVICES",
@@ -67,7 +62,10 @@ export function EntryTiles() {
           <p className="flex min-h-8 items-center text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink">
             {eyebrow}
           </p>
-          <Icon className="size-9 text-deep" />
+          {/* Drawn large. At `size-9` the mark was a footnote under the
+              eyebrow; the tile is mostly empty card, and the icon is the
+              only thing in it doing any work. */}
+          <Icon className="size-12 shrink-0 text-deep" />
           <p className="text-[11px] leading-tight text-muted">{label}</p>
 
           <span className="absolute bottom-3 right-3 grid size-6 place-items-center rounded-full bg-accent text-surface transition-colors group-hover:bg-accent-bright">
@@ -168,16 +166,23 @@ const TRUST = [
 
 export function TrustBar() {
   return (
-    <ul className="flex items-center justify-between gap-2 rounded-card border border-line-soft bg-surface px-4 py-3 text-[11px] text-muted">
-      {TRUST.map(({ Icon, label }, i) => (
+    /* Three cards rather than one bar.
+       As a single strip divided by hairlines this read as a footer that had
+       drifted up the page: 11px muted type, a 16px mark, and two rules
+       doing the work of the spacing. The three claims are not a legend —
+       they are the reasons to trust the shop — so each gets the same card
+       the rest of the page uses, and the mark gets the accent disc the
+       consult row and the Pro banner already give theirs. */
+    <ul className="grid gap-3 sm:grid-cols-3">
+      {TRUST.map(({ Icon, label }) => (
         <li
           key={label}
-          className={`flex flex-1 items-center gap-2 ${
-            i > 0 ? "border-l border-line-soft pl-3" : ""
-          }`}
+          className="flex items-center gap-3 rounded-card border border-line-soft bg-surface px-4 py-4"
         >
-          <Icon className="size-4 shrink-0 text-accent" />
-          <span className="leading-tight">{label}</span>
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-wash text-accent">
+            <Icon className="size-5" />
+          </span>
+          <span className="text-sm leading-snug text-ink">{label}</span>
         </li>
       ))}
     </ul>
