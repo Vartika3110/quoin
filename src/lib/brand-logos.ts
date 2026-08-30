@@ -21,4 +21,8 @@ export const BRAND_LOGOS: Record<string, string> = {
      the stacked version is nearly square, so it would land narrower than
      the brand names set in type beside it. */
   jaquar: "/brands/jaquar.png",
+  /* From the running header of Ozone's own catalogue, where the mark is
+     printed positive on white. The cover carries it too, but knocked out
+     in white on blue — invisible on a white plate. */
+  ozone: "/brands/ozone.png",
 };
