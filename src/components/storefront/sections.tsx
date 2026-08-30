@@ -1,5 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Swatch } from "@/components/Swatch";
+import { CATEGORY_PHOTOS } from "@/lib/category-photos";
 import { Chevron, Grid, Sparkle } from "@/components/icons";
 import type { Category } from "@/lib/types/catalog";
 
@@ -27,44 +29,92 @@ export function SectionHead({
   );
 }
 
+/**
+ * A category, as one photograph.
+ *
+ * The picture is the card rather than something sitting inside it. Every
+ * earlier arrangement — a bordered thumbnail, then a faded one, then one
+ * bled to the card's edges — kept a step where the photograph's own ground
+ * met the white surface, because these are shot on grey tile and concrete
+ * and counter-top, and no amount of edge treatment makes a grey rectangle
+ * stop reading as a rectangle on white. Filling the card removes the
+ * boundary rather than disguising it: there is no second surface left to
+ * step against.
+ *
+ * The cost is that the type now sits on the photograph, which is why the
+ * scrim below is not optional.
+ */
+export function CategoryTile({
+  category,
+  caption,
+}: {
+  category: Category;
+  caption: string;
+}) {
+  const photo = CATEGORY_PHOTOS[category.slug];
+
+  return (
+    <Link
+      href={`/c/${category.slug}`}
+      className="group relative flex aspect-[4/5] w-44 shrink-0 flex-col justify-end overflow-hidden rounded-card lg:w-auto"
+    >
+      {photo ? (
+        <Image
+          src={photo}
+          /* Decorative: the heading below is inside this same link and
+             already names the category. */
+          alt=""
+          fill
+          sizes="(min-width: 1280px) 300px, (min-width: 1024px) 240px, 176px"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+        />
+      ) : (
+        /* Still reachable: a category added after the shoot has no file,
+           and the swatch already fills its box the same way a cover-fitted
+           photograph does. */
+        <Swatch
+          swatchKey={category.images[0] ?? "cement"}
+          label=""
+          className="absolute inset-0 size-full"
+        />
+      )}
+
+      {/* Espresso rather than black: a neutral scrim over warm photography
+          greys it, and the palette is deliberately warm everywhere else.
+          Tall enough to cover both lines of type at their longest — a scrim
+          sized to the short titles leaves "Home appliances & security"
+          sitting half on bare photograph. */}
+      <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-deep via-deep/60 to-transparent" />
+
+      <div className="relative p-3">
+        <h3 className="text-sm font-medium leading-snug text-white">
+          {category.title}
+        </h3>
+        <span className="mt-1 flex items-center gap-1 text-[11px] text-white/80">
+          {caption}
+          <Chevron className="size-3" />
+        </span>
+      </div>
+    </Link>
+  );
+}
+
 export function CategoryGrid({ categories }: { categories: Category[] }) {
   return (
     <div className="rail gap-3 px-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
       {categories.map((c) => (
-        <Link
+        <CategoryTile
           key={c.id}
-          href={`/c/${c.slug}`}
-          className="relative flex h-52 w-56 flex-col justify-between overflow-hidden rounded-card border border-line-soft bg-surface p-4 transition-colors hover:border-line lg:h-48 lg:w-auto"
-        >
-          <h3 className="max-w-[70%] text-base font-medium leading-snug text-ink">
-            {c.title}
-          </h3>
-
-          {/* Thumbnails overlap toward the lower-right, as in the reference. */}
-          <div className="pointer-events-none absolute bottom-3 right-3 flex items-end">
-            {c.images.map((img, i) => (
-              <span
-                key={img}
-                className="overflow-hidden rounded-lg border border-line-soft"
-                style={{ marginLeft: i === 0 ? 0 : -14, zIndex: i }}
-              >
-                <Swatch swatchKey={img} label="" className="size-16" />
-              </span>
-            ))}
-          </div>
-
-          {/* "+0 more" says nothing. Until the category tree is populated
-              there are no sub-categories to count, so the tile shows what
-              it actually holds. */}
-          {/* "+0 more" says nothing. Until the category tree is populated
-              there are no sub-categories to count, so the tile shows what
-              it actually holds. */}
-          <span className="w-fit rounded-full bg-accent-wash px-2.5 py-1 text-[11px] text-accent">
-            {c.moreCount > 0
+          category={c}
+          /* "+0 more" says nothing. Until the category tree is populated
+             there are no sub-categories to count, so this shows what the
+             category actually holds. */
+          caption={
+            c.moreCount > 0
               ? `+${c.moreCount} more`
-              : `${c.productCount} ${c.productCount === 1 ? "product" : "products"}`}
-          </span>
-        </Link>
+              : `${c.productCount} ${c.productCount === 1 ? "product" : "products"}`
+          }
+        />
       ))}
     </div>
   );

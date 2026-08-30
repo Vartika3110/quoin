@@ -4,7 +4,6 @@ import { TabRail } from "@/components/storefront/TabRail";
 import {
   BrandStrip,
   CategoryCards,
-  CategoryChips,
   ConsultCta,
   EntryTiles,
   Hero,
@@ -84,11 +83,6 @@ export default async function HomePage() {
           <div className="mt-3">
             <WideLink href="/products" label="See all products" icon="sparkle" />
           </div>
-        </section>
-
-        <section>
-          <SectionHead title="See all categories" href="/categories" />
-          <CategoryChips categories={categories} />
         </section>
 
         <section>

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Swatch } from "@/components/Swatch";
+import { CategoryTile } from "@/components/storefront/sections";
 import { BRAND_LOGOS } from "@/lib/brand-logos";
 import {
   Building,
@@ -271,6 +271,10 @@ export function TrustBar() {
  * `From ₹49` is the cheapest active variant in the category, not a
  * marketing number — a floor nobody can actually buy at is the fastest
  * way to lose trust on the first click.
+ *
+ * The tile itself is shared with the `/categories` grid. The two show the
+ * same categories one tap apart and differ only in what the caption says,
+ * so they must not drift into two different objects.
  */
 export function CategoryCards({
   categories,
@@ -284,54 +288,15 @@ export function CategoryCards({
       {categories.map((c) => {
         const floor = priceFloors.get(c.id);
         return (
-          <Link
+          <CategoryTile
             key={c.id}
-            href={`/c/${c.slug}`}
-            className="flex w-44 flex-col rounded-card border border-line-soft bg-surface p-3 transition-colors hover:border-accent-edge lg:w-auto"
-          >
-            <h3 className="text-sm font-medium leading-snug text-ink">
-              {c.title}
-            </h3>
-
-            <div className="my-3 flex items-end justify-center gap-1">
-              {c.images.slice(0, 3).map((img) => (
-                <span
-                  key={img}
-                  className="overflow-hidden rounded-lg border border-line-soft"
-                >
-                  <Swatch swatchKey={img} label="" className="size-14" />
-                </span>
-              ))}
-            </div>
-
-            <span className="mt-auto flex items-center justify-between rounded-lg bg-accent-wash px-2.5 py-1.5 text-[11px] text-accent">
-              {floor != null ? `From ${formatPrice(floor)}` : `${c.productCount} products`}
-              <Chevron className="size-3" />
-            </span>
-          </Link>
+            category={c}
+            caption={
+              floor != null ? `From ${formatPrice(floor)}` : `${c.productCount} products`
+            }
+          />
         );
       })}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------- category chips */
-
-export function CategoryChips({ categories }: { categories: Category[] }) {
-  return (
-    <div className="rail gap-2 px-5 lg:flex-wrap lg:overflow-visible lg:px-0">
-      {categories.map((c) => (
-        <Link
-          key={c.id}
-          href={`/c/${c.slug}`}
-          className="flex items-center gap-2 rounded-full border border-line-soft bg-surface px-3 py-2 text-[11px] text-ink transition-colors hover:border-accent-edge hover:text-accent"
-        >
-          <span className="overflow-hidden rounded-md">
-            <Swatch swatchKey={c.images[0] ?? "cement"} label="" className="size-6" />
-          </span>
-          <span className="whitespace-nowrap">{c.title}</span>
-        </Link>
-      ))}
     </div>
   );
 }
