@@ -21,7 +21,8 @@
     "admin:grant": "tsx scripts/grant-staff.ts",
     "images:pair": "tsx scripts/pair-images-by-code.ts",
     "db:retire-scraped": "tsx scripts/retire-scraped.ts",
-    "images:localise": "tsx scripts/localise-source-images.ts"
+    "images:localise": "tsx scripts/localise-source-images.ts",
+    "db:clean-names": "tsx scripts/clean-product-names.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
