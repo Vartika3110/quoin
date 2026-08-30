@@ -46,7 +46,7 @@ const PUBLIC_DIR = path.join("public", "catalogue");
 const BRAND_DEFAULTS: Record_<string, { brand: string; category: string; gstRatePct: number }> = {
   jaquar: { brand: "Jaquar", category: "Bathware & plumbing", gstRatePct: 18 },
   "jaquar-technical": { brand: "Jaquar", category: "Bathware & plumbing", gstRatePct: 18 },
-  ebco: { brand: "Ebco", category: "Kitchen & wardrobe fittings", gstRatePct: 18 },
+  ozone: { brand: "Ozone", category: "Kitchen & wardrobe fittings", gstRatePct: 18 },
 };
 
 /**

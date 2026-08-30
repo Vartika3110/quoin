@@ -46,7 +46,11 @@ BRANDS = {
     },
     # A table, not a grid: code, description and price run across a row,
     # and one line frequently carries two products side by side.
-    "ebco": {
+    #
+    # Ozone, not Ebco: the catalogue cover reads "Kitchen Fittings by
+    # Ozone" and every code carries an OZ-/OE-/OEC/OEAP prefix. It was
+    # imported under the wrong brand once already.
+    "ozone": {
         "layout": "table",
         "row": re.compile(
             r"([A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+)\s+(.*?)[`₹]\s*([\d,]+)"

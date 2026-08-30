@@ -22,7 +22,7 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
       {/* The card, not the rail, carries the padding: a scrolling row with
           horizontal padding drops it at the scroll extremes, so the last
           tab ends flush against the edge it was meant to be inset from. */}
-      <div className="rounded-card border border-line-soft bg-surface px-3 py-3 lg:px-5">
+      <div className="rounded-card border border-line-soft bg-surface px-3 py-2 lg:px-5">
         <div
           role="tablist"
           aria-label="Product categories"
@@ -40,7 +40,7 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
                 role="tab"
                 aria-selected={on}
                 onClick={() => setActive(tab.id)}
-                className="flex w-20 shrink-0 flex-col items-center gap-1.5"
+                className="flex w-20 shrink-0 flex-col items-center gap-1"
               >
                 <Icon className={`size-14 ${on ? "text-accent" : "text-ink"}`} />
                 <span
@@ -50,8 +50,13 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
                 >
                   {tab.label}
                 </span>
+                {/* The current-tab underline. `mt-0.5` rather than the row's
+                    own gap: at the full gap it sat far enough below the
+                    label to read as a rule under the tab instead of part
+                    of it, and it cost the rail height on every tab to say
+                    something about one. */}
                 <span
-                  className={`h-0.5 w-8 rounded-full transition-colors ${
+                  className={`mt-0.5 h-0.5 w-8 rounded-full transition-colors ${
                     on ? "bg-accent" : "bg-transparent"
                   }`}
                 />
