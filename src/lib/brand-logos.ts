@@ -16,5 +16,9 @@
  * about what we have and legible either way.
  */
 export const BRAND_LOGOS: Record<string, string> = {
-  // "havells": "/brands/havells.svg",
+  /* Cropped from the cover of Jaquar's own customer guide. The wordmark
+     alone, not the full lockup: the plate gives a mark 24px of height, and
+     the stacked version is nearly square, so it would land narrower than
+     the brand names set in type beside it. */
+  jaquar: "/brands/jaquar.png",
 };

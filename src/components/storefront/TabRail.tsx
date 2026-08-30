@@ -40,11 +40,18 @@ export function TabRail({ tabs }: { tabs: CatalogTab[] }) {
                 role="tab"
                 aria-selected={on}
                 onClick={() => setActive(tab.id)}
-                className="flex w-20 shrink-0 flex-col items-center gap-1"
+                className="flex w-28 shrink-0 flex-col items-center gap-1"
               >
                 <Icon className={`size-14 ${on ? "text-accent" : "text-ink"}`} />
+                {/* `whitespace-nowrap`, and the tab widened to fit the
+                    longest label on one line. "Premium Products" wrapping
+                    to two set the height of the whole row — flex stretches
+                    every tab to the tallest — so five single-line tabs each
+                    carried a second line of empty space to accommodate the
+                    sixth. Wider and shorter is the better trade: the rail
+                    scrolls horizontally on a phone anyway. */}
                 <span
-                  className={`text-center text-[11px] leading-tight ${
+                  className={`whitespace-nowrap text-center text-[11px] leading-tight ${
                     on ? "text-accent" : "text-muted"
                   }`}
                 >
