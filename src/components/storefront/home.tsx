@@ -1,7 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Swatch } from "@/components/Swatch";
 import { BRAND_LOGOS } from "@/lib/brand-logos";
-import { HeroArt } from "@/components/storefront/HeroArt";
 import {
   Building,
   Chevron,
@@ -129,18 +129,69 @@ export function ConsultCta() {
 /**
  * The headline promise.
  *
- * The illustration fills the half of the band the reference gives to a
- * photograph, and sits in the same box one would occupy. On narrow
- * screens it drops away rather than competing with the type for the
- * width the headline needs.
+ * A photograph fills the half of the band the reference gives to one, and
+ * `HeroArt` — the drawn stand-in that held the space until there was a
+ * picture — is retired. On narrow screens it drops away rather than
+ * competing with the type for the width the headline needs.
+ *
+ * A frame at golden hour, mid-build: slab and column still bare, services
+ * not yet in, and the finished rooms already lit behind the glass. That is
+ * the whole proposition in one image, which is why it beats a photograph
+ * of a finished lobby.
  */
 export function Hero() {
   return (
-    <div className="relative overflow-hidden rounded-card bg-gradient-to-br from-[#f3e6d8] via-[#eddcc9] to-[#e2c9ae] px-6 py-7 lg:px-10 lg:py-10">
-      <HeroArt className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 sm:block" />
-      {/* The art runs under the type at the seam; this fades it out so the
-          headline never sits on a window mullion. */}
-      <div className="pointer-events-none absolute inset-y-0 right-1/2 hidden w-24 bg-gradient-to-r from-transparent to-[#eddcc9] sm:block" />
+    /* `min-h` from `sm` up, which is exactly where the photograph appears.
+       Without it the band is only as tall as the headline, subhead and
+       button make it — about 342px against a 660px-wide photo box, a
+       1.93:1 slot for a 1.42:1 frame. `object-cover` resolves that by
+       cutting 27% of the picture's height, top and bottom, which takes the
+       top storey and the stacked block and cement at the base: the two
+       things that say "mid-build". At 26rem the cut is nearer 11%.
+
+       A minimum rather than a fixed height so longer copy still grows the
+       band instead of overflowing it, and `items-center` so the type sits
+       in the middle of the taller box rather than stranded at its top. */
+    <div className="relative flex min-h-0 flex-col justify-center overflow-hidden rounded-card bg-gradient-to-br from-[#f3e6d8] via-[#eddcc9] to-[#e2c9ae] px-6 py-7 sm:min-h-[22rem] lg:min-h-[26rem] lg:px-10 lg:py-10">
+      {/* The photograph is masked, not boxed.
+
+          Cropping it to a panel and butting the type up against it draws a
+          seam down the middle of the band — two things sharing a rectangle
+          rather than one image. Fading its own left edge to transparent
+          instead lets the band's gradient come through underneath, and
+          because the frame was shot into a pale sky that is already very
+          near `#f3e6d8`, there is no line where one becomes the other. It
+          also means the birds and the treeline carry on into the type's
+          half instead of stopping at a border.
+
+          Masking rather than an opaque overlay on top: an overlay has to
+          guess a single flat colour to paint, and the band underneath is a
+          three-stop gradient, so the guess is visible everywhere it is
+          wrong. */}
+      <div
+        className="pointer-events-none absolute inset-y-0 right-0 hidden w-[72%] sm:block"
+        style={{
+          maskImage: "linear-gradient(to right, transparent 0%, #000 42%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, #000 42%)",
+        }}
+      >
+        {/* `priority`: this is the largest element above the fold, so
+            leaving it to lazy-load makes it the Largest Contentful Paint
+            and then delays it on purpose. */}
+        <Image
+          src="/hero/under-construction.webp"
+          alt=""
+          fill
+          priority
+          /* The rendered box, not half the viewport: the sidebar and the
+             1400px cap bound the main column. Overstating this makes
+             `next/image` reach for the 1920px variant of a 630px box. */
+          sizes="(min-width: 1024px) 800px, 72vw"
+          /* Anchored right so the mask eats sky and treeline on the left
+             rather than cutting the corner off the building. */
+          className="object-cover object-right"
+        />
+      </div>
 
       <div className="relative max-w-md">
         <h2 className="font-display text-3xl leading-[1.1] text-deep lg:text-4xl">
