@@ -2,6 +2,10 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
 import {
+  DesktopNavList,
+  MobileBottomNav,
+} from "@/components/storefront/NavLinks";
+import {
   AREA_COOKIE,
   getAreaChoice,
   listAreaChoices,
@@ -11,12 +15,7 @@ import {
   Cart,
   Chevron,
   Clock,
-  Grid,
-  Headset,
-  Home,
   Mic,
-  Box,
-  QMark,
   Search,
   User,
   Wallet,
@@ -33,14 +32,6 @@ import {
  * Both are always in the DOM and toggled with CSS so the server renders
  * one markup tree and there is no layout flash on hydration.
  */
-
-const NAV = [
-  { href: "/", label: "Home", Icon: Home },
-  { href: "/categories", label: "Categories", Icon: Grid },
-  { href: "/projects", label: "Project Hub", Icon: Box },
-  { href: "/consult", label: "Consult", Icon: Headset },
-  { href: "/studio", label: "Quoin Studio", Icon: QMark },
-];
 
 const CART_COUNT = 8;
 
@@ -129,29 +120,6 @@ function MobileHeader({ areas, chosen }: { areas: AreaChoice[]; chosen: AreaChoi
   );
 }
 
-function MobileBottomNav() {
-  return (
-    <nav
-      aria-label="Primary"
-      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-bg/95 pt-2 backdrop-blur lg:hidden"
-    >
-      {NAV.map(({ href, label, Icon }, i) => (
-        <Link
-          key={href}
-          href={href}
-          aria-current={i === 0 ? "page" : undefined}
-          className={`flex flex-col items-center gap-1 px-1 text-[10px] ${
-            i === 0 ? "text-accent" : "text-muted"
-          }`}
-        >
-          <Icon className="size-5" />
-          <span className="text-center leading-tight">{label}</span>
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
 /* --------------------------------------------------------------- desktop */
 
 function DesktopTopBar({ areas, chosen }: { areas: AreaChoice[]; chosen: AreaChoice | null }) {
@@ -202,24 +170,7 @@ function DesktopSidebar() {
   return (
     <aside className="hidden w-56 shrink-0 lg:block">
       <nav aria-label="Sections" className="sticky top-24 py-6">
-        <ul className="space-y-1">
-          {NAV.map(({ href, label, Icon }, i) => (
-            <li key={href}>
-              <Link
-                href={href}
-                aria-current={i === 0 ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
-                  i === 0
-                    ? "bg-accent-wash text-accent"
-                    : "text-muted hover:bg-surface hover:text-ink"
-                }`}
-              >
-                <Icon className="size-5 shrink-0" />
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <DesktopNavList />
 
         <div className="mt-8 rounded-card border border-accent-edge bg-accent-wash p-4">
           <p className="font-display text-lg text-accent">Quoin Pro</p>
