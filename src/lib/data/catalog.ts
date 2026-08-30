@@ -221,12 +221,30 @@ export async function getCategories(): Promise<Category[]> {
  * the home page never renders the whole 800-row import.
  */
 export async function getTopPicks(): Promise<Product[]> {
+  /* Only products that have a photograph. Newest-first alone put whichever
+     catalogue was imported last across the whole row, and the most recent
+     import was the one whose pages carry a picture per family of variants
+     rather than per product — so the storefront led with twelve swatches.
+     A featured row is a recommendation, and a product nobody can see is
+     not a recommendation. */
   const rows = await db.product.findMany({
     ...PRODUCT_QUERY,
+    where: { ...PRODUCT_QUERY.where, NOT: { image: "" } },
     orderBy: { createdAt: "desc" },
     take: 12,
   });
-  return rows.map(toProduct);
+
+  /* Before any photography exists at all, showing swatches beats showing
+     an empty section. */
+  if (rows.length >= 12) return rows.map(toProduct);
+
+  const filler = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: { ...PRODUCT_QUERY.where, image: "" },
+    orderBy: { createdAt: "desc" },
+    take: 12 - rows.length,
+  });
+  return [...rows, ...filler].map(toProduct);
 }
 
 /** Null rather than throwing — the route turns a miss into a 404. */
