@@ -95,6 +95,13 @@ function clean(raw: string): Result {
 
   /* Catalogue furniture that rode along with the text. */
   name = name.replace(/\b(?:jaquar\.com|www\.[a-z.]+)\b/gi, "");
+
+  /* Prices from the neighbouring column: a comma-grouped number standing
+     on its own is a rupee amount, never part of a fitting's name. A size
+     keeps its commas attached to a unit — "1900 x 900" has none — so this
+     does not touch dimensions. */
+  name = name.replace(/(^|\s)\d{1,3},\d{3}(?=\s|$)/g, " ");
+  name = name.replace(/\s*\*+\s*/g, " ");
   name = name.replace(PRODUCT_CODE, (m) => (isProductCode(m) ? "" : m));
   name = name.replace(/\s*[|·•]\s*$/g, "");
   name = name.replace(/\s{2,}/g, " ").replace(/\s+([,.)])/g, "$1").trim();
@@ -183,6 +190,43 @@ function headingByPage(file_: string): Map<number, string> {
   return out;
 }
 
+/**
+ * Put the maker's name in front of a listing that lacks it.
+ *
+ * The retailer listings are terse — "Geyser", "MCB TPN", "Tee PVC" — and
+ * four different manufacturers' products arrive under one of those with
+ * nothing on the card to separate them. The brand is already on the row;
+ * it just was not in the words.
+ *
+ * "Generic" is skipped: it is what the importer files a product under
+ * when the source named no maker, so putting it in front of a name states
+ * something the data does not know.
+ */
+async function nameScrapedByBrand(dryRun: boolean): Promise<void> {
+  const rows = await db.product.findMany({
+    where: { sourceName: { in: ["handypanda", "homerun"] } },
+    select: { id: true, name: true, brand: { select: { name: true } } },
+  });
+
+  let prefixed = 0;
+  for (const row of rows) {
+    const brand = row.brand?.name;
+    if (!brand || brand.toLowerCase() === "generic") continue;
+
+    /* Match on the distinctive first word so "Asian Paints Royale" is not
+       re-prefixed with "Asian Paints", and neither is a name that already
+       opens with the maker under a different spelling. */
+    const head = brand.split(/\s+/)[0].toLowerCase();
+    if (row.name.toLowerCase().includes(head)) continue;
+
+    const name = `${brand} ${row.name}`.replace(/\s+/g, " ").trim();
+    prefixed++;
+    if (!dryRun) await db.product.update({ where: { id: row.id }, data: { name } });
+  }
+
+  console.info(`${prefixed} retailer listing(s) ${dryRun ? "would take" : "took"} their maker's name in front`);
+}
+
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
 
@@ -190,6 +234,8 @@ async function main() {
     where: { sourceName: { contains: "catalogue" } },
     select: { id: true, sku: true, name: true },
   });
+
+  await nameScrapedByBrand(dryRun);
 
   /* Rebuild from what the PDF actually said, not from whatever a previous
      run left in the column. Reading the current name back in means a

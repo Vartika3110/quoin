@@ -98,7 +98,14 @@ export function ProductCard({
           )}
         </div>
 
-        <h3 className="text-sm leading-snug text-ink">{product.title}</h3>
+        {/* Clamped, not shortened. A Jaquar name carries its range, its
+            fitting and often a model code, which runs past ninety
+            characters and would push the price off a tile — but the whole
+            name is what the customer needs on the detail page, and what
+            they hover to read here. */}
+        <h3 className="line-clamp-3 text-sm leading-snug text-ink" title={product.title}>
+          {product.title}
+        </h3>
 
         {badge && (
           <span className="mt-auto w-fit rounded-md bg-accent-wash px-2 py-1 text-[10px] text-accent">
