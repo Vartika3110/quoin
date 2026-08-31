@@ -11,6 +11,15 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+
+  /// Migrations only, and optional: unset, Prisma uses `url` for both.
+  ///
+  /// Supabase pools through Supavisor in transaction mode, which does not
+  /// keep the prepared statements a migration needs, so `prisma migrate`
+  /// has to reach the database directly on 5432 while the app keeps using
+  /// the pooled 6543 URL. Neon's pooler does not need this, which is why
+  /// it was absent while the database lived there.
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 enum UserTier {

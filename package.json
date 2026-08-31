@@ -22,7 +22,8 @@
     "images:pair": "tsx scripts/pair-images-by-code.ts",
     "db:retire-scraped": "tsx scripts/retire-scraped.ts",
     "images:localise": "tsx scripts/localise-source-images.ts",
-    "db:clean-names": "tsx scripts/clean-product-names.ts"
+    "db:clean-names": "tsx scripts/clean-product-names.ts",
+    "db:copy": "tsx scripts/copy-database.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",

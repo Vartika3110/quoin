@@ -5,14 +5,28 @@ be done on free tiers, which is enough to share a working link.
 
 ## 1. Database
 
-Neon, Singapore (`ap-southeast-1`) — the closest region Neon offers to
-India. [Supabase](https://supabase.com) has a Mumbai region if co-locating
-with customers ever matters more than the free tier's behaviour; note that
-Supabase pauses idle projects on the free tier and Neon does not.
+[Supabase](https://supabase.com), Mumbai (`ap-south-1`). The users, the
+pricing and the SMS are all Indian, so the database sits in India. This
+was Neon in Singapore until 2026-08-30 — Neon has no India region, which
+is the only reason it ever sat offshore.
 
-Copy the **pooled** connection string, not the direct one. Serverless
-functions open a connection per invocation and will exhaust a direct
-Postgres connection limit under any real traffic.
+Note that Supabase pauses idle projects on the free tier and Neon does
+not. For a demo link somebody opens once a week, that pause is the thing
+you will notice.
+
+Two connection strings, and they are not interchangeable:
+
+| | Port | Used by |
+| --- | --- | --- |
+| **Pooled** (Supavisor, `?pgbouncer=true`) | 6543 | the app, at request time |
+| **Direct** | 5432 | `prisma migrate` only |
+
+`DATABASE_URL` is the pooled one: serverless functions open a connection
+per invocation and exhaust a direct connection limit under any real
+traffic. `DIRECT_DATABASE_URL` is the direct one, because Supavisor's
+transaction mode does not keep the prepared statements a migration needs.
+The schema declares both. `prisma generate` needs neither, so the deployed
+build is unaffected by a missing direct URL — only migrations are.
 
 ## 2. Load the schema and the catalogue
 
@@ -35,29 +49,68 @@ DATABASE_URL="<pooled url>" npm run db:import
 `db:import` loads ~880 products and is idempotent, so it is safe to re-run.
 Skip the import and the storefront renders correctly but empty.
 
+## Moving an existing database to another provider
+
+The above builds a database from the files in this repo. If one already
+holds real data — customers, consultation requests, prices edited in the
+admin — rebuilding it loses that. Copy it instead.
+
+Put both of the new database's URLs in `.env.local` as
+`TARGET_DATABASE_URL` (pooled) and `DIRECT_DATABASE_URL` (direct), leave
+`DATABASE_URL` pointing at the old one, then:
+
+```bash
+DIRECT_DATABASE_URL="<new direct url>" DATABASE_URL="<new pooled url>" npx prisma migrate deploy
+```
+
+```bash
+npm run db:copy -- --dry-run
+```
+
+```bash
+npm run db:copy
+```
+
+`prisma migrate deploy` builds the schema on the target; `db:copy` moves
+the rows into it, parent tables first, and then counts both ends to prove
+nothing was dropped. It refuses a target that already has rows unless you
+pass `--force`, which empties it first.
+
+Primary keys are cuids rather than sequences, so they cross unchanged and
+nothing needs resequencing afterwards. What is *not* reproducible from
+this repo, and so is the whole reason to copy rather than re-import:
+`User`, `Address`, `OtpChallenge`, `ConsultRequest`, and any price or
+image set through the admin routes.
+
+Only when the copy verifies clean, point `DATABASE_URL` at the new
+database — locally and in Vercel — and keep the old one until the
+deployed app has been exercised against the new one.
+
 ## 3. Vercel
 
 Import the GitHub repo at [vercel.com/new](https://vercel.com/new). Private
 repos are supported. Framework detection picks up Next.js; the build
 command in `package.json` is already correct and needs no override.
 
-The function region is pinned to Singapore (`sin1`) in `vercel.json`, so
+The function region is pinned to Mumbai (`bom1`) in `vercel.json`, so
 there is nothing to set in the dashboard.
 
-It tracks the database, not the customers. Neon has no India region, so the
-database sits in Singapore, and rendering one page runs several queries in
-sequence — each paying the full round trip — while the customer pays it
-once for the response. Functions in Mumbai would put every one of those
-queries across ~2,000 km to save a single hop on the way back.
+It tracks the database, not the customers. Rendering one page runs several
+queries in sequence and pays the full round trip on each, while the
+customer pays it once for the response — so the functions belong next to
+Postgres, and both are now in Mumbai. While the database was in Singapore
+this file read `sin1` for exactly the same reason.
 
-Move both to Mumbai together if the database ever does; splitting them is
-the case worth avoiding.
+Move them together or not at all. Functions in one country and the
+database in another is the case worth avoiding, and it is the state you
+land in by changing only one of these two files.
 
 Environment variables, for Production and Preview:
 
 | Variable | Value |
 | --- | --- |
-| `DATABASE_URL` | the pooled connection string |
+| `DATABASE_URL` | the pooled connection string (6543, `?pgbouncer=true`) |
+| `DIRECT_DATABASE_URL` | the direct connection string (5432) |
 | `AUTH_SECRET` | `openssl rand -base64 48` — a fresh one, not the local value |
 | `MSG91_AUTH_KEY` | see below |
 | `MSG91_TEMPLATE_ID` | your DLT-approved template |
