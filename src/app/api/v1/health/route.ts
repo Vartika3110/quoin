@@ -27,10 +27,39 @@ function describe(name: string) {
   };
 }
 
-export function GET() {
+/**
+ * Loads a module that runs work at import time and reports what it threw.
+ *
+ * The message only: these are this application's own validation errors,
+ * and Prisma masks credentials in its own. A stack trace would name paths
+ * inside the bundle and say nothing more about the cause.
+ */
+async function probe(name: string, load: () => Promise<unknown>) {
+  try {
+    await load();
+    return { loaded: true, error: null };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { loaded: false, error: message.split("\n").slice(0, 4).join(" ").slice(0, 400) };
+  }
+}
+
+export async function GET(request: Request) {
   const secret = process.env.AUTH_SECRET ?? "";
+  const deep = new URL(request.url).searchParams.has("deep");
+
+  const modules = deep
+    ? {
+        env: await probe("env", () => import("@/lib/env")),
+        db: await probe("db", async () => {
+          const { db } = await import("@/lib/db");
+          await db.$queryRaw`SELECT 1`;
+        }),
+      }
+    : undefined;
 
   return NextResponse.json({
+    modules,
     ok: true,
     nodeEnv: process.env.NODE_ENV ?? null,
     region: process.env.VERCEL_REGION ?? null,
