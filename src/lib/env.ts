@@ -42,10 +42,15 @@ const schema = z.object({
    * leave on for a public storefront. Turning it on is a deliberate act,
    * which is why it is an environment variable rather than a default.
    */
+  /* Anything that is not an explicit yes means no. A strict enum here
+     took the whole site down when the variable was present but empty:
+     `.default()` fills in an absent value, not an invalid one, so an
+     empty string failed validation and every route 500ed at boot. An
+     optional display toggle must not be able to do that. */
   SHOW_SOURCE_IMAGES: z
-    .enum(["0", "1"])
-    .default("0")
-    .transform((v) => v === "1"),
+    .string()
+    .optional()
+    .transform((v) => v === "1" || v?.toLowerCase() === "true"),
 });
 
 type Env = z.infer<typeof schema>;
