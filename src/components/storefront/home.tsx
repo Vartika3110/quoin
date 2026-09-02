@@ -45,28 +45,28 @@ const ENTRIES = [
     eyebrow: "QUOIN",
     label: "Your Design Platform",
     Icon: Building,
-    tint: "linear-gradient(150deg, #f8efe6 0%, #eedcc8 100%)",
+    tint: "var(--quoin-tile-1)",
   },
   {
     href: "/c/services",
     eyebrow: "SERVICES",
     label: "Professional Services",
     Icon: Helmet,
-    tint: "linear-gradient(150deg, #f4f1ea 0%, #e0dbd0 100%)",
+    tint: "var(--quoin-tile-2)",
   },
   {
     href: "/products",
     eyebrow: "PRODUCTS",
     label: "Construction Materials",
     Icon: Bricks,
-    tint: "linear-gradient(150deg, #fbeee7 0%, #f2d8c8 100%)",
+    tint: "var(--quoin-tile-3)",
   },
   {
     href: "/products?sort=price",
     eyebrow: "ARCHITECTURAL PREMIUM STUDIO",
     label: "Bespoke Products",
     Icon: Lamp,
-    tint: "linear-gradient(150deg, #f8f1de 0%, #ecdcb6 100%)",
+    tint: "var(--quoin-tile-4)",
   },
 ];
 
@@ -85,18 +85,18 @@ export function EntryTiles() {
         >
           {/* Two lines of headroom so a long name does not shove the mark
               down and break alignment across the row. */}
-          <p className="flex min-h-8 items-center text-[11px] font-semibold uppercase leading-tight tracking-wide text-deep">
+          <p className="flex min-h-8 items-center text-[11px] font-semibold uppercase leading-tight tracking-wide text-ink">
             {eyebrow}
           </p>
 
           {/* The mark sits on a lifted plate rather than straight on the
               tint. Against a gradient a bare line drawing loses its
               lighter strokes wherever the ground darkens under it. */}
-          <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/75 text-deep shadow-sm ring-1 ring-white/60 transition-colors group-hover:bg-white">
+          <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-plate text-ink shadow-sm ring-1 ring-plate-edge transition-colors group-hover:bg-plate-solid">
             <Icon className="size-9" />
           </span>
 
-          <p className="text-[11px] leading-tight text-deep-soft">{label}</p>
+          <p className="text-[11px] leading-tight text-muted">{label}</p>
 
           <span className="absolute bottom-3 right-3 grid size-6 place-items-center rounded-full bg-accent text-surface transition-colors group-hover:bg-accent-bright">
             <Chevron className="size-3.5" />

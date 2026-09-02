@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
+import { ThemeToggle } from "@/components/storefront/ThemeToggle";
 import {
   DesktopNavList,
   MobileBottomNav,
@@ -101,16 +102,18 @@ function MobileHeader({ areas, chosen }: { areas: AreaChoice[]; chosen: AreaChoi
           </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
+            <ThemeToggle className="size-11" />
             <button className="flex min-h-11 items-center gap-1.5 rounded-xl border border-accent-edge bg-accent-wash px-2.5 text-[13px] text-accent">
               <Wallet className="size-4" />
               ₹0
             </button>
-            <button
+            <Link
+              href="/account"
               aria-label="Account"
               className="grid size-11 shrink-0 place-items-center rounded-full border border-line text-ink"
             >
               <User className="size-5" />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -154,12 +157,14 @@ function DesktopTopBar({ areas, chosen }: { areas: AreaChoice[]; chosen: AreaCho
               {CART_COUNT}
             </span>
           </button>
-          <button
+          <ThemeToggle className="size-10" />
+          <Link
+            href="/account"
             aria-label="Account"
             className="grid size-10 place-items-center rounded-full border border-line text-ink hover:bg-hover"
           >
             <User className="size-5" />
-          </button>
+          </Link>
         </div>
       </div>
     </header>

@@ -237,23 +237,39 @@ export async function getTopPicks(): Promise<Product[]> {
      `sourceImageUrl`. `imageIsGenerated: false` drops the illustrated
      ones: they are labelled honestly on a card someone went looking for,
      but they should not be what the storefront leads with. */
-  const categories = await db.category.findMany({ select: { id: true } });
+  /* One query, not one per category.
+     The pool was built by fanning out a findMany per category and awaiting
+     them together. Fourteen categories means fourteen connections asked
+     for at once, and against a pooled Postgres that is enough to exhaust
+     Prisma's own pool and time the page out — which is how the home page
+     started returning 500 in production. A window function picks the same
+     rows server-side and asks for one connection. */
+  const ranked = await db.$queryRaw<{ id: string }[]>`
+    SELECT id FROM (
+      SELECT p.id,
+             ROW_NUMBER() OVER (
+               PARTITION BY p."categoryId" ORDER BY p."createdAt" DESC
+             ) AS rank
+      FROM products p
+      WHERE p."isActive"
+        AND p.image <> ''
+        AND NOT p."imageIsGenerated"
+        AND EXISTS (
+          SELECT 1 FROM product_variants v
+          WHERE v."productId" = p.id AND v."isActive"
+        )
+    ) ranked
+    WHERE rank <= ${TOP_PICK_POOL}
+  `;
 
-  const pools = await Promise.all(
-    categories.map((category) =>
-      db.product.findMany({
-        ...PRODUCT_QUERY,
-        where: {
-          ...PRODUCT_QUERY.where,
-          categoryId: category.id,
-          NOT: { image: "" },
-          imageIsGenerated: false,
-        },
-        orderBy: { createdAt: "desc" },
-        take: TOP_PICK_POOL,
-      }),
-    ),
-  );
+  const pools = ranked.length
+    ? [
+        await db.product.findMany({
+          ...PRODUCT_QUERY,
+          where: { ...PRODUCT_QUERY.where, id: { in: ranked.map((r) => r.id) } },
+        }),
+      ]
+    : [];
 
   /* Newest first across the whole catalogue, then take the first product
      that brings both a category and a photograph the row does not have.

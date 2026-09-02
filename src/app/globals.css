@@ -45,6 +45,106 @@
   /* Status */
   --quoin-success: #2f8f57;
   --quoin-danger: #c8452f;
+
+  /* The four entry tiles. Gradients rather than flat fills, and tokens
+     rather than inline values, so the dark palette can restate them —
+     a light tint painted straight into the markup stays light forever. */
+  --quoin-tile-1: linear-gradient(150deg, #f8efe6 0%, #eedcc8 100%);
+  --quoin-tile-2: linear-gradient(150deg, #f4f1ea 0%, #e0dbd0 100%);
+  --quoin-tile-3: linear-gradient(150deg, #fbeee7 0%, #f2d8c8 100%);
+  --quoin-tile-4: linear-gradient(150deg, #f8f1de 0%, #ecdcb6 100%);
+  /* The plate the mark sits on, lifted off whichever tint is behind it. */
+  --quoin-plate: rgb(255 255 255 / 0.75);
+  --quoin-plate-solid: #ffffff;
+  --quoin-plate-edge: rgb(255 255 255 / 0.6);
+}
+
+
+/**
+ * The same brand after dark.
+ *
+ * Not the light palette inverted. Terracotta at #d95d24 goes muddy on a
+ * near-black ground, so the accent lifts; the grounds keep their warmth
+ * rather than going neutral grey, because a cool dark under a warm brand
+ * reads as a different shop. `deep` inverts its job — on paper it is the
+ * dark band that breaks up the page, and here it has to be lighter than
+ * the ground to do the same work.
+ *
+ * Applied two ways. `[data-theme="dark"]` is an explicit choice and wins
+ * over everything; the media query covers the visitor who has never
+ * chosen, and is guarded so that choosing light is not overridden by
+ * their system.
+ */
+:root[data-theme="dark"] {
+  --quoin-bg: #16110e;
+  --quoin-surface: #1f1814;
+  --quoin-surface-raised: #261e18;
+  --quoin-surface-hover: #2f251e;
+
+  --quoin-accent: #ef7a44;
+  --quoin-accent-bright: #ff9160;
+  --quoin-accent-dim: #c05c2a;
+  --quoin-accent-wash: rgb(239 122 68 / 0.14);
+  --quoin-accent-edge: rgb(239 122 68 / 0.34);
+
+  --quoin-deep: #3a2a20;
+  --quoin-deep-soft: #4b382c;
+  --quoin-pro: #d9b978;
+
+  --quoin-text: #f6efe8;
+  --quoin-text-muted: #b5a49a;
+  --quoin-text-faint: #7f7067;
+
+  --quoin-border: #342b24;
+  --quoin-border-soft: #2a221c;
+
+  --quoin-success: #58c98a;
+  --quoin-danger: #f0837a;
+
+  --quoin-tile-1: linear-gradient(150deg, #2b211a 0%, #3a2a1e 100%);
+  --quoin-tile-2: linear-gradient(150deg, #262421 0%, #34302a 100%);
+  --quoin-tile-3: linear-gradient(150deg, #2f221b 0%, #402a20 100%);
+  --quoin-tile-4: linear-gradient(150deg, #2d2619 0%, #3c3221 100%);
+  --quoin-plate: rgb(255 255 255 / 0.07);
+  --quoin-plate-solid: rgb(255 255 255 / 0.13);
+  --quoin-plate-edge: rgb(255 255 255 / 0.10);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --quoin-bg: #16110e;
+    --quoin-surface: #1f1814;
+    --quoin-surface-raised: #261e18;
+    --quoin-surface-hover: #2f251e;
+
+    --quoin-accent: #ef7a44;
+    --quoin-accent-bright: #ff9160;
+    --quoin-accent-dim: #c05c2a;
+    --quoin-accent-wash: rgb(239 122 68 / 0.14);
+    --quoin-accent-edge: rgb(239 122 68 / 0.34);
+
+    --quoin-deep: #3a2a20;
+    --quoin-deep-soft: #4b382c;
+    --quoin-pro: #d9b978;
+
+    --quoin-text: #f6efe8;
+    --quoin-text-muted: #b5a49a;
+    --quoin-text-faint: #7f7067;
+
+    --quoin-border: #342b24;
+    --quoin-border-soft: #2a221c;
+
+    --quoin-success: #58c98a;
+    --quoin-danger: #f0837a;
+
+    --quoin-tile-1: linear-gradient(150deg, #2b211a 0%, #3a2a1e 100%);
+    --quoin-tile-2: linear-gradient(150deg, #262421 0%, #34302a 100%);
+    --quoin-tile-3: linear-gradient(150deg, #2f221b 0%, #402a20 100%);
+    --quoin-tile-4: linear-gradient(150deg, #2d2619 0%, #3c3221 100%);
+    --quoin-plate: rgb(255 255 255 / 0.07);
+    --quoin-plate-solid: rgb(255 255 255 / 0.13);
+    --quoin-plate-edge: rgb(255 255 255 / 0.10);
+  }
 }
 
 @theme inline {
@@ -66,6 +166,10 @@
   --color-ink: var(--quoin-text);
   --color-muted: var(--quoin-text-muted);
   --color-faint: var(--quoin-text-faint);
+
+  --color-plate: var(--quoin-plate);
+  --color-plate-solid: var(--quoin-plate-solid);
+  --color-plate-edge: var(--quoin-plate-edge);
 
   --color-line: var(--quoin-border);
   --color-line-soft: var(--quoin-border-soft);
