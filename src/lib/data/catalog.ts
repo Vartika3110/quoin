@@ -656,3 +656,38 @@ export async function listBrandsMissingPhotos(): Promise<
     .map((r) => ({ slug: r.slug, name: r.name, missing: r._count.products }))
     .sort((a, b) => b.missing - a.missing);
 }
+
+/**
+ * Products selling below their list price.
+ *
+ * A discount is the gap between MRP and sell price on a live variant, not
+ * a flag someone sets — so nothing can appear here advertising a saving a
+ * customer would not get at checkout. Prisma cannot compare two columns
+ * of the same row in a `where`, so the comparison is done in SQL and the
+ * ids come back to the same include the rest of the storefront uses.
+ */
+export async function listDiscountedProducts(
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+): Promise<ProductPage> {
+  const rows = await db.$queryRaw<{ id: string }[]>`
+    SELECT DISTINCT p.id
+    FROM products p
+    JOIN product_variants v ON v."productId" = p.id
+    WHERE p."isActive" AND v."isActive" AND v."pricePaise" < v."mrpPaise"
+  `;
+  const ids = rows.map((r) => r.id);
+  const total = ids.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  if (total === 0) return { items: [], page, pageSize, total, totalPages };
+
+  const slice = ids.slice((Math.max(1, page) - 1) * pageSize, Math.max(1, page) * pageSize);
+  const products = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: { ...PRODUCT_QUERY.where, id: { in: slice } },
+    orderBy: { name: "asc" },
+  });
+
+  return { items: products.map(toProduct), page, pageSize, total, totalPages };
+}

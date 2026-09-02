@@ -3,15 +3,19 @@ import Link from "next/link";
 import { CategoryTile } from "@/components/storefront/sections";
 import { BRAND_LOGOS } from "@/lib/brand-logos";
 import {
+  Boards,
   Building,
+  Bricks,
   Chevron,
   Crown,
-  Bricks,
+  Grid,
+  Hammer,
+  Headset,
   Helmet,
   Lamp,
-  Partners,
   Shield,
-  Box,
+  Tap,
+  Truck,
   Video,
 } from "@/components/icons";
 import { formatPrice, type Category } from "@/lib/types/catalog";
@@ -236,30 +240,31 @@ export function Hero() {
 /* --------------------------------------------------------------- trust bar */
 
 const TRUST = [
-  { Icon: Shield, label: "Trusted by professionals" },
-  { Icon: Box, label: "Powered by the Quoin network" },
-  { Icon: Partners, label: "Industry partners" },
+  { Icon: Shield, label: "Premium Quality" },
+  { Icon: Headset, label: "Expert Guidance" },
+  { Icon: Grid, label: "Wide Selection" },
+  { Icon: Truck, label: "Fast Delivery" },
 ];
 
 export function TrustBar() {
   return (
-    /* Three cards rather than one bar.
-       As a single strip divided by hairlines this read as a footer that had
-       drifted up the page: 11px muted type, a 16px mark, and two rules
-       doing the work of the spacing. The three claims are not a legend —
-       they are the reasons to trust the shop — so each gets the same card
-       the rest of the page uses, and the mark gets the accent disc the
-       consult row and the Pro banner already give theirs. */
-    <ul className="grid gap-3 sm:grid-cols-3">
+    /* Four claims across, mark above label.
+       They were one card each, full width, after a previous pass moved
+       them off a hairline strip that read as a footer which had drifted up
+       the page. That reasoning holds and the card is kept — but a fourth
+       claim turns a column of full-width cards into a screen of its own
+       before the catalogue is reached. Stacking the mark over the label
+       fits all four on the narrowest phone without shrinking either. */
+    <ul className="grid grid-cols-4 gap-2">
       {TRUST.map(({ Icon, label }) => (
         <li
           key={label}
-          className="flex items-center gap-3 rounded-card border border-line-soft bg-surface px-4 py-4"
+          className="flex flex-col items-center gap-2 rounded-card border border-line-soft bg-surface px-1 py-3 text-center"
         >
-          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-wash text-accent">
-            <Icon className="size-5" />
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-wash text-accent">
+            <Icon className="size-4.5" />
           </span>
-          <span className="text-sm leading-snug text-ink">{label}</span>
+          <span className="text-[11px] leading-tight text-ink sm:text-xs">{label}</span>
         </li>
       ))}
     </ul>
@@ -400,6 +405,62 @@ export function ProBanner({ cartCount }: { cartCount: number }) {
         </span>
         <Chevron className="size-4 shrink-0 text-muted" />
       </Link>
+    </div>
+  );
+}
+
+/* --------------------------------------------------------- department row */
+
+/**
+ * Icons for the department strip, by category slug.
+ *
+ * A small hand-made map rather than a picture: at this size a photograph
+ * of a tap is a grey smudge, and the row is for orientation rather than
+ * browsing. Categories without an entry fall back to the crate, which
+ * reads as "goods" and never as the wrong thing.
+ */
+const DEPARTMENT_ICONS: Record<string, typeof Chevron> = {
+  "bathware-plumbing": Tap,
+  "kitchen-sinks-faucets": Tap,
+  "electricals-lighting": Lamp,
+  "hardware-locks": Hammer,
+  "kitchen-wardrobe-fittings": Hammer,
+  "tools-safety": Helmet,
+  "cement-steel": Bricks,
+  "tiling-adhesives": Bricks,
+  "plywood-laminates": Boards,
+  "paints-finishes": Boards,
+  "gypsum-false-ceiling": Boards,
+  "home-appliances-security": Shield,
+  waterproofing: Tap,
+  services: Building,
+};
+
+/**
+ * Departments, as a row of names under icons.
+ *
+ * The category cards above sell four; this reaches the rest without
+ * another wall of tiles, and is the fastest route to a section for
+ * someone who already knows what they came for.
+ */
+export function DepartmentRow({ categories }: { categories: Category[] }) {
+  return (
+    <div className="rail gap-1 px-5 lg:gap-3 lg:px-0">
+      {categories.map((c) => {
+        const Icon = DEPARTMENT_ICONS[c.slug] ?? Crown;
+        return (
+          <Link
+            key={c.id}
+            href={`/c/${c.slug}`}
+            className="group flex w-20 shrink-0 flex-col items-center gap-2 rounded-tile px-1 py-2 text-center transition-colors hover:bg-hover lg:w-24"
+          >
+            <Icon className="size-7 text-deep transition-colors group-hover:text-accent" />
+            <span className="text-[10px] leading-tight text-muted group-hover:text-ink lg:text-[11px]">
+              {c.title}
+            </span>
+          </Link>
+        );
+      })}
     </div>
   );
 }

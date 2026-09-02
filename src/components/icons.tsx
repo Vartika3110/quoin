@@ -305,3 +305,40 @@ export const Phone = (p: IconProps) => (
     <path d="M6.5 3.5h3l1.5 4-2 1.5a11 11 0 0 0 6 6l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.7a2 2 0 0 1 2-2.2z" />
   </Svg>
 );
+
+/** Tray with an arrow out — uploading a document. */
+export const Upload = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 15V3" />
+    <path d="m8 7 4-4 4 4" />
+    <path d="M3 14v4a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-4" />
+  </Svg>
+);
+
+/** Tap head and spout — bathware. */
+export const Tap = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M8 21h8" />
+    <path d="M12 21v-7" />
+    <path d="M5 14h14a7 7 0 0 0-14 0z" />
+    <path d="M12 7V4.5A1.5 1.5 0 0 1 13.5 3H17" />
+  </Svg>
+);
+
+/** Claw hammer — hardware and fittings. */
+export const Hammer = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14.5 5.5 19 10l-2.5 2.5L12 8z" />
+    <path d="M12 8 4.5 15.5a2.1 2.1 0 0 0 3 3L15 11" />
+    <path d="M14.5 5.5a4 4 0 0 1 5 0" />
+  </Svg>
+);
+
+/** Stacked boards — plywood and laminates. */
+export const Boards = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M2.5 8.5 12 4l9.5 4.5L12 13z" />
+    <path d="m2.5 12.5 9.5 4.5 9.5-4.5" />
+    <path d="m2.5 16.5 9.5 4.5 9.5-4.5" />
+  </Svg>
+);

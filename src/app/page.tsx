@@ -4,6 +4,7 @@ import { TabRail } from "@/components/storefront/TabRail";
 import {
   BrandStrip,
   CategoryCards,
+  DepartmentRow,
   ConsultCta,
   EntryTiles,
   Hero,
@@ -69,6 +70,11 @@ export default async function HomePage() {
         <section>
           <SectionHead title="Shop by Category" href="/categories" />
           <CategoryCards categories={featured} priceFloors={priceFloors} />
+        </section>
+
+        <section>
+          <SectionHead title="Shop by Department" href="/categories" />
+          <DepartmentRow categories={categories} />
         </section>
 
         <section>

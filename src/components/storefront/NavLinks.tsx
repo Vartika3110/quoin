@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Box, Grid, Headset, Home, QMark } from "@/components/icons";
+import { Box, Grid, Home, Tag, Upload, User } from "@/components/icons";
 
 /**
  * The primary navigation, in both of its layouts.
@@ -21,8 +21,9 @@ const NAV = [
   { href: "/", label: "Home", Icon: Home },
   { href: "/categories", label: "Categories", Icon: Grid },
   { href: "/projects", label: "Project Hub", Icon: Box },
-  { href: "/consult", label: "Consult", Icon: Headset },
-  { href: "/studio", label: "Quoin Studio", Icon: QMark },
+  { href: "/upload", label: "Upload Parcha", Icon: Upload },
+  { href: "/deals", label: "Deals", Icon: Tag },
+  { href: "/account", label: "Account", Icon: User },
 ];
 
 /**
@@ -41,7 +42,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line bg-bg/95 pt-2 backdrop-blur lg:hidden"
+      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-line bg-bg/95 pt-2 backdrop-blur lg:hidden"
     >
       {NAV.map(({ href, label, Icon }) => {
         const on = isCurrent(pathname, href);
@@ -50,7 +51,9 @@ export function MobileBottomNav() {
             key={href}
             href={href}
             aria-current={on ? "page" : undefined}
-            className={`flex min-h-11 flex-col items-center justify-center gap-1 px-1 text-[10px] ${
+            /* Six across on a 360px phone leaves 60px a tab, so the label
+               drops to 9px and wraps rather than truncating a word. */
+            className={`flex min-h-11 flex-col items-center justify-center gap-1 px-0.5 text-[9px] ${
               on ? "text-accent" : "text-muted"
             }`}
           >
