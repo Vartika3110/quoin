@@ -72,15 +72,38 @@ export function LocationPicker({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
+        aria-label={
+          selected
+            ? `Delivering to ${selected.name}. Change area`
+            : "Choose your area"
+        }
         /* 44px tall for a thumb on a phone; back to its natural height in
            the desktop top bar, which is a pointer target inside a chip. */
-        className="flex min-h-11 max-w-full items-center gap-1.5 text-left text-sm text-ink lg:min-h-0"
+        className="flex min-h-11 max-w-full items-center gap-1.5 text-left lg:min-h-0"
       >
         <Pin className="size-4 shrink-0 text-accent" />
-        <span className="truncate">
-          {selected ? `${selected.name}, ${selected.city}` : "Choose your area"}
+
+        <span className="min-w-0">
+          {/* Two lines on a phone, one on a desktop.
+
+              "Delivering to Pitampura" is the thing a customer needs to
+              be able to check at a glance and correct in one tap — it
+              scopes every delivery promise on the page. On a phone there
+              is room for the label above the place; in the desktop bar
+              the chip sits among six other controls and a second line
+              would make it the tallest thing there. */}
+          <span className="block text-micro leading-none text-muted lg:hidden">
+            {selected ? "Delivering to" : "Set your area"}
+          </span>
+          <span className="mt-0.5 flex items-center gap-1 lg:mt-0">
+            <span className="truncate text-body-sm font-medium text-ink lg:text-body lg:font-normal">
+              {selected
+                ? selected.name
+                : "Choose your area"}
+            </span>
+            <ChevronDown className="size-4 shrink-0 text-muted" />
+          </span>
         </span>
-        <ChevronDown className="size-4 shrink-0 text-muted" />
       </button>
 
       {open && (
