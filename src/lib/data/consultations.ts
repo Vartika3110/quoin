@@ -139,6 +139,31 @@ export async function listConsultRequests(
   return rows.map(toView);
 }
 
+/**
+ * One customer's own requests.
+ *
+ * Keyed on the phone rather than the user id: a consultation can be
+ * booked without an account — that is the point of the flow — and the row
+ * is only linked to a `userId` when the person happened to be signed in.
+ * Matching on the number is what lets someone who booked as a guest and
+ * signed in afterwards still see it.
+ *
+ * The caller must supply an already-normalised E.164 number, which in
+ * practice means the one on the session's own user row.
+ */
+export async function listConsultRequestsForPhone(
+  phone: string,
+  limit = 20,
+): Promise<ConsultRequestView[]> {
+  const rows = await db.consultRequest.findMany({
+    ...VIEW_QUERY,
+    where: { phone },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return rows.map(toView);
+}
+
 /** ---- Writes ------------------------------------------------------------- */
 
 export interface NewConsultRequest {
