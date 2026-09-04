@@ -17,6 +17,7 @@ const { normalizeQty, areaFromDimensions, applyWastage, lineTotal } =
 const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
   await import("@/lib/types/catalog");
 const { istDay, addDays, formatConsultDay } = await import("@/lib/types/consult");
+const { parseParcha } = await import("@/lib/parcha");
 type CatalogProduct = import("@/lib/types/catalog").Product;
 
 /**
@@ -290,5 +291,73 @@ describe("consultation days", () => {
      timezone of the machine rendering it. */
   it("labels a day without shifting it", () => {
     assert.equal(formatConsultDay("2026-09-01"), "Tue, 1 Sept");
+  });
+});
+
+/* ------------------------------------------------------------------ parcha */
+
+describe("parcha parsing", () => {
+  it("reads a quantity written after the name", () => {
+    const [line] = parseParcha("Cement 40 bags");
+    assert.equal(line.term, "Cement");
+    assert.equal(line.qty, 40);
+    assert.equal(line.unit, "bags");
+  });
+
+  it("reads a quantity written before the name", () => {
+    const [line] = parseParcha("40 bags cement");
+    assert.equal(line.term, "cement");
+    assert.equal(line.qty, 40);
+    assert.equal(line.unit, "bags");
+  });
+
+  it("reads a multiplier written as x", () => {
+    const [line] = parseParcha("12 x floor spring");
+    assert.equal(line.term, "floor spring");
+    assert.equal(line.qty, 12);
+  });
+
+  it("keeps a size that is part of the product name", () => {
+    /* The number and the word after it are the product, not an order of
+       twenty. Losing this is how "8 inch pipe" becomes "8 of pipe". */
+    const [line] = parseParcha("Pipe 20 mm");
+    assert.equal(line.term, "Pipe 20 mm");
+    assert.equal(line.qty, 1);
+    assert.equal(line.unit, null);
+  });
+
+  it("does not take a leading size as a quantity", () => {
+    const [line] = parseParcha("8 inch CPVC bend");
+    assert.equal(line.term, "8 inch CPVC bend");
+    assert.equal(line.qty, 1);
+  });
+
+  it("splits on commas as well as newlines", () => {
+    const lines = parseParcha("Cement 40 bags, White paint 18 ltr");
+    assert.equal(lines.length, 2);
+    assert.equal(lines[1].term, "White paint");
+    assert.equal(lines[1].unit, "litres");
+  });
+
+  it("strips bullets and serial numbers", () => {
+    const lines = parseParcha("1. Cement 40 bags\n- Steel 250 kg\n• Tiles 620 sqft");
+    assert.deepEqual(
+      lines.map((l) => l.term),
+      ["Cement", "Steel", "Tiles"],
+    );
+    assert.deepEqual(
+      lines.map((l) => l.unit),
+      ["bags", "kg", "sq.ft."],
+    );
+  });
+
+  it("drops blank lines and fragments too short to search", () => {
+    assert.equal(parseParcha("\n\n  \n-\n").length, 0);
+  });
+
+  it("defaults a missing quantity to one", () => {
+    const [line] = parseParcha("Jaquar shower head");
+    assert.equal(line.qty, 1);
+    assert.equal(line.unit, null);
   });
 });
