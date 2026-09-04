@@ -1,4 +1,3 @@
-import { randomInt } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import type {
   ConsultMode as DbMode,
@@ -7,6 +6,7 @@ import type {
 } from "@prisma/client";
 import { db } from "@/lib/db";
 import { maskPhone } from "@/lib/auth/phone";
+import { REFERENCE_ATTEMPTS, generateReference } from "@/lib/reference";
 import type {
   ConsultMode,
   ConsultRequestView,
@@ -60,24 +60,8 @@ const FROM_DB_STATUS: Record<DbStatus, ConsultStatus> = {
 
 /** ---- Reference codes ---------------------------------------------------- */
 
-/**
- * No O, 0, I, 1, S or 5. This code is read down a phone line and written
- * on the back of a card, and those are the pairs that come back wrong.
- */
-const ALPHABET = "ABCDEFGHJKMNPQRTUVWXYZ2346789";
-const REFERENCE_LENGTH = 6;
-
-function generateReference(): string {
-  let out = "";
-  /* `randomInt`, not `Math.random`: the reference is the only thing a
-     customer quotes to identify their request, so it must not be
-     guessable from another one issued the same second. */
-  for (let i = 0; i < REFERENCE_LENGTH; i++) out += ALPHABET[randomInt(ALPHABET.length)];
-  return `QC-${out}`;
-}
-
-/** 29^6 ≈ 594M codes; a handful of retries covers any realistic volume. */
-const REFERENCE_ATTEMPTS = 5;
+/** `QC` for consultation; orders use `QO`. See `src/lib/reference.ts`. */
+const REFERENCE_PREFIX = "QC";
 
 /** ---- Reads -------------------------------------------------------------- */
 
@@ -228,7 +212,7 @@ export async function createConsultRequest(
   for (let attempt = 0; attempt < REFERENCE_ATTEMPTS; attempt++) {
     try {
       const row = await db.consultRequest.create({
-        data: { ...data, reference: generateReference() },
+        data: { ...data, reference: generateReference(REFERENCE_PREFIX) },
         ...VIEW_QUERY,
       });
       return toView(row);

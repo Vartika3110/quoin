@@ -33,6 +33,34 @@ const schema = z.object({
   MSG91_SENDER_ID: z.string().optional(),
 
   /**
+   * Razorpay. All three optional, and — unlike MSG91 — there is
+   * deliberately no production guard demanding them.
+   *
+   * The MSG91 guard exists because its fallback does something unsafe:
+   * printing login codes to the server log. Payments have no such
+   * fallback. With these unset the checkout simply reports that payment
+   * is unavailable and takes no money, which is a correct state, not a
+   * dangerous one — and it is the state a deploy sits in for the days or
+   * weeks that gateway KYC takes. Refusing to boot over it would take a
+   * working storefront down to protect against nothing.
+   *
+   * `RAZORPAY_KEY_ID` is not secret: it is handed to the browser to open
+   * the checkout. It is read here rather than as `NEXT_PUBLIC_` so that
+   * rotating it is an environment change and not a rebuild, and so there
+   * is one source of truth for whether payments are configured at all.
+   */
+  RAZORPAY_KEY_ID: z.string().optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  /**
+   * Signs the webhook. Set separately in the Razorpay dashboard and
+   * unrelated to the API secret above — a deploy can have valid API
+   * credentials and still be unable to trust a single webhook, so the
+   * handler checks for this one specifically rather than assuming that
+   * having keys means having this.
+   */
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+
+  /**
    * Renders the competitor product photography captured in
    * `Product.sourceImageUrl`.
    *
@@ -76,6 +104,9 @@ function load(): Env {
         MSG91_AUTH_KEY: process.env.MSG91_AUTH_KEY,
         MSG91_TEMPLATE_ID: process.env.MSG91_TEMPLATE_ID,
         MSG91_SENDER_ID: process.env.MSG91_SENDER_ID,
+        RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
+        RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
+        RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
         SHOW_SOURCE_IMAGES: process.env.SHOW_SOURCE_IMAGES === "1",
       };
     }

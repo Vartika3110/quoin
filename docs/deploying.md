@@ -115,6 +115,14 @@ Environment variables, for Production and Preview:
 | `MSG91_AUTH_KEY` | see below |
 | `MSG91_TEMPLATE_ID` | your DLT-approved template |
 | `MSG91_SENDER_ID` | your DLT-approved sender |
+| `RAZORPAY_KEY_ID` | from the Razorpay dashboard — see below |
+| `RAZORPAY_KEY_SECRET` | the other half of that pair |
+| `RAZORPAY_WEBHOOK_SECRET` | set when you create the webhook, not the same value |
+
+The three Razorpay variables are genuinely optional and there is no boot
+guard on them, unlike MSG91. Unset, the storefront runs normally and
+checkout answers that online payment is not available — which is the
+state a deploy sits in for as long as gateway activation takes.
 
 ## The MSG91 catch
 
@@ -160,10 +168,66 @@ data clears them. See `src/lib/store/`.
 addresses, the account area's server-backed sections, and the address step
 of checkout.
 
-**Not built:** order persistence. Checkout re-prices the basket against the
-live catalogue, splits it by fulfilment and confirms, then hands the order
-to a person, because there is no `Order` table to write to. `/account/orders`
-says so rather than showing an invented history.
+**Needs Razorpay credentials:** paying for an order. The `Order`,
+`OrderLine` and `Payment` tables exist and `POST /api/v1/checkout/order`
+writes to them, but with the keys unset that endpoint answers that
+payment is unavailable and the checkout falls back to the callback. See
+*Payments* below.
+
+**Not built:** anything after the money arrives. `OrderStatus` stops at
+`PAID` on purpose — there is no dispatch, no roster and no delivery scan
+behind this app, so fulfilment is a person, and statuses like `SHIPPED`
+would be a promise nothing updates.
+
+## Payments
+
+Razorpay, and it needs a live site before it will let you take money — so
+this comes after the domain, not before it. Activation is reviewed by a
+person who opens the URL and looks for terms, privacy, refund, shipping
+and contact pages reachable from the footer. The storefront does not have
+them yet; that is the gating work, not the integration.
+
+Until the account is activated, everything below works on the
+`rzp_test_` key pair, so the code path can be finished and exercised end
+to end while KYC is pending.
+
+**Keys.** Dashboard → Settings → API Keys. `RAZORPAY_KEY_ID` is handed to
+the browser and is not secret; `RAZORPAY_KEY_SECRET` never leaves the
+server. Neither is read at build time, so switching from `rzp_test_` to
+`rzp_live_` on activation day is an environment change and a restart, not
+a redeploy.
+
+**Capture mode.** Leave the account on *automatic* capture. With manual
+capture a payment stops at `authorized`, `payment.captured` never fires,
+and orders sit at `PENDING_PAYMENT` while the customer's money is held —
+which looks exactly like a broken webhook and is not one.
+
+**The webhook.** Dashboard → Settings → Webhooks:
+
+| | |
+| --- | --- |
+| URL | `https://<your domain>/api/v1/webhooks/razorpay` |
+| Events | `payment.captured` and `payment.failed` |
+| Secret | any strong random string — this becomes `RAZORPAY_WEBHOOK_SECRET` |
+
+That secret is **not** the API secret. Setting the API secret here is the
+single most common way to land in the failure below.
+
+The webhook is the only thing that marks an order paid. The signed
+handoff the browser gets when the checkout modal closes is verified too,
+but only to draw a confirmation screen — it travels through the
+customer's own browser and is simply absent whenever someone closes the
+tab on a successful payment.
+
+**When a test payment succeeds but the order stays `PENDING_PAYMENT`**,
+it is almost always the webhook, in this order: the secret does not
+match (the logs show `rejected a webhook with an invalid signature`), the
+URL is unreachable because Deployment Protection is still on, or the
+events were never subscribed. Razorpay's dashboard shows delivery
+attempts and their response codes per webhook, which answers all three.
+
+Note that a webhook cannot reach `localhost`. Local end-to-end testing
+needs a tunnel, or a deployed preview with its own test keys.
 
 ## Verifying a deploy
 

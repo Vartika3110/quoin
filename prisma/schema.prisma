@@ -57,6 +57,7 @@ model User {
 
   addresses       Address[]
   consultRequests ConsultRequest[]
+  orders          Order[]
 
   @@map("users")
 }
@@ -91,6 +92,7 @@ model Address {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  orders    Order[]
 
   @@index([userId])
   @@map("addresses")
@@ -506,4 +508,220 @@ model ConsultRequest {
   @@index([phone, createdAt])
   @@index([status, createdAt])
   @@map("consult_requests")
+}
+
+/// ---------------------------------------------------------------------
+/// Orders and payments.
+///
+/// Everything above this line is reproducible from the files in this repo
+/// — the catalogue can be dropped and re-imported. Nothing below it is.
+/// An order is a record of money that moved, so these tables are
+/// append-mostly and snapshot what they reference rather than pointing at
+/// it: a price edited in the admin, a variant retired, or an address
+/// corrected next month must not rewrite what a customer was charged.
+/// ---------------------------------------------------------------------
+
+/// Payment lifecycle only. Deliberately *not* a fulfilment state machine
+/// — there is no roster, no dispatch and no delivery scan behind this
+/// app, and statuses like `SHIPPED` would be a promise nothing updates.
+/// What happens after PAID is a person, and that stays true until there
+/// is an operations module to model it.
+enum OrderStatus {
+  /// Written before the customer is sent to the gateway. Rows can sit
+  /// here forever: an abandoned checkout is the ordinary case, not an
+  /// error, and it is the only evidence that the attempt happened.
+  PENDING_PAYMENT
+  /// The webhook confirmed a captured payment for the full amount. This
+  /// is the only status that may be set by anything other than a person,
+  /// and only `payment.captured` sets it.
+  PAID
+  /// The gateway reported the attempt failed. Not terminal — the customer
+  /// can pay the same order again, which is why `Payment` is a separate
+  /// table.
+  FAILED
+  CANCELLED
+}
+
+model Order {
+  id String @id @default(cuid())
+
+  /// The code the customer quotes on the phone. Same alphabet as
+  /// `ConsultRequest.reference` and for the same reason — it is read
+  /// aloud — with a different prefix so support can tell at a glance
+  /// whether they are looking at an order or a consultation.
+  reference String @unique
+
+  /// Orders require an account. A guest order would have nowhere to send
+  /// the invoice and no way to prove ownership when the customer calls
+  /// about it, and the phone number behind a session is already verified.
+  ///
+  /// Restrict, not Cascade: deleting a user must not delete the financial
+  /// record of what they paid. Closing an account is an anonymisation
+  /// problem, not a deletion one.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  status OrderStatus @default(PENDING_PAYMENT)
+
+  /// ---- money, all paise, all server-computed --------------------------
+  /// Recomputed by `quoteCart` at the moment the order is written and
+  /// never taken from the browser. The gateway is told `totalPaise`, and
+  /// the webhook checks what was captured against it before marking the
+  /// order paid.
+  subtotalPaise Int
+  /// Sum of the per-line GST, which is itself computed from each
+  /// product's `gstRatePct`. Stored rather than derived so that a rate
+  /// corrected in the catalogue next quarter does not restate an invoice
+  /// that has already been issued.
+  taxPaise      Int
+  totalPaise    Int
+
+  /// ---- delivery address, snapshotted ----------------------------------
+  /// Copied rather than joined. `Address` rows are editable, and a
+  /// customer fixing a typo in their flat number must not change the
+  /// address a delivered order says it went to.
+  addressId    String?
+  address      Address? @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  shipName     String
+  shipPhone    String
+  shipLine1    String
+  shipLine2    String?
+  shipLandmark String?
+  shipCity     String
+  shipState    String
+  shipPincode  String
+
+  lines    OrderLine[]
+  payments Payment[]
+
+  /// Set once, by the webhook, when the first capture lands. A second
+  /// delivery of the same event must not move it.
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The account area lists a customer's own orders newest first; ops
+  /// reads the queue by status.
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+/// One purchased line, frozen.
+///
+/// No foreign key to `ProductVariant`. That is deliberate and it is the
+/// whole point of this table: variants are retired, renamed and repriced,
+/// and an order line must keep saying what was bought and what it cost
+/// even after the SKU stops existing. `variantId` and `productSlug` are
+/// kept as plain strings so support can still find the catalogue row when
+/// it is there, without the database being able to change this one.
+model OrderLine {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productSlug  String
+  variantId    String
+  sku          String
+  /// The name as it read on the day, not as it reads now.
+  title        String
+  variantLabel String
+
+  qty            Int
+  unitPricePaise Int
+  /// Struck-through price at the time, when there was a saving to show.
+  mrpPaise       Int?
+  /// `unitPricePaise * qty`, before tax.
+  linePaise      Int
+
+  /// The slab this line was taxed at, copied from `Product.gstRatePct`.
+  gstRatePct Int
+  /// GST on this line, computed from `linePaise` and `gstRatePct`.
+  taxPaise   Int
+
+  /// Copied from the product so the order can still be split by how it
+  /// reaches the customer once the catalogue has moved on.
+  fulfilment Fulfilment
+
+  @@index([orderId])
+  @@map("order_lines")
+}
+
+enum PaymentProvider {
+  RAZORPAY
+}
+
+/// Mirrors the gateway's own vocabulary rather than inventing one.
+/// Translating Razorpay's states into house terms would mean deciding
+/// what `authorized` means here every time the mapping is read.
+enum PaymentStatus {
+  /// A gateway order exists and the customer has been handed to it.
+  CREATED
+  /// Funds held, not yet taken. Only appears when the account is set to
+  /// manual capture; with auto-capture the next state is CAPTURED.
+  AUTHORIZED
+  /// Money taken. The only state that may mark an `Order` PAID.
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
+/// One trip to the gateway.
+///
+/// The grain is a *checkout attempt*, not an `Order` and not a Razorpay
+/// `payment_id`: a row is written when a gateway order is created and the
+/// customer is handed to it. Someone who abandons and comes back a day
+/// later gets a second gateway order and so a second row, which is what
+/// keeps the abandoned attempt visible instead of overwriting it.
+///
+/// Retries *inside* one checkout modal — a UPI collect that expires and
+/// is then paid by card — share Razorpay's order id and so share this
+/// row, and the later `payment_id` replaces the earlier one on it. That
+/// loses the failed attempt's id, which is a support inconvenience and
+/// not an accounting one: the money is tracked by the capture, and the
+/// failure reason is still written to `failureReason`.
+model Payment {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  provider PaymentProvider @default(RAZORPAY)
+
+  /// Razorpay's `order_id`, and the key the webhook looks a row up by —
+  /// it is the only identifier that exists both before the customer has
+  /// paid anything and on every event about it afterwards. Unique because
+  /// exactly one gateway order is created per row.
+  providerOrderId String @unique
+
+  /// Razorpay's `payment_id`, null until the customer actually tries to
+  /// pay. Unique, and that index is load-bearing: together with `status`
+  /// it is how a repeat webhook delivery is recognised as one. Razorpay
+  /// retries on any non-2xx and can deliver the same event twice even
+  /// after a success, so settlement is written to be safe to run again
+  /// rather than assumed to run once.
+  providerPaymentId String? @unique
+
+  /// What the gateway was asked for, in paise. Compared against the
+  /// captured amount before an order is marked paid — a capture for less
+  /// than the order total is a discrepancy, not a sale.
+  amountPaise Int
+
+  status PaymentStatus @default(CREATED)
+
+  /// `upi`, `card`, `netbanking`, `wallet` — the gateway's own string,
+  /// stored as text because the list is theirs to extend, not ours.
+  method String?
+
+  /// The gateway's failure description, kept verbatim for support. Shown
+  /// to no one: these strings are written for integrators, not customers.
+  failureReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@map("payments")
 }

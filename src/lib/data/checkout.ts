@@ -17,11 +17,19 @@ import { normalizeQty } from "@/lib/cart/quantity";
  * the sellable grid is reported as such, so the customer is shown the
  * change before they agree to it rather than after they have paid.
  *
- * GST is deliberately absent. The catalogue has no HSN or rate column, and
- * construction materials in India span 5%, 12%, 18% and 28% — a single
- * assumed rate would be wrong for most of a mixed basket, and a wrong tax
- * line on an invoice is a compliance problem, not a rounding one. The
- * quote says tax is added on the invoice, which is true.
+ * GST is deliberately absent *here*, and that is a scoping decision
+ * rather than a missing column: `Product.gstRatePct` holds the slab, set
+ * per category by the importer. A quote is a pricing answer — "what does
+ * this basket cost" — and it is served to guests, where a tax breakdown
+ * is noise. Tax is computed once, at the point it becomes an invoice
+ * line, by `taxForLine` in `src/lib/data/orders.ts`, and frozen onto the
+ * order there.
+ *
+ * The quote tells the customer tax is added on the invoice, which is
+ * true, and which is also the statement that makes catalogue prices
+ * tax-*exclusive*. See the note on `taxForLine` — it matters, because
+ * Indian MRPs are inclusive by law and a price imported from one without
+ * the tax stripped would be taxed twice.
  */
 
 export interface QuoteLineInput {

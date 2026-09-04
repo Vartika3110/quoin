@@ -5,6 +5,14 @@ import { describe, it } from "node:test";
 process.env.DATABASE_URL ??= "postgresql://localhost:5432/quoin_test";
 process.env.AUTH_SECRET ??= "test-secret-at-least-32-characters-long!!";
 
+/* Here rather than beside the payments imports below, because `env` is a
+   module-level constant: it snapshots `process.env` the first time
+   anything imports it, and the OTP import a few lines down does exactly
+   that. Set after it and the signature helpers see no secret and reject
+   everything — including the deliveries these tests prove they accept. */
+process.env.RAZORPAY_KEY_SECRET ??= "rzp_test_secret_for_unit_tests";
+process.env.RAZORPAY_WEBHOOK_SECRET ??= "webhook_secret_for_unit_tests";
+
 const { normalizePhone, maskPhone, InvalidPhoneError } = await import(
   "@/lib/auth/phone"
 );
@@ -19,6 +27,12 @@ const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
 const { istDay, addDays, formatConsultDay } = await import("@/lib/types/consult");
 const { parseParcha } = await import("@/lib/parcha");
 const { categorySlugsForTerm } = await import("@/lib/data/search");
+
+const { taxForLine } = await import("@/lib/data/orders");
+const { verifyWebhookSignature, verifyCheckoutSignature } = await import(
+  "@/lib/payments/razorpay"
+);
+const { createHmac } = await import("node:crypto");
 type CatalogProduct = import("@/lib/types/catalog").Product;
 
 /**
@@ -397,5 +411,102 @@ describe("plain-language category matching", () => {
   it("returns nothing for a term too short to mean anything", () => {
     assert.deepEqual(categorySlugsForTerm("a"), []);
     assert.deepEqual(categorySlugsForTerm(""), []);
+  });
+});
+
+/* ----------------------------------------------------------------- GST */
+
+describe("GST on an order line", () => {
+  it("adds the slab on top of the line, not out of it", () => {
+    /* The checkout summary says GST is "Added on the invoice", so the
+       catalogue price is tax-exclusive and 18% of 10000 is 1800 — not
+       the 1525 an inclusive reading would extract. */
+    assert.equal(taxForLine(10_000, 18), 1_800);
+    assert.equal(taxForLine(10_000, 5), 500);
+    assert.equal(taxForLine(10_000, 28), 2_800);
+  });
+
+  it("charges nothing at a zero slab", () => {
+    assert.equal(taxForLine(99_999, 0), 0);
+  });
+
+  it("stays on whole paise", () => {
+    /* 5% of 1 paise is 0.05 — a fraction of the smallest unit of money
+       there is. It has to land on an integer or the order total stops
+       being a number Razorpay will accept. */
+    const tax = taxForLine(1, 5);
+    assert.ok(Number.isInteger(tax), `expected an integer, got ${tax}`);
+    assert.equal(tax, 0);
+    assert.equal(taxForLine(333, 18), 60);
+  });
+
+  it("taxes each line separately rather than the subtotal", () => {
+    /* A basket spanning two slabs has no single rate that could be
+       applied to its total, which is the whole reason this is per-line. */
+    const cement = taxForLine(50_000, 28);
+    const sand = taxForLine(50_000, 5);
+    assert.equal(cement + sand, 16_500);
+    assert.notEqual(cement + sand, taxForLine(100_000, 18));
+  });
+});
+
+/* --------------------------------------------------- payment signatures */
+
+describe("Razorpay webhook signatures", () => {
+  const body = JSON.stringify({ event: "payment.captured", payload: {} });
+  const valid = createHmac("sha256", "webhook_secret_for_unit_tests")
+    .update(body)
+    .digest("hex");
+
+  it("accepts a delivery signed with the webhook secret", () => {
+    assert.equal(verifyWebhookSignature(body, valid), true);
+  });
+
+  it("rejects a body that was altered after signing", () => {
+    /* The whole point: an attacker who can replay a real signature must
+       not be able to change the amount it covers. */
+    const tampered = JSON.stringify({ event: "payment.captured", payload: { x: 1 } });
+    assert.equal(verifyWebhookSignature(tampered, valid), false);
+  });
+
+  it("rejects a missing signature rather than treating it as absent proof", () => {
+    assert.equal(verifyWebhookSignature(body, null), false);
+    assert.equal(verifyWebhookSignature(body, ""), false);
+  });
+
+  it("rejects a signature of the wrong length without throwing", () => {
+    /* `timingSafeEqual` throws on a length mismatch. An attacker sending
+       a two-character signature must get a rejection, not a 500 — and
+       certainly not an unhandled crash in the payments path. */
+    assert.equal(verifyWebhookSignature(body, "ab"), false);
+    assert.equal(verifyWebhookSignature(body, "not-hex-at-all"), false);
+  });
+});
+
+describe("Razorpay checkout handoff signatures", () => {
+  const razorpayOrderId = "order_TESTORDER123";
+  const razorpayPaymentId = "pay_TESTPAYMENT123";
+  const signature = createHmac("sha256", "rzp_test_secret_for_unit_tests")
+    .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+    .digest("hex");
+
+  it("accepts the pair the gateway actually signed", () => {
+    assert.equal(
+      verifyCheckoutSignature({ razorpayOrderId, razorpayPaymentId, signature }),
+      true,
+    );
+  });
+
+  it("rejects a signature lifted from another payment", () => {
+    /* Swapping in a different payment id must invalidate it, or one
+       genuine payment could be used to confirm any number of orders. */
+    assert.equal(
+      verifyCheckoutSignature({
+        razorpayOrderId,
+        razorpayPaymentId: "pay_SOMEONEELSE",
+        signature,
+      }),
+      false,
+    );
   });
 });
