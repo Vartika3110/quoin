@@ -1,15 +1,30 @@
 import type { Metadata } from "next";
-import { Placeholder } from "@/components/storefront/Placeholder";
+import { AppShell } from "@/components/storefront/AppShell";
+import { CartView } from "@/components/storefront/cart/CartView";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { SectionHead } from "@/components/ui/Section";
 
 export const metadata: Metadata = { title: "Cart — Quoin" };
 
 export default function CartPage() {
   return (
-    <Placeholder title="Cart" cta={{ href: "/products", label: "Browse the catalogue" }}>
-      Checkout is not open yet. When it is, the cart will split by how each
-      item is fulfilled — instant, scheduled, made to order and bookable
-      cannot travel together, and pretending otherwise makes the delivery
-      promise a guess.
-    </Placeholder>
+    <AppShell>
+      <div className="pt-4 lg:pt-6">
+        <div className="mb-3 px-5 lg:px-0">
+          <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Cart" }]} />
+        </div>
+
+        <SectionHead
+          level={1}
+          size="lg"
+          title="Your cart"
+          subtitle="Grouped by how each item reaches you — nothing shares a delivery date it cannot keep."
+        />
+
+        <div className="px-5 lg:px-0">
+          <CartView />
+        </div>
+      </div>
+    </AppShell>
   );
 }
