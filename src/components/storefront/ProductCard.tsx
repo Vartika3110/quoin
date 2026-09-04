@@ -113,7 +113,20 @@ export function ProductCard({
         "group relative flex flex-col overflow-hidden rounded-card border border-line-soft bg-surface",
         "transition-[border-color,box-shadow,transform] duration-200 ease-out-quart",
         "hover:-translate-y-0.5 hover:border-line hover:shadow-md",
-        fill ? "w-full" : "w-[168px] lg:w-auto",
+        /* Viewport-relative, not a fixed 168px.
+
+           At 375px a 168px card lands two-abreast with four pixels to
+           spare, so the rail comes to rest with the second card sliced
+           flat against the screen edge — no rounded corner, no gutter,
+           and no hint that anything follows. It reads as clipped rather
+           than scrollable, which is the difference between a carousel and
+           a bug.
+
+           40vw puts a deliberate fifth of the next card on screen at every
+           phone size (21% at 375, 24% at 430). Capped so the rail does not
+           grow absurd cards between `sm` and `lg`, where it is still a
+           rail. */
+        fill ? "w-full" : "w-[40vw] max-w-52 lg:w-auto lg:max-w-none",
       )}
     >
       <div className="relative aspect-square overflow-hidden bg-photo">

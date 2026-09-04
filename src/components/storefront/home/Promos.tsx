@@ -182,7 +182,7 @@ export function BrandStrip({
           <Link
             key={b.id}
             href={`/products?brand=${b.slug}`}
-            className="group grid h-14 w-28 shrink-0 place-items-center rounded-lg border border-line-soft bg-surface px-3 transition-[border-color,box-shadow] duration-200 hover:border-line hover:shadow-xs lg:w-full"
+            className="group grid h-14 w-[27vw] max-w-32 shrink-0 place-items-center rounded-lg border border-line-soft bg-surface px-3 transition-[border-color,box-shadow] duration-200 hover:border-line hover:shadow-xs lg:w-full lg:max-w-none"
           >
             {logo ? (
               /* Not `next/image`: these are already-optimised vector files
