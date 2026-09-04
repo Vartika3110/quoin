@@ -11,7 +11,7 @@ projects behind one catalogue.
 | Framework | Next.js 16 (App Router) + React 19 |
 | Language | TypeScript (strict) |
 | Database | Postgres via Prisma 6 |
-| Styling | Tailwind CSS v4, CSS-first tokens in `src/app/globals.css` |
+| Styling | Tailwind CSS v4, CSS-first tokens in `src/app/globals.css` — see [`docs/design-system.md`](docs/design-system.md) |
 | Fonts | Cormorant Garamond (wordmark/display), Inter (UI) |
 
 ## Architecture

@@ -1,167 +1,308 @@
 @import "tailwindcss";
 
-/**
- * Quoin design tokens.
- *
- * Warm light: an off-white paper ground, white cards, terracotta accent
- * and a deep brown ink. Not wired to `prefers-color-scheme` — this is the
- * brand, not a theme preference, so it looks the same for everyone.
- *
- * `accent` was called `gold` while the storefront was dark. The name is
- * deliberately neutral now so the next palette change is a value edit
- * rather than a rename across every component.
- */
+/* ==========================================================================
+   QUOIN DESIGN SYSTEM
+   --------------------------------------------------------------------------
+   One file defines the language; every component consumes it. Nothing below
+   is a one-off — if a value is needed twice it is a token, and if it is
+   needed once it is still a token, because the second use always arrives.
+
+   Layers, in order:
+     1. Palette      — the brand's colours, light and dark
+     2. Elevation    — shadows, which are not colour-independent
+     3. Scale        — type, space, radius, motion
+     4. Theme map    — the Tailwind v4 bridge (@theme inline)
+     5. Base         — element defaults
+     6. Utilities    — the handful of behaviours utilities cannot express
+   ========================================================================== */
+
+
+/* ---------------------------------------------------------------- 1. palette
+
+   Warm light: an off-white paper ground, white cards, terracotta accent and
+   a deep brown ink. Not wired to `prefers-color-scheme` for its identity —
+   this is the brand, not a preference — but it does have a dark rendering,
+   below, for people who have asked their device for one.
+
+   Three colour families and no more:
+     accent  terracotta — the only thing that means "act on this"
+     deep    espresso   — dark bands, scrims, secondary CTAs
+     pro     gold       — Quoin Pro, and nothing else, ever
+   Everything else is the neutral ramp. A fourth family is how a design
+   system starts looking like a template.
+--------------------------------------------------------------------------- */
+
 :root {
   /* Surfaces, ground upward. Cards are pure white against warm paper so
      they lift without needing a shadow on every tile. */
-  --quoin-bg: #f8f4ef;
+  --quoin-bg: #faf7f3;
+  --quoin-bg-sunk: #f2ece5;
   --quoin-surface: #ffffff;
-  --quoin-surface-raised: #fffcf8;
-  --quoin-surface-hover: #f1e9e0;
+  --quoin-surface-raised: #fdfbf9;
+  --quoin-surface-hover: #f5efe8;
+  --quoin-surface-active: #ece3d9;
 
   /* Terracotta — wordmark flourish, prices, active states, primary CTAs */
   --quoin-accent: #d95d24;
   --quoin-accent-bright: #ef7038;
   --quoin-accent-dim: #a8451a;
   /* Accent at low alpha for tinted chips and hairlines */
-  --quoin-accent-wash: rgb(217 93 36 / 0.10);
-  --quoin-accent-edge: rgb(217 93 36 / 0.28);
+  --quoin-accent-wash: rgb(217 93 36 / 0.09);
+  --quoin-accent-wash-strong: rgb(217 93 36 / 0.16);
+  --quoin-accent-edge: rgb(217 93 36 / 0.26);
+  /* What type on an accent fill must be to stay legible. */
+  --quoin-on-accent: #ffffff;
 
   /* Espresso — Pro affordances and the dark bands that break up the page */
-  --quoin-deep: #43281a;
-  --quoin-deep-soft: #5c3a27;
+  --quoin-deep: #3a2318;
+  --quoin-deep-soft: #553624;
+  --quoin-on-deep: #fdf8f4;
   /* Gold survives for Pro only, where it still means "premium". */
-  --quoin-pro: #c8a45c;
+  --quoin-pro: #b08b45;
+  --quoin-pro-wash: rgb(176 139 69 / 0.12);
 
-  /* Type */
-  --quoin-text: #2b1b12;
-  --quoin-text-muted: #7c6355;
-  --quoin-text-faint: #a8968a;
+  /* Type — four steps, not five. A fifth is always a mistake in disguise. */
+  --quoin-text: #241610;
+  --quoin-text-muted: #6f5749;
+  --quoin-text-faint: #9c8878;
 
-  /* Lines */
-  --quoin-border: #e6dace;
-  --quoin-border-soft: #efe6dc;
+  /* Lines. `hair` is the one that should barely exist. */
+  --quoin-border: #e4d9cd;
+  --quoin-border-soft: #efe7dd;
+  --quoin-border-hair: #f4eee7;
+  --quoin-border-strong: #cdbcab;
 
   /* Status */
-  --quoin-success: #2f8f57;
-  --quoin-danger: #c8452f;
+  --quoin-success: #2b7c4d;
+  --quoin-success-wash: rgb(43 124 77 / 0.10);
+  --quoin-warning: #a8720f;
+  --quoin-warning-wash: rgb(168 114 15 / 0.12);
+  --quoin-danger: #bd3c28;
+  --quoin-danger-wash: rgb(189 60 40 / 0.10);
+  --quoin-info: #2f5d8a;
+  --quoin-info-wash: rgb(47 93 138 / 0.10);
 
-  /* The four entry tiles. Gradients rather than flat fills, and tokens
-     rather than inline values, so the dark palette can restate them —
-     a light tint painted straight into the markup stays light forever. */
-  --quoin-tile-1: linear-gradient(150deg, #f8efe6 0%, #eedcc8 100%);
-  --quoin-tile-2: linear-gradient(150deg, #f4f1ea 0%, #e0dbd0 100%);
-  --quoin-tile-3: linear-gradient(150deg, #fbeee7 0%, #f2d8c8 100%);
-  --quoin-tile-4: linear-gradient(150deg, #f8f1de 0%, #ecdcb6 100%);
-  /* The plate the mark sits on, lifted off whichever tint is behind it. */
-  --quoin-plate: rgb(255 255 255 / 0.75);
+  /* The four entry tiles. Restrained tints rather than gradients: a
+     gradient per tile is four gradients on the first screen, which reads
+     as decoration. Tokens rather than inline values so the dark palette
+     can restate them — a light tint painted into markup stays light. */
+  --quoin-tile-1: #f4ece2;
+  --quoin-tile-2: #eeeae3;
+  --quoin-tile-3: #f6e9e0;
+  --quoin-tile-4: #f3edda;
+  /* The plate a mark sits on, lifted off whichever tint is behind it. */
+  --quoin-plate: rgb(255 255 255 / 0.82);
   --quoin-plate-solid: #ffffff;
-  --quoin-plate-edge: rgb(255 255 255 / 0.6);
+  --quoin-plate-edge: rgb(255 255 255 / 0.7);
+
+  /* The ground product photography sits on.
+
+     Catalogue imagery is cut out on white, so the plate has to be white —
+     or near it — in *both* palettes. Painting it with the surface token
+     instead puts a glowing white rectangle inside a dark card, which is
+     the single most obvious way a dark theme looks unfinished. Slightly
+     off-white after dark so it reads as paper rather than a light source.
+     `photo-edge` is the hairline that keeps the plate from bleeding into
+     a light card that is also white. */
+  --quoin-photo: #ffffff;
+  --quoin-photo-edge: #efe7dd;
+
+  /* Skeleton shimmer: the sweep and the ground it sweeps over. */
+  --quoin-skeleton: #ece4da;
+  --quoin-skeleton-sheen: rgb(255 255 255 / 0.65);
+
+  /* Scrims for modals and drawers. Warm, because a neutral scrim over a
+     warm page greys the whole thing for as long as it is open. */
+  --quoin-scrim: rgb(36 22 16 / 0.42);
+
+  /* Elevation. Tinted with the ink rather than pure black — a black
+     shadow on warm paper reads as dirt. */
+  --quoin-shadow-xs: 0 1px 2px rgb(36 22 16 / 0.05);
+  --quoin-shadow-sm: 0 1px 2px rgb(36 22 16 / 0.05), 0 2px 6px -2px rgb(36 22 16 / 0.06);
+  --quoin-shadow-md: 0 2px 4px rgb(36 22 16 / 0.04), 0 8px 20px -6px rgb(36 22 16 / 0.10);
+  --quoin-shadow-lg: 0 4px 8px rgb(36 22 16 / 0.04), 0 18px 40px -12px rgb(36 22 16 / 0.14);
+  --quoin-shadow-xl: 0 8px 16px rgb(36 22 16 / 0.05), 0 32px 72px -20px rgb(36 22 16 / 0.20);
+  /* Ring of accent for focus and selected states. */
+  --quoin-ring: rgb(217 93 36 / 0.35);
 }
 
 
-/**
- * The same brand after dark.
- *
- * Not the light palette inverted. Terracotta at #d95d24 goes muddy on a
- * near-black ground, so the accent lifts; the grounds keep their warmth
- * rather than going neutral grey, because a cool dark under a warm brand
- * reads as a different shop. `deep` inverts its job — on paper it is the
- * dark band that breaks up the page, and here it has to be lighter than
- * the ground to do the same work.
- *
- * Applied two ways. `[data-theme="dark"]` is an explicit choice and wins
- * over everything; the media query covers the visitor who has never
- * chosen, and is guarded so that choosing light is not overridden by
- * their system.
- */
-:root[data-theme="dark"] {
-  --quoin-bg: #16110e;
-  --quoin-surface: #1f1814;
-  --quoin-surface-raised: #261e18;
-  --quoin-surface-hover: #2f251e;
+/* The same brand after dark.
 
-  --quoin-accent: #ef7a44;
+   Not the light palette inverted. Terracotta at #d95d24 goes muddy on a
+   near-black ground, so the accent lifts; the grounds keep their warmth
+   rather than going neutral grey, because a cool dark under a warm brand
+   reads as a different shop. `deep` inverts its job — on paper it is the
+   dark band that breaks up the page, and here it has to be lighter than
+   the ground to do the same work. Shadows stop being tinted ink and
+   become near-black, because on a dark ground a light shadow is invisible
+   and the only thing separating two dark planes is a darker edge.
+
+   Applied twice: `[data-theme="dark"]` is an explicit choice and wins over
+   everything; the media query covers the visitor who has never chosen, and
+   is guarded so choosing light is not overridden by their system.        */
+
+:root[data-theme="dark"] {
+  --quoin-bg: #14100d;
+  --quoin-bg-sunk: #0e0b09;
+  --quoin-surface: #1e1815;
+  --quoin-surface-raised: #262019;
+  --quoin-surface-hover: #2e2620;
+  --quoin-surface-active: #3a3028;
+
+  --quoin-accent: #f07a42;
   --quoin-accent-bright: #ff9160;
   --quoin-accent-dim: #c05c2a;
-  --quoin-accent-wash: rgb(239 122 68 / 0.14);
-  --quoin-accent-edge: rgb(239 122 68 / 0.34);
+  --quoin-accent-wash: rgb(240 122 66 / 0.13);
+  --quoin-accent-wash-strong: rgb(240 122 66 / 0.22);
+  --quoin-accent-edge: rgb(240 122 66 / 0.32);
+  --quoin-on-accent: #1a0f08;
 
   --quoin-deep: #3a2a20;
   --quoin-deep-soft: #4b382c;
+  --quoin-on-deep: #f8f1ea;
   --quoin-pro: #d9b978;
+  --quoin-pro-wash: rgb(217 185 120 / 0.14);
 
-  --quoin-text: #f6efe8;
-  --quoin-text-muted: #b5a49a;
-  --quoin-text-faint: #7f7067;
+  --quoin-text: #f7f1ea;
+  --quoin-text-muted: #b3a196;
+  --quoin-text-faint: #7d6e64;
 
-  --quoin-border: #342b24;
+  --quoin-border: #332a23;
   --quoin-border-soft: #2a221c;
+  --quoin-border-hair: #241d18;
+  --quoin-border-strong: #4a3d33;
 
-  --quoin-success: #58c98a;
-  --quoin-danger: #f0837a;
+  --quoin-success: #56c689;
+  --quoin-success-wash: rgb(86 198 137 / 0.14);
+  --quoin-warning: #dcae52;
+  --quoin-warning-wash: rgb(220 174 82 / 0.14);
+  --quoin-danger: #ef8377;
+  --quoin-danger-wash: rgb(239 131 119 / 0.14);
+  --quoin-info: #7fb0e0;
+  --quoin-info-wash: rgb(127 176 224 / 0.14);
 
-  --quoin-tile-1: linear-gradient(150deg, #2b211a 0%, #3a2a1e 100%);
-  --quoin-tile-2: linear-gradient(150deg, #262421 0%, #34302a 100%);
-  --quoin-tile-3: linear-gradient(150deg, #2f221b 0%, #402a20 100%);
-  --quoin-tile-4: linear-gradient(150deg, #2d2619 0%, #3c3221 100%);
+  --quoin-tile-1: #2a201a;
+  --quoin-tile-2: #262421;
+  --quoin-tile-3: #2e211b;
+  --quoin-tile-4: #2b2519;
   --quoin-plate: rgb(255 255 255 / 0.07);
   --quoin-plate-solid: rgb(255 255 255 / 0.13);
   --quoin-plate-edge: rgb(255 255 255 / 0.10);
+
+  --quoin-photo: #f4f1ed;
+  --quoin-photo-edge: #2a221c;
+
+  --quoin-skeleton: #2a221c;
+  --quoin-skeleton-sheen: rgb(255 255 255 / 0.05);
+
+  --quoin-scrim: rgb(6 4 3 / 0.62);
+
+  --quoin-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.30);
+  --quoin-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.32), 0 2px 6px -2px rgb(0 0 0 / 0.34);
+  --quoin-shadow-md: 0 2px 4px rgb(0 0 0 / 0.30), 0 8px 20px -6px rgb(0 0 0 / 0.45);
+  --quoin-shadow-lg: 0 4px 8px rgb(0 0 0 / 0.32), 0 18px 40px -12px rgb(0 0 0 / 0.55);
+  --quoin-shadow-xl: 0 8px 16px rgb(0 0 0 / 0.35), 0 32px 72px -20px rgb(0 0 0 / 0.65);
+  --quoin-ring: rgb(240 122 66 / 0.40);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --quoin-bg: #16110e;
-    --quoin-surface: #1f1814;
-    --quoin-surface-raised: #261e18;
-    --quoin-surface-hover: #2f251e;
+    --quoin-bg: #14100d;
+    --quoin-bg-sunk: #0e0b09;
+    --quoin-surface: #1e1815;
+    --quoin-surface-raised: #262019;
+    --quoin-surface-hover: #2e2620;
+    --quoin-surface-active: #3a3028;
 
-    --quoin-accent: #ef7a44;
+    --quoin-accent: #f07a42;
     --quoin-accent-bright: #ff9160;
     --quoin-accent-dim: #c05c2a;
-    --quoin-accent-wash: rgb(239 122 68 / 0.14);
-    --quoin-accent-edge: rgb(239 122 68 / 0.34);
+    --quoin-accent-wash: rgb(240 122 66 / 0.13);
+    --quoin-accent-wash-strong: rgb(240 122 66 / 0.22);
+    --quoin-accent-edge: rgb(240 122 66 / 0.32);
+    --quoin-on-accent: #1a0f08;
 
     --quoin-deep: #3a2a20;
     --quoin-deep-soft: #4b382c;
+    --quoin-on-deep: #f8f1ea;
     --quoin-pro: #d9b978;
+    --quoin-pro-wash: rgb(217 185 120 / 0.14);
 
-    --quoin-text: #f6efe8;
-    --quoin-text-muted: #b5a49a;
-    --quoin-text-faint: #7f7067;
+    --quoin-text: #f7f1ea;
+    --quoin-text-muted: #b3a196;
+    --quoin-text-faint: #7d6e64;
 
-    --quoin-border: #342b24;
+    --quoin-border: #332a23;
     --quoin-border-soft: #2a221c;
+    --quoin-border-hair: #241d18;
+    --quoin-border-strong: #4a3d33;
 
-    --quoin-success: #58c98a;
-    --quoin-danger: #f0837a;
+    --quoin-success: #56c689;
+    --quoin-success-wash: rgb(86 198 137 / 0.14);
+    --quoin-warning: #dcae52;
+    --quoin-warning-wash: rgb(220 174 82 / 0.14);
+    --quoin-danger: #ef8377;
+    --quoin-danger-wash: rgb(239 131 119 / 0.14);
+    --quoin-info: #7fb0e0;
+    --quoin-info-wash: rgb(127 176 224 / 0.14);
 
-    --quoin-tile-1: linear-gradient(150deg, #2b211a 0%, #3a2a1e 100%);
-    --quoin-tile-2: linear-gradient(150deg, #262421 0%, #34302a 100%);
-    --quoin-tile-3: linear-gradient(150deg, #2f221b 0%, #402a20 100%);
-    --quoin-tile-4: linear-gradient(150deg, #2d2619 0%, #3c3221 100%);
+    --quoin-tile-1: #2a201a;
+    --quoin-tile-2: #262421;
+    --quoin-tile-3: #2e211b;
+    --quoin-tile-4: #2b2519;
     --quoin-plate: rgb(255 255 255 / 0.07);
     --quoin-plate-solid: rgb(255 255 255 / 0.13);
     --quoin-plate-edge: rgb(255 255 255 / 0.10);
+
+    --quoin-photo: #f4f1ed;
+    --quoin-photo-edge: #2a221c;
+
+    --quoin-skeleton: #2a221c;
+    --quoin-skeleton-sheen: rgb(255 255 255 / 0.05);
+
+    --quoin-scrim: rgb(6 4 3 / 0.62);
+
+    --quoin-shadow-xs: 0 1px 2px rgb(0 0 0 / 0.30);
+    --quoin-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.32), 0 2px 6px -2px rgb(0 0 0 / 0.34);
+    --quoin-shadow-md: 0 2px 4px rgb(0 0 0 / 0.30), 0 8px 20px -6px rgb(0 0 0 / 0.45);
+    --quoin-shadow-lg: 0 4px 8px rgb(0 0 0 / 0.32), 0 18px 40px -12px rgb(0 0 0 / 0.55);
+    --quoin-shadow-xl: 0 8px 16px rgb(0 0 0 / 0.35), 0 32px 72px -20px rgb(0 0 0 / 0.65);
+    --quoin-ring: rgb(240 122 66 / 0.40);
   }
 }
 
+
+/* ------------------------------------------------------------------ 2. scale
+
+   Type, radius, elevation and motion, expressed once. The type scale is
+   semantic rather than numeric — `text-title` survives a decision to make
+   titles 22px, `text-xl` does not. Tailwind's own numeric sizes are left
+   intact underneath for the odd genuinely one-off measurement.
+--------------------------------------------------------------------------- */
+
 @theme inline {
+  /* -- colour -------------------------------------------------------- */
   --color-bg: var(--quoin-bg);
+  --color-sunk: var(--quoin-bg-sunk);
   --color-surface: var(--quoin-surface);
   --color-raised: var(--quoin-surface-raised);
   --color-hover: var(--quoin-surface-hover);
+  --color-active: var(--quoin-surface-active);
 
   --color-accent: var(--quoin-accent);
   --color-accent-bright: var(--quoin-accent-bright);
   --color-accent-dim: var(--quoin-accent-dim);
   --color-accent-wash: var(--quoin-accent-wash);
+  --color-accent-wash-strong: var(--quoin-accent-wash-strong);
   --color-accent-edge: var(--quoin-accent-edge);
+  --color-on-accent: var(--quoin-on-accent);
 
   --color-deep: var(--quoin-deep);
   --color-deep-soft: var(--quoin-deep-soft);
+  --color-on-deep: var(--quoin-on-deep);
   --color-pro: var(--quoin-pro);
+  --color-pro-wash: var(--quoin-pro-wash);
 
   --color-ink: var(--quoin-text);
   --color-muted: var(--quoin-text-muted);
@@ -173,49 +314,271 @@
 
   --color-line: var(--quoin-border);
   --color-line-soft: var(--quoin-border-soft);
+  --color-line-hair: var(--quoin-border-hair);
+  --color-line-strong: var(--quoin-border-strong);
 
   --color-success: var(--quoin-success);
+  --color-success-wash: var(--quoin-success-wash);
+  --color-warning: var(--quoin-warning);
+  --color-warning-wash: var(--quoin-warning-wash);
   --color-danger: var(--quoin-danger);
+  --color-danger-wash: var(--quoin-danger-wash);
+  --color-info: var(--quoin-info);
+  --color-info-wash: var(--quoin-info-wash);
 
+  --color-scrim: var(--quoin-scrim);
+  --color-skeleton: var(--quoin-skeleton);
+  --color-photo: var(--quoin-photo);
+  --color-photo-edge: var(--quoin-photo-edge);
+
+  /* -- type ---------------------------------------------------------- */
   --font-sans: var(--font-inter);
   --font-display: var(--font-cormorant);
 
-  /* Card radii are generous in the reference — 16px is the workhorse. */
-  --radius-card: 1rem;
-  --radius-tile: 0.875rem;
+  /* 11px. Legal lines, unit suffixes, the count on a tab. Never a
+     sentence — this size exists to be adjacent to something, not read. */
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.45;
+  --text-micro--letter-spacing: 0.005em;
+
+  /* 12px. Captions, metadata, table cells. */
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.5;
+
+  /* 13px / 14px / 16px. The three body sizes. 14 is the workhorse; 16 is
+     for anything that will be read in a paragraph rather than scanned. */
+  --text-body-sm: 0.8125rem;
+  --text-body-sm--line-height: 1.55;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.6;
+  --text-body-lg: 1rem;
+  --text-body-lg--line-height: 1.65;
+
+  /* 17px / 20px / 24px. Card titles up to section headings. */
+  --text-title-sm: 1.0625rem;
+  --text-title-sm--line-height: 1.4;
+  --text-title-sm--letter-spacing: -0.006em;
+  --text-title: 1.25rem;
+  --text-title--line-height: 1.3;
+  --text-title--letter-spacing: -0.012em;
+  --text-title-lg: 1.5rem;
+  --text-title-lg--line-height: 1.25;
+  --text-title-lg--letter-spacing: -0.016em;
+
+  /* 28px / 34px. Page headings. */
+  --text-headline: 1.75rem;
+  --text-headline--line-height: 1.2;
+  --text-headline--letter-spacing: -0.02em;
+  --text-headline-lg: 2.125rem;
+  --text-headline-lg--line-height: 1.15;
+  --text-headline-lg--letter-spacing: -0.022em;
+
+  /* 40px / 52px / 64px. Hero only. Negative tracking grows with size —
+     letterspacing tuned for 14px is visibly loose at 64. */
+  --text-display-sm: 2.5rem;
+  --text-display-sm--line-height: 1.1;
+  --text-display-sm--letter-spacing: -0.025em;
+  --text-display: 3.25rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.028em;
+  --text-display-lg: 4rem;
+  --text-display-lg--line-height: 1.02;
+  --text-display-lg--letter-spacing: -0.03em;
+
+  /* The eyebrow is a size *and* a treatment, so it carries its own
+     tracking — uppercase 11px without extra letterspacing reads as a
+     mistake rather than a label. */
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--line-height: 1.3;
+  --text-eyebrow--letter-spacing: 0.1em;
+  --text-eyebrow--font-weight: 600;
+
+  /* -- radius --------------------------------------------------------
+     Architectural rather than pill-shaped. 12px is the workhorse: enough
+     to read as considered, not enough to read as a toy. `full` stays for
+     avatars, counters and the one or two controls that are genuinely
+     round. */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-card: 0.75rem;
+  --radius-tile: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+
+  /* -- elevation -----------------------------------------------------
+     Five steps, each with a job:
+       xs  a hairline's worth of lift — chips, inline controls
+       sm  resting cards that need to separate from a tinted ground
+       md  hover on an interactive card
+       lg  popovers, dropdowns, the sticky bar once it is over content
+       xl  drawers and modals, which sit above everything
+     Overriding Tailwind's defaults on purpose: two shadow systems in one
+     product is how shadows start looking cheap. */
+  --shadow-xs: var(--quoin-shadow-xs);
+  --shadow-sm: var(--quoin-shadow-sm);
+  --shadow-md: var(--quoin-shadow-md);
+  --shadow-lg: var(--quoin-shadow-lg);
+  --shadow-xl: var(--quoin-shadow-xl);
+
+  /* -- motion --------------------------------------------------------
+     Two curves. `out` decelerates into place and is right for anything
+     appearing; `spring` overshoots very slightly and is reserved for
+     drawers and sheets, where the overshoot is what makes a panel feel
+     attached to the thumb that pulled it. */
+  --ease-out-quart: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* -- measure -------------------------------------------------------- */
+  --container-shell: 1400px;
+  --container-prose: 68ch;
+}
+
+/* Durations, outside @theme because Tailwind has no duration namespace to
+   extend. Referenced from the components layer and from inline styles. */
+:root {
+  --dur-instant: 100ms;
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --dur-slower: 480ms;
+}
+
+
+/* ------------------------------------------------------------------- 3. base */
+
+/**
+ * The page never scrolls sideways.
+ *
+ * `clip`, not `hidden`. They look identical here and behave completely
+ * differently: `overflow: hidden` on the root element silently disables
+ * `position: sticky` for everything inside it, which would kill the header
+ * and every sticky sidebar in the app. `clip` does not establish a scroll
+ * container, so sticky keeps working.
+ *
+ * This is a backstop, not a fix. Anything that overflows is still a bug —
+ * it is just no longer a bug that lets the customer drag the whole page
+ * off-centre while they are reading it.
+ */
+html {
+  overflow-x: clip;
 }
 
 body {
+  overflow-x: clip;
   background: var(--quoin-bg);
   color: var(--quoin-text);
   font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Proportional figures read better in prose, but prices, quantities and
+     table columns must line up, so tabular figures are opted into per
+     component with `.nums` rather than turned on globally. */
+  text-rendering: optimizeLegibility;
 }
 
-/**
- * Horizontal rails (banners, product carousels) scroll edge-to-edge on
- * mobile. The scrollbar is hidden but the rail stays keyboard- and
- * trackpad-scrollable, and snaps so cards never rest half-cut.
- *
- * Declared in the components layer on purpose: the Tailwind utilities
- * layer is emitted after it, so lg:grid and lg:overflow-visible can
- * still override the rail on desktop. Unlayered, these rules would beat
- * every utility and the desktop grid would never apply.
- */
+::selection {
+  background: var(--quoin-accent-wash-strong);
+  color: var(--quoin-text);
+}
+
+/* The wordmark and editorial headings only. Cormorant at body sizes is
+   unreadable, which is why it is never the default anywhere. */
+.font-display {
+  font-feature-settings: "liga" 1, "dlig" 1;
+}
+
+/* Numbers that must align down a column: prices, quantities, budgets. */
+.nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+
+/* -------------------------------------------------------------- 4. utilities
+
+   The handful of behaviours that utilities cannot express. Everything here
+   earns its place by being either impossible inline (keyframes, pseudo
+   elements) or so repeated that inlining it is what makes pages drift.
+--------------------------------------------------------------------------- */
+
 @layer components {
+  /* Horizontal rails (banners, product carousels) scroll edge-to-edge on
+     mobile. The scrollbar is hidden but the rail stays keyboard- and
+     trackpad-scrollable, and snaps so cards never rest half-cut.
+
+     Declared in the components layer on purpose: the Tailwind utilities
+     layer is emitted after it, so `lg:grid` and `lg:overflow-visible` can
+     still override the rail on desktop. Unlayered, these rules would beat
+     every utility and the desktop grid would never apply. */
   .rail {
     display: flex;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type: x proximity;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    /* Stops a swipe that reaches the end of a rail from chaining into the
+       page — and, on macOS and iOS, into the browser's back gesture. A
+       product rail that navigates away when you flick past the last card
+       is the single most alarming thing a storefront can do. */
+    overscroll-behavior-x: contain;
   }
+
+  /* Snap parks a card's leading edge against the *scroll port*, which
+     ignores the container's own padding — so a rail inset from the screen
+     edge by `px-5` snaps its first card flush to the edge instead, looking
+     for all the world like a card cut in half. Every gutter-inset rail
+     therefore pairs `px-5` with `scroll-pl-5` (and resets both at `lg`).
+     Rails that sit inside a card carry no gutter and need neither. */
+
   .rail::-webkit-scrollbar {
     display: none;
   }
   .rail > * {
     scroll-snap-align: start;
     flex-shrink: 0;
+  }
+
+  /* A scroll container with no rail semantics — wide tables, filter
+     chip rows — that still should not show a scrollbar on macOS. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior-x: contain;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Skeletons. One animated sweep across a flat ground, at 1.6s — fast
+     enough to read as "working", slow enough not to strobe on a page
+     showing twenty of them. The sweep is a background-position animation
+     rather than a moving child, so it composites on the GPU and costs
+     nothing per skeleton. */
+  .skeleton {
+    background-color: var(--quoin-skeleton);
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--quoin-skeleton-sheen) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: quoin-shimmer 1.6s ease-in-out infinite;
+  }
+
+  /* The sticky header's own hairline. A `border-b` is drawn even when the
+     bar is transparent at the top of the page; this is painted only once
+     the bar has something to separate itself from. */
+  .header-edge {
+    box-shadow:
+      0 1px 0 0 var(--quoin-border-soft),
+      var(--quoin-shadow-sm);
   }
 }
 
@@ -224,15 +587,18 @@ body {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
-/**
- * Grows a control's touch target to 44px square without changing what is
- * drawn — for the few controls whose size is the design (a heart tucked
- * into a card corner, a mic inside the search field), where scaling the
- * visible box up to 44px would redraw the component.
- *
- * The element itself must establish a containing block: pair this with
- * `relative`, or use it on something already positioned.
- */
+/* Same, for a sticky CTA bar that has its own padding already. */
+.safe-bottom-0 {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Grows a control's touch target to 44px square without changing what is
+   drawn — for the few controls whose size is the design (a heart tucked
+   into a card corner, a mic inside the search field), where scaling the
+   visible box up to 44px would redraw the component.
+
+   The element itself must establish a containing block: pair this with
+   `relative`, or use it on something already positioned. */
 .tap-target::after {
   content: "";
   position: absolute;
@@ -244,18 +610,139 @@ body {
 }
 
 /* Visible focus for keyboard users only — the design has no room for
-   permanent focus rings, but they must exist when tabbing. */
+   permanent focus rings, but they must exist when tabbing. Two rings: the
+   accent outline, and an inner light ring so the outline stays visible
+   against a control that is itself accent-coloured. */
 :focus-visible {
   outline: 2px solid var(--quoin-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
+/* Modal and drawer surfaces manage their own focus ring; the default
+   offset would paint outside the rounded corner. */
+[data-focus-inset]:focus-visible {
+  outline-offset: -2px;
+}
+
+
+/* --------------------------------------------------------------- keyframes */
+
+@keyframes quoin-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes quoin-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes quoin-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes quoin-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes quoin-slide-right {
+  from {
+    transform: translate3d(100%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes quoin-slide-up {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* The wishlist heart. One beat, slightly past full size and back — the
+   overshoot is the whole point, and 220ms is short enough that a rapid
+   tapper never sees two of them fighting. */
+@keyframes quoin-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes quoin-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Registered with `@utility` rather than dropped in the components layer,
+   because these need variants: a drawer is a bottom sheet on a phone and a
+   side panel from `sm` up, which is `anim-slide-up sm:anim-slide-right` and
+   nothing else. A class defined in `@layer components` has no `sm:` form. */
+
+@utility anim-fade {
+  animation: quoin-fade-in var(--dur-base) var(--ease-out-quart) both;
+}
+@utility anim-rise {
+  animation: quoin-rise var(--dur-slow) var(--ease-out-quart) both;
+}
+@utility anim-scale-in {
+  animation: quoin-scale-in var(--dur-base) var(--ease-out-quart) both;
+}
+@utility anim-slide-right {
+  animation: quoin-slide-right var(--dur-slow) var(--ease-out-quart) both;
+}
+@utility anim-slide-up {
+  animation: quoin-slide-up var(--dur-slow) var(--ease-out-quart) both;
+}
+@utility anim-pop {
+  animation: quoin-pop 220ms var(--ease-spring);
+}
+@utility anim-spin {
+  animation: quoin-spin 700ms linear infinite;
+}
+
+/* Reduced motion is a request, not a hint. Everything animated above is
+   decoration over a state change that has already happened, so removing
+   the animation entirely loses nothing. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }

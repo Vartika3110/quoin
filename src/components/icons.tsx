@@ -357,3 +357,250 @@ export const Sun = (p: IconProps) => (
     <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4l-1.4 1.4" />
   </Svg>
 );
+
+/* ==========================================================================
+   Second set — added with the design system.
+
+   Same 24px grid, same 1.5 stroke, same `currentColor` rule. A few are
+   drawn to be filled instead of stroked (`Star`, `HeartFilled`); those say
+   so, and the caller supplies `fill-current`.
+   ========================================================================== */
+
+/** Dismiss. Never a rotated plus — the strokes end up off-centre. */
+export const Close = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M18 6 6 18M6 6l12 12" />
+  </Svg>
+);
+
+/** Triangle and bang — errors, and warnings that need acting on. */
+export const Alert = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+    <path d="M12 9v4M12 17h.01" />
+  </Svg>
+);
+
+/** Sliders — the filter control. Chosen over a funnel: a funnel at 20px
+    is a triangle, and a triangle already means "warning" in this set. */
+export const Sliders = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h10M18 18h2" />
+    <circle cx="16" cy="6" r="2" />
+    <circle cx="10" cy="12" r="2" />
+    <circle cx="16" cy="18" r="2" />
+  </Svg>
+);
+
+/** Arrows up and down — the sort control. */
+export const Sort = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M7 4v16M7 20l-3-3M7 20l3-3" />
+    <path d="M17 20V4M17 4l-3 3M17 4l3 3" />
+  </Svg>
+);
+
+/** Filled star, for ratings. Requires `fill-current` from the caller. */
+export const Star = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z" />
+  </Svg>
+);
+
+/** Filled heart — the saved state of the wishlist control. */
+export const HeartFilled = (p: IconProps) => (
+  <Svg {...p}>
+    <path
+      d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 1 1 19.4 13z"
+      fill="currentColor"
+      stroke="none"
+    />
+  </Svg>
+);
+
+/** Right arrow — "continue", where a chevron would read as "expand". */
+export const ArrowRight = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </Svg>
+);
+
+/** Bin — remove a line from a cart or a list. */
+export const Trash = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 7h16M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z" />
+    <path d="M6 7v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7" />
+    <path d="M10 11v6M14 11v6" />
+  </Svg>
+);
+
+/** Sealed carton — an order, a delivery, a parcel. */
+export const Package = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5z" />
+    <path d="M3 8.5 12 13l9-4.5M12 13v7" />
+    <path d="m7.5 6.2 9 4.6" />
+  </Svg>
+);
+
+/** Sheet with a fold — documents, invoices, specifications. */
+export const Document = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+    <path d="M14 3v5h5" />
+    <path d="M9 13h6M9 17h4" />
+  </Svg>
+);
+
+/** Card with a stripe — payment methods. */
+export const CreditCard = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+    <path d="M2.5 10h19M6 15h3" />
+  </Svg>
+);
+
+/** Cog — settings. */
+export const Settings = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" />
+  </Svg>
+);
+
+/** Door with an arrow — sign out. */
+export const SignOut = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M15 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2" />
+    <path d="M10 17l-5-5 5-5M5 12h11" />
+  </Svg>
+);
+
+/** Two figures — professionals, teams, a service crew. */
+export const People = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="9" cy="8" r="3.2" />
+    <path d="M2.8 20a6.2 6.2 0 0 1 12.4 0" />
+    <path d="M16.5 5.3a3.2 3.2 0 0 1 0 5.9M18 14.4a6.2 6.2 0 0 1 3.2 5.6" />
+  </Svg>
+);
+
+/** Case — trade accounts, professional mode. */
+export const Briefcase = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="2.5" y="7" width="19" height="13" rx="2.5" />
+    <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7" />
+    <path d="M2.5 12.5h19" />
+  </Svg>
+);
+
+/** Camera — photograph a parcha. */
+export const Camera = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M3 8h3l1.5-2.5h9L18 8h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1z" />
+    <circle cx="12" cy="13.5" r="3.5" />
+  </Svg>
+);
+
+/** Tray with a down arrow — download, export. */
+export const Download = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3v11M12 14l-4-4M12 14l4-4" />
+    <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+  </Svg>
+);
+
+/** Percent — discounts and deals. */
+export const Percent = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M19 5 5 19" />
+    <circle cx="7.5" cy="7.5" r="2.5" />
+    <circle cx="16.5" cy="16.5" r="2.5" />
+  </Svg>
+);
+
+/** Rising line — trending, popular. */
+export const Trend = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m3 16 5.5-5.5 3.5 3.5L21 5" />
+    <path d="M16 5h5v5" />
+  </Svg>
+);
+
+/** Circled tick — a completed step, a verified claim. */
+export const CheckCircle = (p: IconProps) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m8.5 12.2 2.4 2.4 4.6-4.9" />
+  </Svg>
+);
+
+/** Three bars — the mobile menu. */
+export const Menu = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Svg>
+);
+
+/** Return key — the "press Enter" hint in the command palette. */
+export const EnterKey = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M20 5v6a3 3 0 0 1-3 3H4" />
+    <path d="m8 10-4 4 4 4" />
+  </Svg>
+);
+
+/** Layers — a project's material list, a specification. */
+export const Layers = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m12 3 9 4.5-9 4.5-9-4.5z" />
+    <path d="m3 12.5 9 4.5 9-4.5" />
+    <path d="m3 17 9 4.5 9-4.5" />
+  </Svg>
+);
+
+/** Roller and tray — painting and finishes. */
+export const Roller = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="3" y="4" width="13" height="5" rx="1.5" />
+    <path d="M16 6.5h3a1.5 1.5 0 0 1 1.5 1.5v2A1.5 1.5 0 0 1 19 11.5h-6.5a1.5 1.5 0 0 0-1.5 1.5v1.5" />
+    <rect x="9" y="14.5" width="4" height="6.5" rx="1.2" />
+  </Svg>
+);
+
+/** Spanner — installation, repairs, contractors. */
+export const Wrench = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M15.6 3.6a5.5 5.5 0 0 0-6.9 7L3.5 15.8a2 2 0 0 0 0 2.8l1.9 1.9a2 2 0 0 0 2.8 0l5.2-5.2a5.5 5.5 0 0 0 7-6.9L17.6 11h-3.1l-1-1V6.9z" />
+  </Svg>
+);
+
+/** Bolt — electricals. */
+export const Bolt = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M13.5 2.5 5 13.5h6l-.5 8L19 10.5h-6z" />
+  </Svg>
+);
+
+/** Rupee — budgets, spend, anything priced. */
+export const Rupee = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M7 4h10M7 8.5h10M15.5 4c0 3.6-2.5 4.5-5.5 4.5H7l8 11" />
+  </Svg>
+);
+
+/** Circular arrow — retry, reorder, repeat. */
+export const Refresh = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M20 12a8 8 0 1 1-2.5-5.8" />
+    <path d="M20 4v4.5h-4.5" />
+  </Svg>
+);
+
+/** Pencil — edit in place. */
+export const Pencil = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" />
+    <path d="m14.5 6 3 3" />
+  </Svg>
+);
