@@ -60,3 +60,9 @@ next-env.d.ts
 # the storefront actually serves, and a deploy without them shows a swatch
 # where half the catalogue should be. They belong in object storage once
 # there is somewhere to put them; until then the repo is that somewhere.
+
+# Output of scripts/rebrand-scraped.ts: the plan is for review and the
+# backup is how the run is undone. Both describe one machine's run
+# against one database, and neither belongs in the repo.
+/rebrand-plan.tsv
+/.backups/

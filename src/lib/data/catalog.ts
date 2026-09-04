@@ -618,12 +618,16 @@ export async function listBrands(): Promise<{ id: string; slug: string; name: st
  * Names the catalogue carries but no manufacturer answers for.
  *
  * The source export always writes something in the brand column, so
- * unbranded rows arrive as `Generic`, `Local` or `India`, and the rows
- * scraped from the merchant that seeded the catalogue arrive as
- * `HomeRun` — a competitor, and the last name that belongs on a shelf of
- * partners. A denylist rather than an allowlist: a real brand that
- * arrives with the next import should appear without a code change, and
- * the long tail of one-off oddities never ranks high enough to show.
+ * unbranded rows arrive as `Generic`, `Local` or `India`.
+ *
+ * `homerun` is kept on the list although no product carries it any more —
+ * `scripts/rebrand-scraped.ts` moved that stock onto the house brand and
+ * onto the manufacturers that actually made it. The entry stays because a
+ * re-run of the original import would put the merchant's name back, and a
+ * competitor's name on the partner shelf is not a thing to rediscover in
+ * production. A denylist rather than an allowlist: a real brand arriving
+ * with the next import should appear without a code change, and the long
+ * tail of one-off oddities never ranks high enough to show.
  */
 const NON_BRANDS = new Set(["generic", "local", "india", "homerun"]);
 
