@@ -99,6 +99,26 @@ function toVariant(row: VariantRow): Variant {
   };
 }
 
+/**
+ * The picture to show for a product row, and the rule about which one.
+ *
+ * Quoin's own image — photographed or generated — always wins. The
+ * captured source photography is the last resort and is gated here rather
+ * than in a component: with `SHOW_SOURCE_IMAGES` off, that URL must never
+ * reach rendered HTML or an API response at all. Exported so that search
+ * suggestions, which select a narrower row, apply the identical gate
+ * instead of a second copy of it that can drift.
+ */
+export function resolvePhoto(row: {
+  image: string | null;
+  sourceImageUrl: string | null;
+}): string | undefined {
+  return (
+    row.image ||
+    (env.SHOW_SOURCE_IMAGES ? (row.sourceImageUrl ?? undefined) : undefined)
+  );
+}
+
 function toProduct(row: ProductRow): Product {
   return {
     id: row.id,
@@ -118,13 +138,7 @@ function toProduct(row: ProductRow): Product {
     image: row.category
       ? (PRODUCT_SWATCH_BY_CATEGORY[row.category.slug] ?? "cement")
       : "cement",
-    /* Quoin's own image — photographed or generated — always wins. The
-       captured source photography is the last resort, and gated at the
-       mapper rather than in the component: with the flag off that URL
-       never reaches the rendered HTML or an API response at all. */
-    photo:
-      row.image ||
-      (env.SHOW_SOURCE_IMAGES ? (row.sourceImageUrl ?? undefined) : undefined),
+    photo: resolvePhoto(row),
     photoIsIllustration: row.image ? row.imageIsGenerated : false,
     leadTimeDays: row.leadTimeDays ?? undefined,
   };
@@ -343,6 +357,11 @@ export interface ProductQuery {
   fulfilment?: FulfilmentType;
   /** Matched against product name, SKU, brand name and category name. */
   search?: string;
+  /** Inclusive bounds on the cheapest sellable variant, in paise. */
+  minPricePaise?: number;
+  maxPricePaise?: number;
+  /** Only products with a live variant priced under its own MRP. */
+  discountedOnly?: boolean;
   sort?: ProductSort;
   page?: number;
   pageSize?: number;
@@ -367,19 +386,38 @@ const DB_FULFILMENT: Record<FulfilmentType, DbFulfilment> = {
   made_to_order: "MADE_TO_ORDER",
 };
 
-export async function listProducts(query: ProductQuery = {}): Promise<ProductPage> {
-  const pageSize = Math.min(Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
-  const page = Math.max(1, query.page ?? 1);
-  const skip = (page - 1) * pageSize;
-
+/**
+ * One definition of what a query matches.
+ *
+ * Shared by the listing, its count, the price-ordered path and the facet
+ * counts, so a filter can never apply to one and not another — which is
+ * exactly how a "24 results" heading ends up over a grid of 31.
+ *
+ * The variant condition is composed rather than spread over: the base
+ * query already requires `variants: { some: { isActive: true } }`, and a
+ * price bound written as a second `variants` key would silently replace
+ * that and start returning products with no sellable variant at all.
+ */
+function productWhere(query: ProductQuery) {
   const search = query.search?.trim();
+  const { minPricePaise: min, maxPricePaise: max } = query;
+  const bounded = min != null || max != null;
 
-  /* The single source of truth for what matches. Both the count and the
-     price-ordered path below derive from this object rather than
-     restating the conditions, so a filter can never apply to one and not
-     the other. */
-  const where = {
-    ...PRODUCT_QUERY.where,
+  return {
+    isActive: true,
+    variants: {
+      some: {
+        isActive: true,
+        ...(bounded
+          ? {
+              pricePaise: {
+                ...(min != null ? { gte: min } : {}),
+                ...(max != null ? { lte: max } : {}),
+              },
+            }
+          : {}),
+      },
+    },
     ...(query.categorySlug ? { category: { slug: query.categorySlug } } : {}),
     ...(query.brandSlug ? { brand: { slug: query.brandSlug } } : {}),
     ...(query.fulfilment ? { fulfilment: DB_FULFILMENT[query.fulfilment] } : {}),
@@ -394,6 +432,27 @@ export async function listProducts(query: ProductQuery = {}): Promise<ProductPag
         }
       : {}),
   };
+}
+
+export async function listProducts(query: ProductQuery = {}): Promise<ProductPage> {
+  const pageSize = Math.min(Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
+  const page = Math.max(1, query.page ?? 1);
+  const skip = (page - 1) * pageSize;
+
+  /* The single source of truth for what matches. Both the count and the
+     price-ordered path below derive from this object rather than
+     restating the conditions, so a filter can never apply to one and not
+     the other. */
+  const where = query.discountedOnly
+    ? {
+        ...productWhere(query),
+        /* Prisma cannot compare two columns of the same row in a `where`,
+           so "priced under its own MRP" is resolved in SQL and folded back
+           in as an id set. Narrowing rather than replacing the filter
+           keeps one definition of what matches. */
+        id: { in: await discountedProductIds() },
+      }
+    : productWhere(query);
 
   const total = await db.product.count({ where });
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -423,7 +482,7 @@ export async function listProducts(query: ProductQuery = {}): Promise<ProductPag
  * this needs a maintained cheapest-price column to sort on directly.
  */
 async function byCheapestVariant(
-  where: typeof PRODUCT_QUERY.where,
+  where: Prisma.ProductWhereInput,
   skip: number,
   take: number,
 ): Promise<ProductRow[]> {
@@ -451,6 +510,98 @@ async function byCheapestVariant(
   /* `IN` does not preserve order, so restore the one SQL decided. */
   const bySlot = new Map(rows.map((row) => [row.id, row]));
   return ordered.flatMap((o) => bySlot.get(o.id) ?? []);
+}
+
+/**
+ * The filter panel's options, counted against the current query.
+ *
+ * Each facet is counted with its **own** filter removed. Counting brands
+ * with the brand filter applied returns one brand with a count equal to
+ * the result total, which makes the panel useless — the number next to
+ * "Jaquar" has to mean "what you would get if you picked this instead",
+ * not "what you already have".
+ *
+ * Only facets Quoin has data for. The brief also asks for material,
+ * finish, size and application; the catalogue has no attribute table, so
+ * those filters would be empty controls that never change a result. They
+ * arrive when the attributes do.
+ */
+export interface ProductFacets {
+  brands: { slug: string; name: string; count: number }[];
+  fulfilments: { id: FulfilmentType; count: number }[];
+  /** Bounds of the cheapest sellable variant across the unpriced query. */
+  priceMinPaise: number;
+  priceMaxPaise: number;
+  discountedCount: number;
+}
+
+export async function getProductFacets(
+  query: ProductQuery = {},
+): Promise<ProductFacets> {
+  /* Every facet drops its own dimension, and the price bounds drop the
+     price filter, so the slider always spans the full range of what is
+     otherwise selected rather than collapsing onto itself. */
+  const withoutBrand = productWhere({ ...query, brandSlug: undefined });
+  const withoutFulfilment = productWhere({ ...query, fulfilment: undefined });
+  const withoutPrice = productWhere({
+    ...query,
+    minPricePaise: undefined,
+    maxPricePaise: undefined,
+  });
+
+  const [brandRows, fulfilmentRows, bounds, discountedIds] = await Promise.all([
+    db.product.groupBy({
+      by: ["brandId"],
+      where: { ...withoutBrand, brandId: { not: null } },
+      _count: { _all: true },
+    }),
+    db.product.groupBy({
+      by: ["fulfilment"],
+      where: withoutFulfilment,
+      _count: { _all: true },
+    }),
+    db.productVariant.aggregate({
+      where: { isActive: true, product: withoutPrice },
+      _min: { pricePaise: true },
+      _max: { pricePaise: true },
+    }),
+    discountedProductIds(),
+  ]);
+
+  /* `groupBy` returns ids; the names come back in one further query
+     rather than one per brand. */
+  const brandIds = brandRows.map((r) => r.brandId).filter((id): id is string => id != null);
+  const brandNames = await db.brand.findMany({
+    where: { id: { in: brandIds } },
+    select: { id: true, slug: true, name: true },
+  });
+  const byId = new Map(brandNames.map((b) => [b.id, b]));
+
+  const discountedCount = await db.product.count({
+    where: { ...productWhere(query), id: { in: discountedIds } },
+  });
+
+  return {
+    brands: brandRows
+      .flatMap((row) => {
+        const brand = row.brandId ? byId.get(row.brandId) : undefined;
+        if (!brand) return [];
+        return { slug: brand.slug, name: brand.name, count: row._count._all };
+      })
+      /* Most stocked first: a filter list ordered alphabetically buries
+         the brand that actually has the range behind twenty that have
+         three products each. */
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+
+    fulfilments: fulfilmentRows.map((row) => ({
+      id: FULFILMENT[row.fulfilment],
+      count: row._count._all,
+    })),
+
+    priceMinPaise: bounds._min.pricePaise ?? 0,
+    priceMaxPaise: bounds._max.pricePaise ?? 0,
+    discountedCount,
+  };
 }
 
 /** Brands that have something to sell, for the filter rail. */
@@ -674,6 +825,23 @@ export async function listBrandsMissingPhotos(): Promise<
 }
 
 /**
+ * Ids of every product with a live variant priced under its own MRP.
+ *
+ * Extracted so the Deals page and the `?offers=1` filter on any listing
+ * agree about what a discount is. A product that appears on one and not
+ * the other is a support ticket about a saving that vanished.
+ */
+async function discountedProductIds(): Promise<string[]> {
+  const rows = await db.$queryRaw<{ id: string }[]>`
+    SELECT DISTINCT p.id
+    FROM products p
+    JOIN product_variants v ON v."productId" = p.id
+    WHERE p."isActive" AND v."isActive" AND v."pricePaise" < v."mrpPaise"
+  `;
+  return rows.map((r) => r.id);
+}
+
+/**
  * Products selling below their list price.
  *
  * A discount is the gap between MRP and sell price on a live variant, not
@@ -686,13 +854,7 @@ export async function listDiscountedProducts(
   page = 1,
   pageSize = DEFAULT_PAGE_SIZE,
 ): Promise<ProductPage> {
-  const rows = await db.$queryRaw<{ id: string }[]>`
-    SELECT DISTINCT p.id
-    FROM products p
-    JOIN product_variants v ON v."productId" = p.id
-    WHERE p."isActive" AND v."isActive" AND v."pricePaise" < v."mrpPaise"
-  `;
-  const ids = rows.map((r) => r.id);
+  const ids = await discountedProductIds();
   const total = ids.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 

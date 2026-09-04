@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { AppShell } from "@/components/storefront/AppShell";
-import { SectionHead } from "@/components/storefront/sections";
-import { Chevron } from "@/components/icons";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SectionHead } from "@/components/ui/Section";
 
 /**
  * A destination that is linked but not built.
@@ -11,6 +11,9 @@ import { Chevron } from "@/components/icons";
  * broken; saying what the page will be tells them it is unfinished, which
  * is true and much less alarming. Every one of these is a page to delete,
  * not a page to keep.
+ *
+ * Distinct from `EmptyState`, which means "nothing here yet" about data
+ * the customer controls. These two look similar and mean opposite things.
  */
 export function Placeholder({
   title,
@@ -23,22 +26,17 @@ export function Placeholder({
 }) {
   return (
     <AppShell>
-      <div className="pt-4 lg:pt-0">
-        <SectionHead title={title} />
-        <div className="mx-5 rounded-card border border-dashed border-line bg-surface px-6 py-12 text-center lg:mx-0">
-          <p className="text-sm text-ink">Coming soon</p>
-          <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
+      <div className="pt-4 lg:pt-6">
+        <div className="mb-3 px-5 lg:px-0">
+          <Breadcrumb items={[{ label: "Home", href: "/" }, { label: title }]} />
+        </div>
+
+        <SectionHead level={1} size="lg" title={title} />
+
+        <div className="px-5 lg:px-0">
+          <EmptyState title="Not built yet" action={cta}>
             {children}
-          </p>
-          {cta && (
-            <Link
-              href={cta.href}
-              className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-accent px-5 py-2.5 text-xs font-medium text-white transition-colors hover:bg-accent-bright"
-            >
-              {cta.label}
-              <Chevron className="size-3.5" />
-            </Link>
-          )}
+          </EmptyState>
         </div>
       </div>
     </AppShell>

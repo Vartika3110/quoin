@@ -1,48 +1,61 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
-import { Browse } from "@/components/storefront/Browse";
-import { SectionHead } from "@/components/storefront/sections";
-import { listProducts, type ProductSort } from "@/lib/data/catalog";
-import type { FulfilmentType } from "@/lib/types/catalog";
-import { one } from "@/lib/search-params";
+import { Browse } from "@/components/storefront/browse/Browse";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { SectionHead } from "@/components/ui/Section";
+import { getProductFacets, listProducts } from "@/lib/data/catalog";
+import { readBrowseParams, toProductQuery } from "@/lib/browse-request";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "All products — Quoin",
+  description:
+    "Every priced line in the Quoin catalogue — materials, fittings and finishes, filterable by brand, price and delivery.",
 };
-
-type Search = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Search;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const sp = await searchParams;
-  const params = {
-    category: one(sp.category),
-    brand: one(sp.brand),
-    fulfilment: one(sp.fulfilment),
-    q: one(sp.q),
-    sort: one(sp.sort),
-    page: one(sp.page),
-  };
+  const params = readBrowseParams(await searchParams);
+  const query = toProductQuery(params);
 
-  const result = await listProducts({
-    categorySlug: params.category,
-    brandSlug: params.brand,
-    fulfilment: params.fulfilment as FulfilmentType | undefined,
-    search: params.q,
-    sort: params.sort as ProductSort | undefined,
-    page: Number(params.page) || 1,
-  });
+  /* The listing and its facets in one round trip rather than two
+     sequential ones — the facets are four aggregate queries and would
+     otherwise wait for the page of products to come back first. */
+  const [result, facets] = await Promise.all([
+    listProducts(query),
+    getProductFacets(query),
+  ]);
+
+  const searching = Boolean(params.q);
 
   return (
     <AppShell>
-      <div className="pt-4 lg:pt-0">
-        <SectionHead title={params.q ? `Results for "${params.q}"` : "All products"} />
-        <Browse page={result} basePath="/products" params={params} />
+      <div className="pt-4 lg:pt-6">
+        <div className="mb-3 px-5 lg:px-0">
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: searching ? "Search" : "All products" },
+            ]}
+          />
+        </div>
+
+        <SectionHead
+          level={1}
+          size="lg"
+          title={searching ? `Results for “${params.q}”` : "All products"}
+          subtitle={
+            searching
+              ? undefined
+              : "Everything Quoin has priced for sale, across all fourteen departments."
+          }
+        />
+
+        <Browse page={result} facets={facets} basePath="/products" params={params} />
       </div>
     </AppShell>
   );

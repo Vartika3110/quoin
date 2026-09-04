@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/storefront/AppShell";
-import { Browse } from "@/components/storefront/Browse";
-import { SectionHead } from "@/components/storefront/sections";
-import { getCategoryBySlug, listProducts, type ProductSort } from "@/lib/data/catalog";
-import { one } from "@/lib/search-params";
+import { Browse } from "@/components/storefront/browse/Browse";
+import { CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { SectionHead } from "@/components/ui/Section";
+import { getCategoryBySlug, getProductFacets, listProducts } from "@/lib/data/catalog";
+import { readBrowseParams, toProductQuery } from "@/lib/browse-request";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,13 @@ type Ctx = {
 export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
-  return { title: category ? `${category.title} — Quoin` : "Not found — Quoin" };
+  if (!category) return { title: "Not found — Quoin" };
+  return {
+    title: `${category.title} — Quoin`,
+    description:
+      CATEGORY_DESCRIPTOR[slug] ??
+      `${category.productCount} products in ${category.title} on Quoin.`,
+  };
 }
 
 export default async function CategoryPage({ params, searchParams }: Ctx) {
@@ -25,20 +33,40 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
   const category = await getCategoryBySlug(slug);
   if (!category) notFound();
 
-  const sp = await searchParams;
-  const query = { sort: one(sp.sort), page: one(sp.page) };
+  const browseParams = readBrowseParams(await searchParams);
+  const query = { ...toProductQuery(browseParams), categorySlug: slug };
 
-  const result = await listProducts({
-    categorySlug: slug,
-    sort: query.sort as ProductSort | undefined,
-    page: Number(query.page) || 1,
-  });
+  const [result, facets] = await Promise.all([
+    listProducts(query),
+    getProductFacets(query),
+  ]);
 
   return (
     <AppShell>
-      <div className="pt-4 lg:pt-0">
-        <SectionHead title={category.title} />
-        <Browse page={result} basePath={`/c/${slug}`} params={query} />
+      <div className="pt-4 lg:pt-6">
+        <div className="mb-3 px-5 lg:px-0">
+          <Breadcrumb
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Categories", href: "/categories" },
+              { label: category.title },
+            ]}
+          />
+        </div>
+
+        <SectionHead
+          level={1}
+          size="lg"
+          title={category.title}
+          subtitle={CATEGORY_DESCRIPTOR[slug]}
+        />
+
+        <Browse
+          page={result}
+          facets={facets}
+          basePath={`/c/${slug}`}
+          params={browseParams}
+        />
       </div>
     </AppShell>
   );
