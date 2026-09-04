@@ -16,7 +16,14 @@ import type { Paise, Product, Variant } from "@/lib/types/catalog";
  * becomes 25, not a rejection. Rounding up rather than down matters: a
  * customer who needs 23 sq.ft. and is silently sold 20 is short on site.
  */
-export function normalizeQty(variant: Variant, requested: number): number {
+export function normalizeQty(
+  /* The grid, not a whole variant. The cart holds a snapshot of these two
+     numbers rather than the variant they came from, and widening the
+     parameter is better than casting a two-field object to `Variant` at
+     the call site — a cast that claims fields the object does not have. */
+  variant: Pick<Variant, "minQty" | "stepQty">,
+  requested: number,
+): number {
   const { minQty, stepQty } = variant;
   if (!Number.isFinite(requested) || requested <= minQty) return minQty;
   const stepsAbove = Math.ceil((requested - minQty) / stepQty);

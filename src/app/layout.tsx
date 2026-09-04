@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
+import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,10 +22,29 @@ export const metadata: Metadata = {
   description:
     "Construction materials, premium interiors and verified expert services, delivered to your project.",
   manifest: "/manifest.webmanifest",
+  /* iOS ignores the manifest entirely: installed appearance, the home
+     screen icon and the status bar all come from these instead. */
   appleWebApp: {
     capable: true,
+    /* `black-translucent` lets the page paint under the status bar, which
+       is what makes an installed Quoin look like an app rather than a
+       browser without its chrome. The safe-area insets the fixed bars use
+       are what keep content out from under it. */
     statusBarStyle: "black-translucent",
     title: "Quoin",
+  },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  formatDetection: {
+    /* Safari otherwise turns SKUs, PIN codes and quantities into blue
+       "call this number" links, which on a catalogue of model codes is
+       both wrong and unreadable. */
+    telephone: false,
   },
 };
 
@@ -32,9 +52,13 @@ export const viewport: Viewport = {
   /* Tints the browser chrome to match the ground the page is painted on.
      One value cannot serve both palettes, and #000000 served neither. */
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8f4ef" },
-    { media: "(prefers-color-scheme: dark)", color: "#16110e" },
+    { media: "(prefers-color-scheme: light)", color: "#faf7f3" },
+    { media: "(prefers-color-scheme: dark)", color: "#14100d" },
   ],
+  /* The page paints edge to edge and the fixed bars handle the insets
+     themselves, which is the difference between an installed PWA that
+     looks native and one with a white band under the home indicator. */
+  viewportFit: "cover",
   /* The storefront is a fixed-chrome app shell, but zoom stays enabled to
      5x — disabling it outright fails WCAG 1.4.4. */
   maximumScale: 5,
@@ -75,7 +99,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col antialiased">{children}</body>
+      <body className="min-h-full flex flex-col antialiased">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }
