@@ -121,6 +121,109 @@ const DESTINATIONS: {
   },
 ];
 
+/**
+ * The words customers use, mapped to the words the catalogue uses.
+ *
+ * The catalogue is named in trade terms — "Bathware & plumbing",
+ * "Electricals & lighting", "Paints & finishes" — and customers type
+ * rooms and materials. A plain `contains` match means "bathroom" returns
+ * nothing at all on a marketplace whose largest department is bathroom
+ * fittings, which is the single most visible way this search can look
+ * broken while working exactly as written.
+ *
+ * Deliberately a hand-written map rather than a stemmer or a synonym
+ * service. There are fourteen departments and the vocabulary is small and
+ * known; a fuzzy matcher would earn its keep across a million SKUs and
+ * here would mostly return surprising things confidently.
+ *
+ * Matching is on whole words, so "bath" reaches bathware but "bathe" does
+ * not, and a term is allowed to hit several departments — "fittings" is
+ * genuinely both bathroom and kitchen.
+ */
+const CATEGORY_SYNONYMS: Record<string, string[]> = {
+  "bathware-plumbing": [
+    "bathroom", "bath", "washroom", "toilet", "wc", "sanitary", "sanitaryware",
+    "shower", "basin", "washbasin", "tap", "taps", "faucet", "mixer", "cistern",
+    "plumbing", "pipe", "pipes", "cpvc", "upvc", "cp fittings", "geyser",
+  ],
+  "kitchen-sinks-faucets": [
+    "kitchen", "sink", "sinks", "chimney", "hob", "kitchen tap", "kitchen faucet",
+  ],
+  "kitchen-wardrobe-fittings": [
+    "wardrobe", "cabinet", "cupboard", "drawer", "hinge", "hinges", "runner",
+    "runners", "basket", "modular", "shutter", "handle", "handles",
+  ],
+  "electricals-lighting": [
+    "electrical", "electricals", "electric", "wiring", "wire", "cable", "switch",
+    "switches", "socket", "mcb", "db", "light", "lights", "lighting", "lamp",
+    "bulb", "led", "fan", "fans", "downlight", "chandelier",
+  ],
+  "paints-finishes": [
+    "paint", "paints", "painting", "emulsion", "primer", "enamel", "putty",
+    "distemper", "varnish", "polish", "finish", "finishes", "colour", "color",
+  ],
+  "tiling-adhesives": [
+    "tile", "tiles", "tiling", "floor", "flooring", "marble", "granite",
+    "stone", "vitrified", "adhesive", "grout", "mosaic",
+  ],
+  "cement-steel": [
+    "cement", "steel", "tmt", "rebar", "sand", "aggregate", "concrete", "rcc",
+    "brick", "bricks", "block", "blocks", "structure", "structural", "civil",
+  ],
+  "plywood-laminates": [
+    "plywood", "ply", "laminate", "laminates", "veneer", "mdf", "particle board",
+    "board", "boards", "wood", "wooden", "carpentry", "joinery", "edge band",
+  ],
+  "hardware-locks": [
+    "hardware", "lock", "locks", "door", "doors", "latch", "bolt", "handle",
+    "door closer", "hinge", "knob", "security",
+  ],
+  "tools-safety": [
+    "tool", "tools", "drill", "safety", "helmet", "glove", "gloves", "ladder",
+    "measuring", "tape", "power tool",
+  ],
+  "gypsum-false-ceiling": [
+    "ceiling", "false ceiling", "gypsum", "pop", "plaster of paris", "board ceiling",
+  ],
+  waterproofing: [
+    "waterproof", "waterproofing", "damp", "leak", "leakage", "membrane",
+    "seepage", "terrace",
+  ],
+  "home-appliances-security": [
+    "appliance", "appliances", "camera", "cctv", "security", "microwave",
+    "fridge", "washing machine", "access control",
+  ],
+  services: [
+    "service", "services", "labour", "contractor", "professional", "installation",
+    "fitting", "fitter", "carpenter", "mason",
+  ],
+};
+
+/**
+ * Which departments a plain-language term is asking about.
+ *
+ * Exported for the tests: this map is the kind of thing that rots quietly
+ * as categories are renamed, and a test that a real term still resolves to
+ * a real slug is what catches it.
+ */
+export function categorySlugsForTerm(term: string): string[] {
+  const q = term.trim().toLowerCase();
+  if (q.length < 3) return [];
+
+  return Object.entries(CATEGORY_SYNONYMS)
+    .filter(([, words]) =>
+      words.some(
+        (word) =>
+          /* Whole-word containment in either direction, so "bathroom
+             fittings" finds bathware and "bath" does too, while "bathe"
+             finds nothing. */
+          word === q || word.startsWith(`${q} `) || q.startsWith(`${word} `) ||
+          q.split(/\s+/).includes(word),
+      ),
+    )
+    .map(([slug]) => slug);
+}
+
 /** Only rows a customer can actually buy — mirrors the catalogue's filter. */
 const SELLABLE = {
   isActive: true,
@@ -139,9 +242,20 @@ export async function suggest(
 
   const contains = { contains: q, mode: "insensitive" as const };
 
+  /* Departments matched by name *or* by the words customers actually use.
+     Without the second half, "bathroom" returns nothing at all — the
+     department is called "Bathware & plumbing". */
+  const synonymSlugs = categorySlugsForTerm(q);
+
   const [categoryRows, brandRows, productRows] = await Promise.all([
     db.category.findMany({
-      where: { isActive: true, name: contains },
+      where: {
+        isActive: true,
+        OR: [
+          { name: contains },
+          ...(synonymSlugs.length ? [{ slug: { in: synonymSlugs } }] : []),
+        ],
+      },
       select: { id: true, slug: true, name: true, _count: { select: { products: true } } },
       orderBy: { name: "asc" },
       take: limit,

@@ -18,6 +18,7 @@ const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
   await import("@/lib/types/catalog");
 const { istDay, addDays, formatConsultDay } = await import("@/lib/types/consult");
 const { parseParcha } = await import("@/lib/parcha");
+const { categorySlugsForTerm } = await import("@/lib/data/search");
 type CatalogProduct = import("@/lib/types/catalog").Product;
 
 /**
@@ -359,5 +360,42 @@ describe("parcha parsing", () => {
     const [line] = parseParcha("Jaquar shower head");
     assert.equal(line.qty, 1);
     assert.equal(line.unit, null);
+  });
+});
+
+/* ------------------------------------------------------- search synonyms */
+
+describe("plain-language category matching", () => {
+  it("maps a room to the department that actually holds it", () => {
+    /* The catalogue calls this "Bathware & plumbing". A customer does
+       not. Without the map, the largest department on the site is
+       unreachable by its most obvious search term. */
+    assert.ok(categorySlugsForTerm("bathroom").includes("bathware-plumbing"));
+    assert.ok(categorySlugsForTerm("kitchen").includes("kitchen-sinks-faucets"));
+    assert.ok(categorySlugsForTerm("wiring").includes("electricals-lighting"));
+    assert.ok(categorySlugsForTerm("false ceiling").includes("gypsum-false-ceiling"));
+  });
+
+  it("matches whole words, not fragments", () => {
+    /* "bathe" shares four letters with "bath" and means something else. */
+    assert.deepEqual(categorySlugsForTerm("bathe"), []);
+    assert.deepEqual(categorySlugsForTerm("ti"), []);
+  });
+
+  it("lets one term reach several departments", () => {
+    /* Hinges are genuinely both cabinet hardware and door hardware. */
+    const hinge = categorySlugsForTerm("hinge");
+    assert.ok(hinge.length > 1, `expected several, got ${hinge.join(", ")}`);
+  });
+
+  it("finds the department inside a longer phrase", () => {
+    assert.ok(
+      categorySlugsForTerm("bathroom fittings").includes("bathware-plumbing"),
+    );
+  });
+
+  it("returns nothing for a term too short to mean anything", () => {
+    assert.deepEqual(categorySlugsForTerm("a"), []);
+    assert.deepEqual(categorySlugsForTerm(""), []);
   });
 });
