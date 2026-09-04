@@ -1,6 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#000000"/>
-  <text x="256" y="330" text-anchor="middle"
-        font-family="Cormorant Garamond, Georgia, serif" font-size="300"
-        fill="#c8a45c">Q</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Quoin">
+  <!--
+    The app icon.
+
+    Espresso ground with a terracotta mark, matching the brand rather than
+    the old black-and-gold pairing that predates the warm palette. The
+    letterform is drawn as paths instead of set in Cormorant: a home-screen
+    icon is rasterised by the operating system on a device that has never
+    heard of the webfont, and a `font-family` reference there falls back to
+    whatever serif is installed — which is how an icon ends up in Times.
+  -->
+  <rect width="512" height="512" rx="114" fill="#3a2318"/>
+  <!-- The O of QUOIN, with the quoin stone cut into its lower right. -->
+  <circle cx="256" cy="248" r="118" fill="none" stroke="#d95d24" stroke-width="34"/>
+  <path d="M256 366 h118 v118 h-118 z" fill="#3a2318"/>
+  <path d="M268 306 h96 v96 h-96 z" fill="#d95d24"/>
 </svg>

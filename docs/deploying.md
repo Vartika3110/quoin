@@ -144,9 +144,30 @@ fine; running the real storefront on it is not.
 
 ## What works on a fresh deploy
 
-Working: the home storefront, category browse, product listings with
-search, filters, sorting and paging, product detail pages, and
-serviceability.
+**Public, and fully working without an account:** the home storefront,
+category browse, product listings with search, filters, sorting and paging,
+product detail pages, serviceability, the command palette (⌘K), Upload
+Parcha's list pricing, Services, Quoin Pro, and the consultation booking
+form.
 
-Not working: sign-in (until MSG91 is live), and `/pro` and `/cart`, which
-are linked from the shell but not built yet.
+**Working, but held in the browser rather than on the server:** the cart,
+the wishlist, Project Hub and recently-viewed all live in `localStorage`
+until accounts own them. They survive a refresh and sync across tabs on one
+device; they do not follow a customer to another device, and clearing site
+data clears them. See `src/lib/store/`.
+
+**Needs MSG91 to be live:** sign-in, and everything behind it — saved
+addresses, the account area's server-backed sections, and the address step
+of checkout.
+
+**Not built:** order persistence. Checkout re-prices the basket against the
+live catalogue, splits it by fulfilment and confirms, then hands the order
+to a person, because there is no `Order` table to write to. `/account/orders`
+says so rather than showing an invented history.
+
+## Verifying a deploy
+
+`/api/v1/health` reports which modules can reach their dependencies, and
+names the module that threw when one cannot. Check it first — a 500 on
+every page with `MSG91_AUTH_KEY` unset looks identical to a database
+outage, and this endpoint is what tells the two apart.
