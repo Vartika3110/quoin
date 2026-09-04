@@ -9,8 +9,8 @@ import { CategoryRail } from "@/components/storefront/home/CategoryRail";
 import { RecentlyViewed } from "@/components/storefront/home/RecentlyViewed";
 import { TrustBar } from "@/components/storefront/home/TrustBar";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
+import { BrandWall } from "@/components/storefront/home/BrandWall";
 import {
-  BrandStrip,
   FinalCta,
   ParchaPromo,
   ProjectHubPromo,
@@ -20,7 +20,6 @@ import { Gutter, PageSections, SectionHead } from "@/components/ui/Section";
 import {
   getCategories,
   getCategoryPriceFloors,
-  getFeaturedBrands,
   getTopPicks,
   listDiscountedProducts,
 } from "@/lib/data/catalog";
@@ -50,14 +49,11 @@ export const dynamic = "force-dynamic";
  * make it more than a shop, then the proof.
  */
 export default async function HomePage() {
-  const [categories, picks, priceFloors, brands, services, deals, chosen] =
+  const [categories, picks, priceFloors, services, deals, chosen] =
     await Promise.all([
       getCategories(),
       getTopPicks(),
       getCategoryPriceFloors(),
-      /* Eight fits the desktop row without scrolling, and a brand nobody
-         scrolls to is not on the page. The rest are one tap away. */
-      getFeaturedBrands(8),
       listServices(),
       /* Only rendered if there is anything in it. Both catalogue imports
          set MRP equal to the sell price, so this is usually empty — and a
@@ -193,8 +189,13 @@ export default async function HomePage() {
           </Gutter>
 
           <section>
-            <SectionHead title="Brands on Quoin" href="/products" linkLabel="Shop all" />
-            <BrandStrip brands={brands} />
+            <SectionHead
+              title="Brands we stock"
+              subtitle="Bought direct, priced from the manufacturer's own list."
+              href="/products"
+              linkLabel="Shop all"
+            />
+            <BrandWall />
           </section>
 
           <Gutter>

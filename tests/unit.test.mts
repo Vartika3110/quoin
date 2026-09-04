@@ -27,6 +27,7 @@ const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
 const { istDay, addDays, formatConsultDay } = await import("@/lib/types/consult");
 const { parseParcha } = await import("@/lib/parcha");
 const { categorySlugsForTerm } = await import("@/lib/data/search");
+const { BRAND_WALL } = await import("@/lib/brand-logos");
 
 const { taxForLine } = await import("@/lib/data/orders");
 const { verifyWebhookSignature, verifyCheckoutSignature } = await import(
@@ -508,5 +509,30 @@ describe("Razorpay checkout handoff signatures", () => {
       }),
       false,
     );
+  });
+});
+
+describe("brand wall artwork", () => {
+  /* The wall is logos only — a roster line whose file never landed shows
+     up as a broken image on the home page rather than as nothing, so the
+     roster and `public/brands/` have to agree before a deploy. */
+  it("has a file on disk for every brand on the roster", async () => {
+    const { access } = await import("node:fs/promises");
+    const missing: string[] = [];
+
+    for (const { name, logo } of BRAND_WALL) {
+      try {
+        await access(new URL(`../public${logo}`, import.meta.url));
+      } catch {
+        missing.push(`${name} (public${logo})`);
+      }
+    }
+
+    assert.deepEqual(missing, [], `missing brand artwork:\n  ${missing.join("\n  ")}`);
+  });
+
+  it("keys each brand exactly once", () => {
+    const slugs = BRAND_WALL.map((b) => b.slug);
+    assert.equal(new Set(slugs).size, slugs.length);
   });
 });

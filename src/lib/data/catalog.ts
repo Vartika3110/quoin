@@ -637,23 +637,26 @@ function brandKey(name: string): string {
 }
 
 /**
- * The brands worth naming on the home page, deepest catalogue first.
+ * Where each brand on the wall should link, keyed by normalised name.
  *
- * Ranked by how much of each brand is actually sellable rather than by a
- * hand-kept list, so the row can never advertise a partner whose products
- * have all gone inactive.
+ * The wall itself is a hand-kept roster (`BRAND_WALL`) — it says who we
+ * buy from, which is a claim the catalogue cannot make on its own. But a
+ * logo that leads to an empty shelf is worse than a logo that leads
+ * nowhere, so the link is resolved here: a plate becomes a link only if
+ * that manufacturer currently has something sellable.
  *
- * The importer has left near-duplicate rows behind (`MYK Laticrete` and
- * `Myk Laticrete` are one company), so entries that normalise to the same
- * name are folded together and the fuller of the two wins the link — the
- * counts are deliberately not summed, since the link can only lead to one
- * of them.
+ * Keyed by `brandKey` rather than by slug because the roster spells names
+ * the way the manufacturer does and the importer spells them the way the
+ * source sheet did. The importer has also left near-duplicate rows behind
+ * (`MYK Laticrete` and `Myk Laticrete` are one company), so entries that
+ * normalise together are folded and the fuller of the two wins the link —
+ * the counts are deliberately not summed, since the link can only lead to
+ * one of them.
  */
-export async function getFeaturedBrands(limit = 12): Promise<{ id: string; slug: string; name: string }[]> {
+export async function getBrandLinkTargets(): Promise<Map<string, string>> {
   const rows = await db.brand.findMany({
     where: { isActive: true, products: { some: PRODUCT_QUERY.where } },
     select: {
-      id: true,
       slug: true,
       name: true,
       _count: { select: { products: { where: PRODUCT_QUERY.where } } },
@@ -668,11 +671,11 @@ export async function getFeaturedBrands(limit = 12): Promise<{ id: string; slug:
     if (!held || held._count.products < row._count.products) best.set(key, row);
   }
 
-  return [...best.values()]
-    .sort((a, b) => b._count.products - a._count.products || a.name.localeCompare(b.name))
-    .slice(0, limit)
-    .map(({ id, slug, name }) => ({ id, slug, name }));
+  return new Map([...best].map(([key, row]) => [key, row.slug]));
 }
+
+/** Shared with the brand wall, which normalises its roster the same way. */
+export { brandKey };
 
 /** One category by slug, for the category browse page. Null becomes a 404. */
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {

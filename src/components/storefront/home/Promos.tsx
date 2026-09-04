@@ -10,16 +10,14 @@ import {
   Rupee,
   Truck,
 } from "@/components/icons";
-import { BRAND_LOGOS } from "@/lib/brand-logos";
-import Link from "next/link";
 
 /**
- * The two things that make Quoin more than a shop, and the row of brands
- * that says the catalogue is real.
+ * The two things that make Quoin more than a shop, and the closing
+ * call to action.
  *
  * Kept in one file because they are the same kind of block — a full-width
  * band that interrupts the grid — and splitting them across three files
- * would make the shared measurements three decisions instead of one.
+ * would make the shared measurements several decisions instead of one.
  */
 
 /* ------------------------------------------------------------ project hub */
@@ -149,62 +147,6 @@ export function ProPromo() {
         </div>
       </div>
     </section>
-  );
-}
-
-/* ----------------------------------------------------------- brand strip */
-
-/**
- * Associated brands, one line deep.
- *
- * Each plate carries the manufacturer's own mark where `BRAND_LOGOS` has
- * the artwork and the brand's name set in type where it does not. The
- * second case is not a placeholder waiting to be fixed: a logo is a
- * trademark, so a mark appears only once Quoin holds the file and the
- * right to show it, and a name is the honest way to say the rest.
- */
-export function BrandStrip({
-  brands,
-}: {
-  brands: { id: string; slug: string; name: string }[];
-}) {
-  return (
-    /* A rail on a phone, a row of eight from `lg`.
-
-       Eight logo plates in a three-column grid is three rows of chrome
-       between the catalogue and the trust bar, for a section that is a
-       footnote. Scrolling sideways costs one row and keeps all eight
-       reachable. */
-    <div className="rail gap-2 px-5 scroll-pl-5 lg:grid lg:grid-cols-8 lg:overflow-visible lg:px-0 lg:scroll-pl-0">
-      {brands.map((b) => {
-        const logo = BRAND_LOGOS[b.slug];
-        return (
-          <Link
-            key={b.id}
-            href={`/products?brand=${b.slug}`}
-            className="group grid h-14 w-[27vw] max-w-32 shrink-0 place-items-center rounded-lg border border-line-soft bg-surface px-3 transition-[border-color,box-shadow] duration-200 hover:border-line hover:shadow-xs lg:w-full lg:max-w-none"
-          >
-            {logo ? (
-              /* Not `next/image`: these are already-optimised vector files
-                 a few kilobytes each, and routing them through the image
-                 pipeline rasterises artwork drawn to stay sharp. */
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={logo}
-                alt={b.name}
-                loading="lazy"
-                decoding="async"
-                className="max-h-7 max-w-full object-contain opacity-80 transition-opacity group-hover:opacity-100"
-              />
-            ) : (
-              <span className="max-w-full truncate text-body-sm font-medium text-muted transition-colors group-hover:text-accent">
-                {b.name}
-              </span>
-            )}
-          </Link>
-        );
-      })}
-    </div>
   );
 }
 
