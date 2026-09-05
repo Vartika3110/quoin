@@ -158,25 +158,29 @@ function load(): Env {
      collect page data, so enforcing this here would fail the build of any
      deploy whose SMS credentials are supplied at runtime. The check still
      runs on server boot, which is where it does its job. */
-  /* Both, not just the key. `getOtpSender()` selects MSG91 only when the
-     auth key *and* the template id are present, and falls back to the
-     console sender otherwise — so a deploy carrying a key but no template
-     passes a key-only guard and then prints live login codes to the
-     production log anyway. That is the exact failure this check exists to
-     prevent, and it is a plausible state to reach: DLT template approval
-     lands days after the MSG91 account does. The condition here must stay
-     in step with the one in `sender.ts`. */
-  if (
-    !isBuildPhase &&
-    env.NODE_ENV === "production" &&
-    !(env.MSG91_AUTH_KEY && env.MSG91_TEMPLATE_ID)
-  ) {
-    throw new Error(
-      "MSG91_AUTH_KEY and MSG91_TEMPLATE_ID are both required in production " +
-        "— refusing to start with the console OTP sender, which prints " +
-        "login codes to the server log.",
-    );
-  }
+  /* No boot guard on MSG91, deliberately, and this is a reversal worth
+     recording.
+
+     There used to be one: production refused to start without
+     `MSG91_AUTH_KEY`, on the reasoning that booting with the console
+     sender would print login codes to the server log. The reasoning was
+     right and the guard was still wrong, twice over.
+
+     It checked one variable when the sender needs two, so a deploy with a
+     key and no DLT template sailed past it and did exactly the thing it
+     existed to prevent — silently, for as long as nobody read the logs.
+     And its failure mode was to take the entire storefront down: a
+     browsable catalogue, a working cart and a working admin, all 500ing
+     because SMS was misconfigured.
+
+     Payments already had the better answer. Razorpay unset does not stop
+     the app; checkout reports that payment is unavailable and takes no
+     money, which is a correct state rather than a dangerous one. SMS is
+     the same shape, so it gets the same treatment: the app boots, the
+     catalogue serves, and `isOtpDeliveryAvailable()` in
+     `src/lib/auth/sender.ts` makes sign-in report itself unavailable at
+     the point of use. `getOtpSender()` refuses outright to return the
+     console sender in production, so nothing can leak a code either way. */
 
   return env;
 }

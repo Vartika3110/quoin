@@ -126,16 +126,31 @@ state a deploy sits in for as long as gateway activation takes.
 
 ## The MSG91 catch
 
-`src/lib/env.ts` refuses to boot in production without `MSG91_AUTH_KEY`.
-That guard is deliberate: the fallback OTP sender prints login codes to the
-server log, and a deployed instance doing that would let anyone with log
-access take over an account.
+Two variables, not one. `MSG91_AUTH_KEY` authenticates you; `MSG91_TEMPLATE_ID`
+names the DLT-registered template MSG91 sends. **Neither works without the
+other**, and this is the thing to get right, because getting it half right
+used to fail silently.
 
-The consequence is that **the app will not start with that variable unset**
-— every request returns a 500. Until you have DLT-approved MSG91
-credentials, set it to any non-empty placeholder. The app then boots and
-browsing works fully, because browse is public; only sign-in fails, at the
-point MSG91 rejects the key.
+With both set, sign-in sends SMS. With either missing, `getOtpSender()` in
+`src/lib/auth/sender.ts` refuses to fall back to the console sender in
+production, and `/api/v1/auth/otp/request` answers that sign-in by SMS is
+not available yet. The app boots, the catalogue serves, the cart works and
+the admin works — only sign-in is unavailable, and it says so. That is the
+same shape as Razorpay being unconfigured, and for the same reason: a
+feature that cannot run should report itself, not take the site down.
+
+This document used to say something different and worse. It told you to set
+`MSG91_AUTH_KEY` to "any non-empty placeholder" so the app would boot while
+DLT approval was pending. That advice was wrong. The old boot guard checked
+only `MSG91_AUTH_KEY`, while the sender needs the template id too — so a
+placeholder key with no template passed the guard, quietly selected the
+console sender, and printed every customer's login code into the platform
+log, where anyone with dashboard access could read it and sign in as them.
+If you followed that advice, treat those logs as compromised credentials
+and rotate `AUTH_SECRET` to invalidate every session minted since.
+
+Do not set placeholder credentials. Leave both unset until you have real
+ones; sign-in will be honestly unavailable in the meantime.
 
 TRAI requires DLT registration of the sender ID and template before
 transactional SMS is delivered at all, and approval takes days. Start it

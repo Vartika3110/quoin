@@ -69,8 +69,11 @@ Genuinely implemented and production-usable as they stand.
   privileged call, so a revoked Pro or a revoked staff grant takes effect
   immediately despite the token being unrevocable. `src/lib/http.ts`
 - `isStaff` is set out of band, by database access only. No endpoint can grant it.
-- MSG91 behind an `OtpSender` interface; production refuses to boot without
-  `MSG91_AUTH_KEY` precisely so the console sender can never print live codes.
+- MSG91 behind an `OtpSender` interface. Production refuses to return the
+  console sender at all, so it can never print live codes; with SMS
+  half-configured, sign-in reports itself unavailable instead. See NEEDS
+  WORK 9a — the original guard checked one variable where the sender needs
+  two, and a deploy walked straight through it.
 
 ### Catalogue
 - `Brand` / `Category` (self-referential, `Restrict` on delete) / `Product` /

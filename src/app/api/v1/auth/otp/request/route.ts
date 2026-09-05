@@ -2,7 +2,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { ApiError, handler, ok, parseBody } from "@/lib/http";
 import { InvalidPhoneError, maskPhone, normalizePhone } from "@/lib/auth/phone";
-import { getOtpSender } from "@/lib/auth/sender";
+import { getOtpSender, isOtpDeliveryAvailable } from "@/lib/auth/sender";
 import {
   generateCode,
   hashCode,
@@ -24,6 +24,18 @@ const Body = z.object({
  * reveals nothing about whether the number is already registered.
  */
 export const POST = handler(async (request) => {
+  /* Checked before anything is written, not after. An unconfigured deploy
+     would otherwise mint a challenge and a code for every customer who
+     reached this screen, none of which could ever be delivered — and the
+     customer would be left staring at a box waiting for an SMS that was
+     never sent. Same shape as the Razorpay check in `/checkout/order`. */
+  if (!isOtpDeliveryAvailable()) {
+    throw new ApiError(
+      "conflict",
+      "Sign-in by SMS is not available yet. Please try again later.",
+    );
+  }
+
   const body = await parseBody(request, Body);
 
   let phone: string;

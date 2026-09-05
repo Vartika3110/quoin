@@ -17,8 +17,10 @@ export interface OtpSender {
  * Development only. Writes the code to the server log so local sign-in
  * works without spending money or registering a DLT template.
  *
- * `env.ts` refuses to boot production without MSG91 credentials precisely
- * so this can never be the active sender in a deployed environment.
+ * `getOtpSender()` refuses to hand this back in production, so it cannot
+ * become the active sender on a deployed instance. That guard used to live
+ * in `env.ts` as a refusal to boot at all — see the note there on why it
+ * moved, and on the configuration that slipped past it.
  */
 class ConsoleOtpSender implements OtpSender {
   async send(phone: string, code: string): Promise<void> {
@@ -63,13 +65,45 @@ class Msg91OtpSender implements OtpSender {
   }
 }
 
+/**
+ * Whether a code can actually reach a customer's handset.
+ *
+ * Both halves are needed: MSG91 selects the DLT-registered template by id,
+ * and an auth key without one cannot send anything. This is the single
+ * condition — the route asks it before writing a challenge, and
+ * `getOtpSender` asks it before returning a sender, so the two cannot
+ * drift apart and disagree about whether sign-in works.
+ */
+export function isOtpDeliveryConfigured(): boolean {
+  return Boolean(env.MSG91_AUTH_KEY && env.MSG91_TEMPLATE_ID);
+}
+
+/**
+ * Whether the OTP endpoint should accept a request at all.
+ *
+ * True in development regardless, where the console sender is the point.
+ */
+export function isOtpDeliveryAvailable(): boolean {
+  return isOtpDeliveryConfigured() || env.NODE_ENV !== "production";
+}
+
 export function getOtpSender(): OtpSender {
-  if (env.MSG91_AUTH_KEY && env.MSG91_TEMPLATE_ID) {
+  if (isOtpDeliveryConfigured()) {
     return new Msg91OtpSender(
-      env.MSG91_AUTH_KEY,
-      env.MSG91_TEMPLATE_ID,
+      env.MSG91_AUTH_KEY!,
+      env.MSG91_TEMPLATE_ID!,
       env.MSG91_SENDER_ID,
     );
   }
+
+  /* Never the console sender on a deployed instance. Printing a login code
+     to a log anyone with dashboard access can read is account takeover, and
+     it is the failure this whole file is arranged to make impossible. */
+  if (env.NODE_ENV === "production") {
+    throw new Error(
+      "Refusing to send an OTP through the console sender in production",
+    );
+  }
+
   return new ConsoleOtpSender();
 }
