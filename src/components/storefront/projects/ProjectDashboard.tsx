@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -10,6 +10,7 @@ import { Stat } from "@/components/ui/Stat";
 import { Progress } from "@/components/ui/Progress";
 import { Tabs, type TabItem } from "@/components/ui/Tabs";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ErrorState, InlineError } from "@/components/ui/ErrorState";
 import { ListSkeleton, StatRowSkeleton } from "@/components/ui/Skeleton";
 import { Textarea } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
@@ -35,6 +36,7 @@ import {
   useProjects,
   type MaterialStatus,
   type Project,
+  type TaskStatus,
 } from "@/lib/store/projects";
 import { formatPrice } from "@/lib/types/catalog";
 
@@ -93,8 +95,19 @@ const MATERIAL_TONE: Record<MaterialStatus, "neutral" | "accent" | "success"> = 
 };
 
 export function ProjectDashboard({ id }: { id: string }) {
-  const { get, ready, setTaskStatus, update, remove } = useProjects();
+  const { get, ready, error, refresh, setTaskStatus, update, remove } = useProjects();
   const [section, setSection] = useState<SectionId>("overview");
+  const [taskError, setTaskError] = useState<string | null>(null);
+
+  /* Notes are lifted here rather than kept in a subcomponent scoped to the
+     "notes" tab, because that subcomponent would unmount every time the
+     customer switches tabs — cancelling a debounce mid-flight would either
+     lose the keystrokes since the last save or need a stale-closure-prone
+     flush-on-unmount. State that never unmounts needs neither. */
+  const [notesDraft, setNotesDraft] = useState<string | null>(null);
+  const [notesStatus, setNotesStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [notesError, setNotesError] = useState<string | null>(null);
+  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   if (!ready) {
     return (
@@ -105,13 +118,48 @@ export function ProjectDashboard({ id }: { id: string }) {
     );
   }
 
+  if (error) {
+    return <ErrorState title="This project could not be loaded" description={error} retry={refresh} />;
+  }
+
   const project = get(id);
-  /* A project id that is not in this browser's store. `notFound` rather
-     than an error: from the customer's point of view the URL is simply
-     wrong, which is exactly what a 404 means. */
+  /* A project id that is not on this account. `notFound` rather than an
+     error: from the customer's point of view the URL is simply wrong,
+     which is exactly what a 404 means. */
   if (!project) notFound();
 
   const summary = summarise(project);
+
+  async function handleToggleTask(taskId: string, status: TaskStatus) {
+    setTaskError(null);
+    try {
+      await setTaskStatus(project!.id, taskId, status);
+    } catch (err) {
+      setTaskError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    }
+  }
+
+  function handleNotesChange(next: string) {
+    setNotesDraft(next);
+    setNotesStatus("idle");
+    if (notesTimer.current) clearTimeout(notesTimer.current);
+    /* Debounced rather than sent per keystroke — a request per character
+       would race itself and hammer the API for no benefit a person could
+       notice, unlike the old `localStorage` write it replaces. */
+    notesTimer.current = setTimeout(() => void saveNotes(next), 800);
+  }
+
+  async function saveNotes(next: string) {
+    setNotesStatus("saving");
+    setNotesError(null);
+    try {
+      await update(project!.id, { notes: next });
+      setNotesStatus("saved");
+    } catch (err) {
+      setNotesStatus("error");
+      setNotesError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -200,6 +248,8 @@ export function ProjectDashboard({ id }: { id: string }) {
         label="Project sections"
       />
 
+      {taskError && <InlineError>{taskError}</InlineError>}
+
       <div key={section} className="anim-fade">
         {section === "overview" && (
           <div className="grid gap-4 lg:grid-cols-2">
@@ -238,10 +288,7 @@ export function ProjectDashboard({ id }: { id: string }) {
 
             <Card padding="lg" className="lg:col-span-2">
               <h2 className="mb-4 text-title-sm font-semibold text-ink">Timeline</h2>
-              <Timeline
-                tasks={project.tasks}
-                onToggle={(taskId, status) => setTaskStatus(project.id, taskId, status)}
-              />
+              <Timeline tasks={project.tasks} onToggle={handleToggleTask} />
             </Card>
           </div>
         )}
@@ -289,10 +336,7 @@ export function ProjectDashboard({ id }: { id: string }) {
 
         {section === "tasks" && (
           <Card padding="lg">
-            <Timeline
-              tasks={project.tasks}
-              onToggle={(taskId, status) => setTaskStatus(project.id, taskId, status)}
-            />
+            <Timeline tasks={project.tasks} onToggle={handleToggleTask} />
           </Card>
         )}
 
@@ -325,23 +369,41 @@ export function ProjectDashboard({ id }: { id: string }) {
 
         {section === "notes" && (
           <Card padding="lg">
-            <label
-              htmlFor="project-notes"
-              className="text-title-sm font-semibold text-ink"
-            >
-              Notes
-            </label>
+            <div className="flex items-baseline justify-between gap-3">
+              <label
+                htmlFor="project-notes"
+                className="text-title-sm font-semibold text-ink"
+              >
+                Notes
+              </label>
+              <span className="text-micro text-muted" aria-live="polite">
+                {notesStatus === "saving" && "Saving…"}
+                {notesStatus === "saved" && "Saved"}
+              </span>
+            </div>
             <p className="mb-3 mt-1 text-caption text-muted">
-              Measurements, decisions, what the contractor said. Saved as you
-              type.
+              Measurements, decisions, what the contractor said. Saved a
+              moment after you stop typing.
             </p>
             <Textarea
               id="project-notes"
-              value={project.notes}
-              onChange={(e) => update(project.id, { notes: e.target.value })}
+              value={notesDraft ?? project.notes}
+              onChange={(e) => handleNotesChange(e.target.value)}
               rows={10}
               placeholder="Bathroom: 6ft × 8ft. Tiles arriving Tuesday. Electrician wants the layout by Friday."
             />
+            {notesStatus === "error" && notesError && (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <InlineError>{notesError}</InlineError>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => saveNotes(notesDraft ?? project.notes)}
+                >
+                  Try again
+                </Button>
+              </div>
+            )}
           </Card>
         )}
       </div>
@@ -497,43 +559,62 @@ function DeliveriesSection({ project }: { project: Project }) {
  * Deleting a project.
  *
  * Two presses, not one, and the second says what will be lost. This is the
- * only destructive control in the storefront and the data behind it lives
- * in one browser — there is no server copy to restore from, so a
- * mis-tapped single button is genuinely unrecoverable.
+ * only destructive control in the storefront, and deletion is now a real
+ * request rather than a local array filter — `onDelete` is only reflected
+ * in the dashboard once the server has actually confirmed it, so a failed
+ * request leaves the project exactly as it was rather than showing one
+ * that has already vanished from every other screen.
  */
 function DangerZone({
   project,
   onDelete,
 }: {
   project: Project;
-  onDelete: () => void;
+  onDelete: () => Promise<void>;
 }) {
-  const [confirming, setConfirming] = useState(false);
+  const router = useRouter();
   const toast = useToast();
+  const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  async function handleDelete() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      await onDelete();
+      toast.toast("Project deleted");
+      router.push("/projects");
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setDeleting(false);
+    }
+  }
 
   return (
     <div className="border-t border-line-hair pt-6">
       {confirming ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <p className="min-w-0 flex-1 text-caption text-muted">
-            Delete <span className="text-ink">{project.name}</span> and its{" "}
-            <span className="nums">{project.materials.length}</span> material
-            lines and <span className="nums">{project.tasks.length}</span> tasks?
-            This cannot be undone.
-          </p>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => {
-              onDelete();
-              toast.toast("Project deleted");
-            }}
-          >
-            Delete it
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setConfirming(false)}>
-            Keep it
-          </Button>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="min-w-0 flex-1 text-caption text-muted">
+              Delete <span className="text-ink">{project.name}</span> and its{" "}
+              <span className="nums">{project.materials.length}</span> material
+              lines and <span className="nums">{project.tasks.length}</span> tasks?
+              This cannot be undone.
+            </p>
+            <Button variant="danger" size="sm" onClick={handleDelete} loading={deleting}>
+              Delete it
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={deleting}
+              onClick={() => setConfirming(false)}
+            >
+              Keep it
+            </Button>
+          </div>
+          {deleteError && <InlineError>{deleteError}</InlineError>}
         </div>
       ) : (
         <button

@@ -65,6 +65,7 @@ model User {
   orderStatusChanges OrderStatusChange[]
   storedFiles        StoredFile[]
   parchaSubmissions  ParchaSubmission[]
+  projects           Project[]
 
   @@map("users")
 }
@@ -821,8 +822,9 @@ model Order {
   /// delivery of the same event must not move it.
   paidAt DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  projectOrders ProjectOrder[]
 
   /// The arbiter for a double-clicked pay button. A repeat key for the
   /// same user returns the order this index found rather than creating
@@ -1183,6 +1185,7 @@ model StoredFile {
   confirmedAt DateTime?
 
   parchaSubmissions ParchaSubmission[]
+  projectDocuments  ProjectDocument[]
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
@@ -1324,4 +1327,218 @@ model ParchaItem {
 
   @@index([submissionId, position])
   @@map("parcha_items")
+}
+
+/// ---------------------------------------------------------------------
+/// Projects.
+///
+/// A renovation is not a basket of orders. It is one thing that runs for
+/// months and accumulates orders, materials, drawings, tasks and a budget,
+/// which is what makes modelling it as its own object worth doing rather
+/// than tagging orders with a string.
+///
+/// These tables replace a `localStorage` store (`src/lib/store/projects.tsx`)
+/// and are deliberately the same shape it already had — every mutation
+/// there was a whole-object replace keyed by id, precisely so this swap
+/// would be a change of implementation and not of every component. What
+/// changes is that a project now survives a cleared browser, and exists on
+/// a phone after signing in, which the browser-held version could never do.
+/// ---------------------------------------------------------------------
+
+enum ProjectKind {
+  NEW_HOME
+  RENOVATION
+  KITCHEN
+  BATHROOM
+  OFFICE
+  COMMERCIAL
+  OTHER
+}
+
+enum ProjectTaskStatus {
+  TODO
+  DOING
+  DONE
+}
+
+enum ProjectMaterialStatus {
+  PLANNED
+  ORDERED
+  DELIVERED
+}
+
+model Project {
+  id String @id @default(cuid())
+
+  /// Required, unlike a parcha. A project is months of someone's work and
+  /// their budget; there is nowhere to put it but an account, and no way
+  /// to hand it back to them later if there is not one.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name String
+  kind ProjectKind @default(OTHER)
+
+  /// Built-up area. Zero when the customer skipped the question, which is
+  /// common and is not an error.
+  sizeSqft Int    @default(0)
+  location String @default("")
+
+  /// Paise, like every other amount here. What they intend to spend, not
+  /// what they have spent — the latter is derived from linked orders.
+  budgetPaise Int @default(0)
+
+  /// `@db.Date`, not timestamps. These are calendar days in the customer's
+  /// head; stored as instants, a start date of the 3rd reads as the 2nd to
+  /// anyone in UTC. Same reasoning as `ConsultRequest.preferredDate`.
+  startDate  DateTime? @db.Date
+  targetDate DateTime? @db.Date
+
+  /// Free-form scope chosen during onboarding — "Flooring", "Wiring".
+  requirements String[] @default([])
+  notes        String   @default("")
+
+  /// Archived rather than deleted. A finished renovation is the record of
+  /// what was bought and what it cost, and a customer tidying their list
+  /// should not destroy it. Deletion stays available and stays separate.
+  archivedAt DateTime?
+
+  /// The worked example offered from the empty state. Flagged so it can be
+  /// told apart from a real project when counting anything.
+  isSample Boolean @default(false)
+
+  tasks      ProjectTask[]
+  materials  ProjectMaterial[]
+  milestones ProjectMilestone[]
+  documents  ProjectDocument[]
+  orders     ProjectOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The list is read newest-first, and archived rows are filtered out of
+  /// it far more often than they are read.
+  @@index([userId, archivedAt, createdAt])
+  @@map("projects")
+}
+
+model ProjectTask {
+  id String @id @default(cuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title  String
+  status ProjectTaskStatus @default(TODO)
+
+  /// Which stage of the build this belongs to — "Civil work". Free text
+  /// because the stages of a build are the trade's vocabulary, not ours.
+  phase   String?
+  dueDate DateTime? @db.Date
+
+  /// Manual ordering within a project; ties break by creation.
+  position Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, position])
+  @@map("project_tasks")
+}
+
+model ProjectMaterial {
+  id String @id @default(cuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title String
+
+  /// A Float, like `ParchaItem.qty` and unlike anything that reaches a
+  /// cart: this is a plan — "12.5 sq.ft." — not a quantity being
+  /// transacted. It is snapped onto a variant's grid only if it is ordered.
+  qty  Float
+  /// Free text mirroring the catalogue's units: "bags", "sq.ft.", "L".
+  unit String @default("")
+
+  unitPricePaise Int                   @default(0)
+  status         ProjectMaterialStatus @default(PLANNED)
+
+  /// Set when the line came from the catalogue rather than being typed.
+  /// Plain strings, not relations, for the reason `OrderLine` uses none: a
+  /// retired SKU must not delete a customer's plan or stop it being read.
+  productSlug String?
+  variantId   String?
+  brand       String?
+
+  expectedOn DateTime? @db.Date
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@map("project_materials")
+}
+
+model ProjectMilestone {
+  id String @id @default(cuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title String
+  date  DateTime @db.Date
+  done  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, date])
+  @@map("project_milestones")
+}
+
+/// A drawing, quotation or photograph attached to a project.
+model ProjectDocument {
+  id String @id @default(cuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Restrict, not Cascade: detaching a document from a project must be a
+  /// deliberate act, and the bytes outlive the link either way.
+  fileId String
+  file   StoredFile @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  /// What the customer called it here, which is often not the filename.
+  label String @default("")
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, fileId])
+  @@index([projectId])
+  @@map("project_documents")
+}
+
+/// Associates an order with the project it was bought for.
+///
+/// A join table rather than a column on `Order`, because the association
+/// is a customer's filing decision and can be made or undone long after
+/// the money moved. Nothing on the order itself should change when they
+/// change their mind about which project it belonged to.
+model ProjectOrder {
+  id String @id @default(cuid())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Restrict: filing an order under a project must never become a way to
+  /// delete the financial record of it.
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, orderId])
+  @@index([orderId])
+  @@map("project_orders")
 }

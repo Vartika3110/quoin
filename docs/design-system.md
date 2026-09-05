@@ -125,9 +125,18 @@ and nothing reflows at hydration:
 
 ## Client state
 
-`src/lib/store/` holds the cart, wishlist, projects and recently-viewed —
-all browser-local until accounts own them, all shaped so that is an
-implementation change rather than a rewrite.
+`src/lib/store/` holds the cart, wishlist and recently-viewed — browser-local,
+and legitimately so: none of them is worth an account to hold, and a cart
+that survives a signed-out visit is the point of one.
+
+Projects used to live here too, on the same terms, and no longer do. They
+are read and written through `/api/v1/projects` against the signed-in
+account, because a renovation is months of someone's budget and task list
+and losing it to a cleared browser is not a small loss — and because a
+project created on a laptop has to appear on the phone at the site. The
+store kept its shape through that move, exactly as the note here predicted:
+every mutation was already a whole-object replace keyed by id, so the swap
+changed the implementation and not the components.
 
 They are built on `useSyncExternalStore` via `createPersistentStore`, not
 `useState` plus an effect. That avoids a cascading render on every mount,

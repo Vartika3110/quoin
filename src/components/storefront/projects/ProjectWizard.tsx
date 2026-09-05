@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
+import { InlineError } from "@/components/ui/ErrorState";
 import { Steps } from "@/components/ui/Progress";
 import { cn } from "@/components/ui/cn";
 import { useToast } from "@/components/ui/Toast";
@@ -109,6 +111,8 @@ export function ProjectWizard({ areas }: { areas: { slug: string; name: string }
   const router = useRouter();
   const toast = useToast();
   const { create } = useProjects();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   /* Reads and writes storage directly — no effect, and the answers are
      already persisted by the time the next question renders. */
@@ -119,24 +123,37 @@ export function ProjectWizard({ areas }: { areas: { slug: string; name: string }
   const go = (next: number) =>
     set({ step: Math.max(0, Math.min(STEP_LABELS.length - 1, next)) });
 
-  function finish() {
+  /* A real request now, so a dropped connection must not read as "nothing
+     happened" — the answers stay in `draftStore` either way, so a retry
+     costs one tap, not the whole form. */
+  async function finish() {
+    setSubmitting(true);
+    setSubmitError(null);
     const today = new Date().toISOString().slice(0, 10);
-    const project = create({
-      name: draft.name.trim() || defaultName(draft.kind),
-      kind: draft.kind ?? "other",
-      sizeSqft: Number(draft.sizeSqft) || 0,
-      location: draft.location.trim(),
-      /* Rupees in the form, paise in the store — the same boundary the
-         rest of the app keeps. */
-      budgetPaise: Math.round((Number(draft.budget) || 0) * 100),
-      startDate: draft.startDate || today,
-      targetDate: draft.targetDate || "",
-      requirements: draft.requirements,
-    });
+    try {
+      const project = await create({
+        name: draft.name.trim() || defaultName(draft.kind),
+        kind: draft.kind ?? "other",
+        sizeSqft: Number(draft.sizeSqft) || 0,
+        location: draft.location.trim(),
+        /* Rupees in the form, paise in the store — the same boundary the
+           rest of the app keeps. */
+        budgetPaise: Math.round((Number(draft.budget) || 0) * 100),
+        startDate: draft.startDate || today,
+        /* Left out entirely rather than sent as `""` — the server treats
+           an omitted date as "not set" but validates any date it is
+           actually given, and an empty string is not a calendar day. */
+        targetDate: draft.targetDate || undefined,
+        requirements: draft.requirements,
+      });
 
-    setDraft(EMPTY);
-    toast.success("Project created");
-    router.push(`/projects/${project.id}`);
+      setDraft(EMPTY);
+      toast.success("Project created");
+      router.push(`/projects/${project.id}`);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
   }
 
   /* Only the first step gates progress. Everything after it is a question
@@ -353,12 +370,18 @@ export function ProjectWizard({ areas }: { areas: { slug: string; name: string }
             <ArrowRight className="size-4" />
           </Button>
         ) : (
-          <Button className="ml-auto" size="lg" onClick={finish}>
+          <Button className="ml-auto" size="lg" onClick={finish} loading={submitting}>
             Create the project
             <ArrowRight className="size-4" />
           </Button>
         )}
       </div>
+
+      {submitError && (
+        <div className="mt-4">
+          <InlineError>{submitError}</InlineError>
+        </div>
+      )}
 
       {step > 0 && step < STEP_LABELS.length - 1 && (
         <button

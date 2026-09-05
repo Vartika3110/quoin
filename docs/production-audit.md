@@ -28,7 +28,8 @@ Baseline, measured on this commit:
 | 3 — checkout wiring + order history | **done** | quote → order → Razorpay → confirm; `GET /api/v1/orders(/[reference])`; real `/account/orders`; callback orders now persisted |
 | 4 — admin | **done** | Admin shell + staff page guard, dashboard, orders queue + detail + guarded status transitions with an `OrderStatusChange` audit trail, inventory list/adjustments/movement history, customers; the two orphan tools folded into the shell |
 | 5 — object storage + Parcha backend | **done** | `StorageProvider` over Supabase (signed direct upload, private bucket), `StoredFile` lifecycle, persisted `ParchaSubmission`/`ParchaItem`, real CSV extraction, `OcrProvider` interface left honestly unconfigured |
-| 6 — Project Hub to the database | next | |
+| 6 — Project Hub to the database | **done** | `Project`/`Task`/`Material`/`Milestone`/`Document`/`Order` tables, a full ownership-scoped API, the client store swapped off `localStorage` with a one-time import prompt for anything already in a browser |
+| 7 — notifications (SMS/email/push) | next | |
 
 Verified end to end in a browser against the dev database: OTP sign-in, address, four checkout steps, order written, order visible in the account. Measured on a real order — `subtotal 300, tax 46, total 300`, i.e. tax extracted rather than added. Overselling prevention was proven with five concurrent reservations against real Postgres for a single unit: one succeeded, four were rejected, no oversell.
 

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ProjectDashboard } from "@/components/storefront/projects/ProjectDashboard";
+import { SignInPrompt } from "@/components/storefront/account/SignInPrompt";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { getSession } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "Project — Quoin",
-  /* The title and everything on the page come from one browser's own
-     store, so there is nothing here for a crawler to index. */
+  /* A signed-in customer's own data, scoped to their account — never
+     something a crawler should index. */
   robots: { index: false, follow: false },
 };
 
@@ -16,6 +18,7 @@ export default async function ProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await getSession();
 
   return (
     <AppShell>
@@ -31,7 +34,11 @@ export default async function ProjectPage({
         </div>
 
         <div className="px-5 lg:px-0">
-          <ProjectDashboard id={id} />
+          {session ? (
+            <ProjectDashboard id={id} />
+          ) : (
+            <SignInPrompt what="Sign in to see this project — it lives on your account now, not this browser." />
+          )}
         </div>
       </div>
     </AppShell>
