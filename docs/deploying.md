@@ -152,9 +152,35 @@ and rotate `AUTH_SECRET` to invalidate every session minted since.
 Do not set placeholder credentials. Leave both unset until you have real
 ones; sign-in will be honestly unavailable in the meantime.
 
-TRAI requires DLT registration of the sender ID and template before
-transactional SMS is delivered at all, and approval takes days. Start it
-early — it is the long pole on a working login, not a deploy step.
+### Getting the credentials
+
+TRAI requires DLT registration before transactional SMS is delivered at
+all, and approval takes days. Start it first — it is the long pole on a
+working login, not a deploy step.
+
+1. **DLT registration**, on any one telecom operator's portal (Jio, Airtel
+   or Vodafone Idea — one registration propagates to all of them). Needs
+   business proof: PAN, GST, and an authorisation letter on letterhead.
+   You register three things in order, each approved before the next is
+   useful: an **Entity** (your business, giving you an Entity ID), a
+   **Header** (the six-character sender ID a customer sees, e.g. `QUOINX`),
+   and a **Template** (the message body, with a variable where the code
+   goes).
+2. **MSG91** account at msg91.com, with the DLT Entity ID and Header
+   linked to it.
+3. Then read off the three values:
+
+| | |
+| --- | --- |
+| `MSG91_AUTH_KEY` | MSG91 → Settings → API → Auth Key |
+| `MSG91_TEMPLATE_ID` | the approved DLT template's id |
+| `MSG91_SENDER_ID` | the approved six-character header |
+
+The template body must keep a variable for the code — a template with the
+digits hard-coded is approved and then useless.
+
+Until all three exist, leave them **unset**. Sign-in reports itself
+unavailable, which is true, and nothing is logged.
 
 ## Sharing the link
 
@@ -243,6 +269,44 @@ attempts and their response codes per webhook, which answers all three.
 
 Note that a webhook cannot reach `localhost`. Local end-to-end testing
 needs a tunnel, or a deployed preview with its own test keys.
+
+## File uploads
+
+Object storage, for Parcha documents and anything else a customer sends.
+Supabase, because the database already is — one account, one bill, and no
+new vendor to review. The code sits behind a `StorageProvider` interface
+(`src/lib/storage/`), so S3 or Cloudinary would be a new file rather than
+a rewrite.
+
+**The bucket.** Supabase dashboard → Storage → New bucket. Name it
+`quoin-uploads` and leave it **private** — do not tick "Public bucket".
+Nothing is ever served from a public URL: downloads are short-lived signed
+URLs minted server-side, and only for the file's owner or for staff.
+
+**The keys.** Settings → API gives you both:
+
+| | |
+| --- | --- |
+| `SUPABASE_URL` | Project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | the `service_role` key, **not** `anon` |
+| `SUPABASE_STORAGE_BUCKET` | `quoin-uploads` |
+| `STORAGE_PROVIDER` | `supabase` |
+
+`service_role` bypasses row-level security completely. Treat it like
+`RAZORPAY_KEY_SECRET`: server only, never `NEXT_PUBLIC_`, never in a
+response body or a log line. The `anon` key is the wrong one here and will
+fail on a private bucket, which is the correct outcome.
+
+Unset, uploads report themselves unavailable and the rest of the app runs
+normally — same as Razorpay before activation. There is no boot guard.
+
+**Why signed direct upload.** The browser uploads straight to Supabase
+rather than through a route handler. A serverless function caps its request
+body at a few megabytes, and a phone photograph of a parcha routinely
+exceeds that — proxying would fail on precisely the files this feature
+exists for. The server issues a short-lived signed URL, the browser PUTs to
+it, and a confirm step re-reads the object to check its real size and
+content type against what was declared before the row is trusted.
 
 ## Verifying a deploy
 
