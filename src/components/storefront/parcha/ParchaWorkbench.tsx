@@ -400,7 +400,7 @@ export function ParchaWorkbench() {
                     {formatPrice(total)}
                   </p>
                   <p className="mt-1 text-micro text-faint">
-                    Delivery and taxes are calculated at checkout.
+                    Taxes included; delivery calculated at checkout.
                   </p>
                 </div>
 

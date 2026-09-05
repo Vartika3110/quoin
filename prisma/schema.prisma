@@ -55,9 +55,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  addresses       Address[]
-  consultRequests ConsultRequest[]
-  orders          Order[]
+  addresses          Address[]
+  consultRequests    ConsultRequest[]
+  orders             Order[]
+  inventoryMovements InventoryMovement[]
+  /// Every status change this account made as staff, across every order —
+  /// not this account's own orders. Nullable on the other side: the
+  /// account can be deleted without deleting the audit row it wrote.
+  orderStatusChanges OrderStatusChange[]
+  storedFiles        StoredFile[]
+  parchaSubmissions  ParchaSubmission[]
 
   @@map("users")
 }
@@ -146,8 +153,22 @@ model Store {
   serviceAreaId String?      @unique
   serviceArea   ServiceArea? @relation(fields: [serviceAreaId], references: [id], onDelete: SetNull)
 
+  /// Where a tracked `SCHEDULED` line's stock is reserved from when the
+  /// delivery address falls outside every store's radius — heavy/bulk
+  /// goods still need a real warehouse to ship from even when nothing is
+  /// nearby. Meaningless for `INSTANT`, which has no fallback: see
+  /// `resolveStoreForStockLine` in src/lib/data/inventory.ts.
+  ///
+  /// Not enforced as at-most-one by the schema — a second row marked
+  /// default only makes the fallback pick whichever `findFirst` returns,
+  /// it does not corrupt anything — but the operator is expected to keep
+  /// exactly one active store flagged.
+  isDefault Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  inventoryItems InventoryItem[]
 
   @@map("stores")
 }
@@ -280,6 +301,16 @@ model Product {
 
   isActive Boolean @default(true)
 
+  /// Whether stock is checked, reserved and deducted for this product's
+  /// variants at all. Default false because the catalogue is thousands of
+  /// imported SKUs with no stock data whatsoever — requiring an
+  /// `InventoryItem` before anything could be sold would take the whole
+  /// storefront offline the moment inventory ships. Set by hand by
+  /// merchandising as real stock is counted in for a line; the importers
+  /// must never set this. Only `INSTANT` and `SCHEDULED` fulfilment ever
+  /// consults it — see `isStockBearing` in src/lib/data/inventory.ts.
+  stockTracked Boolean @default(false)
+
   variants ProductVariant[]
 
   /// ---- provenance: reference only, never customer-facing ------------
@@ -325,7 +356,8 @@ model ProductVariant {
   isDefault Boolean @default(true)
   isActive  Boolean @default(true)
 
-  priceTiers PriceTier[]
+  priceTiers     PriceTier[]
+  inventoryItems InventoryItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -399,6 +431,137 @@ model ServicePincode {
 
   @@index([areaId])
   @@map("service_pincodes")
+}
+
+/// ---------------------------------------------------------------------
+/// Inventory — module 7.
+///
+/// Only `Product.stockTracked` products ever touch this. Everything else
+/// sells exactly as it did before this module existed: no `InventoryItem`
+/// row, no check, no reservation. See the module comment in
+/// src/lib/data/inventory.ts for why that is the deliberate design rather
+/// than a gap.
+/// ---------------------------------------------------------------------
+
+enum InventoryMovementKind {
+  /// Stock arrives. `onHandQty` only.
+  RECEIPT
+  /// An order is created. `reservedQty` only — nothing has left the
+  /// shelf yet, it is merely spoken for.
+  RESERVE
+  /// A reservation is given back: payment failed and the customer moved
+  /// on, the reservation expired, or the order was cancelled.
+  /// `reservedQty` only.
+  RELEASE
+  /// `payment.captured`. The stock that was reserved is now actually
+  /// gone — both `onHandQty` and `reservedQty` move together, because a
+  /// commit is a release-and-deduct in one step, not a release followed
+  /// by a separate deduction that could be individually replayed.
+  COMMIT
+  /// A staff correction — a stock count, a breakage, a miscount found on
+  /// audit. `onHandQty` only, and the only kind whose `qty` can be
+  /// negative.
+  ADJUSTMENT
+  /// A customer returned goods. `onHandQty` only. Deliberately separate
+  /// from `ADJUSTMENT`: a return is explained by the order it came back
+  /// against, a correction is not explained by anything but a person.
+  RETURN
+}
+
+/// Stock for one variant at one store. Per `(variantId, storeId)` because
+/// the same SKU can sit in more than one dark store, each with its own
+/// count and its own reservations against it.
+///
+/// There is no `availableQty` column. `onHandQty - reservedQty` is the
+/// available count, computed at read time by `availableQty` in
+/// src/lib/data/inventory.ts — a stored third number is a number that can
+/// disagree with the two it summarises, and the disagreement always
+/// surfaces as a customer being told something is in stock when it is
+/// not.
+model InventoryItem {
+  id String @id @default(cuid())
+
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  storeId String
+  store   Store  @relation(fields: [storeId], references: [id], onDelete: Restrict)
+
+  /// Physically on the shelf, spoken for or not.
+  onHandQty   Int @default(0)
+  /// Held against `PENDING_PAYMENT` orders that have not yet been
+  /// committed or released. Not yet gone — see `COMMIT` above.
+  reservedQty Int @default(0)
+
+  /// Below this, the storefront shows a low-stock warning. Merchandising
+  /// data, not a sellability gate: a line at or under threshold is still
+  /// sellable for as long as `onHandQty - reservedQty` stays positive.
+  lowStockThreshold Int @default(0)
+
+  movements InventoryMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The row a reservation targets, and what makes "one row per variant
+  /// per store" true rather than aspirational. The conditional reserve
+  /// update in src/lib/data/inventory.ts looks this row up by exactly
+  /// this pair.
+  @@unique([variantId, storeId])
+  @@index([storeId])
+  @@map("inventory_items")
+}
+
+/// One movement of stock, append-only and never edited. Every reserve,
+/// release, commit, receipt, adjustment and return writes exactly one
+/// row here, carrying the *resulting* `onHandQty` and `reservedQty` —
+/// not only the delta — so the history of one item is reconstructible
+/// from this table alone rather than merely suggestive of what happened.
+model InventoryMovement {
+  id String @id @default(cuid())
+
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+
+  kind InventoryMovementKind
+
+  /// A positive magnitude for every kind except `ADJUSTMENT`, which can
+  /// be negative — a correction can go either way. Which counter it moves,
+  /// and which direction, is decided by `kind` alone: see `movementDelta`
+  /// in src/lib/data/inventory.ts, the one place that arithmetic lives.
+  qty Int
+
+  /// State *after* this movement was applied.
+  onHandQty   Int
+  reservedQty Int
+
+  /// Not a foreign key. `RECEIPT` and `ADJUSTMENT` movements have no order
+  /// at all, and an `Order` row is never deleted (Restrict everywhere it is
+  /// referenced), so a real relation would add ceremony without changing
+  /// what a dispute can reconstruct from this table.
+  ///
+  /// `RETURN` does carry one: `returnStock()` requires the order the goods
+  /// came back against, because stock reappearing on a shelf with nothing
+  /// saying where it came from is the movement a stock-take cannot explain.
+  orderId String?
+
+  /// Required by the application for `ADJUSTMENT`, meaningless for every
+  /// other kind. Not a NOT NULL column: that constraint would have to be
+  /// conditional on `kind`, and a Postgres check constraint for one call
+  /// site is more ceremony than the app-level guard already carries.
+  reason String?
+
+  /// Who made an `ADJUSTMENT`. SetNull, matching `ConsultRequest.userId`:
+  /// losing the name off a correction made by an account that no longer
+  /// exists costs far less than blocking the account's deletion on it.
+  staffUserId String?
+  staffUser   User?   @relation(fields: [staffUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  /// Stock history for one item, read newest-first.
+  @@index([inventoryItemId, createdAt])
+  @@map("inventory_movements")
 }
 
 /// ---------------------------------------------------------------------
@@ -521,11 +684,14 @@ model ConsultRequest {
 /// corrected next month must not rewrite what a customer was charged.
 /// ---------------------------------------------------------------------
 
-/// Payment lifecycle only. Deliberately *not* a fulfilment state machine
-/// — there is no roster, no dispatch and no delivery scan behind this
-/// app, and statuses like `SHIPPED` would be a promise nothing updates.
-/// What happens after PAID is a person, and that stays true until there
-/// is an operations module to model it.
+/// Payment lifecycle, then fulfilment, then refund — in that order, because
+/// none of the fulfilment statuses can be reached without a captured
+/// payment and a refund can only start from one.
+///
+/// Everything from `CONFIRMED` onward is set by a person in an admin tool
+/// that does not exist yet — see `canTransition` in `src/lib/data/orders.ts`,
+/// which is the guard, not an endpoint. Only `PAID` may be set by anything
+/// other than a person, and only `payment.captured` sets it.
 enum OrderStatus {
   /// Written before the customer is sent to the gateway. Rows can sit
   /// here forever: an abandoned checkout is the ordinary case, not an
@@ -540,6 +706,23 @@ enum OrderStatus {
   /// table.
   FAILED
   CANCELLED
+  /// A person has looked at a paid order and accepted it for fulfilment.
+  CONFIRMED
+  /// Being picked and prepared.
+  PROCESSING
+  /// Picked, prepared and boxed, waiting to leave a store.
+  PACKED
+  /// Left the store, not yet with the last-mile courier or rider.
+  DISPATCHED
+  /// With the rider or courier on the final leg.
+  OUT_FOR_DELIVERY
+  /// Handed to the customer. Terminal for fulfilment, but not for money —
+  /// a delivered order can still be refunded.
+  DELIVERED
+  /// A refund has been agreed but not yet processed by the gateway.
+  REFUND_PENDING
+  /// The gateway has returned the money. Terminal.
+  REFUNDED
 }
 
 model Order {
@@ -563,18 +746,46 @@ model Order {
 
   status OrderStatus @default(PENDING_PAYMENT)
 
+  /// A client-supplied token that makes order creation safe to retry.
+  ///
+  /// Scoped to the user, not global: two different customers choosing the
+  /// same key by coincidence (a client that seeds it from `Date.now()`,
+  /// say) must not collide, so the uniqueness is `(userId, idempotencyKey)`
+  /// rather than on this column alone. Optional — Postgres does not treat
+  /// two NULLs as equal for a unique index, so orders placed without a key
+  /// never collide with each other.
+  idempotencyKey String?
+
   /// ---- money, all paise, all server-computed --------------------------
   /// Recomputed by `quoteCart` at the moment the order is written and
   /// never taken from the browser. The gateway is told `totalPaise`, and
   /// the webhook checks what was captured against it before marking the
   /// order paid.
-  subtotalPaise Int
+  ///
+  /// Catalogue prices are tax-*inclusive* — see the note on `taxForLine`
+  /// in `src/lib/data/orders.ts` — so `subtotalPaise` is exactly what the
+  /// customer is charged for the lines, before `discountPaise` and
+  /// `deliveryFeePaise` are applied.
+  subtotalPaise    Int
   /// Sum of the per-line GST, which is itself computed from each
-  /// product's `gstRatePct`. Stored rather than derived so that a rate
-  /// corrected in the catalogue next quarter does not restate an invoice
-  /// that has already been issued.
-  taxPaise      Int
-  totalPaise    Int
+  /// product's `gstRatePct`. A *component of* `subtotalPaise`, already
+  /// contained within it, not an amount added on top. Stored rather than
+  /// derived so that a rate corrected in the catalogue next quarter does
+  /// not restate an invoice that has already been issued.
+  taxPaise         Int
+  /// No discount or delivery-fee engine exists yet — both default to zero
+  /// so a later phase has a column to write to rather than a schema
+  /// change blocking it. Neither is computed anywhere in this codebase.
+  discountPaise    Int    @default(0)
+  deliveryFeePaise Int    @default(0)
+  /// `subtotalPaise - discountPaise + deliveryFeePaise`. Not
+  /// `subtotal + tax`: tax is already inside the subtotal, and adding it
+  /// again is the double-charge this schema exists to stop happening.
+  totalPaise       Int
+  /// Not selectable by the customer today — every order is INR — but
+  /// carried on the row rather than assumed at read time, because an
+  /// amount without its currency is not a complete financial record.
+  currency         String @default("INR")
 
   /// ---- delivery address, snapshotted ----------------------------------
   /// Copied rather than joined. `Address` rows are editable, and a
@@ -591,8 +802,20 @@ model Order {
   shipState    String
   shipPincode  String
 
-  lines    OrderLine[]
-  payments Payment[]
+  lines         OrderLine[]
+  payments      Payment[]
+  statusChanges OrderStatusChange[]
+
+  /// Set at creation only when at least one line actually reserved stock
+  /// — see `createPendingOrder`. Null means either nothing in the basket
+  /// is stock-tracked, or the reservation has already been released or
+  /// committed, in both cases meaning there is nothing left to expire.
+  ///
+  /// Nothing in this app sweeps this column on its own — see
+  /// `releaseExpiredReservations` in src/lib/data/inventory.ts. Something
+  /// has to call it; there is no cron infrastructure here to do that for
+  /// you.
+  reservationExpiresAt DateTime?
 
   /// Set once, by the webhook, when the first capture lands. A second
   /// delivery of the same event must not move it.
@@ -601,6 +824,12 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  /// The arbiter for a double-clicked pay button. A repeat key for the
+  /// same user returns the order this index found rather than creating
+  /// another — decided by the database on insert, not by a `findFirst`
+  /// beforehand, so two concurrent requests carrying the same key cannot
+  /// both pass the check and both create a row.
+  @@unique([userId, idempotencyKey])
   /// The account area lists a customer's own orders newest first; ops
   /// reads the queue by status.
   @@index([userId, createdAt])
@@ -645,8 +874,57 @@ model OrderLine {
   /// reaches the customer once the catalogue has moved on.
   fulfilment Fulfilment
 
+  /// The store stock was reserved from, for a tracked `INSTANT` or
+  /// `SCHEDULED` line. Null for every other line — untracked, or
+  /// `BOOKABLE`/`MADE_TO_ORDER`, which never hold stock at all.
+  ///
+  /// Not a foreign key, matching `variantId` above: this table freezes
+  /// what happened, and `Store` is operational data that can be
+  /// deactivated later without that rewriting which store a past order
+  /// actually reserved against. It is what `settleCapturedPayment` and
+  /// `releaseExpiredReservations` use to commit or release the *same*
+  /// `InventoryItem` that was reserved — see src/lib/data/inventory.ts.
+  storeId String?
+
   @@index([orderId])
   @@map("order_lines")
+}
+
+/// One admin action against `Order.status`, kept forever.
+///
+/// Changing the state of something a customer paid for without recording
+/// who did it is not acceptable in a system that handles money — this is
+/// the "who" that `Order.status` alone cannot answer. Written in the same
+/// transaction as the status write it describes (see
+/// `transitionOrderStatus`, `src/lib/data/admin-orders.ts`), so a status
+/// change and its audit row cannot come apart: either both exist or
+/// neither does.
+model OrderStatusChange {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  fromStatus OrderStatus
+  toStatus   OrderStatus
+
+  /// Nullable, deliberately: a future automated transition (there is only
+  /// one today, the webhook's own move to PAID, and that path does not
+  /// write this table at all — see the note on `transitionOrderStatus`)
+  /// should be attributable to nobody rather than to a fiction. SetNull
+  /// rather than Restrict: the staff account being deactivated or removed
+  /// later must not delete the record that the change happened, only the
+  /// name attached to it.
+  actorUserId String?
+  actor       User?   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  note String?
+
+  createdAt DateTime @default(now())
+
+  /// The order detail page reads its own history newest-first.
+  @@index([orderId, createdAt])
+  @@map("order_status_changes")
 }
 
 enum PaymentProvider {
@@ -722,6 +1000,328 @@ model Payment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  refunds Refund[]
+
   @@index([orderId])
   @@map("payments")
+}
+
+enum RefundStatus {
+  /// Agreed but not yet sent to the gateway.
+  PENDING
+  /// The gateway has returned the money.
+  PROCESSED
+  FAILED
+}
+
+/// A refund against one payment. Model only, this phase — there is no
+/// gateway refund call and no route that writes one. `Order.status`
+/// carries `REFUND_PENDING`/`REFUNDED` for the coarse view; this table is
+/// the money record underneath it, and it is keyed to `Payment` rather
+/// than `Order` because a partial refund refers to a specific capture, not
+/// to the order as a whole.
+model Refund {
+  id String @id @default(cuid())
+
+  paymentId String
+  /// Restrict, matching `Payment.order`: a refund is a financial record
+  /// and deleting the payment it refers to must not delete it.
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  /// Razorpay's `refund_id`, null until a gateway call has actually been
+  /// made. Unique for the same reason `providerPaymentId` is — it is what
+  /// makes a repeat webhook delivery about the same refund recognisable.
+  providerRefundId String? @unique
+
+  amountPaise Int
+
+  status RefundStatus @default(PENDING)
+
+  /// Free text today because there is no refund-reason taxonomy yet —
+  /// "damaged in transit" and "customer changed their mind" are both just
+  /// this column until a reporting need forces them apart.
+  reason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([paymentId])
+  @@map("refunds")
+}
+
+/// One delivery of a gateway webhook, kept whether or not it was acted on.
+///
+/// Purely an audit log — nothing reads this table to decide anything, so
+/// writing to it must never be able to turn a delivery that would
+/// otherwise have succeeded into a failure. See the try/catch around every
+/// insert in the Razorpay route.
+///
+/// Rows are written for a rejected signature and an unhandled event type,
+/// not only for the ones the app acted on: a disputed payment needs to be
+/// reconstructable even when the reason it wasn't settled is "we never
+/// recognised this delivery as ours".
+model PaymentWebhook {
+  id String @id @default(cuid())
+
+  provider PaymentProvider @default(RAZORPAY)
+
+  /// Razorpay's `x-razorpay-event-id` header — its own idempotency key for
+  /// a delivery, distinct from `Payment.providerPaymentId` because one
+  /// event can be delivered more than once. Null rather than required: a
+  /// delivery with a bad signature is recorded before there is reason to
+  /// trust anything about it, header included.
+  eventId String? @unique
+
+  event String
+
+  /// Whether the HMAC check passed. Recorded even when false — a rejected
+  /// signature is exactly the kind of delivery a dispute needs a record
+  /// of, and it is why this column exists instead of only ever recording
+  /// deliveries that were already trusted.
+  signatureValid Boolean
+
+  /// ---- what the delivery referred to, as plain strings ----------------
+  /// Not foreign keys. A forged or malformed delivery can name an id that
+  /// matches nothing in this database, and a webhook audit row must be
+  /// writable regardless — a foreign key would make recording the delivery
+  /// depend on the very lookup this table exists to be independent of.
+  providerOrderId   String?
+  providerPaymentId String?
+  orderId           String?
+
+  /// What the app did with it — `"recorded"`, `"duplicate"`, `"unknown"`,
+  /// `"amount_mismatch"`, `"rejected_signature"` and so on. Free text
+  /// rather than an enum: this is a log column read by a person
+  /// reconstructing a dispute, not branched on by code.
+  outcome String?
+  /// Set when processing raised. The signature check and the event-type
+  /// switch cannot throw, so this is populated only by a write that failed
+  /// partway — the case the 500 in the route asks Razorpay to retry.
+  error   String?
+
+  /// The exact bytes Razorpay sent. Kept because reconstructing a disputed
+  /// capture from the entity ids alone is not always enough — but Razorpay
+  /// includes the payer's email and contact on the payment entity, so this
+  /// column is customer PII and nothing outside this table's own writer
+  /// may select it. No route reads or exposes `PaymentWebhook` rows.
+  rawBody String?
+
+  receivedAt  DateTime  @default(now())
+  /// Null for a rejected signature — nothing was processed, so there is
+  /// nothing to time.
+  processedAt DateTime?
+
+  /// Reconstructing a dispute starts from a gateway order id; the ops
+  /// timeline for one is read newest-first.
+  @@index([providerOrderId])
+  @@index([receivedAt])
+  @@map("payment_webhooks")
+}
+
+/// ---------------------------------------------------------------------
+/// Files.
+///
+/// Nothing a customer uploads is kept on the application's filesystem.
+/// Vercel's is ephemeral — it is gone at the end of the invocation and is
+/// not shared between them — so a "saved" document would be a document
+/// that vanishes. Bytes live in object storage; this table is the index.
+/// ---------------------------------------------------------------------
+
+enum StoredFileKind {
+  /// A materials list a customer photographed or exported.
+  PARCHA
+  PROJECT_DOCUMENT
+  PRODUCT_IMAGE
+  OTHER
+}
+
+enum StoredFileStatus {
+  /// A signed upload URL has been issued and the bytes may not exist yet.
+  /// Rows can sit here forever: a customer who opens the picker and
+  /// changes their mind is the ordinary case, not an error.
+  PENDING
+  /// Present in the bucket, and its type and size re-checked against what
+  /// was declared when the URL was issued.
+  STORED
+  /// Issued and never uploaded, or uploaded as something other than what
+  /// was declared.
+  ABANDONED
+}
+
+model StoredFile {
+  id String @id @default(cuid())
+
+  /// Null for something staff uploaded that belongs to no customer — a
+  /// product photograph. SetNull rather than Cascade: deleting an account
+  /// must not silently orphan bytes that are still being paid for.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  kind   StoredFileKind
+  status StoredFileStatus @default(PENDING)
+
+  /// The path inside the bucket, and deliberately not a URL. Which
+  /// provider and which bucket are environment configuration; a URL
+  /// written into a row pins that row to whichever provider was live the
+  /// day it was created, and re-pointing storage becomes a data migration.
+  storageKey String @unique
+  bucket     String
+
+  /// Declared by the client when the upload URL was requested, then
+  /// re-checked against the object itself before the row reaches STORED.
+  /// A client that says "image/png" and sends 40MB of something else does
+  /// not get to decide what this column says.
+  contentType String
+  sizeBytes   Int
+
+  /// What the customer called it. Display only, and never used to build a
+  /// storage path — a filename is attacker-controlled text, and joining
+  /// one onto a path is how "../" gets into a key.
+  originalName String
+
+  createdAt   DateTime  @default(now())
+  confirmedAt DateTime?
+
+  parchaSubmissions ParchaSubmission[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("stored_files")
+}
+
+/// ---------------------------------------------------------------------
+/// Parcha.
+///
+/// A parcha is the handwritten materials list passed over a counter.
+/// Typing or pasting one works end to end today and is parsed by
+/// `parseParcha` in src/lib/parcha.ts. A photograph of one does not:
+/// there is no OCR provider behind this app, and these tables are shaped
+/// so that stays *visible* rather than papered over — a submission whose
+/// file nobody can read sits in AWAITING_MANUAL_REVIEW, which is a true
+/// statement about what happens next, instead of quietly producing
+/// invented lines.
+/// ---------------------------------------------------------------------
+
+enum ParchaSource {
+  /// Typed or pasted into the workbench.
+  TYPED
+  /// A file in object storage.
+  UPLOAD
+}
+
+enum ParchaStatus {
+  /// A file exists and nothing has read it yet.
+  AWAITING_EXTRACTION
+  /// A reader is running.
+  EXTRACTING
+  /// Lines exist and the customer has not confirmed them. The normal
+  /// resting state for a typed list and for anything successfully read.
+  NEEDS_REVIEW
+  /// Stored, but nothing configured can read this kind of file. Not a
+  /// failure and not a queue that drains itself — a person opens it.
+  AWAITING_MANUAL_REVIEW
+  /// A reader ran and could not produce lines. `extractionNote` says why.
+  FAILED
+  /// The customer has been through the lines and acted on them.
+  COMPLETED
+}
+
+model ParchaSubmission {
+  id String @id @default(cuid())
+
+  /// Quoted on the phone, same alphabet as the order and consultation
+  /// references and for the same reason — it gets read aloud.
+  reference String @unique
+
+  /// Null for a guest. Pricing a list is exactly what someone does before
+  /// deciding whether to make an account, so this must not require one.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  source ParchaSource
+  status ParchaStatus
+
+  /// Set when `source` is UPLOAD.
+  fileId String?
+  file   StoredFile? @relation(fields: [fileId], references: [id], onDelete: SetNull)
+
+  /// Set when `source` is TYPED — the list exactly as it was written, kept
+  /// so a bad parse can be re-run without asking the customer to type it
+  /// again.
+  rawText String?
+
+  /// Why extraction did not happen or did not work, in words a person can
+  /// act on. Shown to staff, not to the customer.
+  extractionNote String?
+
+  /// HMAC of the caller's IP, and only ever set for a guest submission.
+  ///
+  /// This endpoint accepts anonymous writes on purpose — pricing a list is
+  /// what someone does *before* making an account — which means the only
+  /// thing standing between it and unbounded row creation is a rate limit,
+  /// and a rate limit held in a process's memory is not one on a platform
+  /// that runs each request on whichever instance is free. Counted off
+  /// this column instead, the same way the OTP route counts off
+  /// `OtpChallenge`.
+  ///
+  /// Hashed rather than stored: an IP address is personal data, the rate
+  /// limiter only ever needs to ask "have I seen this one", and a hash
+  /// answers that without the table becoming a log of who browsed the
+  /// catalogue. Null for signed-in callers, who are counted by `userId` —
+  /// there is no reason to collect it twice.
+  ipHash String?
+
+  items ParchaItem[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  /// When a reader finished, successfully or not.
+  extractedAt DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([ipHash, createdAt])
+  @@map("parcha_submissions")
+}
+
+/// One line read off a list, and what the catalogue thinks it is.
+model ParchaItem {
+  id String @id @default(cuid())
+
+  submissionId String
+  submission   ParchaSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  /// Order on the original list. A materials list is read top to bottom
+  /// and the customer checks it against paper.
+  position Int
+
+  /// The line exactly as written, then what was searched for, mirroring
+  /// `ParchaLine` in src/lib/parcha.ts.
+  raw  String
+  term String
+
+  /// A Float, unlike every quantity that reaches a cart. This is a reading
+  /// of what someone wrote — "2.5 kg", "12.75 sq.ft." — not a quantity
+  /// being transacted. It is snapped onto the variant's integer grid by
+  /// `normalizeQty` if and when the customer adds it to a basket.
+  qty  Float
+  unit String?
+
+  /// The catalogue's best guess. Plain strings rather than relations, for
+  /// the same reason `OrderLine` holds none: a match is a record of what
+  /// was suggested on the day, and a retired SKU must not delete it or
+  /// stop the row being read.
+  matchedProductSlug String?
+  matchedVariantId   String?
+
+  /// 0-100. Null when nothing was matched at all, which is different from
+  /// a confident match to nothing.
+  confidence Int?
+
+  /// The customer's decision. Null until they have looked at this line —
+  /// distinct from `false`, which means they looked and said no.
+  accepted Boolean?
+
+  @@index([submissionId, position])
+  @@map("parcha_items")
 }

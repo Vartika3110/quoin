@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { PricingRow } from "@/components/admin/PricingRow";
-import { getSession } from "@/lib/auth/session";
-import { db } from "@/lib/db";
+import { requireStaffPage } from "@/lib/auth/staff";
 import { listUnpricedProducts } from "@/lib/data/catalog";
 import { one } from "@/lib/search-params";
 
@@ -32,29 +31,23 @@ export default async function PricingPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const session = await getSession();
-  if (!session) notFound();
-
-  const user = await db.user.findUnique({
-    where: { id: session.userId },
-    select: { isStaff: true },
-  });
-  if (!user?.isStaff) notFound();
+  await requireStaffPage();
 
   const page = Number(one((await searchParams).page)) || 1;
   const { items, total, totalPages } = await listUnpricedProducts(page);
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-8">
-      <h1 className="text-xl font-semibold text-ink">Products awaiting a price</h1>
-      <p className="mt-1 text-sm text-muted">
-        {total === 0
+    <AdminShell
+      current="/admin/pricing"
+      title="Products awaiting a price"
+      subtitle={
+        total === 0
           ? "Nothing is waiting. Every imported product has a price."
           : `${total} product${total === 1 ? "" : "s"} imported with a photograph and a
              description but no price. They are hidden from the storefront until
-             one is set.`}
-      </p>
-
+             one is set.`
+      }
+    >
       {items.length > 0 && (
         <>
           <ul className="mt-6 space-y-2">
@@ -92,6 +85,6 @@ export default async function PricingPage({
           </p>
         </>
       )}
-    </main>
+    </AdminShell>
   );
 }

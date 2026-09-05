@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { AdminShell } from "@/components/admin/AdminShell";
 import { ImagePairing } from "@/components/admin/ImagePairing";
-import { getSession } from "@/lib/auth/session";
-import { db } from "@/lib/db";
+import { requireStaffPage } from "@/lib/auth/staff";
 import { listBrandsMissingPhotos, listProductsWithoutPhoto } from "@/lib/data/catalog";
 import { listHarvestSources } from "@/lib/data/harvest";
 import { one } from "@/lib/search-params";
@@ -28,14 +27,7 @@ export default async function ImagesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const session = await getSession();
-  if (!session) notFound();
-
-  const user = await db.user.findUnique({
-    where: { id: session.userId },
-    select: { isStaff: true },
-  });
-  if (!user?.isStaff) notFound();
+  await requireStaffPage();
 
   const sp = await searchParams;
   const page = Number(one(sp.page)) || 1;
@@ -48,15 +40,16 @@ export default async function ImagesPage({
   ]);
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-8">
-      <h1 className="text-xl font-semibold text-ink">Product images</h1>
-      <p className="mt-1 text-sm text-muted">
-        {total === 0
+    <AdminShell
+      current="/admin/images"
+      title="Product images"
+      subtitle={
+        total === 0
           ? "Every product in this filter has a photograph."
-          : `${total} product${total === 1 ? "" : "s"} without one.`}
-      </p>
-
-      <div className="mt-4 flex flex-wrap items-center gap-1.5">
+          : `${total} product${total === 1 ? "" : "s"} without one.`
+      }
+    >
+      <div className="flex flex-wrap items-center gap-1.5">
         <FilterChip href="/admin/images" label="All brands" active={!brand} />
         {brands.slice(0, 10).map((b) => (
           <FilterChip
@@ -101,7 +94,7 @@ export default async function ImagesPage({
             : "Nothing left to pair here."}
         </p>
       )}
-    </main>
+    </AdminShell>
   );
 }
 

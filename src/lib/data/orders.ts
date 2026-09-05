@@ -1,7 +1,16 @@
 import { Prisma } from "@prisma/client";
+import type { OrderStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { REFERENCE_ATTEMPTS, generateReference } from "@/lib/reference";
 import { quoteCart, type Quote } from "@/lib/data/checkout";
+import {
+  InsufficientStockError,
+  RESERVATION_WINDOW_MS,
+  StoreUnavailableError,
+  commitStockForOrder,
+  reserveStockForOrder,
+  type OrderStockLine,
+} from "@/lib/data/inventory";
 import type { Paise } from "@/lib/types/catalog";
 
 /**
@@ -24,29 +33,110 @@ import type { Paise } from "@/lib/types/catalog";
 
 const REFERENCE_PREFIX = "QO";
 
+/**
+ * How long a **callback** order holds its reservation before
+ * `releaseExpiredReservations` gives it back.
+ *
+ * `RESERVATION_WINDOW_MS` (15 minutes, from `inventory.ts`) assumes a
+ * customer sitting at a payment screen, paying within minutes. A callback
+ * order has no one at a payment screen at all — the confirmation page's
+ * promise is "an expert calls back within the hour", and the reservation
+ * has to survive the whole of that: a queue before the call is made,
+ * actually reaching the customer, reading the order back to them, and
+ * taking payment over the phone. A reservation that lapses at minute 16
+ * while the expert is still dialling is worse than never reserving —
+ * the customer has already been told the stock is theirs.
+ *
+ * Three hours: comfortably past the one-hour promise, so a busy call
+ * queue does not silently cost the reservation, while still expiring
+ * same-day rather than holding stock indefinitely for a call nobody
+ * answers. Not an environment variable — this is a product promise
+ * ("within the hour"), not a deploy-time tuning knob, and nobody would
+ * ever set it differently per environment.
+ */
+export const CALLBACK_RESERVATION_WINDOW_MS = 3 * 60 * 60 * 1000;
+
 /** ---- Tax ---------------------------------------------------------------- */
 
 /**
- * GST is added **on top of** the line, not extracted from it.
+ * GST is **extracted from** the line, not added on top of it.
  *
- * This is the assumption the storefront already makes out loud: the
- * checkout summary lists GST as a separate row reading "Added on the
- * invoice", and the cart says taxes are calculated at checkout. Prices in
- * the catalogue are therefore tax-exclusive.
- *
- * Worth knowing that this is a claim about the *source data*, not a
- * choice this function is free to make. Indian MRPs are inclusive by law,
- * so if any part of the catalogue was imported from listed MRPs without
- * the tax being stripped, this adds it a second time and overcharges by
- * the slab. Changing the direction is changing this function; finding out
- * which is true is a question for the catalogue, not for the code.
+ * Both catalogue importers write a tax-inclusive figure into `pricePaise`
+ * — `prisma/import-brand-catalogue.ts` writes the manufacturer MRP, and
+ * `prisma/import-catalogue.ts` writes the scraped competitor retail price,
+ * and an Indian MRP or retail price is inclusive of GST by law. That is a
+ * fact about where the number in the database came from, not a choice
+ * this function makes: every `pricePaise` already contains its tax, so
+ * the only correct move is to back the tax back out of it. A ₹1,000 tap
+ * on the 18% slab stays ₹1,000 on the product page and at checkout; ₹153
+ * of that ₹1,000 is shown as GST, it is not charged in addition to it.
  *
  * Rounded half-up to the paise, per line rather than on the subtotal,
- * because a mixed basket spans four slabs and there is no single rate to
- * apply to a total. Per-line is also what a GST invoice has to show.
+ * because a mixed basket spans four GST slabs and there is no single rate
+ * that could be applied to a total — and per-line is also what a GST
+ * invoice has to show: the rate and the tax against each line, not one
+ * blended figure for the basket.
  */
 export function taxForLine(linePaise: Paise, gstRatePct: number): Paise {
-  return Math.round((linePaise * gstRatePct) / 100);
+  return Math.round((linePaise * gstRatePct) / (100 + gstRatePct));
+}
+
+/** ---- Lifecycle ------------------------------------------------------------ */
+
+/**
+ * Thrown by a future caller — an admin tool, not this module — when it has
+ * already decided to move an order and `canTransition` said no. Carries
+ * both ends of the attempted move so the caller does not have to
+ * re-derive them for the error it shows a person.
+ */
+export class IllegalOrderTransitionError extends Error {
+  constructor(
+    readonly from: OrderStatus,
+    readonly to: OrderStatus,
+  ) {
+    super(`Cannot move an order from ${from} to ${to}`);
+    this.name = "IllegalOrderTransitionError";
+  }
+}
+
+/**
+ * The order lifecycle, as a table rather than scattered `if`s.
+ *
+ * Payment states (`PENDING_PAYMENT`, `PAID`, `FAILED`) and fulfilment
+ * states (`CONFIRMED` through `DELIVERED`) share one table because a
+ * refund can be requested from almost any of them — `REFUND_PENDING` is
+ * reachable from `PAID` onward, including before a human has looked at
+ * the order at all. `CANCELLED` and `REFUNDED` have no outgoing edges:
+ * money that has been given back, or an order that never happened, has
+ * nowhere further to go.
+ */
+const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
+  PENDING_PAYMENT: ["PAID", "FAILED", "CANCELLED"],
+  FAILED: ["PENDING_PAYMENT", "CANCELLED"],
+  PAID: ["CONFIRMED", "CANCELLED", "REFUND_PENDING"],
+  CONFIRMED: ["PROCESSING", "CANCELLED", "REFUND_PENDING"],
+  PROCESSING: ["PACKED", "CANCELLED", "REFUND_PENDING"],
+  PACKED: ["DISPATCHED", "REFUND_PENDING"],
+  DISPATCHED: ["OUT_FOR_DELIVERY", "REFUND_PENDING"],
+  OUT_FOR_DELIVERY: ["DELIVERED", "REFUND_PENDING"],
+  DELIVERED: ["REFUND_PENDING"],
+  REFUND_PENDING: ["REFUNDED"],
+  CANCELLED: [],
+  REFUNDED: [],
+};
+
+/**
+ * Whether the lifecycle allows moving an order from `from` to `to`.
+ *
+ * Pure and side-effect free: this is the guard a future admin route calls
+ * before writing a status, not a place that writes one itself — there is
+ * no such route yet, because everything past `PAID` is a person in a tool
+ * that does not exist. `PAID` is just another edge in this table; the
+ * rule that only the webhook may set it lives in which functions are
+ * exposed to call `db.order.update` with it, not in here.
+ */
+export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
+  return ORDER_TRANSITIONS[from].includes(to);
 }
 
 /** ---- Writes ------------------------------------------------------------- */
@@ -66,6 +156,25 @@ export interface CreateOrderInput {
   /** Who takes delivery. Defaults to the account's own name and phone. */
   shipName: string;
   shipPhone: string;
+  /**
+   * Client-supplied, scoped to this user by `Order`'s unique index. A
+   * repeat of the same key returns the order already written for it
+   * instead of writing a second one — see `readIdempotentOrder` below.
+   * Absent means "no retry protection requested", which is a valid,
+   * ordinary case and not an error.
+   */
+  idempotencyKey?: string;
+  /**
+   * Decided by the customer on the payment step, not inferred here from
+   * whether Razorpay is configured — `CheckoutFlow` offers "Confirm with
+   * an expert" even when online payment is also available, so this
+   * cannot be derived from `isRazorpayConfigured()` alone. The only thing
+   * it changes in this function is which reservation window a stock-
+   * bearing line is held under, see `CALLBACK_RESERVATION_WINDOW_MS`.
+   * Whether a gateway order gets created at all is decided by the route,
+   * after this function returns — it is not this function's concern.
+   */
+  paymentMode: "online" | "callback";
 }
 
 export interface CreatedOrder {
@@ -76,6 +185,24 @@ export interface CreatedOrder {
   totalPaise: Paise;
   /** The re-priced basket, so the caller can show what moved. */
   quote: Quote;
+  /**
+   * True when `idempotencyKey` matched an order already written for this
+   * user and nothing new was created. A caller that already sent this
+   * order to the gateway should not do so again — see `existingPayment`.
+   */
+  idempotent: boolean;
+  /**
+   * The most recent payment attempt already on this order. Only ever set
+   * when `idempotent` is true: a freshly created order cannot have one
+   * yet. Null covers two different reasons now: a **callback** order,
+   * which never gets a `Payment` row at all — see `paymentMode` — and an
+   * **online** order whose first attempt crashed between the order being
+   * written and the gateway being called. The route tells these apart by
+   * the `paymentMode` it was asked for, not by this field; for "online"
+   * it means proceed to create a gateway order against this same order,
+   * exactly as for a brand new one.
+   */
+  existingPayment: { providerOrderId: string; amountPaise: Paise } | null;
 }
 
 /**
@@ -90,6 +217,63 @@ export class OrderNotPossibleError extends Error {
     super(message);
     this.name = "OrderNotPossibleError";
   }
+}
+
+/**
+ * Re-reads the order a repeated idempotency key refers to.
+ *
+ * Called only after `db.order.create` has already failed on the
+ * `(userId, idempotencyKey)` unique index — the index is what decided
+ * this is a duplicate, not this read, which is why the write is
+ * attempted first rather than this being a `findFirst` guard in front of
+ * it. Two concurrent requests carrying the same key both attempt the
+ * insert; exactly one wins it, and the other lands here to read what the
+ * winner wrote.
+ */
+async function readIdempotentOrder(
+  userId: string,
+  idempotencyKey: string,
+  quote: Quote,
+): Promise<CreatedOrder> {
+  const existing = await db.order.findUnique({
+    where: { userId_idempotencyKey: { userId, idempotencyKey } },
+    select: {
+      id: true,
+      reference: true,
+      subtotalPaise: true,
+      taxPaise: true,
+      totalPaise: true,
+      payments: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { providerOrderId: true, amountPaise: true },
+      },
+    },
+  });
+
+  /* The unique index just rejected an insert on this exact key, so the
+     row it collided with must be readable back in the same database. A
+     miss here is not a race to handle — it is a bug. */
+  if (!existing) {
+    throw new Error(
+      "Idempotency key collided on insert but the row it collided with could not be re-read",
+    );
+  }
+
+  const [payment] = existing.payments;
+
+  return {
+    id: existing.id,
+    reference: existing.reference,
+    subtotalPaise: existing.subtotalPaise,
+    taxPaise: existing.taxPaise,
+    totalPaise: existing.totalPaise,
+    quote,
+    idempotent: true,
+    existingPayment: payment
+      ? { providerOrderId: payment.providerOrderId, amountPaise: payment.amountPaise }
+      : null,
+  };
 }
 
 /**
@@ -129,6 +313,11 @@ export async function createPendingOrder(
       city: true,
       state: true,
       pincode: true,
+      /* Serviceability — and so which store a tracked line reserves
+         against — is decided by coordinates, never by pincode. Same rule
+         `src/lib/geo.ts` applies to the storefront's own delivery promise. */
+      lat: true,
+      lng: true,
     },
   });
 
@@ -146,7 +335,13 @@ export async function createPendingOrder(
        the quote widens it to a string for the client, and casting that
        back to the enum on the way into the database would accept any
        string at all. Same row as the tax slab, no extra query. */
-    select: { slug: true, sku: true, gstRatePct: true, fulfilment: true },
+    select: {
+      slug: true,
+      sku: true,
+      gstRatePct: true,
+      fulfilment: true,
+      stockTracked: true,
+    },
   });
   const bySlug = new Map(products.map((p) => [p.slug, p]));
 
@@ -179,53 +374,143 @@ export async function createPendingOrder(
     };
   });
 
+  /* What `reserveStockForOrder` needs to decide which lines to touch at
+     all — kept separate from `lines` above rather than added onto it,
+     because `lines` is written verbatim into `OrderLine.createMany` and
+     that table has no `stockTracked` column to reject the extra field. */
+  const stockCheckLines: OrderStockLine[] = lines.map((line) => ({
+    variantId: line.variantId,
+    qty: line.qty,
+    fulfilment: line.fulfilment,
+    stockTracked: bySlug.get(line.productSlug)!.stockTracked,
+  }));
+
   const subtotalPaise = lines.reduce((sum, l) => sum + l.linePaise, 0);
+  /* Per-line GST, already contained within `subtotalPaise` — see
+     `taxForLine`. Reported for the invoice, not added again here. */
   const taxPaise = lines.reduce((sum, l) => sum + l.taxPaise, 0);
+  /* No discount or delivery-fee engine exists yet: `Order.discountPaise`
+     and `Order.deliveryFeePaise` default to zero on the row, so the total
+     is exactly the subtotal until a later phase computes real values for
+     them. Not `subtotal + tax` — tax is already inside the subtotal, and
+     adding it again is the double-charge this module exists to prevent. */
+  const totalPaise = subtotalPaise;
 
   /* Retry on a reference collision rather than pre-checking for one: the
      check-then-insert version is a race that two concurrent orders can
      both pass, and the unique index is the only thing that actually
-     decides. P2002 is Prisma's unique-constraint violation. */
+     decides. P2002 is Prisma's unique-constraint violation.
+
+     A collision on `(userId, idempotencyKey)` is not retried — it is not
+     an accident to route around, it is the mechanism working: the
+     customer (or their double-clicked button) has already placed this
+     exact order, and `readIdempotentOrder` returns what was written for
+     it instead. */
   for (let attempt = 0; attempt < REFERENCE_ATTEMPTS; attempt++) {
     try {
-      const order = await db.order.create({
-        data: {
-          reference: generateReference(REFERENCE_PREFIX),
-          userId: input.userId,
-          subtotalPaise,
-          taxPaise,
-          totalPaise: subtotalPaise + taxPaise,
-          addressId: address.id,
-          shipName: input.shipName,
-          shipPhone: input.shipPhone,
-          shipLine1: address.line1,
-          shipLine2: address.line2,
-          shipLandmark: address.landmark,
-          shipCity: address.city,
-          shipState: address.state,
-          shipPincode: address.pincode,
-          lines: { createMany: { data: lines } },
-        },
-        select: {
-          id: true,
-          reference: true,
-          subtotalPaise: true,
-          taxPaise: true,
-          totalPaise: true,
-        },
+      /* An explicit interactive transaction rather than one nested write,
+         because stock now has to be reserved between the order existing
+         and its lines being written — see below. Order first, without
+         its lines, so `reserveStockForOrder` has an `orderId` to tag
+         `InventoryMovement` rows with; lines are written afterward with
+         `storeId` already resolved, rather than created bare and updated
+         a second time. */
+      const created = await db.$transaction(async (tx) => {
+        const order = await tx.order.create({
+          data: {
+            reference: generateReference(REFERENCE_PREFIX),
+            userId: input.userId,
+            idempotencyKey: input.idempotencyKey,
+            subtotalPaise,
+            taxPaise,
+            totalPaise,
+            addressId: address.id,
+            shipName: input.shipName,
+            shipPhone: input.shipPhone,
+            shipLine1: address.line1,
+            shipLine2: address.line2,
+            shipLandmark: address.landmark,
+            shipCity: address.city,
+            shipState: address.state,
+            shipPincode: address.pincode,
+          },
+          select: {
+            id: true,
+            reference: true,
+            subtotalPaise: true,
+            taxPaise: true,
+            totalPaise: true,
+          },
+        });
+
+        /* Throws `InsufficientStockError` or `StoreUnavailableError` on
+           the first line that cannot be reserved, which aborts this
+           transaction — the order row above rolls back with it, so a
+           basket that cannot be fully reserved never becomes a partial
+           order. Caught below and translated to `OrderNotPossibleError`. */
+        const storeByVariant = await reserveStockForOrder(tx, {
+          orderId: order.id,
+          address: { lat: address.lat, lng: address.lng },
+          lines: stockCheckLines,
+        });
+
+        await tx.orderLine.createMany({
+          data: lines.map((line) => ({
+            ...line,
+            orderId: order.id,
+            storeId: storeByVariant.get(line.variantId) ?? null,
+          })),
+        });
+
+        /* Only set when something was actually reserved. A basket with
+           nothing stock-tracked in it has nothing for
+           `releaseExpiredReservations` to release, and a null column
+           says that plainly rather than carrying a deadline for a
+           reservation that never existed. */
+        const anyReserved = [...storeByVariant.values()].some((v) => v != null);
+        if (anyReserved) {
+          /* Online and callback orders reserve under different windows —
+             see `CALLBACK_RESERVATION_WINDOW_MS` — because a callback has
+             no one paying within minutes; it has an expert who has not
+             called yet. */
+          const windowMs =
+            input.paymentMode === "callback"
+              ? CALLBACK_RESERVATION_WINDOW_MS
+              : RESERVATION_WINDOW_MS;
+          await tx.order.update({
+            where: { id: order.id },
+            data: { reservationExpiresAt: new Date(Date.now() + windowMs) },
+          });
+        }
+
+        return order;
       });
 
-      return { ...order, quote };
+      return { ...created, quote, idempotent: false, existingPayment: null };
     } catch (error) {
-      const collided =
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2002" &&
-        /* Only a reference clash is retryable. Any other unique index
-           failing means something different is wrong, and spinning five
-           times over it would just delay the real error. */
-        (error.meta?.target as string[] | undefined)?.includes("reference");
+      if (error instanceof InsufficientStockError || error instanceof StoreUnavailableError) {
+        throw new OrderNotPossibleError(
+          "Some items in this basket are no longer in stock at your delivery address. Please review your basket.",
+        );
+      }
 
-      if (!collided) throw error;
+      if (
+        !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+        error.code !== "P2002"
+      ) {
+        throw error;
+      }
+
+      const target = error.meta?.target as string[] | undefined;
+
+      if (input.idempotencyKey && target?.includes("idempotencyKey")) {
+        return readIdempotentOrder(input.userId, input.idempotencyKey, quote);
+      }
+
+      /* Only a reference clash is retryable. Any other unique index
+         failing means something different is wrong, and spinning five
+         times over it would just delay the real error. */
+      if (!target?.includes("reference")) throw error;
     }
   }
 
@@ -280,6 +565,18 @@ export type SettlementOutcome =
  * the order total is a discrepancy for a person to look at, not a sale to
  * complete, and marking the order paid would hide it.
  */
+/**
+ * Thrown inside the settlement transaction when another delivery has
+ * already claimed this payment. Module-local and never escapes: it exists
+ * to roll the transaction back, and the caller turns it into `duplicate`.
+ */
+class AlreadySettledError extends Error {
+  constructor() {
+    super("Payment already settled by a concurrent delivery");
+    this.name = "AlreadySettledError";
+  }
+}
+
 export async function settleCapturedPayment(input: {
   providerOrderId: string;
   providerPaymentId: string;
@@ -321,19 +618,48 @@ export async function settleCapturedPayment(input: {
   }
 
   try {
-    /* Both rows or neither. An order marked paid whose payment row still
-       says CREATED, or the reverse, is the state that makes a refund
-       argument unwinnable. */
-    await db.$transaction([
-      db.payment.update({
-        where: { id: payment.id },
+    /* All three writes or none. An order marked paid whose payment row
+       still says CREATED, or the reverse, is the state that makes a
+       refund argument unwinnable — and stock committed without the order
+       actually being paid (or the reverse: paid with the reservation
+       still just sitting there) is the same problem one column over.
+       An interactive transaction rather than the array form used
+       elsewhere in this file, because `commitStockForOrder` needs to run
+       its own reads and a raw `UPDATE` in between — the array form can
+       only batch independent writes, it cannot sequence a read against
+       one of them.
+       Idempotency is enforced by the conditional `updateMany` below, and
+       it has to be: the unique index on `providerPaymentId` cannot do it.
+       Two concurrent deliveries of the same `payment.captured` target the
+       *same* payment row and write the *same* id to it, so there is no
+       uniqueness to violate — both would have committed stock, and
+       `commitVariantStock` is not idempotent on its own. Its only guard
+       is `reservedQty >= qty`, which a *different* customer's live
+       reservation satisfies, so the second commit would have deducted
+       on-hand twice and eaten that reservation.
+
+       The guarded update is the claim: exactly one delivery can move the
+       row out of a non-CAPTURED state, and only the one that does goes on
+       to touch stock. The loser throws and rolls back, having changed
+       nothing. The unique-index catch below still matters for the
+       different case it actually covers — two *distinct* payment rows
+       claiming one gateway payment id. */
+    await db.$transaction(async (tx) => {
+      /* `updateMany` rather than `update`, purely for the `where` guard —
+         `update` addresses a row by id and cannot also assert its state.
+         A concurrent delivery blocks on the row lock here, then matches
+         nothing once the winner commits, and `count` is 0. */
+      const claimed = await tx.payment.updateMany({
+        where: { id: payment.id, status: { not: "CAPTURED" } },
         data: {
           providerPaymentId: input.providerPaymentId,
           status: "CAPTURED",
           method: input.method,
         },
-      }),
-      db.order.update({
+      });
+
+      if (claimed.count === 0) throw new AlreadySettledError();
+      await tx.order.update({
         where: { id: payment.orderId },
         data: {
           status: "PAID",
@@ -341,14 +667,15 @@ export async function settleCapturedPayment(input: {
              the money actually arrived. */
           paidAt: new Date(),
         },
-      }),
-    ]);
+      });
+      await commitStockForOrder(tx, payment.orderId);
+    });
     return "recorded";
   } catch (error) {
-    /* The unique index on `providerPaymentId` rejecting the write means a
-       concurrent delivery of the same event won the race and has already
-       done this work. That is success, not failure — returning an error
-       would make Razorpay retry something already done. */
+    /* Both of these mean a concurrent delivery won the race and has
+       already done this work. That is success, not failure — returning an
+       error would make Razorpay retry something already done. */
+    if (error instanceof AlreadySettledError) return "duplicate";
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"

@@ -79,6 +79,34 @@ const schema = z.object({
     .string()
     .optional()
     .transform((v) => v === "1" || v?.toLowerCase() === "true"),
+
+  /**
+   * Object storage, for Parcha uploads and (later) project documents and
+   * product images. All four optional, and unlike MSG91 there is no
+   * production guard demanding them — same reasoning as Razorpay just
+   * above: with these unset the workbench simply reports that uploads are
+   * unavailable, which is correct for the days a bucket is not yet
+   * provisioned, not a reason to refuse to boot.
+   *
+   * A free-form string rather than `z.enum(...)`, deliberately: an enum
+   * that rejects an unrecognised value fails validation on an empty
+   * string exactly the way `SHOW_SOURCE_IMAGES` explains above, and this
+   * one is read by `src/lib/storage/index.ts`, which already falls back
+   * safely for anything it does not recognise. Supabase is the only
+   * provider implemented today, and is the default when unset.
+   */
+  STORAGE_PROVIDER: z.string().optional(),
+  SUPABASE_URL: z.string().optional(),
+  /**
+   * Bypasses row-level security entirely — every bucket, every row, no
+   * policy consulted. Treat exactly like `RAZORPAY_KEY_SECRET`: it must
+   * never reach the client, a log line, or a response body. It is what
+   * lets the server mint a signed URL for a private bucket on the
+   * uploading customer's behalf without that customer ever holding a
+   * Supabase credential of their own.
+   */
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().optional(),
 });
 
 type Env = z.infer<typeof schema>;
@@ -108,6 +136,10 @@ function load(): Env {
         RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
         RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
         SHOW_SOURCE_IMAGES: process.env.SHOW_SOURCE_IMAGES === "1",
+        STORAGE_PROVIDER: process.env.STORAGE_PROVIDER,
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET,
       };
     }
 
@@ -126,10 +158,23 @@ function load(): Env {
      collect page data, so enforcing this here would fail the build of any
      deploy whose SMS credentials are supplied at runtime. The check still
      runs on server boot, which is where it does its job. */
-  if (!isBuildPhase && env.NODE_ENV === "production" && !env.MSG91_AUTH_KEY) {
+  /* Both, not just the key. `getOtpSender()` selects MSG91 only when the
+     auth key *and* the template id are present, and falls back to the
+     console sender otherwise — so a deploy carrying a key but no template
+     passes a key-only guard and then prints live login codes to the
+     production log anyway. That is the exact failure this check exists to
+     prevent, and it is a plausible state to reach: DLT template approval
+     lands days after the MSG91 account does. The condition here must stay
+     in step with the one in `sender.ts`. */
+  if (
+    !isBuildPhase &&
+    env.NODE_ENV === "production" &&
+    !(env.MSG91_AUTH_KEY && env.MSG91_TEMPLATE_ID)
+  ) {
     throw new Error(
-      "MSG91_AUTH_KEY is required in production — refusing to start with " +
-        "the console OTP sender, which prints login codes to the server log.",
+      "MSG91_AUTH_KEY and MSG91_TEMPLATE_ID are both required in production " +
+        "— refusing to start with the console OTP sender, which prints " +
+        "login codes to the server log.",
     );
   }
 

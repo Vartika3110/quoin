@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { resolveVariantPrice, type Paise } from "@/lib/types/catalog";
 import { normalizeQty } from "@/lib/cart/quantity";
+import { availableQty, isStockBearing } from "@/lib/data/inventory";
 
 /**
  * Re-pricing a cart, server-side.
@@ -25,11 +26,10 @@ import { normalizeQty } from "@/lib/cart/quantity";
  * line, by `taxForLine` in `src/lib/data/orders.ts`, and frozen onto the
  * order there.
  *
- * The quote tells the customer tax is added on the invoice, which is
- * true, and which is also the statement that makes catalogue prices
- * tax-*exclusive*. See the note on `taxForLine` — it matters, because
- * Indian MRPs are inclusive by law and a price imported from one without
- * the tax stripped would be taxed twice.
+ * Catalogue prices are tax-*inclusive* — see the note on `taxForLine` —
+ * so `subtotalPaise` below is already the full amount the customer pays
+ * for the lines; `taxForLine` extracts the GST *contained in* it for the
+ * invoice rather than adding anything on top.
  */
 
 export interface QuoteLineInput {
@@ -41,7 +41,11 @@ export interface QuoteLineInput {
 export type QuoteIssue =
   | "unavailable"
   | "price_changed"
-  | "quantity_adjusted";
+  | "quantity_adjusted"
+  /* Only ever set for a `Product.stockTracked` line — see
+     `src/lib/data/inventory.ts`. An untracked line is sold exactly as it
+     is today and never carries this issue, however few of it there are. */
+  | "out_of_stock";
 
 export interface QuoteLine {
   productSlug: string;
@@ -102,12 +106,40 @@ export async function quoteCart(
       minQty: true,
       stepQty: true,
       product: {
-        select: { slug: true, name: true, fulfilment: true },
+        select: { slug: true, name: true, fulfilment: true, stockTracked: true },
       },
     },
   });
 
   const byId = new Map(variants.map((v) => [v.id, v]));
+
+  /* Availability, for the variants where it is a real question. Summed
+     across every store rather than resolved to one: `quoteCart` has no
+     delivery address to resolve a store from — that only happens at
+     order creation, in `reserveStockForOrder` — so this is an early,
+     advisory signal for the cart to show, not the gate. The gate is the
+     conditional reserve at order creation; a line that clears here can
+     still fail there if the customer's specific address cannot be served
+     at all, and a line that shows `out_of_stock` here is never let
+     through there either way. */
+  const trackedVariantIds = variants
+    .filter((v) => v.product.stockTracked && isStockBearing(v.product.fulfilment))
+    .map((v) => v.id);
+
+  const availableByVariant = new Map<string, number>();
+  if (trackedVariantIds.length > 0) {
+    const totals = await db.inventoryItem.groupBy({
+      by: ["variantId"],
+      where: { variantId: { in: trackedVariantIds } },
+      _sum: { onHandQty: true, reservedQty: true },
+    });
+    for (const row of totals) {
+      availableByVariant.set(
+        row.variantId,
+        availableQty(row._sum.onHandQty ?? 0, row._sum.reservedQty ?? 0),
+      );
+    }
+  }
 
   const lines: QuoteLine[] = [];
   const unavailable: Quote["unavailable"] = [];
@@ -143,6 +175,11 @@ export async function quoteCart(
     const qty = normalizeQty(row, wanted.qty);
     const issues: QuoteIssue[] = [];
     if (qty !== wanted.qty) issues.push("quantity_adjusted");
+
+    if (row.product.stockTracked && isStockBearing(row.product.fulfilment)) {
+      const available = availableByVariant.get(row.id) ?? 0;
+      if (available < qty) issues.push("out_of_stock");
+    }
 
     lines.push({
       productSlug: row.product.slug,

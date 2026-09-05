@@ -24,12 +24,27 @@ const Body = z.object({
     )
     .min(1)
     .max(100),
+  /* Optional: a client that cannot tell whether its own request landed
+     (a timeout, a double-tapped button) sends the same key on a retry and
+     gets the order already written for it back, rather than a second
+     order and a second Razorpay order. Bounded well past any real UUID or
+     nonce a client would generate. */
+  idempotencyKey: z.string().min(1).max(128).optional(),
+  /**
+   * What the customer picked on the payment step. Client-stated rather
+   * than inferred from `isRazorpayConfigured()`: `CheckoutFlow` offers
+   * "Confirm with an expert" even when online payment is also available,
+   * so the server cannot tell the two apart from its own configuration
+   * alone, and must not guess.
+   */
+  paymentMode: z.enum(["online", "callback"]),
 });
 
 /**
  * POST /api/v1/checkout/order
  *
- * Turns a basket into an order and a Razorpay order to pay it with.
+ * Turns a basket into an order — and, for online payment, a Razorpay
+ * order to pay it with.
  *
  * Deliberately the same line shape as `/checkout/quote`, and for the same
  * reason: the client states what it wants to buy and never what it costs.
@@ -42,29 +57,44 @@ const Body = z.object({
  * needs an owner: an invoice has to go somewhere, and a caller ringing
  * about a reference has to be provable as the person who placed it.
  *
- * Two writes, in this order and not the other:
+ * The order is always written, regardless of `paymentMode`. It used to be
+ * that an unconfigured deploy 409'd here rather than write a
+ * PENDING_PAYMENT row nothing could ever pay — reasonable when the only
+ * screen behind this route promised online payment. It no longer is: the
+ * checkout's callback screen tells the customer "an expert calls back
+ * within the hour", and that promise needs an order to be the thing the
+ * expert calls about. Writing nothing while telling the customer
+ * otherwise is the defect this route now exists to not have.
  *
- *   1. the order, PENDING_PAYMENT, with its lines frozen
- *   2. the gateway order, and a payment row recording the handoff
+ * `paymentMode` decides what happens *after* the order is written:
  *
- * If step 2 fails the customer sees an error and no money has moved,
- * while step 1 survives as the record that they tried. The reverse order
- * would mean a live gateway order with nothing on this side to settle it
- * against — a payment that cannot be attributed.
+ *   - `"callback"` — nothing further. The order sits PENDING_PAYMENT with
+ *     no `Payment` row, which is exactly and honestly "awaiting a human
+ *     to take payment".
+ *   - `"online"` — two more writes, in this order and not the other: the
+ *     gateway order, and a payment row recording the handoff. If the
+ *     gateway call fails the customer sees an error and no money has
+ *     moved, while the order survives as the record that they tried. The
+ *     reverse order would mean a live gateway order with nothing on this
+ *     side to settle it against — a payment that cannot be attributed.
  */
 export const POST = handler(async (request) => {
   const user = await requireUser();
-  const { addressId, lines } = await parseBody(request, Body);
+  const { addressId, lines, idempotencyKey, paymentMode } = await parseBody(
+    request,
+    Body,
+  );
 
-  /* Checked before the order is written rather than after. An
-     unconfigured deploy would otherwise leave a PENDING_PAYMENT row for
-     every customer who reached this screen, none of which can ever be
-     paid — and payments are expected to be unconfigured for as long as
-     gateway KYC takes. */
-  if (!isRazorpayConfigured()) {
+  /* Only "online" needs a gateway to actually hand the customer to. A
+     client only ever offers that tile when `isRazorpayConfigured()` is
+     true (see `paymentMethods` in `CheckoutFlow`), so reaching here with
+     it false means a stale tab or a tampered request, not the ordinary
+     unconfigured deploy — that case is `paymentMode: "callback"`, and it
+     is not rejected. */
+  if (paymentMode === "online" && !isRazorpayConfigured()) {
     throw new ApiError(
       "conflict",
-      "Online payment is not available yet. An expert will call to take payment.",
+      "Online payment is not available yet. Choose 'Confirm with an expert' instead.",
     );
   }
 
@@ -75,17 +105,62 @@ export const POST = handler(async (request) => {
       isPro: user.tier === "PRO",
       lines,
       addressId,
-      /* The account's own details. A different name on the delivery is a
-         field the checkout does not collect yet, and inventing one here
-         would be inventing a customer-facing feature in an API. */
-      shipName: user.name ?? "",
+      /* The account's own details. A different recipient is a field the
+         checkout does not collect yet, and inventing one here would be
+         inventing a customer-facing feature in an API.
+
+         Falls back to the phone rather than to "". Accounts are created by
+         verifying a number and nothing ever forces a name, so `user.name`
+         is null for anyone who has not filled in their profile — which is
+         most people — and `?? ""` put a delivery label with no name on it
+         onto a real order. A number is something a driver can actually
+         act on; an empty string is not. `.trim()` because a name of pure
+         whitespace is the same problem wearing a disguise. */
+      shipName: user.name?.trim() || user.phone,
       shipPhone: user.phone,
+      idempotencyKey,
+      paymentMode,
     });
   } catch (error) {
     if (error instanceof OrderNotPossibleError) {
       throw new ApiError("conflict", error.message);
     }
     throw error;
+  }
+
+  if (paymentMode === "callback") {
+    return ok({
+      reference: order.reference,
+      subtotalPaise: order.subtotalPaise,
+      taxPaise: order.taxPaise,
+      totalPaise: order.totalPaise,
+      quote: order.quote,
+      /* Explicit, so the client branches on this rather than on
+         `razorpay` being null for some other reason. */
+      paymentMode: "callback" as const,
+      razorpay: null,
+    });
+  }
+
+  /* A repeat of `idempotencyKey` that already reached the gateway once —
+     the ordinary double-click. Nothing is created a second time: the same
+     order and the same gateway order are handed back, exactly as if this
+     were the first response. */
+  if (order.idempotent && order.existingPayment) {
+    return ok({
+      reference: order.reference,
+      subtotalPaise: order.subtotalPaise,
+      taxPaise: order.taxPaise,
+      totalPaise: order.totalPaise,
+      quote: order.quote,
+      paymentMode: "online" as const,
+      razorpay: {
+        orderId: order.existingPayment.providerOrderId,
+        keyId: razorpayKeyId(),
+        amountPaise: order.existingPayment.amountPaise,
+        currency: "INR",
+      },
+    });
   }
 
   let gateway;
@@ -128,6 +203,7 @@ export const POST = handler(async (request) => {
        the basket is re-priced here too, and this request may be the one
        that discovers the move. */
     quote: order.quote,
+    paymentMode: "online" as const,
     razorpay: {
       orderId: gateway.id,
       /* From the environment on every request rather than inlined at

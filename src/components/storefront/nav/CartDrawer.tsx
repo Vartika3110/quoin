@@ -289,9 +289,18 @@ function Summary({
             </dd>
           </div>
         )}
+        {/* Two rows, not one. These were a single "Delivery & taxes ·
+            calculated at checkout" line, which stopped being true when GST
+            became inclusive: tax is already in the prices above, delivery
+            genuinely is not. One row cannot say both without abbreviating
+            itself into something nobody reads. Matches CartView. */}
         <div className="flex justify-between gap-3">
-          <dt className="text-muted">Delivery &amp; taxes</dt>
+          <dt className="text-muted">Delivery</dt>
           <dd className="text-micro text-faint">Calculated at checkout</dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt className="text-muted">Taxes</dt>
+          <dd className="text-micro text-faint">Included in prices</dd>
         </div>
       </dl>
 

@@ -301,7 +301,7 @@ function Summary({
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-muted">Taxes</dt>
-          <dd className="text-micro text-faint">Calculated at checkout</dd>
+          <dd className="text-micro text-faint">Included in prices</dd>
         </div>
       </dl>
 

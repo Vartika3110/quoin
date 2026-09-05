@@ -143,7 +143,10 @@ There is no data behind these, so no component invents one:
 - **Review counts and reviewer names.**
 - **Professional profiles** on service pages.
 - **Discount flashes** unless the sell price is genuinely under MRP.
-- **Order history** — there is no `Order` table yet.
+- **Delivery dates, courier names and tracking numbers.** Orders are real
+  now, but nothing behind this app schedules a slot or scans a parcel, so
+  an order says what was bought and what state it is in — never where the
+  van is.
 
 A fabricated number next to a real catalogue does not add polish. It makes
 every other number on the page suspect.

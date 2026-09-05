@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Worktrees created by tooling hold a full copy of the source. Linting
+    // them reports every problem twice and buries the real ones: this
+    // directory alone produced 7,632 of 7,632 problems.
+    ".claude/worktrees/**",
   ]),
 ]);
 
