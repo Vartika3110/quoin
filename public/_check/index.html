@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>bg check</title>
+<style>
+ body{margin:0;font:13px system-ui,sans-serif}
+ .band{padding:20px 24px}
+ .light{background:#faf7f3;color:#3a2318}
+ .dark{background:#14100d;color:#f5efe8}
+ h3{margin:0 0 12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+ .wall{display:flex;flex-wrap:wrap;gap:10px}
+ .p{display:flex;align-items:center;justify-content:center;height:64px;width:150px;
+    border-radius:8px;padding:6px 12px;box-sizing:border-box}
+ .light .p{background:#fff;border:1px solid #efe7dd}
+ .dark .p{background:#1e1815;border:1px solid #2a221c}
+ .bare{background:none!important;border:1px dashed rgba(128,128,128,.35)!important}
+ .p img{height:34px;width:100%;object-fit:contain}
+</style>
+<script>
+const B=["hettich","hafele","ebco","dorset","ozone","jaquar","ultratech","ambuja","somany","asian-paints","berger","polycab","havells","mars"];
+const wall=(cls)=>B.map(b=>`<div class="p ${cls}"><img src="${b}.png"></div>`).join('');
+document.write(`
+<div class="band light"><h3>Light — on a card</h3><div class="wall">${wall('')}</div></div>
+<div class="band dark"><h3>Dark — on a card</h3><div class="wall">${wall('')}</div></div>
+<div class="band dark"><h3>Dark — bare, no card</h3><div class="wall">${wall('bare')}</div></div>`);
+</script>

@@ -368,9 +368,32 @@ export function startingTaskSeeds(draft: NewProject): NewTaskInput[] {
 
 /* ---------------------------------------------------------------- provider */
 
-export function ProjectsProvider({ children }: { children: ReactNode }) {
+export function ProjectsProvider({
+  children,
+  isSignedIn,
+}: {
+  children: ReactNode;
+  /**
+   * Read from the session in the root layout, because this provider is
+   * mounted for every route and a cookie is httpOnly — the browser cannot
+   * look at it, so the server has to say.
+   *
+   * Without it, every signed-out visitor fired a request to
+   * `/api/v1/projects` on every page — the home page, a product page,
+   * checkout — that was always going to answer 401. That is a round trip
+   * and a serverless invocation per page view, for the majority of
+   * traffic, to learn something the server already knew when it rendered
+   * the HTML.
+   */
+  isSignedIn: boolean;
+}) {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [ready, setReady] = useState(false);
+  /* Signed out starts *ready*, not loading: there is nothing to wait for,
+     and a spinner for a request that is never made is a lie about what the
+     app is doing. Derived at initialisation rather than assigned inside the
+     effect below, which would be a synchronous setState and the cascading
+     render `react-hooks/set-state-in-effect` exists to catch. */
+  const [ready, setReady] = useState(!isSignedIn);
   const [error, setError] = useState<string | null>(null);
 
   const [localPending, setLocalPending] = useState<LegacyProject[] | null>(null);
@@ -389,6 +412,17 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let ignore = false;
 
+    /* Signed out has nothing to fetch and nothing to import: projects
+       belong to an account, so there is no anonymous state to reconcile.
+       The initial state already says empty-and-ready, so this returns
+       without touching anything rather than asking the server to say 401.
+
+       `AppProviders` keys this component on the session, so a sign-in or
+       sign-out remounts it and that initial state is recomputed — which is
+       also what stops a signed-out tab still holding the previous
+       account's list in memory. */
+    if (!isSignedIn) return;
+
     (async () => {
       setError(null);
       try {
@@ -402,12 +436,10 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
         setLocalPending(shouldOfferLocalImport(legacy.length, decided) ? legacy : null);
       } catch (err) {
         if (ignore) return;
-        /* Signed out is this store's normal empty state, not a failure —
-           `/projects` itself gates on the session server-side and shows
-           `SignInPrompt` instead of ever mounting this list, but the
-           provider is mounted for the whole app (see `AppProviders`), so
-           it still has to answer sensibly for the pages that read it
-           without that gate. */
+        /* Still reachable, and still not a failure: `isSignedIn` is a
+           snapshot taken when the page was rendered, so a session that
+           expires while the tab is open lands here. Empty is the right
+           answer, not an error banner. */
         if (err instanceof ProjectsRequestError && err.status === 401) {
           setProjects([]);
           setLocalPending(null);
@@ -421,7 +453,7 @@ export function ProjectsProvider({ children }: { children: ReactNode }) {
     return () => {
       ignore = true;
     };
-  }, [reloadToken]);
+  }, [reloadToken, isSignedIn]);
 
   const refresh = useCallback(() => setReloadToken((n) => n + 1), []);
 

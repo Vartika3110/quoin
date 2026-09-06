@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
+import { getSession } from "@/lib/auth/session";
 import "./globals.css";
 
 const inter = Inter({
@@ -64,11 +65,17 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  /* Read once, here, and handed to `AppProviders`. The session cookie is
+     httpOnly, so the browser cannot see it — without this the projects
+     store had to ask the server on every page just to be told it was
+     signed out. Every route in this app is already dynamic, so reading a
+     cookie in the root layout costs no prerendering. */
+  const isSignedIn = Boolean(await getSession());
   return (
     <html
       lang="en"
@@ -100,7 +107,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col antialiased">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders isSignedIn={isSignedIn}>{children}</AppProviders>
       </body>
     </html>
   );

@@ -18,18 +18,35 @@ import { StickyBarProvider } from "@/components/storefront/StickyBar";
  * page's own action bar tells the floating cart bar to stand down, so that
  * two fixed bars never stack on the same strip of a phone screen.
  *
- * All of them are cheap — each holds an array or a counter in state and
- * reads `localStorage` once after mount — so mounting them for every route,
- * including ones that never open a cart, costs a few hundred bytes rather
- * than a request. The alternative, mounting per route, means the cart
- * badge resets on navigation, which is worse in every way.
+ * Cart, wishlist and the sticky bar are cheap — each holds an array or a
+ * counter in state and reads `localStorage` once after mount — so mounting
+ * them for every route, including ones that never open a cart, costs a few
+ * hundred bytes rather than a request. The alternative, mounting per route,
+ * means the cart badge resets on navigation, which is worse in every way.
+ *
+ * `ProjectsProvider` is the exception and needs `isSignedIn` because of it.
+ * Projects moved onto the account, so it is the one store here that talks
+ * to the server, and for a while it did so on every route for every
+ * visitor — including the signed-out majority, whose request could only
+ * ever come back 401. The session cookie is httpOnly and invisible to the
+ * browser, so the answer has to be handed down from the layout that
+ * rendered the page.
  */
-export function AppProviders({ children }: { children: ReactNode }) {
+export function AppProviders({
+  children,
+  isSignedIn,
+}: {
+  children: ReactNode;
+  isSignedIn: boolean;
+}) {
   return (
     <ToastProvider>
       <CartProvider>
         <WishlistProvider>
-          <ProjectsProvider>
+          {/* Keyed on the session so signing in or out remounts the store.
+              Without it, a logged-out tab keeps the previous account's
+              projects in memory until a full reload. */}
+          <ProjectsProvider key={String(isSignedIn)} isSignedIn={isSignedIn}>
             <StickyBarProvider>{children}</StickyBarProvider>
           </ProjectsProvider>
         </WishlistProvider>
