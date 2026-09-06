@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { orderLinesSchema } from "@/lib/cart/line-schema";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
 import {
   OrderNotPossibleError,
@@ -14,16 +15,7 @@ import {
 
 const Body = z.object({
   addressId: z.string().min(1).max(64),
-  lines: z
-    .array(
-      z.object({
-        productSlug: z.string().min(1).max(200),
-        variantId: z.string().min(1).max(64),
-        qty: z.number().int().positive().max(100_000),
-      }),
-    )
-    .min(1)
-    .max(100),
+  lines: orderLinesSchema,
   /* Optional: a client that cannot tell whether its own request landed
      (a timeout, a double-tapped button) sends the same key on a retry and
      gets the order already written for it back, rather than a second

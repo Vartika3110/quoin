@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PRODUCT_SLUG_MAX_LENGTH } from "@/lib/types/catalog";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
 import {
   CALENDAR_DAY_MESSAGE,
@@ -21,7 +22,7 @@ const Body = z.object({
   unit: z.string().trim().max(40).optional(),
   unitPricePaise: z.number().int().min(0).max(MAX_UNIT_PRICE_PAISE).optional(),
   status: MaterialStatusSchema.optional(),
-  productSlug: z.string().trim().max(160).optional(),
+  productSlug: z.string().trim().max(PRODUCT_SLUG_MAX_LENGTH).optional(),
   variantId: z.string().trim().max(160).optional(),
   brand: z.string().trim().max(80).optional(),
   expectedOn: z.string().refine(isCalendarDay, CALENDAR_DAY_MESSAGE).optional(),

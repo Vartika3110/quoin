@@ -44,6 +44,24 @@ export const PRICING_UNIT_LABEL: Record<PricingUnit, string> = {
  * Money is stored in paise (integer) everywhere. Floating-point rupees
  * accumulate rounding errors across tier pricing, GST and promos.
  */
+/**
+ * The longest a product slug can be, and the one place that number lives.
+ *
+ * It was previously written down four times and they disagreed: the two
+ * catalogue importers built slugs up to 280 characters, while the checkout
+ * validated them at 200 and project materials at 160. Manufacturer product
+ * names are long — a Jaquar sensor faucet's full description runs past 200
+ * on its own — so 201 of 3,214 products could not be quoted or ordered at
+ * all, and because the validator rejects the whole request body, one such
+ * item in a basket made the *entire* cart unquotable rather than just that
+ * line.
+ *
+ * Any schema that accepts a slug from a client must use this. If the
+ * importers ever need longer slugs, this is the number to raise, and
+ * `tests/unit.test.mts` asserts the importers cannot outrun it.
+ */
+export const PRODUCT_SLUG_MAX_LENGTH = 280;
+
 export type Paise = number;
 
 /** Trust markers rendered as chips on product cards. */

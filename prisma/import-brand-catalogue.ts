@@ -7,6 +7,8 @@ import path from "node:path";
 
 import { Fulfilment, PricingUnit, PrismaClient } from "@prisma/client";
 
+import { PRODUCT_SLUG_MAX_LENGTH } from "../src/lib/types/catalog";
+
 /**
  * Import a manufacturer's own catalogue.
  *
@@ -248,7 +250,7 @@ async function main() {
           imageIsGenerated: false,
           sourceName: `${defaults.brand} catalogue`,
           sku: row.code,
-          slug: uniqueSlug(`${defaults.brand} ${row.description} ${row.code}`, 280, slugs),
+          slug: uniqueSlug(`${defaults.brand} ${row.description} ${row.code}`, PRODUCT_SLUG_MAX_LENGTH, slugs),
         },
       });
       created++;

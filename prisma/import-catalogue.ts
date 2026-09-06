@@ -22,6 +22,8 @@ import path from "node:path";
 
 import { Fulfilment, PricingUnit, PrismaClient } from "@prisma/client";
 
+import { PRODUCT_SLUG_MAX_LENGTH } from "../src/lib/types/catalog";
+
 const db = new PrismaClient();
 
 const DEFAULT_CSV = path.join("research", "data", "all-products.csv");
@@ -326,7 +328,7 @@ async function main() {
           data: {
             ...shared,
             sku,
-            slug: uniqueSlug(`${row.brand ?? ""} ${name} ${sku}`, 280, productSlugs),
+            slug: uniqueSlug(`${row.brand ?? ""} ${name} ${sku}`, PRODUCT_SLUG_MAX_LENGTH, productSlugs),
           },
         });
 

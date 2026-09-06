@@ -1,20 +1,11 @@
 import { z } from "zod";
+import { cartLinesSchema } from "@/lib/cart/line-schema";
 import { handler, ok, parseBody } from "@/lib/http";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { quoteCart } from "@/lib/data/checkout";
 
-const Body = z.object({
-  lines: z
-    .array(
-      z.object({
-        productSlug: z.string().min(1).max(200),
-        variantId: z.string().min(1).max(64),
-        qty: z.number().int().positive().max(100_000),
-      }),
-    )
-    .max(100),
-});
+const Body = z.object({ lines: cartLinesSchema });
 
 /**
  * POST /api/v1/checkout/quote
