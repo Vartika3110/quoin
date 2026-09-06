@@ -10,8 +10,17 @@ import { brandKey, getBrandLinkTargets } from "@/lib/data/catalog";
  * them reads as a missing image, so a brand without supplied artwork is
  * left off the roster entirely instead of being written out.
  *
+ * One light panel behind the whole row rather than a card per logo. The
+ * marks are cut out on white, and after dark a fourteen-card grid put a
+ * white rectangle behind every one of them — the row became boxes with
+ * logos in them rather than logos. Worse, the alternative of dropping the
+ * cards entirely is not open: Hettich, UltraTech, Ambuja and Mars are all
+ * dark ink, and on the dark page they simply disappeared. `bg-photo`
+ * exists for this exact problem — it is the ground cut-out imagery sits
+ * on, and it stays near-white in both palettes.
+ *
  * `flex-wrap` rather than a grid because the roster is hand-kept and its
- * length changes: a grid leaves a lone plate stranded at the start of a
+ * length changes: a grid leaves a lone logo stranded at the start of a
  * last row, while a centred wrap keeps a short final row balanced at any
  * count.
  */
@@ -19,51 +28,62 @@ export async function BrandWall() {
   const targets = await getBrandLinkTargets();
 
   return (
-    <div className="flex flex-wrap justify-center gap-2 px-5 lg:gap-3 lg:px-0">
-      {BRAND_WALL.map(({ slug, name, logo }) => {
-        const target = targets.get(brandKey(name)) ?? targets.get(slug);
+    <div className="rounded-card border border-photo-edge bg-photo px-4 py-6 lg:rounded-2xl lg:px-8 lg:py-8">
+      {/* Seven across from `lg` puts the fourteen marks in two even rows. */}
+      <div className="flex flex-wrap justify-center gap-3 lg:gap-4">
+        {BRAND_WALL.map(({ slug, name, logo }) => {
+          const target = targets.get(brandKey(name)) ?? targets.get(slug);
 
-        /* One plate, drawn the same whether or not it leads anywhere:
-           a logo that is a link and a logo that is not should not be
-           two different sizes on the same wall. */
-        const plate = (
-          /* Not `next/image`: the marks arrive at wildly different aspect
-             ratios and are already small, so a fixed `sizes` would either
-             upscale the wide ones or waste bytes on the square ones. */
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logo}
-            alt={name}
-            loading="lazy"
-            decoding="async"
-            /* A definite box rather than `max-h`/`max-w`: sized only by
-               maximums, a lazy image occupies nothing until it decodes
-               and then snaps to size, so a wall of fourteen of them
-               settles in fourteen visible steps. Reserving the box up
-               front costs nothing and `object-contain` letterboxes the
-               artwork inside it exactly as the maximums would have. */
-            className="h-9 w-full object-contain lg:h-10"
-          />
-        );
+          /* Sized the same whether or not it leads anywhere: a logo that
+             is a link and a logo that is not should not be two different
+             sizes on the same wall. */
+          const cell =
+            "flex basis-[calc(25%-0.5625rem)] items-center justify-center lg:basis-[calc(14.2857%-0.858rem)]";
 
-        const shell =
-          "flex h-20 basis-[calc(33.333%-0.334rem)] items-center justify-center rounded-lg border border-line-soft bg-surface px-3 py-2 sm:basis-[calc(25%-0.375rem)] lg:h-24 lg:basis-[calc(16.666%-0.625rem)] lg:px-4";
+          const plate = (
+            /* Not `next/image`: the marks arrive at wildly different
+               aspect ratios and are already small, so a fixed `sizes`
+               would either upscale the wide ones or waste bytes on the
+               square ones. */
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logo}
+              alt={name}
+              loading="lazy"
+              decoding="async"
+              /* A definite box rather than `max-h`/`max-w`: sized only by
+                 maximums, a lazy image occupies nothing until it decodes
+                 and then snaps to size, so a wall of fourteen of them
+                 settles in fourteen visible steps. Reserving the box up
+                 front costs nothing and `object-contain` letterboxes the
+                 artwork inside it exactly as the maximums would have.
 
-        return target ? (
-          <Link
-            key={slug}
-            href={`/products?brand=${target}`}
-            aria-label={name}
-            className={`${shell} transition-[border-color,box-shadow] duration-200 hover:border-line hover:shadow-xs`}
-          >
-            {plate}
-          </Link>
-        ) : (
-          <div key={slug} className={shell}>
-            {plate}
-          </div>
-        );
-      })}
+                 The box is taller than the wordmarks need because
+                 `object-contain` scales to whichever edge binds first:
+                 wide marks like Mars stop at the cell width long before
+                 they reach this height, while square ones — Ambuja,
+                 Häfele — are held by it, and at a shorter height they
+                 shrank to specks beside their neighbours. */
+              className="h-9 w-full object-contain lg:h-12"
+            />
+          );
+
+          return target ? (
+            <Link
+              key={slug}
+              href={`/products?brand=${target}`}
+              aria-label={name}
+              className={`${cell} opacity-90 transition-opacity duration-200 hover:opacity-100`}
+            >
+              {plate}
+            </Link>
+          ) : (
+            <div key={slug} className={cell}>
+              {plate}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -195,7 +195,9 @@ export default async function HomePage() {
               href="/products"
               linkLabel="Shop all"
             />
-            <BrandWall />
+            <Gutter>
+              <BrandWall />
+            </Gutter>
           </section>
 
           <Gutter>
