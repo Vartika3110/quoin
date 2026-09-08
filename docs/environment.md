@@ -14,7 +14,8 @@
 | `RAZORPAY_KEY_SECRET` | Optional | Server-to-server API calls and checkout signature verification | Secret key for API authentication and to verify the checkout modal's signed handoff. Must never reach the client. Optional; with it unset, checkout reports payment unavailable. |
 | `RAZORPAY_WEBHOOK_SECRET` | Optional | Webhook verification | Signed webhook deliveries. Set separately from the API secret when creating the webhook in the Razorpay dashboard. Optional; without it every webhook is rejected and orders stay `PENDING_PAYMENT`. |
 | `SHOW_SOURCE_IMAGES` | Optional | Storefront rendering | Renders product photography captured in `Product.sourceImageUrl`. Off unless set to `"1"` or `"true"`. Those images belong to the sites they were scraped from and serving them hotlinks someone else's CDN — fine behind a private demo link, not for a public storefront. |
-| `OPENAI_API_KEY` | Optional | `npm run images:generate` | Third-party key for image generation. Used only by the images generation script, never at request time. Everything the script writes is flagged as generated and labelled "Illustration - actual product may vary" in the storefront. |
+| `OPENAI_API_KEY` | Optional | `src/lib/parcha-openai.ts` (at request time) and `npm run images:generate` | Reads an uploaded parcha — `POST /api/v1/parcha/extract` (aliased as `POST /api/parse-parcha`) sends the photograph or PDF to OpenAI and returns the materials as text for the customer to check on `/upload`. The same key also backs the image generation script, which runs on a laptop and never at request time. Server-only: never `NEXT_PUBLIC_`, never in a response body or a log line. Optional; with it unset the app boots normally, typing a list is priced end to end, and an attached file is routed to a person instead — the behaviour before automatic reading existed. |
+| `OPENAI_MODEL` | Optional | `src/lib/parcha-openai.ts` | Which model reads the file. Defaults to `DEFAULT_PARCHA_MODEL` (`gpt-5-mini`) when unset. A variable rather than a constant because model names age faster than deploys: an account without access to the default is a dashboard change, not a code change — `gpt-4.1-mini` is the drop-in. The extract route logs the model name alongside any upstream refusal, which is how that case is identified. |
 | `NODE_ENV` | Optional | Environment checks | Deployment environment. Defaults to `development`. Values: `development`, `test`, `production`. The refusal to fall back to the console OTP sender applies only when this is `production`. |
 
 ## Local (`.env.local`)
@@ -27,7 +28,8 @@ For a working development machine, copy `.env.example` to `.env.local` and fill 
 - **`MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID`, `MSG91_SENDER_ID`**: Leave empty. With these unset, the app boots normally and login codes are printed to the server log (visible in `npm run dev` output). Only SMS delivery fails, which is fine for local development. No boot guard exists in development.
 - **`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`**: Leave empty. With these unset, the app boots normally and checkout reports that payment is unavailable. The code path works end to end without the keys; only money fails to move. This is deliberate: gateway KYC takes days, and a deploy must stay up while approval is pending.
 - **`SHOW_SOURCE_IMAGES`**: Leave empty or set to `"0"`. Competitor imagery is fine behind a private demo link; omit it from your local setup.
-- **`OPENAI_API_KEY`**: Leave empty. Used only by `npm run images:generate`, which is not part of normal development.
+- **`OPENAI_API_KEY`**: Optional. Leave empty and `/upload` still works — typing a list is priced end to end, and an attached photo or PDF reports that automatic reading is not switched on and offers the expert path instead. Set it to a real key to develop the extraction flow against live OpenAI; every call costs money, so it is off by default. CSV uploads are read locally and need no key at all.
+- **`OPENAI_MODEL`**: Leave empty unless testing a different model.
 
 ## Vercel Preview
 
@@ -39,7 +41,8 @@ Preview deployments are isolated environments for testing branches before they r
 - **`MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID`, `MSG91_SENDER_ID`**: Optional in preview. Leave unset if SMS delivery is not needed for testing a branch. The app boots normally and login codes print to the logs.
 - **`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`**: Use the `rzp_test_` key pair from the Razorpay dashboard, never production keys. Optional; omit to test checkout without taking money.
 - **`SHOW_SOURCE_IMAGES`**: Leave unset unless testing that feature specifically.
-- **`OPENAI_API_KEY`**: Leave unset unless testing image generation.
+- **`OPENAI_API_KEY`**: Set it if the branch touches the parcha upload flow — extraction is a request-time feature now, so an unset key on preview means uploads report themselves unavailable. Use a key with a low spend cap: a preview URL is a public endpoint that spends money per request.
+- **`OPENAI_MODEL`**: Leave unset unless the branch is specifically testing a different model.
 
 Do not share production secrets (`MSG91_AUTH_KEY`, production Razorpay `rzp_live_` keys) with preview. A compromised preview branch must not leak credentials that can harm the production deployment.
 
@@ -57,7 +60,8 @@ A production deployment requires the full set:
 - **`RAZORPAY_KEY_SECRET`**: The corresponding `rzp_live_` secret. Optional for the same reason; the two Razorpay keys must both be set or both be unset.
 - **`RAZORPAY_WEBHOOK_SECRET`**: The webhook signing secret set when you created the webhook in the Razorpay dashboard. Optional; without it, webhooks are rejected and orders stay `PENDING_PAYMENT`.
 - **`SHOW_SOURCE_IMAGES`**: Leave unset. Competitor imagery is not appropriate for a public storefront.
-- **`OPENAI_API_KEY`**: Leave unset. Image generation is an operational task, not a deployed feature.
+- **`OPENAI_API_KEY`**: Required for reading uploaded parchas. Without it `/upload` still works — typing a list is priced end to end and attached files are routed to a person — but the automatic reading customers are shown is off. Use a project-scoped key with a spend limit, and rotate it from the OpenAI dashboard rather than editing it anywhere in this repository.
+- **`OPENAI_MODEL`**: Leave unset to take the default. Set it if the account has no access to the default model, or to move to a newer one without a deploy.
 
 Production deployments sit in Mumbai (`bom1` in `vercel.json`) to be close to the database. Both must be in the same region, or round-trip latency on every query rises for the customer. Move them together or not at all.
 

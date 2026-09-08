@@ -13,6 +13,7 @@ import {
   extractCsvLines,
   getOcrProvider,
 } from "@/lib/parcha-extract";
+import { PARCHA_READ_NOTE, ParchaReadError } from "@/lib/parcha-openai";
 import { getStorageProvider, isStorageConfigured } from "@/lib/storage";
 
 /**
@@ -423,14 +424,24 @@ async function runExtraction(
     ]);
   } catch (error) {
     console.error(`[parcha] extraction failed for submission ${submissionId}`, error);
+
+    /* `extractionNote` is customer-visible — `GET
+       /api/v1/parcha/submissions/{reference}` returns it — so a reader's
+       failure is recorded as one of its own sentences rather than as
+       whatever the upstream API said. OpenAI's errors quote organisation
+       ids and quota figures, and `StorageError`'s do not, which is why
+       only this one type is translated and every other `Error` message
+       is still written through as it was. */
+    const note =
+      error instanceof ParchaReadError
+        ? PARCHA_READ_NOTE[error.reason]
+        : error instanceof Error
+          ? error.message
+          : "Extraction failed unexpectedly.";
+
     await db.parchaSubmission.update({
       where: { id: submissionId },
-      data: {
-        status: "FAILED",
-        extractionNote:
-          error instanceof Error ? error.message : "Extraction failed unexpectedly.",
-        extractedAt: new Date(),
-      },
+      data: { status: "FAILED", extractionNote: note, extractedAt: new Date() },
     });
   }
 }

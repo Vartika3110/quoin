@@ -95,6 +95,44 @@ const schema = z.object({
    * safely for anything it does not recognise. Supabase is the only
    * provider implemented today, and is the default when unset.
    */
+  /**
+   * Reading a Parcha.
+   *
+   * `OPENAI_API_KEY` is what turns `getParchaReader()` (src/lib/parcha-openai.ts)
+   * from the not-configured reader into one that actually reads a
+   * photograph or a PDF. Optional, and — like Razorpay and Supabase above,
+   * and unlike MSG91 — with it unset the app boots normally and the Parcha
+   * workbench simply reports that automatic reading is unavailable, which
+   * is a correct state rather than a dangerous one: typing a list still
+   * works end to end, and an attached file still goes to a person.
+   *
+   * Server-only, always. It authenticates spend against a third-party
+   * account, so it is treated exactly like `RAZORPAY_KEY_SECRET`: never
+   * `NEXT_PUBLIC_`, never in a response body, never in a log line. The
+   * browser posts the file to `/api/v1/parcha/extract` and this server
+   * makes the OpenAI call — see the security note in that route.
+   *
+   * The same variable already backed `npm run images:generate`, which runs
+   * on a laptop rather than at request time. It is read here now because a
+   * request-time feature needs it validated on boot rather than discovered
+   * missing mid-request.
+   */
+  OPENAI_API_KEY: z.string().optional(),
+  /**
+   * Which model reads the file. Optional; `DEFAULT_PARCHA_MODEL` in
+   * `src/lib/parcha-openai.ts` is used when unset.
+   *
+   * An environment variable rather than a constant because model names
+   * age faster than deploys do: a model being retired, or an account not
+   * being granted one, must be a dashboard change and not a code change.
+   * A free-form string rather than an enum for the reason
+   * `SHOW_SOURCE_IMAGES` records above — an enum rejects an empty string,
+   * and validation that can fail on a *present but blank* optional
+   * variable takes the whole site down for a setting that should only
+   * ever degrade one feature.
+   */
+  OPENAI_MODEL: z.string().optional(),
+
   STORAGE_PROVIDER: z.string().optional(),
   SUPABASE_URL: z.string().optional(),
   /**
@@ -136,6 +174,8 @@ function load(): Env {
         RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
         RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
         SHOW_SOURCE_IMAGES: process.env.SHOW_SOURCE_IMAGES === "1",
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+        OPENAI_MODEL: process.env.OPENAI_MODEL,
         STORAGE_PROVIDER: process.env.STORAGE_PROVIDER,
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,

@@ -1,3 +1,9 @@
+import {
+  ParchaReadError,
+  isParchaReaderConfigured,
+  readParchaFile,
+} from "@/lib/parcha-openai";
+
 /**
  * Reading a Parcha upload.
  *
@@ -5,15 +11,23 @@
  * decide, per file, whether text can be produced at all — and if so, to
  * produce it for real rather than pretending to.
  *
- * There is no OCR provider behind this app. `OcrProvider` exists so that
- * changes when one is added: one class, one environment variable, and a
- * one-line change to `getOcrProvider`'s selection — nothing that calls it
- * has to change. Until then `getOcrProvider()` always returns a provider
- * that reports itself unconfigured, and `decideExtractionAction` below
- * routes every photograph and PDF to a human rather than calling it.
+ * `OcrProvider` is the seam this file was built around: one class, one
+ * environment variable, and a one-line change to `getOcrProvider`'s
+ * selection, with nothing that calls it having to change. That is now
+ * spent. `OpenAiOcrProvider` reads a photograph or a PDF for real through
+ * `src/lib/parcha-openai.ts`, and it is returned whenever
+ * `OPENAI_API_KEY` is set.
  *
- * CSV is different: reading it needs no OCR and no dependency, so it is a
- * genuine capability and is implemented for real in `extractCsvLines`.
+ * With that key unset the provider still reports itself unconfigured and
+ * `decideExtractionAction` still routes every photograph and PDF to a
+ * human — the behaviour this app shipped with, kept deliberately as the
+ * unconfigured state rather than replaced by an error. A deploy waiting
+ * on an OpenAI account is a deploy where uploads still work; they are
+ * just read by a person.
+ *
+ * CSV is different again: reading it needs no model and no dependency, so
+ * it has always been a genuine capability and is implemented for real in
+ * `extractCsvLines`.
  */
 
 /** Thrown by `NotConfiguredOcrProvider` if something ever calls it despite
@@ -49,17 +63,53 @@ class NotConfiguredOcrProvider implements OcrProvider {
 }
 
 /**
- * Selects the active OCR provider. Always the not-configured one today —
- * there is no `OCR_...` environment variable anywhere in this app, and
- * inventing one that is never set would be exactly the kind of simulated
- * capability this codebase refuses to ship. Adding a real provider means
- * adding its class here, reading its key through `src/lib/env.ts` (the
- * one file this slice does not own), and returning it here when
- * configured — nothing outside this module changes.
+ * Reads the file with a vision model.
+ *
+ * A thin adapter on purpose: the prompt, the response schema, the JSON
+ * validation and the rendering back to typed lines all live in
+ * `src/lib/parcha-openai.ts`, so this file keeps its one job — deciding
+ * *whether* a file can be read — and does not also become the place model
+ * behaviour is tuned.
+ *
+ * `configured` is read at construction rather than per call so that
+ * `decideExtractionAction` and the actual read cannot disagree within one
+ * request about whether a reader exists.
+ */
+class OpenAiOcrProvider implements OcrProvider {
+  readonly configured: boolean;
+
+  constructor() {
+    this.configured = isParchaReaderConfigured();
+  }
+
+  async extractText(input: { buffer: Buffer; contentType: string }): Promise<string> {
+    if (!this.configured) throw new OcrNotConfiguredError();
+    const reading = await readParchaFile({
+      buffer: input.buffer,
+      contentType: input.contentType,
+      filename: "parcha",
+    });
+    return reading.text;
+  }
+}
+
+/**
+ * Selects the active OCR provider.
+ *
+ * OpenAI when `OPENAI_API_KEY` is set, and the not-configured provider
+ * otherwise — never a stub that returns a plausible-looking list. The
+ * whole point of `configured` being on the interface is that "we cannot
+ * read this" is a routing decision made before any bytes move, not an
+ * error a customer discovers after uploading.
  */
 export function getOcrProvider(): OcrProvider {
-  return new NotConfiguredOcrProvider();
+  const openai = new OpenAiOcrProvider();
+  return openai.configured ? openai : new NotConfiguredOcrProvider();
 }
+
+/** Re-exported so callers that already depend on this module for file
+    routing do not need a second import to catch a read failure. */
+export { ParchaReadError };
 
 /** ---- File-type routing --------------------------------------------------- */
 

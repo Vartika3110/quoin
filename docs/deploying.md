@@ -308,6 +308,74 @@ exists for. The server issues a short-lived signed URL, the browser PUTs to
 it, and a confirm step re-reads the object to check its real size and
 content type against what was declared before the row is trusted.
 
+## Reading an uploaded parcha
+
+`/upload` takes a photograph, a scan or a PDF and reads the materials off
+it, putting them into the same textarea a typed list goes in. The customer
+edits what came back and presses "Price this list" — the pricing flow is
+unchanged and unaware of where the text came from.
+
+**The endpoint** is `POST /api/v1/parcha/extract`, with
+`POST /api/parse-parcha` as an alias onto the same handler — one
+implementation, two paths, one shared rate-limit budget, so calling both
+does not double anyone's allowance. The versioned path is the canonical
+one and the one the bundled browser code posts to; the alias exists for
+callers already pointed at it.
+
+**The key.** One variable, set in Vercel → Settings → Environment
+Variables for **Production**, **Preview** and (if you want the flow
+locally) **Development**:
+
+| | |
+| --- | --- |
+| `OPENAI_API_KEY` | a project-scoped key from platform.openai.com, with a spend limit |
+| `OPENAI_MODEL` | optional; leave unset for the default |
+
+Server-only, both of them. There is deliberately no `NEXT_PUBLIC_`
+equivalent and there must never be one: the browser posts the file to
+`POST /api/v1/parcha/extract` and this app makes the OpenAI call. A key in
+a `NEXT_PUBLIC_` variable is a key in the JavaScript bundle, which is a
+key anyone can read and spend.
+
+Unset, the app boots and `/upload` behaves exactly as it did before this
+existed: typing a list is priced end to end, and an attached file reports
+that automatic reading is not switched on and offers the expert path. No
+boot guard, same reasoning as Razorpay and Supabase above. CSV uploads are
+read locally by `extractCsvLines` and never touch OpenAI, so they keep
+working with no key at all.
+
+**The model.** `DEFAULT_PARCHA_MODEL` in `src/lib/parcha-openai.ts` is
+`gpt-5-mini` — vision-capable, cheap per page, and able to read a whole
+PDF rather than only its first page. `OPENAI_MODEL` overrides it. That
+variable exists because model names age faster than deploys do: if the
+account has no access to the default, the fix is a dashboard change, not a
+release. The failure looks like every upload returning "we could not read
+that file just now", with a server log line naming the reason and the
+model —
+
+    [parcha/extract] read failed { reason: 'upstream', model: 'gpt-5-mini', ... }
+
+— which is the one place that distinguishes "no model access" from
+"OpenAI is down". Nothing upstream is ever shown to the customer; those
+messages quote organisation ids and quota figures.
+
+**Why multipart here and signed direct upload there.** `/api/v1/uploads`
+proxies nothing because the file is being *kept*. This route keeps
+nothing — the bytes live for one request — so requiring an account and a
+provisioned bucket to read a photograph would put a sign-up in front of
+the feature. The cost is the platform's ~4.5MB body cap, which the browser
+handles by re-encoding photographs before sending
+(`src/lib/parcha-image.ts`); that same pass converts an iPhone's HEIC,
+which OpenAI does not accept, at the one point in the chain where a
+decoder for it exists.
+
+**Rate limiting** is per-instance and in-memory (12 reads per caller per
+ten minutes). It stops a runaway browser and an accidental retry storm; it
+does not stop a determined attacker, because a burst spread across
+instances gets a fresh budget per instance. The spend limit on the OpenAI
+key is the real backstop. Making the limiter exact means a table and a
+migration, which is the right change if this ever faces real abuse.
+
 ## Verifying a deploy
 
 `/api/v1/health` reports which modules can reach their dependencies, and
