@@ -156,6 +156,22 @@ export async function requireUser() {
 }
 
 /**
+ * Who is asking, when that is allowed to be nobody.
+ *
+ * `requireUser` is the right tool for anything behind a sign-in. This is
+ * for the endpoints Project Studio added, which are the first in this app
+ * that are genuinely public *and* personalised: the inspiration feed
+ * renders for a signed-out visitor, and renders with filled hearts for a
+ * signed-in one. Returning the id rather than the row on purpose — every
+ * such caller scopes a `where` clause with it and none of them needs a
+ * tier or a wallet, so there is no reason to spend a query on the account.
+ */
+export async function viewerId(): Promise<string | null> {
+  const session = await getSession();
+  return session?.userId ?? null;
+}
+
+/**
  * Loads the signed-in user and refuses anyone who is not staff.
  *
  * Read from the row for the same reason `requireUser` is: the session

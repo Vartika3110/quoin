@@ -66,6 +66,9 @@ model User {
   storedFiles        StoredFile[]
   parchaSubmissions  ParchaSubmission[]
   projects           Project[]
+  studioIdeas        StudioIdea[]
+  studioSaves        StudioSave[]
+  studioSpaces       StudioSpace[]
 
   @@map("users")
 }
@@ -1134,6 +1137,8 @@ enum StoredFileKind {
   PARCHA
   PROJECT_DOCUMENT
   PRODUCT_IMAGE
+  /// A photograph of a finished room, uploaded into Project Studio.
+  STUDIO_IDEA
   OTHER
 }
 
@@ -1186,6 +1191,7 @@ model StoredFile {
 
   parchaSubmissions ParchaSubmission[]
   projectDocuments  ProjectDocument[]
+  studioIdeas       StudioIdea[]
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
@@ -1407,11 +1413,14 @@ model Project {
   /// told apart from a real project when counting anything.
   isSample Boolean @default(false)
 
-  tasks      ProjectTask[]
-  materials  ProjectMaterial[]
-  milestones ProjectMilestone[]
-  documents  ProjectDocument[]
-  orders     ProjectOrder[]
+  tasks        ProjectTask[]
+  materials    ProjectMaterial[]
+  milestones   ProjectMilestone[]
+  documents    ProjectDocument[]
+  orders       ProjectOrder[]
+  /// The rooms of this build. SetNull on the other side: unlinking a room
+  /// from a project must never destroy the ideas collected in it.
+  studioSpaces StudioSpace[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1541,4 +1550,361 @@ model ProjectOrder {
   @@unique([projectId, orderId])
   @@index([orderId])
   @@map("project_orders")
+}
+
+/// ---------------------------------------------------------------------
+/// Project Studio.
+///
+/// The discovery half of Quoin: photographs of finished rooms, collected
+/// into Spaces, arranged on a moodboard, and — because this is a
+/// materials merchant and not a scrapbook — turned into a priced list of
+/// real SKUs.
+///
+/// Three things about the shape below are deliberate and are the reason
+/// it is not simply "a board with pins":
+///
+///  1. **`StudioSpace` is a room, not a folder.** It optionally points at
+///     a `Project`, so someone can save a kitchen they like months before
+///     they decide to build one, and attach it to the build when they do.
+///     Forcing a project first would mean the first Save asks for a
+///     budget, which is the wrong question at that moment.
+///  2. **Dimensions are stored on the idea.** A masonry grid has to know
+///     each tile's aspect ratio *before* the image loads or every card
+///     reflows as photographs arrive. `width`/`height` are read off the
+///     bytes at confirm time, not guessed in CSS.
+///  3. **Nothing here claims to have looked at a photograph.** `colors`,
+///     `materials` and `style` are what a person typed. The columns are
+///     shaped so an image-analysis pass can fill them later without a
+///     migration; until one exists, the UI says where they came from.
+/// ---------------------------------------------------------------------
+
+/// Who can see an idea, a space or a moodboard.
+///
+/// Two states, not three. "Unlisted" sounds useful and is how a private
+/// renovation budget ends up in a search index the day someone shares a
+/// link into a WhatsApp group that gets scraped.
+enum StudioVisibility {
+  /// The owner only. The default for anything a customer makes.
+  PRIVATE
+  /// Anyone, including signed-out visitors and crawlers.
+  PUBLIC
+}
+
+/// The rooms a Space can be. Deliberately the vocabulary of a home rather
+/// than of a catalogue: someone doing up a flat thinks "balcony", not
+/// "exterior waterproofing".
+enum StudioRoom {
+  LIVING_ROOM
+  KITCHEN
+  BEDROOM
+  BATHROOM
+  DINING
+  BALCONY
+  HOME_OFFICE
+  ENTRANCE
+  EXTERIOR
+  OTHER
+}
+
+/// One inspiration photograph.
+model StudioIdea {
+  id   String @id @default(cuid())
+  /// Stable, human-readable, and the public URL — `/studio/idea/{slug}`.
+  /// Generated from the title plus a short random suffix, so two people
+  /// uploading "Warm minimal kitchen" do not collide and neither one's
+  /// URL has to change.
+  slug String @unique
+
+  /// Null for the imagery Quoin ships with the app. Cascade: a customer
+  /// who deletes their account takes their uploads with them, which is
+  /// the answer they expect and the only one that is defensible.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Exactly one of these two is set, enforced in `createIdea` rather
+  /// than by a constraint Prisma cannot express.
+  ///
+  /// `fileId` is a customer's upload, living in the private bucket and
+  /// reachable only through `/studio/image/{id}`, which mints a signed
+  /// URL per request. `assetPath` is a path under `public/` — the
+  /// catalogue and category photography this repo already ships, so a
+  /// brand-new install has something to render instead of an empty grid.
+  fileId String?
+  file   StoredFile? @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  assetPath String?
+
+  title       String
+  description String @default("")
+
+  /// Read off the bytes with `sharp` at upload time. See the file-level
+  /// note above: the grid needs these before the image loads.
+  width  Int
+  height Int
+
+  /// A tiny inline data URI — the image at ~16px, blurred. Rendered as
+  /// the tile's ground so a slow connection sees the photograph's colour
+  /// arriving rather than a grey box. Null for older rows and for
+  /// bundled assets, which are small enough not to need one.
+  blurDataUrl String?
+
+  /// The room this is a photograph of. Null when the uploader did not
+  /// say, which is common and is not an error.
+  room StudioRoom?
+
+  /// Free text a person typed, not a fixed vocabulary: "japandi" is a
+  /// style this year and was not one three years ago, and the trade's
+  /// words for a finish are not ours to fix. Lower-cased on write so
+  /// "Modern" and "modern" are the same filter.
+  styles    String[] @default([])
+  materials String[] @default([])
+
+  /// `[{ "hex": "#d9c9b4", "name": "Warm beige" }]`.
+  ///
+  /// Json rather than a table because a palette is read and written whole,
+  /// never queried by one swatch, and because this is the column an image
+  /// analysis pass would fill — a shape it can write into without a
+  /// migration is worth more here than referential tidiness.
+  colors Json @default("[]")
+
+  visibility StudioVisibility @default(PRIVATE)
+
+  /// Denormalised, and the only denormalised count here. The feed orders
+  /// by it on every request; counting `StudioSave` rows per idea to sort
+  /// a page of forty is forty subqueries for a number nobody needs to be
+  /// exact.
+  saveCount Int @default(0)
+
+  saves      StudioSave[]
+  spaceItems StudioSpaceItem[]
+  /// Spaces using this as their cover. SetNull, not Cascade — deleting an
+  /// idea must not delete the room it was the picture of.
+  coverOf    StudioSpace[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// The feed: public, newest first.
+  @@index([visibility, createdAt])
+  /// The feed, ordered by popularity.
+  @@index([visibility, saveCount])
+  /// "Kitchens", filtered.
+  @@index([visibility, room, createdAt])
+  /// Someone's own uploads, including the private ones.
+  @@index([userId, createdAt])
+  @@map("studio_ideas")
+}
+
+/// One person saving one idea.
+///
+/// Separate from `StudioSpaceItem` on purpose. Saving is the cheap,
+/// one-tap act that has to work before any organising happens — "♡ My
+/// Inspiration" is a real destination, not a space someone must create
+/// first. Filing that save into a Space is a second, optional act, and
+/// unfiling it must not un-save it.
+model StudioSave {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  ideaId String
+  idea   StudioIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  /// Saving twice is idempotent, not a second row.
+  @@unique([userId, ideaId])
+  @@index([userId, createdAt])
+  @@map("studio_saves")
+}
+
+/// A room being worked on.
+model StudioSpace {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Public URL when shared — `/studio/space/{slug}`.
+  slug String     @unique
+  name String
+  room StudioRoom @default(OTHER)
+
+  description String @default("")
+  notes       String @default("")
+
+  /// Chosen, or the most recently added idea when nobody has chosen.
+  coverIdeaId String?
+  coverIdea   StudioIdea? @relation(fields: [coverIdeaId], references: [id], onDelete: SetNull)
+
+  /// The build this room belongs to, once there is one. Optional by
+  /// design — see the file-level note. SetNull so deleting a project
+  /// leaves the room and its ideas alone rather than destroying them.
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  /// Paise. What they intend to spend on this room. Committed spend is
+  /// derived from the items, never stored — the same rule `Project`
+  /// follows.
+  budgetPaise Int @default(0)
+
+  visibility StudioVisibility @default(PRIVATE)
+
+  items     StudioSpaceItem[]
+  moodboard Moodboard?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([projectId])
+  @@index([visibility, createdAt])
+  @@map("studio_spaces")
+}
+
+/// What a Space can hold.
+enum StudioItemKind {
+  /// A saved photograph.
+  IDEA
+  /// A row in the catalogue.
+  PRODUCT
+  /// A finish that is not a SKU — "warm beige paint", "natural oak".
+  MATERIAL
+  /// A swatch.
+  COLOR
+  /// A line of text.
+  NOTE
+}
+
+/// One thing inside a Space.
+///
+/// One table for five kinds rather than five tables, because the Space's
+/// tabs all read the same list filtered by `kind`, the moodboard places
+/// any of them on the same canvas, and the budget sums across them. Five
+/// tables would mean five queries and a union in application code to
+/// answer "what is in this room".
+///
+/// The nullable columns are the price of that: a `PRODUCT` row uses
+/// `productSlug` and leaves `hex` null, a `COLOR` row does the reverse.
+/// Which columns a kind requires is enforced in `src/lib/data/studio.ts`
+/// at the one place rows are created.
+model StudioSpaceItem {
+  id String @id @default(cuid())
+
+  spaceId String
+  space   StudioSpace @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  kind StudioItemKind
+
+  /// IDEA. Cascade: an idea that is gone is not an item any more.
+  ideaId String?
+  idea   StudioIdea? @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  /// PRODUCT. Plain strings, not a relation, for the reason `OrderLine`
+  /// and `ProjectMaterial` use none: a retired SKU must not delete
+  /// someone's plan or stop it being read. `title`, `brand` and
+  /// `pricePaise` are the snapshot taken when it was added, so the room
+  /// still shows what was chosen and what it cost that day.
+  productSlug String?
+  variantId   String?
+
+  /// MATERIAL, PRODUCT, NOTE — the label. COLOR — the colour's name.
+  title String @default("")
+  brand String @default("")
+
+  /// COLOR. `#rrggbb`, lower case.
+  hex String?
+
+  /// MATERIAL. Where it goes: "Flooring", "Walls", "Hardware". Free text,
+  /// because the parts of a room are the trade's vocabulary, not ours.
+  surface String @default("")
+
+  /// A plan, so a Float and a free-text unit, exactly like
+  /// `ProjectMaterial.qty` — "12.5 sq.ft." is not a quantity being
+  /// transacted and is snapped onto a variant's grid only if it is
+  /// ordered.
+  qty  Float  @default(1)
+  unit String @default("")
+
+  /// Paise, integer, like every amount in this schema.
+  unitPricePaise Int @default(0)
+
+  /// Manual ordering within a Space; ties break by creation.
+  position Int @default(0)
+
+  moodboardItems MoodboardItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([spaceId, kind, position])
+  @@index([ideaId])
+  @@map("studio_space_items")
+}
+
+/// The canvas for one Space.
+///
+/// One per Space rather than many, and a separate table rather than
+/// columns on `StudioSpace`, because the layout is written on every drag
+/// and the Space row is read on every page — keeping them apart means
+/// arranging a moodboard does not churn the row the whole feature reads.
+model Moodboard {
+  id String @id @default(cuid())
+
+  spaceId String      @unique
+  space   StudioSpace @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  title String @default("")
+
+  /// The canvas's own dimensions, in the same abstract units the items
+  /// are placed in. Stored so a board arranged on a desktop reads the
+  /// same on a phone: the canvas is scaled to fit, never reflowed.
+  canvasWidth  Int @default(1200)
+  canvasHeight Int @default(900)
+
+  items MoodboardItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("studio_moodboards")
+}
+
+/// One thing placed on a canvas.
+model MoodboardItem {
+  id String @id @default(cuid())
+
+  moodboardId String
+  moodboard   Moodboard @relation(fields: [moodboardId], references: [id], onDelete: Cascade)
+
+  /// What is being placed. Cascade: removing something from the Space
+  /// removes it from the board, which is what "delete" means to the
+  /// person who clicked it.
+  itemId String
+  item   StudioSpaceItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  /// Position and size on the canvas, in `Moodboard.canvasWidth` units.
+  /// Integers: a canvas measured in whole units cannot accumulate the
+  /// floating-point drift that turns a tidy grid into a crooked one after
+  /// fifty drags.
+  x      Int @default(0)
+  y      Int @default(0)
+  width  Int @default(300)
+  height Int @default(300)
+
+  /// Stacking order. Ties break by creation, so two items at the same z
+  /// still have a stable order rather than one that changes per query.
+  z Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One placement per item per board — dropping the same product on the
+  /// canvas twice is a mistake, not a feature.
+  @@unique([moodboardId, itemId])
+  /// The board is read whole, in stacking order, and never queried for
+  /// one item.
+  @@index([moodboardId, z])
+  @@map("studio_moodboard_items")
 }
