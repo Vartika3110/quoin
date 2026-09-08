@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { getSession } from "@/lib/auth/session";
+import { siteOrigin } from "@/lib/env";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,6 +20,11 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  /* Open Graph images and canonical links are written as paths on the
+     pages that set them; this is what turns those into absolute URLs.
+     Without it Next falls back to localhost, and a shared link previews a
+     picture only the author's machine can load. */
+  metadataBase: siteOrigin(),
   title: "Quoin — Materials, Interiors & Expert Services",
   description:
     "Construction materials, premium interiors and verified expert services, delivered to your project.",

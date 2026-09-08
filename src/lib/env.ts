@@ -133,6 +133,22 @@ const schema = z.object({
    */
   OPENAI_MODEL: z.string().optional(),
 
+  /**
+   * The site's own origin, for the absolute URLs metadata needs.
+   *
+   * Open Graph images and canonical links have to be absolute — a
+   * `metadataBase` of `http://localhost:3000`, which is what Next falls
+   * back to, means every shared Studio link previews a picture nobody
+   * else can load. Optional because there is a sensible fallback chain
+   * (see `siteOrigin`); set it explicitly on a custom domain, where
+   * `VERCEL_URL` names the deployment rather than the site.
+   */
+  SITE_URL: z.string().optional(),
+  /** Set by Vercel. The stable production domain, unlike `VERCEL_URL`,
+      which changes with every deployment. */
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
+  VERCEL_URL: z.string().optional(),
+
   STORAGE_PROVIDER: z.string().optional(),
   SUPABASE_URL: z.string().optional(),
   /**
@@ -176,6 +192,9 @@ function load(): Env {
         SHOW_SOURCE_IMAGES: process.env.SHOW_SOURCE_IMAGES === "1",
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         OPENAI_MODEL: process.env.OPENAI_MODEL,
+        SITE_URL: process.env.SITE_URL,
+        VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+        VERCEL_URL: process.env.VERCEL_URL,
         STORAGE_PROVIDER: process.env.STORAGE_PROVIDER,
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -226,3 +245,37 @@ function load(): Env {
 }
 
 export const env = load();
+
+/**
+ * Where this deployment lives, as an absolute origin.
+ *
+ * `metadataBase` needs one: Open Graph images and canonical links must be
+ * absolute, and Next's own fallback is `http://localhost:3000`, which
+ * would make every shared Studio link preview a picture only the author's
+ * machine can load.
+ *
+ * The chain, most specific first:
+ *
+ *  1. `SITE_URL`, set by hand. The only one that is right on a custom
+ *     domain, which is why it wins.
+ *  2. `VERCEL_PROJECT_PRODUCTION_URL` — Vercel's stable production
+ *     hostname. Correct for a project served on its `.vercel.app` domain.
+ *  3. `VERCEL_URL` — this *deployment's* hostname. Changes every deploy,
+ *     so it is a preview-only answer, and that is exactly what it is for:
+ *     a preview's OG images should point at the preview.
+ *  4. localhost, in development.
+ *
+ * Returns a `URL`, so a malformed value fails here rather than producing
+ * a subtly wrong tag on every page.
+ */
+export function siteOrigin(): URL {
+  const explicit = env.SITE_URL?.trim();
+  if (explicit) return new URL(explicit);
+
+  const vercel =
+    env.VERCEL_PROJECT_PRODUCTION_URL?.trim() || env.VERCEL_URL?.trim();
+  /* Vercel supplies a bare hostname, never a scheme. */
+  if (vercel) return new URL(`https://${vercel.replace(/^https?:\/\//, "")}`);
+
+  return new URL("http://localhost:3000");
+}
