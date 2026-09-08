@@ -26,6 +26,7 @@ const COLUMNS = [
   {
     title: "Build",
     links: [
+      { href: "/studio", label: "Project Studio" },
       { href: "/projects", label: "Project Hub" },
       { href: "/upload", label: "Upload Parcha" },
       { href: "/services", label: "Expert services" },

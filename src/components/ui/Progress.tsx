@@ -19,7 +19,10 @@ export function Progress({
   max?: number;
   /** Announced with the value. Required for anything a customer reads. */
   label: string;
-  tone?: "accent" | "success" | "deep" | "pro";
+  /** `danger` is for a bar that has passed the thing it is measured
+      against — an over-budget room. The other tones all mean "progress";
+      this one means "too far". */
+  tone?: "accent" | "success" | "danger" | "deep" | "pro";
   size?: "sm" | "md";
   className?: string;
 }) {
@@ -47,6 +50,7 @@ export function Progress({
           "h-full rounded-full transition-[width] duration-500 ease-out-quart",
           tone === "accent" && "bg-accent",
           tone === "success" && "bg-success",
+          tone === "danger" && "bg-danger",
           tone === "deep" && "bg-deep",
           tone === "pro" && "bg-pro",
         )}

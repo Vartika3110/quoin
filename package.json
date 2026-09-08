@@ -14,6 +14,7 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed-studio": "tsx prisma/seed-studio.ts",
     "db:studio": "prisma studio",
     "db:import": "tsx prisma/import-catalogue.ts",
     "images:generate": "tsx scripts/generate-product-images.ts",

@@ -43,6 +43,7 @@ import type { Category } from "@/lib/types/catalog";
 /** The primary sections, in the order the brief fixes them. */
 const NAV = [
   { href: "/categories", label: "Categories", hasMenu: true },
+  { href: "/studio", label: "Studio", hasMenu: false },
   { href: "/projects", label: "Projects", hasMenu: false },
   { href: "/services", label: "Services", hasMenu: false },
   { href: "/deals", label: "Deals", hasMenu: false },
