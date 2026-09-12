@@ -57,7 +57,7 @@ export function ServiceCard({
         <Icon className="size-5.5" />
       </span>
 
-      <h3 className="mt-4 text-title-sm font-semibold text-ink">{service.name}</h3>
+      <h3 className="font-display mt-4 text-title-sm font-semibold text-ink">{service.name}</h3>
       <p className="mt-1.5 text-body-sm leading-relaxed text-muted">
         {service.summary}
       </p>

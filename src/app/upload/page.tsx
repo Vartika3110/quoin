@@ -41,7 +41,7 @@ export default function UploadPage() {
 
         <header className="px-5 lg:px-0">
           <Eyebrow>Upload Parcha</Eyebrow>
-          <h1 className="mt-3 max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
+          <h1 className="font-display mt-3 max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
             Upload your parcha. We&rsquo;ll organise the rest.
           </h1>
           <p className="mt-3 max-w-xl text-body-lg leading-relaxed text-muted">

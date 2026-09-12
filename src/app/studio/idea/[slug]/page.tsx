@@ -90,7 +90,7 @@ export default async function IdeaPage({ params }: Props) {
 
         {related.length > 0 ? (
           <section className="mt-12">
-            <h2 className="mb-4 text-title-sm font-semibold text-ink">
+            <h2 className="font-display mb-4 text-title-sm font-semibold text-ink">
               More like this
             </h2>
             <IdeaMasonry ideas={related} label="Related ideas" sizes={SIZES} />

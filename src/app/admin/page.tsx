@@ -95,7 +95,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       <Card padding="lg" className="mt-6">
-        <h2 className="text-title-sm font-semibold text-ink">Payments today</h2>
+        <h2 className="font-display text-title-sm font-semibold text-ink">Payments today</h2>
         <p className="mt-1 text-body-sm text-muted">
           Every attempt to pay, by gateway status — not orders, so a checkout
           retried twice counts twice.

@@ -30,10 +30,12 @@ export function ConsultHero() {
           Talk to an expert
         </span>
 
-        <h1 className="mt-3 font-display text-3xl leading-[1.1] text-deep lg:text-4xl">
-          Ask someone who has
-          <br />
-          built it before.
+        {/* No hard break. One was here, tuned to where the old typeface
+            happened to wrap, and a wider face turned it into three lines
+            with a stranded word. `text-balance` asks the browser to even
+            the lines out instead, which survives a change of font. */}
+        <h1 className="mt-3 max-w-sm text-balance font-display text-headline leading-[1.1] text-deep lg:text-display-sm">
+          Ask someone who has built it before.
         </h1>
 
         <p className="mt-3 max-w-md text-sm leading-relaxed text-deep-soft">

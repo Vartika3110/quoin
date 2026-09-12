@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/storefront/nav/SiteFooter";
 import { MobileTabBar } from "@/components/storefront/nav/MobileTabBar";
 import { RouteTransition } from "@/components/storefront/RouteTransition";
 import { CartBar } from "@/components/storefront/nav/CartBar";
+import { ConsultBubble } from "@/components/storefront/nav/ConsultBubble";
 import { getCategories } from "@/lib/data/catalog";
 import {
   AREA_COOKIE,
@@ -26,13 +27,24 @@ import {
  * that should touch the edges: the page then owns its own gutters. Every
  * other page gets the standard `px-5 lg:px-0` from the section
  * primitives, and the shell supplies the outer padding.
+ *
+ * `headerSlot` is the one hole in the chrome a page can fill — see below.
  */
 export async function AppShell({
   children,
   fullBleed = false,
+  headerSlot,
 }: {
   children: React.ReactNode;
   fullBleed?: boolean;
+  /**
+   * Extra chrome for the phone header, between the area row and the
+   * search field. Only the home page uses it, for the four entry cards
+   * that sit above search in the design — the alternative is the header
+   * inspecting the pathname, which puts one route's layout inside every
+   * route's chrome.
+   */
+  headerSlot?: React.ReactNode;
 }) {
   /* Read on the server so the first paint already shows the right area
      and the right category menu. Doing either on the client renders a
@@ -50,7 +62,12 @@ export async function AppShell({
   return (
     <SearchProvider suggestedTerms={suggestedTerms}>
       <div className="flex min-h-screen flex-col bg-bg">
-        <SiteHeader areas={areas} chosen={chosen} categories={categories} />
+        <SiteHeader
+          areas={areas}
+          chosen={chosen}
+          categories={categories}
+          mobileSlot={headerSlot}
+        />
 
         {/* Clearance for the fixed tab bar is on the footer, not here —
             the footer is the last thing on the page, so padding `main`
@@ -67,9 +84,11 @@ export async function AppShell({
 
         <SiteFooter />
 
-        {/* Phone-only chrome, both fixed. The bar sits above the tab bar
-            and hides itself on the screens that carry their own total. */}
+        {/* Phone-only chrome, all three fixed. The bar sits above the tab
+            bar and hides itself on the screens that carry their own
+            total; the bubble sits above whichever of them is on screen. */}
         <CartBar />
+        <ConsultBubble />
         <MobileTabBar />
       </div>
     </SearchProvider>

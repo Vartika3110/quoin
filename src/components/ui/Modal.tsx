@@ -124,7 +124,7 @@ export function Modal({
       >
         <header className="flex items-start justify-between gap-4 px-5 pt-5">
           <div className="min-w-0">
-            <h2 className="text-title-sm font-semibold text-ink">{title}</h2>
+            <h2 className="font-display text-title-sm font-semibold text-ink">{title}</h2>
             {description && (
               <p id="modal-desc" className="mt-1 text-body-sm leading-relaxed text-muted">
                 {description}

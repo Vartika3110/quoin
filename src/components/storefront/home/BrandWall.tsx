@@ -23,12 +23,14 @@ import { brandKey, getBrandLinkTargets } from "@/lib/data/catalog";
  * length changes: a grid leaves a lone logo stranded at the start of a
  * last row, while a centred wrap keeps a short final row balanced at any
  * count.
+ *
+ * On a phone the wall becomes a rail of pills — see `BrandRail` below.
  */
 export async function BrandWall() {
   const targets = await getBrandLinkTargets();
 
   return (
-    <div className="rounded-card border border-photo-edge bg-photo px-4 py-6 lg:rounded-2xl lg:px-8 lg:py-8">
+    <div className="hidden rounded-card border border-photo-edge bg-photo px-4 py-6 lg:block lg:rounded-2xl lg:px-8 lg:py-8">
       {/* Seven across from `lg` puts the fourteen marks in two even rows. */}
       <div className="flex flex-wrap justify-center gap-3 lg:gap-4">
         {BRAND_WALL.map(({ slug, name, logo }) => {
@@ -84,6 +86,61 @@ export async function BrandWall() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * The same roster, as a swipeable rail, on a phone.
+ *
+ * Fourteen marks wrapped into a wall is four rows of tiny artwork at
+ * 375px — the whole point of the wall, that it reads as one texture, is
+ * lost when each row holds four specks. A rail gives every mark a pill
+ * wide enough to read, and swiping past ten to reach Mars costs nothing
+ * because nobody is looking for a particular one; they are checking that
+ * the names they know are here.
+ *
+ * Each pill is the mark on the same near-white ground the wall uses,
+ * for the same reason: half the roster is dark ink and would vanish
+ * against the dark palette's card.
+ */
+export async function BrandRail() {
+  const targets = await getBrandLinkTargets();
+
+  return (
+    <div className="rail gap-2.5 px-5 scroll-pl-5 lg:hidden">
+      {BRAND_WALL.map(({ slug, name, logo }) => {
+        const target = targets.get(brandKey(name)) ?? targets.get(slug);
+
+        const pill =
+          "grid h-14 w-32 place-items-center rounded-full border border-photo-edge bg-photo px-4";
+
+        const plate = (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logo}
+            alt={name}
+            loading="lazy"
+            decoding="async"
+            className="h-7 w-full object-contain"
+          />
+        );
+
+        return target ? (
+          <Link
+            key={slug}
+            href={`/products?brand=${target}`}
+            aria-label={name}
+            className={`${pill} transition-transform duration-200 ease-out-quart active:scale-[0.97]`}
+          >
+            {plate}
+          </Link>
+        ) : (
+          <div key={slug} className={pill}>
+            {plate}
+          </div>
+        );
+      })}
     </div>
   );
 }

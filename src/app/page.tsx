@@ -3,13 +3,18 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Hero } from "@/components/storefront/home/Hero";
+import { BannerCarousel } from "@/components/storefront/home/BannerCarousel";
+import { EntryCards } from "@/components/storefront/home/EntryCards";
+import { CatalogTabs } from "@/components/storefront/home/CatalogTabs";
 import { QuickActions } from "@/components/storefront/home/QuickActions";
 import { Rooms } from "@/components/storefront/home/Rooms";
 import { CategoryRail } from "@/components/storefront/home/CategoryRail";
+import { CategoryCards } from "@/components/storefront/home/CategoryCards";
+import { ProAndCart } from "@/components/storefront/home/ProAndCart";
 import { RecentlyViewed } from "@/components/storefront/home/RecentlyViewed";
-import { TrustBar } from "@/components/storefront/home/TrustBar";
+import { TrustBar, TrustStrip } from "@/components/storefront/home/TrustBar";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
-import { BrandWall } from "@/components/storefront/home/BrandWall";
+import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
 import {
   FinalCta,
   ParchaPromo,
@@ -40,13 +45,22 @@ import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
 export const dynamic = "force-dynamic";
 
 /**
- * The home page's order is an argument about what Quoin is.
+ * The home page's order is an argument about what Quoin is, and it is a
+ * different argument on a phone than on a desktop.
  *
- * Hero first, and alone: the previous version put four entry tiles and a
- * six-icon rail above the headline, so the only sentence that says what
- * this company does arrived third. Then the four things people came to do,
- * then the catalogue, then the two products — Project Hub and Pro — that
- * make it more than a shop, then the proof.
+ * **On a desktop** the hero comes first and alone — one composition, and
+ * the only sentence on the site that says what this company does.
+ *
+ * **On a phone** it follows the reference design, which is a launcher
+ * rather than a landing page: four entry cards and a six-icon rail put
+ * every part of the business one tap away above the fold, and the banner
+ * carousel does the selling underneath them. That ordering assumes a
+ * returning customer with a job to do, which is who opens a materials app
+ * on a site, and it is why the entry cards are handed to the header
+ * rather than rendered here — in the design they sit above search.
+ *
+ * From there both widths agree: proof, the brands, the catalogue, then
+ * the two products — Project Hub and Pro — that make it more than a shop.
  */
 export default async function HomePage() {
   const [categories, picks, priceFloors, services, deals, chosen] =
@@ -67,38 +81,76 @@ export default async function HomePage() {
   const featured = categories.slice(0, 6);
 
   return (
-    <AppShell fullBleed>
+    <AppShell fullBleed headerSlot={<EntryCards />}>
       <div className="mx-auto w-full max-w-shell lg:px-6">
         <PageSections>
-          <Hero chosen={chosen} />
+          {/* Two first screens, one at a time. The rail and the carousel
+              are the reference design's, sized for a thumb; the editorial
+              hero is what a 1440px page wants and would be a full screen
+              of type before the first product on a phone.
 
-          <QuickActions />
+              The rail and the banner are one block rather than two page
+              sections — the rail reads as a caption on the banner, and
+              `PageSections`' 40px between them would say they are two
+              unrelated things. */}
+          <div className="space-y-5 lg:hidden">
+            <CatalogTabs />
+            <BannerCarousel />
+          </div>
 
-          {/* Two genuinely different treatments of the same data.
+          <div className="hidden lg:block">
+            <Hero chosen={chosen} />
+          </div>
 
-              On a phone: every department as a 76px thumbnail in a
-              two-row rail, reachable with a thumb and costing almost no
-              vertical space. Six tall photographic tiles there would be
-              three screens of scrolling before the first product.
+          {/* Reassurance immediately under the banner, where the design
+              puts it, then the brands. Both were at the foot of the page
+              and were doing nothing for anyone who never got there. */}
+          <TrustStrip />
 
-              From `lg`: six tiles where the photograph does the selling
-              and there is room for it to. */}
-          <section className="lg:hidden">
+          <section>
             <SectionHead
-              title="Shop by category"
-              subtitle={`All ${categories.length} departments.`}
-              href="/categories"
+              title="Top Brands"
+              subtitle="Bought direct, priced from the manufacturer's own list."
+              href="/products"
+              linkLabel="View all"
             />
-            <CategoryRail categories={categories} />
+            <BrandRail />
+            <Gutter>
+              <BrandWall />
+            </Gutter>
           </section>
 
-          <section className="hidden lg:block">
+          {/* The four *verbs*, below the fold. The entry cards above are
+              the four places; this is the four things to do in them, and
+              on a phone it is the row you scroll back to rather than the
+              one you land on. */}
+          <QuickActions />
+
+          {/* Shop by Category and Shop by Department are the same data
+              asked two different questions, which is why they are two
+              sections and not one with a "see all".
+
+              **Category** is four cards with a price floor on them —
+              "can I start here for ₹380". **Department** is all fourteen
+              as thumbnails — "do you stock this at all". The first is a
+              decision, the second is an index, and a reader uses exactly
+              one of them.
+
+              From `lg` the first becomes six photographic tiles, where
+              there is room for the picture to do the selling, and the
+              second is dropped: the header's own category menu already
+              lists all fourteen at that width. */}
+          <section>
             <SectionHead
-              title="Shop by category"
-              subtitle="Fourteen departments, priced from manufacturer lists."
+              title="Shop by Category"
+              subtitle="Priced from the manufacturer's own list."
               href="/categories"
             />
-            <div className="grid grid-cols-3 gap-3">
+            <CategoryCards
+              categories={categories.slice(0, 4)}
+              priceFloors={priceFloors}
+            />
+            <div className="hidden grid-cols-3 gap-3 lg:grid">
               {featured.map((category, i) => {
                 const floor = priceFloors.get(category.id);
                 return (
@@ -122,19 +174,10 @@ export default async function HomePage() {
 
           <section>
             <SectionHead
-              title="Plan by room"
-              subtitle="Start from the space you are working on."
-              href="/categories"
-              linkLabel="All departments"
-            />
-            <Rooms />
-          </section>
-
-          <section>
-            <SectionHead
-              title="Project essentials"
+              title="Project Essentials"
               subtitle="Photographed lines from across the catalogue."
               href="/products"
+              linkLabel="View all"
             />
             {/* A rail on a phone, a grid from `lg`.
 
@@ -149,10 +192,36 @@ export default async function HomePage() {
             </div>
           </section>
 
+          {/* The index. Phone only — see the note on Shop by Category. */}
+          <section className="lg:hidden">
+            <SectionHead
+              title="Shop by Department"
+              subtitle={`All ${categories.length} departments.`}
+              href="/categories"
+              linkLabel="View all"
+            />
+            <CategoryRail categories={categories} />
+          </section>
+
+          {/* Pro and the basket share a row on a phone; from `lg` the Pro
+              pitch gets the full-width band below and the basket is
+              permanently in the header, so neither belongs here. */}
+          <ProAndCart />
+
+          <section>
+            <SectionHead
+              title="Plan by Room"
+              subtitle="Start from the space you are working on."
+              href="/categories"
+              linkLabel="All departments"
+            />
+            <Rooms />
+          </section>
+
           {deals.items.length > 0 && (
             <section>
               <SectionHead
-                title="Under list price"
+                title="Under List Price"
                 subtitle="Everything currently selling below its manufacturer list."
                 href="/deals"
               />
@@ -173,7 +242,7 @@ export default async function HomePage() {
 
           <section>
             <SectionHead
-              title="Expert services"
+              title="Expert Services"
               subtitle="Verified professionals, booked against a real slot."
               href="/services"
             />
@@ -184,21 +253,11 @@ export default async function HomePage() {
             <ParchaPromo />
           </Gutter>
 
-          <Gutter>
+          {/* Phone gets the compact pair above instead — two Pro pitches
+              on one page is one of them being ignored. */}
+          <Gutter className="hidden lg:block">
             <ProPromo />
           </Gutter>
-
-          <section>
-            <SectionHead
-              title="Brands we stock"
-              subtitle="Bought direct, priced from the manufacturer's own list."
-              href="/products"
-              linkLabel="Shop all"
-            />
-            <Gutter>
-              <BrandWall />
-            </Gutter>
-          </section>
 
           <Gutter>
             <TrustBar />

@@ -70,7 +70,11 @@ export function Hero({ chosen }: { chosen: AreaChoice | null }) {
         <div className="max-w-xl">
           <Eyebrow>Build better. Buy smarter.</Eyebrow>
 
-          <h1 className="mt-3 text-title-lg font-semibold text-ink sm:mt-4 sm:text-display-sm lg:text-display">
+          {/* The display face, for the same reason every section heading
+              below it now carries one: the largest type on the page
+              setting in the body sans while everything under it is
+              Fraunces reads as two designs stacked. */}
+          <h1 className="mt-3 font-display text-title-lg font-semibold text-ink sm:mt-4 sm:text-display-sm lg:text-display">
             Everything you need to build, renovate and reimagine your space.
           </h1>
 

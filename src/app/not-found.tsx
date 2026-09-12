@@ -26,7 +26,7 @@ export default function NotFound() {
       <main className="flex flex-1 items-center px-5 py-16 lg:px-6">
         <div className="mx-auto max-w-md text-center">
           <p className="nums text-display font-semibold text-accent">404</p>
-          <h1 className="mt-4 text-headline font-semibold text-ink">
+          <h1 className="font-display mt-4 text-headline font-semibold text-ink">
             That page is not here.
           </h1>
           <p className="mt-3 text-body leading-relaxed text-muted">

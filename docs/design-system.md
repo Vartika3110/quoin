@@ -18,19 +18,28 @@ looking like a template.
 
 | Family | Token prefix | What it means |
 | --- | --- | --- |
-| Terracotta | `accent` | "Act on this." Prices, primary CTAs, active states |
-| Espresso | `deep` | Dark bands, scrims, secondary CTAs |
+| Orange | `accent` `#e1600c` | "Act on this." Prices, primary CTAs, active states |
+| Ink | `deep` `#2a160a` | Dark bands, scrims, secondary CTAs |
 | Gold | `pro` | Quoin Pro, and nothing else, ever |
+
+The ground is `#f7f1e6` and the ink `#2a160a`; both come from the product
+design prototype the storefront is built against, which is the reference
+for anything this document does not settle.
 
 Plus a neutral ramp (`bg`, `sunk`, `surface`, `raised`, `hover`, `active`),
 four type steps (`ink`, `muted`, `faint`, and the `on-*` pairs), four line
 weights (`line-hair` → `line-strong`) and the status colours.
 
-Two tokens exist for reasons that are not obvious:
+Three tokens exist for reasons that are not obvious:
 
 - **`photo` / `photo-edge`.** Catalogue imagery is cut out on white, so the
   plate behind a product photograph is white in *both* palettes. Painting
   it with `surface` puts a glowing white rectangle inside a dark card.
+- **`photo-cta` / `on-photo-cta`.** The plate a call to action sits on when
+  it is over a photograph. Not `deep`, because `deep` is defined against
+  the *page* ground and therefore goes lighter after dark; this is defined
+  against a photograph, which is dark in both palettes — so it is the ink
+  on paper and the accent after dark.
 - **`tile-1` … `tile-4`.** Flat tints, not gradients. Four gradients on the
   first screen reads as decoration.
 
@@ -41,6 +50,18 @@ one. A colour defined only inside the dark block is a colour that does not
 exist in light mode.
 
 ### Type
+
+Three families, each with exactly one job:
+
+| Family | Token | Where it is allowed |
+| --- | --- | --- |
+| Plus Jakarta Sans | `--font-sans` | Everything a customer reads. The default. |
+| Fraunces | `--font-display` | The wordmark, page and section headings, banner headlines. Never body copy — it is superb at 28px and mud at 13px. |
+| Caveat | `--font-script` | One handwritten line on a banner. Nothing else, ever. |
+
+All three are variable fonts loaded without a weight list, so each family
+is one file. `.font-display` and `.font-script` are the only way to reach
+the other two — no component sets a `font-family` of its own.
 
 The scale is **semantic, not numeric**: `text-title` survives a decision to
 make titles 22px, `text-xl` does not.
@@ -60,8 +81,10 @@ budgets, SKUs.
 
 ### Radius, elevation, motion
 
-- **Radius.** `--radius-card` (12px) is the workhorse. `full` is for
-  avatars, counters and genuinely round controls.
+- **Radius.** `--radius-card` (16px) is the workhorse and `--radius-2xl`
+  (24px) carries the big photographic blocks. `full` is for avatars,
+  counters, chips and genuinely round controls, of which there are many —
+  the search field, the header controls and every banner CTA are pills.
 - **Elevation.** Five steps, each with a job: `xs` chips, `sm` resting
   cards, `md` card hover, `lg` popovers, `xl` drawers and modals. These
   override Tailwind's defaults on purpose — two shadow systems in one

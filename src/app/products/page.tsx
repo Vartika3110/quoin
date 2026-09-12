@@ -3,7 +3,11 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { Browse } from "@/components/storefront/browse/Browse";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { SectionHead } from "@/components/ui/Section";
-import { getProductFacets, listProducts } from "@/lib/data/catalog";
+import {
+  getCategories,
+  getProductFacets,
+  listProducts,
+} from "@/lib/data/catalog";
 import { readBrowseParams, toProductQuery } from "@/lib/browse-request";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +29,10 @@ export default async function ProductsPage({
   /* The listing and its facets in one round trip rather than two
      sequential ones — the facets are four aggregate queries and would
      otherwise wait for the page of products to come back first. */
-  const [result, facets] = await Promise.all([
+  const [result, facets, departments] = await Promise.all([
     listProducts(query),
     getProductFacets(query),
+    getCategories(),
   ]);
 
   const searching = Boolean(params.q);
@@ -55,7 +60,15 @@ export default async function ProductsPage({
           }
         />
 
-        <Browse page={result} facets={facets} basePath="/products" params={params} />
+        <Browse
+          page={result}
+          facets={facets}
+          basePath="/products"
+          params={params}
+          /* Not while searching: a department chip would silently drop
+             the query it took someone three words to type. */
+          departments={searching ? undefined : departments}
+        />
       </div>
     </AppShell>
   );

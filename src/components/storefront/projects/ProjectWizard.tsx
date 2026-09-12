@@ -409,7 +409,7 @@ function Question({
 }) {
   return (
     <section>
-      <h2 className="text-headline font-semibold text-ink">{title}</h2>
+      <h2 className="font-display text-headline font-semibold text-ink">{title}</h2>
       <p className="mt-2 text-body leading-relaxed text-muted">{detail}</p>
       <div className="mt-6">{children}</div>
     </section>

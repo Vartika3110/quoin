@@ -160,7 +160,7 @@ export default async function CustomerDetailPage({
       </div>
 
       <section className="mt-6">
-        <h2 className="text-title-sm font-semibold text-ink">Addresses</h2>
+        <h2 className="font-display text-title-sm font-semibold text-ink">Addresses</h2>
         {customer.addresses.length === 0 ? (
           <p className="mt-2 text-body-sm text-muted">No addresses saved.</p>
         ) : (
@@ -193,7 +193,7 @@ export default async function CustomerDetailPage({
       </section>
 
       <section className="mt-6">
-        <h2 className="text-title-sm font-semibold text-ink">Orders</h2>
+        <h2 className="font-display text-title-sm font-semibold text-ink">Orders</h2>
         {orders.length === 0 ? (
           <EmptyState
             icon={<Package className="size-6" />}

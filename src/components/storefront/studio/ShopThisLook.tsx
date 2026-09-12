@@ -32,7 +32,7 @@ export function ShopThisLook({ look }: { look: ShopTheLook }) {
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <h2 className="text-title-sm font-semibold text-ink">Shop this look</h2>
+        <h2 className="font-display text-title-sm font-semibold text-ink">Shop this look</h2>
         <p className="mt-1 text-body-sm text-muted">
           Matched from the materials on this idea, against the Quoin catalogue.
         </p>

@@ -1,37 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
 import { ThemeToggle } from "@/components/storefront/ThemeToggle";
 import { CartDrawer } from "@/components/storefront/nav/CartDrawer";
 import { useSearch } from "@/components/storefront/nav/SearchContext";
+import { VoiceSearch } from "@/components/storefront/nav/VoiceSearch";
 import { useScrolled } from "@/components/storefront/nav/useScrolled";
 import { Counter } from "@/components/ui/Badge";
 import { cn } from "@/components/ui/cn";
 import {
+  Camera,
   Cart,
   Chevron,
   ChevronDown,
   Clock,
+  Headset,
   Heart,
   Search,
   User,
+  Wallet,
 } from "@/components/icons";
 import { useCart } from "@/lib/store/cart";
 import { useWishlist } from "@/lib/store/wishlist";
+import { formatPrice } from "@/lib/types/catalog";
 import type { AreaChoice } from "@/lib/data/service-areas";
 import type { Category } from "@/lib/types/catalog";
 
 /**
  * The storefront's chrome.
  *
- * Two genuinely different headers, not one stretched. Under `lg` the
- * wordmark, the area and the cart sit on one row with search beneath it;
- * from `lg` up it is a single bar with the primary sections inline. Both
- * are always in the DOM and swapped with CSS, so the server renders one
- * tree and nothing flashes at hydration.
+ * Two genuinely different headers, not one stretched. Under `lg` the area
+ * and the account controls sit on one row with search, and whatever the
+ * page hands to `mobileSlot`, beneath them; from `lg` up it is a single
+ * bar with the wordmark and the primary sections inline. Both are always
+ * in the DOM and swapped with CSS, so the server renders one tree and
+ * nothing flashes at hydration.
  *
  * The bar compacts on scroll: at the top of the page it is transparent
  * against the page ground with no border, and once there is content
@@ -57,10 +63,22 @@ export function SiteHeader({
   areas,
   chosen,
   categories,
+  mobileSlot,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
   categories: Category[];
+  /**
+   * Rendered on a phone between the area row and the search row, and
+   * collapsed along with search on scroll.
+   *
+   * The home page's four entry cards belong there in the reference
+   * design, and there is no honest way to put them there from the page
+   * body — they sit *above* the search field, which is chrome. Passing
+   * them in beats the alternative, which is the header sniffing the
+   * pathname and reaching for a component only one route owns.
+   */
+  mobileSlot?: ReactNode;
 }) {
   const scrolled = useScrolled();
   const [cartOpen, setCartOpen] = useState(false);
@@ -79,6 +97,7 @@ export function SiteHeader({
           areas={areas}
           chosen={chosen}
           scrolled={scrolled}
+          slot={mobileSlot}
           onOpenCart={() => setCartOpen(true)}
         />
         <DesktopBar
@@ -283,56 +302,67 @@ function MobileBar({
   areas,
   chosen,
   scrolled,
+  slot,
   onOpenCart,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
   scrolled: boolean;
+  slot?: ReactNode;
   onOpenCart: () => void;
 }) {
   const { open } = useSearch();
 
   return (
     <div className="px-5 lg:hidden">
+      {/* The area, then the three controls that are about *you* rather
+          than about the catalogue: the palette, the basket total and the
+          account. No wordmark — the reference design gives the whole top
+          line to the address, which is the one piece of state on this
+          screen a customer has to be able to check and correct, and Home
+          already has a tab of its own at the bottom. */}
       <div
         className={cn(
-          "flex items-center gap-2 transition-[padding] duration-200 ease-out-quart",
-          scrolled ? "py-2.5" : "pb-1 pt-3",
+          "flex items-center gap-1.5 transition-[padding] duration-200 ease-out-quart",
+          scrolled ? "py-2" : "pb-1 pt-3",
         )}
       >
+        <LocationPicker
+          areas={areas}
+          selected={chosen}
+          compact
+          className="min-w-0 flex-1"
+        />
+
+        {/* Once the search row has collapsed away, search has to still be
+            reachable — so it comes back as an icon in the top row rather
+            than disappearing until you scroll up. */}
+        {scrolled && (
+          <button
+            type="button"
+            onClick={open}
+            aria-label="Search Quoin"
+            className="anim-fade grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
+          >
+            <Search className="size-4.5" />
+          </button>
+        )}
+
+        <ThemeToggle />
+        <CartTotalPill onClick={onOpenCart} />
+
         <Link
-          href="/"
-          className="font-display text-title-lg tracking-[0.18em] text-ink"
+          href="/account"
+          aria-label="Account"
+          className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
         >
-          QUOIN
+          <User className="size-4.5" />
         </Link>
-
-        <div className="ml-auto flex min-w-0 items-center gap-1">
-          <div className="min-w-0 max-w-40">
-            <LocationPicker areas={areas} selected={chosen} />
-          </div>
-
-          {/* Once the search row has collapsed away, search has to still
-              be reachable — so it comes back as an icon in the top row
-              rather than disappearing until you scroll up. */}
-          {scrolled && (
-            <button
-              type="button"
-              onClick={open}
-              aria-label="Search Quoin"
-              className="anim-fade grid size-11 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:text-ink"
-            >
-              <Search className="size-5" />
-            </button>
-          )}
-
-          <CartButton onClick={onOpenCart} />
-        </div>
       </div>
 
-      {/* The search row collapses on scroll. `grid-rows` rather than
-          `height: auto` so the transition actually animates — a height
-          from `auto` does not. */}
+      {/* Everything below the area row collapses on scroll. `grid-rows`
+          rather than `height: auto` so the transition actually animates —
+          a height from `auto` does not. */}
       <div
         className={cn(
           "grid transition-[grid-template-rows,opacity] duration-200 ease-out-quart",
@@ -340,10 +370,134 @@ function MobileBar({
         )}
       >
         <div className="overflow-hidden">
-          <SearchTrigger className="pb-3 pt-2" />
+          {/* Negative margin because the slot's own content is a rail
+              that has to bleed through this container's gutter. */}
+          {slot && <div className="-mx-5 pt-2">{slot}</div>}
+
+          <div className="flex items-stretch gap-2 pb-3 pt-3">
+            <MobileSearchField className="min-w-0 flex-1" />
+            <ConsultCard />
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/**
+ * The phone's search field, with the two shortcuts beside it.
+ *
+ * Not `SearchTrigger`: that is a single button, and a button cannot
+ * contain the camera and microphone buttons — nesting interactive
+ * elements is invalid, and a screen reader reading "Search products,
+ * brands and services, Search by photo, Search by voice, button" is the
+ * result. So the field is a *row*: the button owns the part that opens
+ * the palette, and the two controls are its siblings inside the same
+ * bordered pill.
+ *
+ * The camera goes to Upload Parcha rather than to an image search Quoin
+ * does not have. It is the same gesture — photograph the thing, get
+ * prices — pointed at the feature that actually exists.
+ */
+function MobileSearchField({ className }: { className?: string }) {
+  const { open } = useSearch();
+  const router = useRouter();
+
+  return (
+    <div
+      className={cn(
+        "flex h-13 items-center rounded-full border border-line bg-surface pl-4 pr-1.5",
+        className,
+      )}
+    >
+      <button
+        type="button"
+        onClick={open}
+        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+      >
+        <Search className="size-4.5 shrink-0 text-muted" aria-hidden />
+        <span className="min-w-0 flex-1 truncate text-caption text-faint">
+          Search for &ldquo;Flooring&rdquo;
+        </span>
+      </button>
+
+      <Link
+        href="/upload"
+        aria-label="Search by photo — upload a parcha"
+        className="grid size-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-hover hover:text-ink"
+      >
+        <Camera className="size-4.5" />
+      </Link>
+
+      {/* Renders nothing where the Web Speech API is absent, so the
+          field closes up around it rather than showing a dead button. */}
+      <VoiceSearch
+        className="size-7 rounded-full"
+        onTranscript={(text) =>
+          router.push(`/products?q=${encodeURIComponent(text)}`)
+        }
+      />
+    </div>
+  );
+}
+
+/** Talk to an expert. A card rather than an icon, because "Consult" is a
+    service Quoin sells and not a help button. */
+function ConsultCard() {
+  return (
+    <Link
+      href="/consult"
+      /* A fixed width rather than shrink-to-fit: the search field beside
+         it is what has to keep a readable measure, and a card that sizes
+         itself to its own two words takes that decision away from it. */
+      className="flex h-13 w-[7.5rem] shrink-0 items-center gap-1.5 rounded-card border border-accent-edge bg-accent-wash px-2.5 transition-colors hover:bg-accent-wash-strong"
+    >
+      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-surface text-accent">
+        <Headset className="size-4" />
+      </span>
+      <span className="leading-tight">
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.07em] text-accent">
+          Consult
+        </span>
+        <span className="block whitespace-nowrap text-[9px] text-muted">
+          Talk to Experts
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+/**
+ * The basket, as its total.
+ *
+ * A count tells you how many lines you added; a total tells you whether
+ * you can afford the next one, which on a materials order is the question
+ * people actually have. It reads ₹0 when the basket is empty rather than
+ * hiding — an affordance that appears only once you have used it is one
+ * nobody discovers.
+ */
+function CartTotalPill({ onClick }: { onClick: () => void }) {
+  const { count, subtotalPaise, ready } = useCart();
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={
+        ready && count > 0
+          ? `Cart, ${count} items, ${formatPrice(subtotalPaise)}`
+          : "Cart, empty"
+      }
+      className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface pl-2.5 pr-3 text-muted transition-colors hover:text-ink"
+    >
+      <Wallet className="size-4.5" />
+      <span className="nums text-caption font-semibold text-ink">
+        {/* `ready` is false until the cart has been read out of storage.
+            Rendering the real total before then flashes ₹0 over a basket
+            that is not empty. */}
+        {ready ? formatPrice(subtotalPaise) : formatPrice(0)}
+      </span>
+    </button>
   );
 }
 

@@ -258,7 +258,7 @@ export function ProjectDashboard({ id }: { id: string }) {
             </Card>
 
             <Card padding="lg">
-              <h2 className="text-title-sm font-semibold text-ink">Next up</h2>
+              <h2 className="font-display text-title-sm font-semibold text-ink">Next up</h2>
               {project.tasks.filter((t) => t.status !== "done").length === 0 ? (
                 <p className="mt-3 text-body-sm text-muted">
                   Everything on the board is done.
@@ -287,7 +287,7 @@ export function ProjectDashboard({ id }: { id: string }) {
             </Card>
 
             <Card padding="lg" className="lg:col-span-2">
-              <h2 className="mb-4 text-title-sm font-semibold text-ink">Timeline</h2>
+              <h2 className="font-display mb-4 text-title-sm font-semibold text-ink">Timeline</h2>
               <Timeline tasks={project.tasks} onToggle={handleToggleTask} />
             </Card>
           </div>
@@ -308,7 +308,7 @@ export function ProjectDashboard({ id }: { id: string }) {
               </p>
             </Card>
             <Card padding="lg">
-              <h2 className="text-title-sm font-semibold text-ink">
+              <h2 className="font-display text-title-sm font-semibold text-ink">
                 Where it is going
               </h2>
               {project.materials.length === 0 ? (
@@ -423,7 +423,7 @@ function Header({ project }: { project: Project }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-headline font-semibold text-ink">{project.name}</h1>
+            <h1 className="font-display text-headline font-semibold text-ink">{project.name}</h1>
             {project.isSample && <Badge tone="info">Sample</Badge>}
           </div>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted">

@@ -153,7 +153,7 @@ export default async function ProductPage({
                 </Link>
               )}
 
-              <h1 className="mt-2 text-title-lg font-semibold leading-tight text-ink lg:text-headline">
+              <h1 className="font-display mt-2 text-title-lg font-semibold leading-tight text-ink lg:text-headline">
                 {product.title}
               </h1>
 
@@ -242,7 +242,7 @@ export default async function ProductPage({
           </div>
 
           <aside className="px-5 lg:px-0">
-            <h2 className="mb-3 text-title-sm font-semibold text-ink">
+            <h2 className="font-display mb-3 text-title-sm font-semibold text-ink">
               After you buy
             </h2>
             <ul className="space-y-3">

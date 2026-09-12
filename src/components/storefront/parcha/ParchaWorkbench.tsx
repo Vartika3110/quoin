@@ -425,7 +425,7 @@ export function ParchaWorkbench() {
       {/* ---------------------------------------------------------- input */}
       <Card padding="none" className="overflow-hidden">
         <div className="border-b border-line-hair px-5 py-4">
-          <h2 className="text-title-sm font-semibold text-ink">
+          <h2 className="font-display text-title-sm font-semibold text-ink">
             Type or paste your list
           </h2>
           <p className="mt-1 text-caption text-muted">
@@ -671,7 +671,7 @@ export function ParchaWorkbench() {
         <section>
           <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-title font-semibold text-ink">Priced list</h2>
+              <h2 className="font-display text-title font-semibold text-ink">Priced list</h2>
               <p className="mt-1 text-caption text-muted">
                 {matched.length} of {live.length} lines matched a catalogue
                 product.

@@ -278,7 +278,7 @@ function Summary({
 }) {
   return (
     <div>
-      <h2 className="text-title-sm font-semibold text-ink">Order summary</h2>
+      <h2 className="font-display text-title-sm font-semibold text-ink">Order summary</h2>
 
       <dl className="mt-4 space-y-2 text-body-sm">
         <div className="flex justify-between gap-3">

@@ -53,7 +53,7 @@ export function SettingsPanel({
   return (
     <div className="space-y-4">
       <Card padding="lg">
-        <h2 className="text-title-sm font-semibold text-ink">Your details</h2>
+        <h2 className="font-display text-title-sm font-semibold text-ink">Your details</h2>
 
         <div className="mt-4 space-y-4">
           <Field
@@ -86,7 +86,7 @@ export function SettingsPanel({
 
       <Card padding="lg" className="flex flex-wrap items-center gap-4">
         <div className="min-w-0 flex-1">
-          <h2 className="text-title-sm font-semibold text-ink">Appearance</h2>
+          <h2 className="font-display text-title-sm font-semibold text-ink">Appearance</h2>
           <p className="mt-1 text-caption text-muted">
             Light or dark. With neither chosen, Quoin follows your device.
           </p>
@@ -95,7 +95,7 @@ export function SettingsPanel({
       </Card>
 
       <Card padding="lg">
-        <h2 className="text-title-sm font-semibold text-ink">Session</h2>
+        <h2 className="font-display text-title-sm font-semibold text-ink">Session</h2>
         <p className="mt-1 text-caption leading-relaxed text-muted">
           Signing out clears the session on this device. Your cart, wishlist
           and projects stay in this browser.

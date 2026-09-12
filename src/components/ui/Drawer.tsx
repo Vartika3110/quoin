@@ -157,7 +157,7 @@ export function Drawer({
       >
         <header className="flex items-start justify-between gap-4 border-b border-line-soft px-5 py-4">
           <div className="min-w-0">
-            <h2 className="text-title-sm font-semibold text-ink">{title}</h2>
+            <h2 className="font-display text-title-sm font-semibold text-ink">{title}</h2>
             {description && (
               <p id="drawer-desc" className="mt-0.5 text-caption text-muted">
                 {description}

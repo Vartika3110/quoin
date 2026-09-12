@@ -46,7 +46,7 @@ export function ProjectHubPromo() {
       <div className="grid lg:grid-cols-2">
         <div className="order-2 p-6 lg:order-1 lg:p-10">
           <Eyebrow>Project Hub</Eyebrow>
-          <h2 className="mt-3 text-headline font-semibold text-ink lg:text-headline-lg">
+          <h2 className="font-display mt-3 text-headline font-semibold text-ink lg:text-headline-lg">
             A renovation is one project, not forty purchases.
           </h2>
           <p className="mt-4 max-w-md text-body leading-relaxed text-muted">
@@ -118,7 +118,7 @@ export function ProPromo() {
             Quoin Pro
           </span>
 
-          <h2 className="mt-4 text-headline font-semibold text-on-deep lg:text-headline-lg">
+          <h2 className="font-display mt-4 text-headline font-semibold text-on-deep lg:text-headline-lg">
             Built for people who buy for a living.
           </h2>
           <p className="mt-3 text-body leading-relaxed text-on-deep/70">
@@ -155,7 +155,7 @@ export function ProPromo() {
 export function FinalCta() {
   return (
     <section className="rounded-card border border-accent-edge bg-accent-wash px-6 py-10 text-center lg:rounded-2xl lg:py-14">
-      <h2 className="mx-auto max-w-lg text-headline font-semibold text-ink lg:text-headline-lg">
+      <h2 className="font-display mx-auto max-w-lg text-headline font-semibold text-ink lg:text-headline-lg">
         Start your project with Quoin.
       </h2>
       <p className="mx-auto mt-3 max-w-md text-body leading-relaxed text-muted">
@@ -185,7 +185,7 @@ export function ParchaPromo() {
           <Truck className="size-5" />
         </span>
         <div className="min-w-0">
-          <h2 className="text-title-sm font-semibold text-ink">
+          <h2 className="font-display text-title-sm font-semibold text-ink">
             Already have a materials list?
           </h2>
           <p className="mt-1 max-w-md text-body-sm leading-relaxed text-muted">

@@ -132,7 +132,7 @@ export function AdminShell({
         <main className="min-w-0 flex-1 pt-6 lg:pt-0">
           <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="text-title font-semibold text-ink">{title}</h1>
+              <h1 className="font-display text-title font-semibold text-ink">{title}</h1>
               {subtitle && (
                 <p className="mt-1 text-body-sm leading-relaxed text-muted">
                   {subtitle}

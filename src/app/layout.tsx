@@ -1,21 +1,44 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Cormorant_Garamond } from "next/font/google";
+import { Caveat, Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { getSession } from "@/lib/auth/session";
 import { siteOrigin } from "@/lib/env";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+/**
+ * Three families, and the reason each one is here.
+ *
+ * All three are variable fonts loaded without a `weight` list, so one
+ * file per family covers every weight the app uses. Asking for four
+ * static cuts instead would be four requests and four times the bytes
+ * for the same result.
+ */
+
+/** Everything a customer reads. */
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
   display: "swap",
 });
 
-/** Carries the wordmark and editorial headings only — never body copy. */
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
+/** The wordmark and editorial headings only — never body copy. */
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["300", "400", "600"],
+  /* Fraunces carries three axes beyond weight. `opsz` is the one that
+     earns its place: it is what lets a 40px headline and a 12px eyebrow
+     be the same typeface without the small one looking like a scaled-
+     down version of the large one. SOFT and WONK are left at their
+     defaults — the quirky ones are a costume, not a voice. */
+  axes: ["opsz"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+/** One handwritten line on a banner, and nothing else. */
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -59,8 +82,8 @@ export const viewport: Viewport = {
   /* Tints the browser chrome to match the ground the page is painted on.
      One value cannot serve both palettes, and #000000 served neither. */
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf7f3" },
-    { media: "(prefers-color-scheme: dark)", color: "#14100d" },
+    { media: "(prefers-color-scheme: light)", color: "#f7f1e6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0c0a08" },
   ],
   /* The page paints edge to edge and the fixed bars handle the insets
      themselves, which is the difference between an installed PWA that
@@ -85,7 +108,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${cormorant.variable} h-full`}
+      className={`${jakarta.variable} ${fraunces.variable} ${caveat.variable} h-full`}
       /* The script below sets data-theme before React hydrates, so the
          server's markup and the client's genuinely differ here — on
          purpose, and only on this element. */

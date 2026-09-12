@@ -5,7 +5,12 @@ import { Browse } from "@/components/storefront/browse/Browse";
 import { CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { SectionHead } from "@/components/ui/Section";
-import { getCategoryBySlug, getProductFacets, listProducts } from "@/lib/data/catalog";
+import {
+  getCategories,
+  getCategoryBySlug,
+  getProductFacets,
+  listProducts,
+} from "@/lib/data/catalog";
 import { readBrowseParams, toProductQuery } from "@/lib/browse-request";
 
 export const dynamic = "force-dynamic";
@@ -36,9 +41,10 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
   const browseParams = readBrowseParams(await searchParams);
   const query = { ...toProductQuery(browseParams), categorySlug: slug };
 
-  const [result, facets] = await Promise.all([
+  const [result, facets, departments] = await Promise.all([
     listProducts(query),
     getProductFacets(query),
+    getCategories(),
   ]);
 
   return (
@@ -66,6 +72,8 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
           facets={facets}
           basePath={`/c/${slug}`}
           params={browseParams}
+          departments={departments}
+          activeDepartment={slug}
         />
       </div>
     </AppShell>

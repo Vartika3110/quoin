@@ -42,7 +42,7 @@ export default async function SignInPage({
         </div>
 
         <div className="mx-auto max-w-md px-5 lg:px-0">
-          <h1 className="text-headline font-semibold text-ink">Sign in</h1>
+          <h1 className="font-display text-headline font-semibold text-ink">Sign in</h1>
           <p className="mt-2 text-body leading-relaxed text-muted">
             One number, one code. Quoin creates the account the first time you
             verify — there is nothing separate to sign up for.

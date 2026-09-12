@@ -4,6 +4,7 @@ import { ProductRow } from "@/components/storefront/browse/ProductRow";
 import { FilterPanel } from "@/components/storefront/browse/FilterPanel";
 import { FilterDrawer } from "@/components/storefront/browse/FilterDrawer";
 import { QuickFilters } from "@/components/storefront/browse/QuickFilters";
+import { DepartmentRail } from "@/components/storefront/browse/DepartmentRail";
 import { SortSheet } from "@/components/storefront/browse/SortSheet";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Chevron, Grid, Menu, Search, Sort } from "@/components/icons";
@@ -38,6 +39,8 @@ export function Browse({
   isPro = false,
   /** Hidden on pages whose whole point is one filter, e.g. Deals. */
   showFilters = true,
+  departments,
+  activeDepartment,
 }: {
   page: ProductPage;
   facets: ProductFacets;
@@ -46,6 +49,10 @@ export function Browse({
   params: BrowseParams;
   isPro?: boolean;
   showFilters?: boolean;
+  /** Renders the phone's department rail. Omitted on the pages where
+      switching department makes no sense — Deals, search results. */
+  departments?: { id: string; slug: string; title: string }[];
+  activeDepartment?: string;
 }) {
   const { items, page, pageSize, total, totalPages } = result;
   const activeSort = (params.sort as ProductSort | undefined) ?? "name";
@@ -68,6 +75,16 @@ export function Browse({
       )}
 
       <div className="min-w-0 flex-1">
+        {/* Phone only, and above the filters on purpose: department is a
+            bigger decision than price, so it reads first. */}
+        {departments && departments.length > 0 && (
+          <DepartmentRail
+            categories={departments}
+            activeSlug={activeDepartment}
+            className="mb-3"
+          />
+        )}
+
         {/* Phone only. The full panel stays behind the Filters button;
             these are the three or four people actually reach for. */}
         {showFilters && (

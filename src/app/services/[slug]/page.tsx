@@ -51,7 +51,7 @@ export default async function ServicePage({ params }: Ctx) {
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-10">
           <div className="min-w-0 px-5 lg:px-0">
             <Eyebrow>Service</Eyebrow>
-            <h1 className="mt-3 text-headline font-semibold text-ink lg:text-headline-lg">
+            <h1 className="font-display mt-3 text-headline font-semibold text-ink lg:text-headline-lg">
               {service.name}
             </h1>
             <p className="mt-3 max-w-prose text-body-lg leading-relaxed text-muted">
@@ -59,7 +59,7 @@ export default async function ServicePage({ params }: Ctx) {
             </p>
 
             <section className="mt-10">
-              <h2 className="text-title font-semibold text-ink">
+              <h2 className="font-display text-title font-semibold text-ink">
                 What is included
               </h2>
               <ul className="mt-4 space-y-2.5">
@@ -73,7 +73,7 @@ export default async function ServicePage({ params }: Ctx) {
             </section>
 
             <section className="mt-10">
-              <h2 className="text-title font-semibold text-ink">What it does not cover</h2>
+              <h2 className="font-display text-title font-semibold text-ink">What it does not cover</h2>
               <ul className="mt-4 space-y-2.5">
                 {service.excludes.map((item) => (
                   <li key={item} className="flex items-start gap-2.5">
@@ -89,7 +89,7 @@ export default async function ServicePage({ params }: Ctx) {
             </section>
 
             <section className="mt-10">
-              <h2 className="text-title font-semibold text-ink">How it starts</h2>
+              <h2 className="font-display text-title font-semibold text-ink">How it starts</h2>
               <Card padding="lg" className="mt-4">
                 <p className="text-body-sm font-semibold text-ink">{mode.title}</p>
                 <p className="mt-1 text-caption text-muted">{mode.summary}</p>

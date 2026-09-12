@@ -4,7 +4,7 @@ import { CATEGORY_PHOTOS } from "@/lib/category-photos";
 import type { Category } from "@/lib/types/catalog";
 
 /**
- * Categories, compact, on a phone.
+ * Every department, compact, on a phone.
  *
  * The tall photographic tiles are right on a desktop, where six of them
  * fill a row and the picture does the selling. On a 390px screen the same
@@ -41,7 +41,14 @@ export function CategoryRail({ categories }: { categories: Category[] }) {
             href={`/c/${category.slug}`}
             className="group flex w-[18vw] max-w-20 flex-col items-center gap-2 text-center"
           >
-            <span className="relative aspect-square w-full overflow-hidden rounded-xl bg-sunk ring-1 ring-line-hair transition-transform duration-200 ease-out-quart group-active:scale-95">
+            {/* `rounded-2xl` on a tile this size is most of what makes the
+                rail read as an app's launcher rather than a contact
+                sheet — and it is the same corner the cards above it use,
+                which is the point of having one radius scale. The tinted
+                ground shows only in the corners the photograph cannot
+                reach, so a department whose picture is still missing is a
+                tile rather than a hole. */}
+            <span className="relative aspect-square w-full overflow-hidden rounded-2xl bg-accent-wash ring-1 ring-line-hair transition-transform duration-200 ease-out-quart group-active:scale-95">
               {photo && (
                 <Image
                   src={photo}
@@ -54,7 +61,7 @@ export function CategoryRail({ categories }: { categories: Category[] }) {
             </span>
             {/* Two lines of headroom, so "Home appliances & security" does
                 not make its column taller than the eleven beside it. */}
-            <span className="line-clamp-2 text-micro leading-tight text-muted">
+            <span className="line-clamp-2 text-[10px] font-semibold leading-tight text-muted">
               {category.title}
             </span>
           </Link>

@@ -763,7 +763,7 @@ function StepPanel({
 }) {
   return (
     <section className="anim-rise">
-      <h2 className="text-title font-semibold text-ink">{title}</h2>
+      <h2 className="font-display text-title font-semibold text-ink">{title}</h2>
       <p className="mt-1 max-w-prose text-body-sm leading-relaxed text-muted">
         {detail}
       </p>
@@ -937,7 +937,7 @@ function OrderTotals({
 }) {
   return (
     <div>
-      <h2 className="text-title-sm font-semibold text-ink">Order total</h2>
+      <h2 className="font-display text-title-sm font-semibold text-ink">Order total</h2>
       <dl className="mt-4 space-y-2 text-body-sm">
         <div className="flex justify-between gap-3">
           <dt className="text-muted">
@@ -991,7 +991,7 @@ function Placed({ state }: { state: PlacedState }) {
         <span className="mx-auto grid size-14 place-items-center rounded-full bg-success-wash text-success">
           <CheckCircle className="size-7" />
         </span>
-        <h2 className="mt-5 text-headline font-semibold text-ink">
+        <h2 className="font-display mt-5 text-headline font-semibold text-ink">
           Your order is with us
         </h2>
         <p className="mt-3 text-body leading-relaxed text-muted">
@@ -1033,7 +1033,7 @@ function Placed({ state }: { state: PlacedState }) {
       <span className="mx-auto grid size-14 place-items-center rounded-full bg-success-wash text-success">
         <CheckCircle className="size-7" />
       </span>
-      <h2 className="mt-5 text-headline font-semibold text-ink">{heading}</h2>
+      <h2 className="font-display mt-5 text-headline font-semibold text-ink">{heading}</h2>
       <p className="mt-3 text-body leading-relaxed text-muted">{detail}</p>
       <div className="mt-7 flex flex-wrap justify-center gap-2">
         <Button href="/account/orders">View my orders</Button>

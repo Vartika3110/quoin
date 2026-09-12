@@ -114,7 +114,7 @@ export default async function ProPage() {
                 Quoin Pro
               </span>
 
-              <h1 className="mt-5 max-w-2xl text-headline font-semibold text-on-deep lg:text-display-sm">
+              <h1 className="font-display mt-5 max-w-2xl text-headline font-semibold text-on-deep lg:text-display-sm">
                 Built for people who buy for a living.
               </h1>
               <p className="mt-4 max-w-xl text-body-lg leading-relaxed text-on-deep/70">
@@ -165,7 +165,7 @@ export default async function ProPage() {
           <section className="px-5 lg:px-0">
             <Card padding="lg" className="lg:flex lg:items-center lg:gap-10">
               <div className="min-w-0 flex-1">
-                <h2 className="text-title font-semibold text-ink">Who it is for</h2>
+                <h2 className="font-display text-title font-semibold text-ink">Who it is for</h2>
                 <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                   {FOR.map((who) => (
                     <li key={who} className="flex items-start gap-2">

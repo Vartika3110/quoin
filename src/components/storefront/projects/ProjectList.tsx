@@ -133,7 +133,7 @@ export function ProjectCard({ project }: { project: Project }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-title-sm font-semibold text-ink">{project.name}</h3>
+            <h3 className="font-display text-title-sm font-semibold text-ink">{project.name}</h3>
             {project.isSample && <Badge tone="info">Sample</Badge>}
           </div>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted">

@@ -16,10 +16,20 @@ import type { AreaChoice } from "@/lib/data/service-areas";
 export function LocationPicker({
   areas,
   selected,
+  compact = false,
   className = "",
 }: {
   areas: AreaChoice[];
   selected: AreaChoice | null;
+  /**
+   * One line instead of two on a phone.
+   *
+   * The home page's top row carries this plus three circular controls,
+   * and a two-line chip there is the tallest thing in the row — it sets
+   * the header's height for the sake of a label the place name already
+   * implies. Everywhere else the label stays.
+   */
+  compact?: boolean;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -92,10 +102,12 @@ export function LocationPicker({
               is room for the label above the place; in the desktop bar
               the chip sits among six other controls and a second line
               would make it the tallest thing there. */}
-          <span className="block text-micro leading-none text-muted lg:hidden">
-            {selected ? "Delivering to" : "Set your area"}
-          </span>
-          <span className="mt-0.5 flex items-center gap-1 lg:mt-0">
+          {!compact && (
+            <span className="block text-micro leading-none text-muted lg:hidden">
+              {selected ? "Delivering to" : "Set your area"}
+            </span>
+          )}
+          <span className={compact ? "flex items-center gap-1" : "mt-0.5 flex items-center gap-1 lg:mt-0"}>
             <span className="truncate text-body-sm font-medium text-ink lg:text-body lg:font-normal">
               {selected
                 ? selected.name

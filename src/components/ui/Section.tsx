@@ -49,7 +49,13 @@ export function SectionHead({
       <div className="min-w-0">
         <Tag
           className={cn(
-            "font-semibold text-ink",
+            /* The display face on every section heading in the app. It is
+               the single assignment that does most of the work of making
+               the storefront look like one designed thing: the headings
+               are the only type a reader scans rather than reads, which
+               is exactly what a display face is for. The subtitle below
+               stays sans, because that one is read. */
+            "font-display font-semibold text-ink",
             size === "lg"
               ? "text-headline"
               : size === "sm"

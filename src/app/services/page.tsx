@@ -3,7 +3,8 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { ServiceCard } from "@/components/storefront/ServiceCard";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { SectionHead, PageSections } from "@/components/ui/Section";
+import { Gutter, SectionHead, PageSections } from "@/components/ui/Section";
+import { ConsultBand } from "@/components/storefront/ConsultBand";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Badge";
@@ -59,7 +60,7 @@ export default async function ServicesPage() {
         <PageSections>
           <header className="px-5 lg:px-0">
             <Eyebrow>Expert services</Eyebrow>
-            <h1 className="mt-3 max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
+            <h1 className="font-display mt-3 max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
               Find a professional who has built it before.
             </h1>
             <p className="mt-3 max-w-xl text-body-lg leading-relaxed text-muted">
@@ -77,6 +78,13 @@ export default async function ServicesPage() {
             </div>
           </header>
 
+          <Gutter>
+            <ConsultBand
+              title="Not sure which trade you need?"
+              detail="Describe the job on a free video call and we will scope it"
+            />
+          </Gutter>
+
           <section>
             <SectionHead
               title="What Quoin books"
@@ -91,7 +99,7 @@ export default async function ServicesPage() {
 
           <section className="px-5 lg:px-0">
             <Card padding="lg">
-              <h2 className="text-title font-semibold text-ink">How it works</h2>
+              <h2 className="font-display text-title font-semibold text-ink">How it works</h2>
               <ol className="mt-5 grid gap-5 sm:grid-cols-3">
                 {HOW.map((step, i) => (
                   <li key={step.title} className="flex gap-3">

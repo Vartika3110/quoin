@@ -94,10 +94,20 @@ export function StudioNav() {
         </div>
       </nav>
 
-      {/* Phone and tablet chip row */}
+      {/* Phone and tablet chip row.
+
+          No negative margin. `-mx-5 px-5` is the trick for escaping a
+          padded parent, and `StudioShell` does not pad on a phone — so
+          the pair made this row 40px wider than the viewport, hanging 20px
+          off each side. That put the first chip flush against the screen
+          edge instead of on the gutter, and pushed the document 20px wider
+          than the window. The page's own `overflow-x: clip` hid the
+          resulting scrollbar on engines that implement `clip`, which is
+          exactly why it survived: the bug was invisible on the machine it
+          was written on and a sideways drag everywhere else. */}
       <nav
         aria-label="Studio"
-        className="no-scrollbar -mx-5 flex items-center gap-2 overflow-x-auto px-5 pb-1 lg:hidden"
+        className="no-scrollbar flex items-center gap-2 overflow-x-auto px-5 pb-1 scroll-pl-5 lg:hidden"
       >
         {[...LINKS, ...ELSEWHERE].map(({ href, label, Icon, exact }) => {
           const on = isCurrent(pathname, href, exact);
