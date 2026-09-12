@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
@@ -401,6 +400,9 @@ function Row({
   onPick: () => void;
 }) {
   const Icon = KIND_ICON[item.kind];
+  /* A dead URL falls back to the kind's glyph rather than a broken-image
+     box, the same recovery `ProductImage` makes for the same reason. */
+  const [broken, setBroken] = useState(false);
 
   return (
     <li>
@@ -417,12 +419,24 @@ function Row({
           active ? "bg-accent-wash" : "hover:bg-hover",
         )}
       >
-        {item.photo ? (
-          <Image
+        {item.photo && !broken ? (
+          /* Deliberately not `next/image`, for the reason `ProductImage`
+             gives: catalogue photographs live on third-party CDNs and
+             optimising them would copy them onto Quoin's infrastructure.
+             It is also the only thing that made this safe — `next/image`
+             throws on any host missing from `images.remotePatterns`, that
+             list is empty, and the throw was not caught by the row but by
+             the page's error boundary. Searching a word that matched a
+             product with a remote photograph replaced the whole screen
+             with "Something went wrong". */
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={item.photo}
             alt=""
-            width={36}
-            height={36}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            onError={() => setBroken(true)}
             className="size-9 shrink-0 rounded-lg border border-photo-edge bg-photo object-cover"
           />
         ) : (

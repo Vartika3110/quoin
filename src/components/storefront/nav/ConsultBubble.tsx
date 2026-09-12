@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Headset } from "@/components/icons";
 import { useStickyBarTaken } from "@/components/storefront/StickyBar";
+import { useScrolled } from "@/components/storefront/nav/useScrolled";
 import { cn } from "@/components/ui/cn";
 import { useCart } from "@/lib/store/cart";
 
@@ -31,6 +32,11 @@ import { useCart } from "@/lib/store/cart";
  *    bar and with whatever sticky bar a page mounts, so the bubble lifts
  *    above whichever of them is on screen rather than sitting on top of
  *    it.
+ *  - **It is not on the first screen.** The header carries a CONSULT card
+ *    until the reader scrolls, so a bubble there is the same offer twice —
+ *    and, on a page whose first screen ends around 700px, it lands on top
+ *    of whatever is at the fold. It fades in once the header's card has
+ *    gone, which is exactly when the offer stops being reachable.
  */
 const SILENT_PATHS = ["/cart", "/checkout", "/signin", "/consult"];
 
@@ -38,6 +44,9 @@ export function ConsultBubble() {
   const pathname = usePathname();
   const { count, ready } = useCart();
   const stickyTaken = useStickyBarTaken();
+  /* The same threshold the header compacts at, so the card leaving and
+     the bubble arriving are one movement rather than two. */
+  const scrolled = useScrolled();
 
   if (SILENT_PATHS.some((p) => pathname.startsWith(p))) return null;
 
@@ -52,10 +61,18 @@ export function ConsultBubble() {
     <Link
       href="/consult"
       aria-label="Talk to an expert"
+      aria-hidden={!scrolled}
+      tabIndex={scrolled ? undefined : -1}
       className={cn(
         "fixed right-4 z-30 grid size-14 place-items-center rounded-full bg-deep text-on-deep shadow-lg",
-        "transition-[bottom,background-color,transform] duration-200 ease-out-quart",
+        "transition-[bottom,background-color,transform,opacity] duration-200 ease-out-quart",
         "hover:bg-deep-soft active:scale-95 lg:hidden",
+        /* Faded and untouchable rather than unmounted: a button that
+           pops into the DOM mid-scroll cannot animate, and one that is
+           only invisible would still swallow taps meant for the page. */
+        scrolled
+          ? "scale-100 opacity-100"
+          : "pointer-events-none scale-90 opacity-0",
         stripTaken
           ? "bottom-[max(8.75rem,calc(8.25rem_+_env(safe-area-inset-bottom)))]"
           : "bottom-[max(4.75rem,calc(4.25rem_+_env(safe-area-inset-bottom)))]",

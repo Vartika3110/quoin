@@ -167,9 +167,10 @@ export function BannerCarousel() {
             }}
             aria-label={`Go to slide ${i + 1} of ${SLIDES.length}`}
             aria-current={i === index ? "true" : undefined}
-            /* The hit area is 24px even though the mark is 6px — a dot you
-               have to aim at is a dot nobody uses. */
-            className="grid h-6 w-6 place-items-center"
+            /* The mark is 6px and the target is 44 — see `.tap-target`.
+               A dot you have to aim at is a dot nobody uses, and 24px,
+               which is what this was, is still aiming. */
+            className="tap-target relative grid h-8 w-8 place-items-center"
           >
             <span
               className={cn(

@@ -342,19 +342,23 @@ function MobileBar({
             type="button"
             onClick={open}
             aria-label="Search Quoin"
-            className="anim-fade grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
+            className="tap-target anim-fade relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
           >
             <Search className="size-4.5" />
           </button>
         )}
 
-        <ThemeToggle />
+        {/* 36px of artwork, 44px of target — see `.tap-target`. Three
+            circles this size sit in a row a thumb has to hit while
+            walking a site, and the visual size is what the design fixes,
+            not the reach. */}
+        <ThemeToggle className="tap-target relative" />
         <CartTotalPill onClick={onOpenCart} />
 
         <Link
           href="/account"
           aria-label="Account"
-          className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
+          className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
         >
           <User className="size-4.5" />
         </Link>
@@ -410,10 +414,13 @@ function MobileSearchField({ className }: { className?: string }) {
         className,
       )}
     >
+      {/* `self-stretch`: without it this button is a flex item sized to
+          its own 18px of text, so four fifths of a control that looks
+          52px tall does nothing when tapped. The field is the target. */}
       <button
         type="button"
         onClick={open}
-        className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        className="flex min-w-0 flex-1 items-center gap-2 self-stretch text-left"
       >
         <Search className="size-4.5 shrink-0 text-muted" aria-hidden />
         <span className="min-w-0 flex-1 truncate text-caption text-faint">
@@ -424,7 +431,7 @@ function MobileSearchField({ className }: { className?: string }) {
       <Link
         href="/upload"
         aria-label="Search by photo — upload a parcha"
-        className="grid size-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-hover hover:text-ink"
+        className="tap-target relative grid size-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-hover hover:text-ink"
       >
         <Camera className="size-4.5" />
       </Link>
@@ -432,7 +439,7 @@ function MobileSearchField({ className }: { className?: string }) {
       {/* Renders nothing where the Web Speech API is absent, so the
           field closes up around it rather than showing a dead button. */}
       <VoiceSearch
-        className="size-7 rounded-full"
+        className="tap-target relative size-7 rounded-full"
         onTranscript={(text) =>
           router.push(`/products?q=${encodeURIComponent(text)}`)
         }
@@ -488,7 +495,7 @@ function CartTotalPill({ onClick }: { onClick: () => void }) {
           ? `Cart, ${count} items, ${formatPrice(subtotalPaise)}`
           : "Cart, empty"
       }
-      className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface pl-2.5 pr-3 text-muted transition-colors hover:text-ink"
+      className="tap-target relative flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface pl-2.5 pr-3 text-muted transition-colors hover:text-ink"
     >
       <Wallet className="size-4.5" />
       <span className="nums text-caption font-semibold text-ink">
