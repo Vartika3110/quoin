@@ -50,14 +50,12 @@ const ENTRIES = [
        worse than sending the same intent — trade pricing, a project
        manager, the crown — where it is actually served. */
     href: "/pro",
-    /* A soft hyphen, not `hyphens: auto`. Automatic hyphenation is a
-       dictionary lookup and browsers do not run it over all-caps text, so
-       the one word on this row that cannot fit a 66px card at any legible
-       size was simply being cut off. U+00AD is honoured by every engine,
-       renders nothing until a break is actually needed, and puts the
-       break where a typesetter would rather than wherever the character
-       count lands. */
-    title: "ARCHI\u00ADTECTURAL\nPREMIUM STUDIO",
+    /* "Premium Studio", not "Architectural Premium Studio". The longer
+       name is wider than a 78px card at any size worth setting, so it had
+       to be hyphenated to fit — and a label broken mid-word reads worse
+       than a shorter one that is whole. The word this drops is the one
+       the crown and "Bespoke products" already say. */
+    title: "PREMIUM\nSTUDIO",
     detail: "Bespoke\nproducts",
     Icon: Crown,
     tint: "var(--quoin-tile-4)",
@@ -74,10 +72,10 @@ export function EntryCards() {
           style={{ background: tint }}
           className="group relative flex h-[7.75rem] flex-col overflow-hidden rounded-card border border-line-hair p-1.5 transition-transform duration-200 ease-out-quart active:scale-[0.98] sm:h-[8.5rem] sm:p-2.5 lg:h-36 lg:p-4 hover:lg:-translate-y-0.5"
         >
-          {/* `overflow-wrap` is the last-resort net under the soft hyphen:
-              at 320px a card is 52px wide and even "TECTURAL" is close to
-              the edge. A mid-word break with no hyphen is ugly; a word
-              spilling out of its card is worse. */}
+          {/* A net, not a plan: every label here is chosen to fit its own
+              line down to 320px, and this only decides what happens if a
+              future one is not. A word spilling out of its card is worse
+              than a word broken inside it. */}
           <span
             lang="en"
             className="whitespace-pre-line font-display text-[8px] font-bold uppercase leading-[1.25] tracking-[0.02em] text-ink [overflow-wrap:anywhere] sm:text-[9.5px] sm:tracking-[0.05em] lg:text-[11px] lg:tracking-[0.07em]"
