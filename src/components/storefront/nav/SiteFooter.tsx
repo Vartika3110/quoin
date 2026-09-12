@@ -7,6 +7,14 @@ import { Shield, Truck, Headset, CheckCircle } from "@/components/icons";
  * Exists mostly so the desktop page has an ending. On a phone it sits
  * above the tab bar and is padded to clear it.
  *
+ * Two columns of links on a phone, four across from `lg`. Stacked in one
+ * column it was three screens of ladder — thirteen links at a row each,
+ * under a heading each, under a paragraph — and a phone already carries
+ * six of those destinations in the tab bar, so the reader is scrolling
+ * past a list of places they are standing in. Two columns halves it
+ * without hiding anything behind a disclosure, which is the other way
+ * this gets solved and the one that makes a link unfindable.
+ *
  * The trust row is four claims Quoin can actually stand behind — a
  * verified-supplier catalogue, a delivery promise scoped per item, staffed
  * support, and returns. Nothing here says "100% genuine" or "best price",
@@ -56,50 +64,62 @@ export function SiteFooter() {
     <footer className="mt-16 border-t border-line-soft bg-surface">
       {/* `pb-28` on a phone clears the fixed tab bar. Without it the
           copyright line sits underneath it and cannot be read. */}
-      <div className="mx-auto max-w-shell px-5 pb-28 pt-10 lg:px-6 lg:pb-14 lg:pt-14">
-        <ul className="grid grid-cols-2 gap-4 border-b border-line-hair pb-8 lg:grid-cols-4">
+      <div className="mx-auto max-w-shell px-5 pb-28 pt-8 lg:px-6 lg:pb-14 lg:pt-14">
+        <ul className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-line-hair pb-6 lg:grid-cols-4 lg:gap-4 lg:pb-8">
           {TRUST.map(({ Icon, label }) => (
-            <li key={label} className="flex items-start gap-2.5">
-              <Icon className="mt-0.5 size-4.5 shrink-0 text-accent" />
-              <span className="text-caption leading-snug text-muted">{label}</span>
+            <li key={label} className="flex items-start gap-2">
+              <Icon className="mt-0.5 size-4 shrink-0 text-accent" />
+              <span className="text-micro leading-snug text-muted lg:text-caption">
+                {label}
+              </span>
             </li>
           ))}
         </ul>
 
-        <div className="grid gap-8 pt-8 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
+        <div className="pt-7 lg:grid lg:grid-cols-[1.5fr_repeat(3,1fr)] lg:gap-8 lg:pt-8">
           <div>
-            <p className="font-display text-title-lg tracking-[0.18em] text-ink">
+            <p className="font-display text-title tracking-[0.18em] text-ink lg:text-title-lg">
               QUOIN
             </p>
-            <p className="mt-3 max-w-xs text-body-sm leading-relaxed text-muted">
+            <p className="mt-2 max-w-xs text-body-sm leading-relaxed text-muted lg:mt-3">
               Materials, premium interiors and verified expert services —
               brought together so a build is one project rather than forty
               separate purchases.
             </p>
           </div>
 
-          {COLUMNS.map((column) => (
-            <nav key={column.title} aria-label={column.title}>
-              <h2 className="text-micro font-semibold uppercase tracking-wide text-ink">
-                {column.title}
-              </h2>
-              <ul className="mt-3 space-y-2">
-                {column.links.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-body-sm text-muted transition-colors hover:text-accent"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
+          {/* `lg:contents` dissolves this wrapper from `lg`, so the three
+              navs become direct children of the four-column grid above
+              rather than one cell inside it. Two layouts, one tree. */}
+          <div className="mt-7 grid grid-cols-2 gap-x-5 gap-y-7 lg:mt-0 lg:contents">
+            {COLUMNS.map((column) => (
+              <nav key={column.title} aria-label={column.title}>
+                <h2 className="text-micro font-semibold uppercase tracking-wide text-ink">
+                  {column.title}
+                </h2>
+                <ul className="mt-2.5 space-y-1.5 lg:mt-3 lg:space-y-2">
+                  {column.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-body-sm text-muted transition-colors hover:text-accent"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
+          </div>
         </div>
 
-        <p className="mt-10 border-t border-line-hair pt-6 text-micro text-faint">
+        {/* Inset from the right on a phone so the floating consult button
+            never sits on top of it. This is the last text on the page and
+            the bubble is pinned just above the tab bar, so without the
+            inset they overlap every time — on a line that says what the
+            prices include, which is the one line that has to be readable. */}
+        <p className="mt-8 border-t border-line-hair pt-5 pr-20 text-micro leading-relaxed text-faint lg:mt-10 lg:pr-0 lg:pt-6">
           © {new Date().getFullYear()} Quoin. Prices include GST where
           applicable. Delivery times apply to the areas listed at checkout.
         </p>
