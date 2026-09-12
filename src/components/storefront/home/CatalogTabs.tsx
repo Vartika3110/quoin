@@ -27,7 +27,14 @@ export function CatalogTabs() {
   return (
     <nav
       aria-label="Browse Quoin"
-      className="rail items-start gap-5 px-5 scroll-pl-5"
+      /* `justify-between` earns its place only above about 500px, and
+         that is the point: below it the six tabs are wider than the screen
+         and the rail scrolls, where `space-between` does nothing because
+         there is no free space to distribute. Above it they fit, and
+         without this they bunch against the left gutter with a third of
+         the row empty beside them. One declaration, two behaviours, no
+         breakpoint to keep in sync with the number of tabs. */
+      className="rail items-start justify-between gap-5 px-5 scroll-pl-5"
     >
       {TABS.map(({ href, label, icon, ...rest }) => {
         const Icon = TAB_ICONS[icon];

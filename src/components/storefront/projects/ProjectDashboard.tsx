@@ -415,12 +415,47 @@ export function ProjectDashboard({ id }: { id: string }) {
 
 /* -------------------------------------------------------------- sections */
 
+/**
+ * The other sites, as a rail above the one being read.
+ *
+ * Somebody running two jobs at once switches between them constantly, and
+ * without this that is three taps — back, Project Hub, pick — through a
+ * list they have already seen. One tap, and the rail says how many other
+ * projects exist, which the dashboard otherwise never mentions.
+ *
+ * Renders nothing when there is only one project: a switcher with a
+ * single destination is a label pretending to be a control.
+ */
+function ProjectSwitcher({ currentId }: { currentId: string }) {
+  const { projects } = useProjects();
+  const others = projects.filter((p) => p.id !== currentId);
+
+  if (others.length === 0) return null;
+
+  return (
+    <nav aria-label="Your other projects" className="rail gap-2 pb-1">
+      {others.map((project) => (
+        <Link
+          key={project.id}
+          href={`/projects/${project.id}`}
+          className="flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line bg-surface px-3.5 text-caption font-medium text-muted transition-colors hover:border-line-strong hover:text-ink"
+        >
+          <Layers className="size-3.5 shrink-0 text-accent" />
+          {project.name}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 function Header({ project }: { project: Project }) {
   const summary = summarise(project);
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <ProjectSwitcher currentId={project.id} />
+
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-headline font-semibold text-ink">{project.name}</h1>

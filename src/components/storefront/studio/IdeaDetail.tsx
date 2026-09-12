@@ -71,7 +71,16 @@ export function IdeaDetail({ idea }: { idea: IdeaView }) {
 
       <div className="flex flex-col gap-6 lg:flex-[2]">
         <div>
-          <h1 className="font-display text-headline font-light tracking-tight text-ink">
+          {/* The room, above the title and in the accent. It is the first
+              thing a reader wants from a photograph of a room — "is this
+              even my room?" — and it was previously only findable in the
+              badge list three blocks down, below the buttons. */}
+          {idea.room ? (
+            <p className="text-eyebrow uppercase text-accent">
+              {ROOM_LABEL[idea.room]}
+            </p>
+          ) : null}
+          <h1 className="mt-1 font-display text-headline font-light tracking-tight text-ink">
             {idea.title}
           </h1>
           {idea.description ? (
@@ -100,15 +109,15 @@ export function IdeaDetail({ idea }: { idea: IdeaView }) {
           </Button>
         </div>
 
-        {idea.room || idea.styles.length > 0 ? (
+        {/* Styles only: the room moved up to the eyebrow, and repeating it
+            here would be the same word twice on one screen. */}
+        {idea.styles.length > 0 ? (
           <Meta label="Style">
-            {[idea.room ? ROOM_LABEL[idea.room] : null, ...idea.styles]
-              .filter(Boolean)
-              .map((tag) => (
-                <Badge key={tag as string} tone="neutral" className="capitalize">
-                  {tag}
-                </Badge>
-              ))}
+            {idea.styles.map((tag) => (
+              <Badge key={tag} tone="neutral" className="capitalize">
+                {tag}
+              </Badge>
+            ))}
           </Meta>
         ) : null}
 
