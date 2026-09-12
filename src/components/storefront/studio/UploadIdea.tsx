@@ -188,7 +188,12 @@ export function UploadIdea() {
           <button
             type="button"
             onClick={() => fileInput.current?.click()}
-            className="absolute right-2 top-2 flex min-h-9 items-center gap-1.5 rounded-full bg-plate px-3 text-caption font-medium text-ink shadow-sm backdrop-blur-sm hover:bg-plate-solid"
+            /* `bg-surface/90`, not `bg-plate`: this floats over whatever
+               photograph was just chosen, and the 7%-opacity dark-mode
+               `plate` gives almost no separation from a light room photo.
+               `tap-target` covers the gap between the pill's own height
+               and 44px without redrawing it. */
+            className="tap-target absolute right-2 top-2 flex min-h-9 items-center gap-1.5 rounded-full border border-line-soft bg-surface/90 px-3 text-caption font-medium text-ink shadow-sm backdrop-blur-sm hover:bg-surface"
           >
             <Camera className="size-3.5" />
             Change
@@ -357,7 +362,9 @@ function ColourPicker({
                 type="button"
                 onClick={() => onChange(colors.filter((_, i) => i !== index))}
                 aria-label={`Remove ${colour.name}`}
-                className="grid size-6 place-items-center rounded-full text-faint hover:bg-danger-wash hover:text-danger"
+                /* 24px drawn, so the pill row stays compact; `tap-target`
+                   is what makes it a legal touch target anyway. */
+                className="tap-target relative grid size-6 place-items-center rounded-full text-faint hover:bg-danger-wash hover:text-danger"
               >
                 <Close className="size-3" />
               </button>

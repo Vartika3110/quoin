@@ -153,7 +153,7 @@ export default async function ProPage() {
                   <span className="grid size-10 place-items-center rounded-lg bg-pro-wash text-pro">
                     <Icon className="size-5" />
                   </span>
-                  <h3 className="mt-4 text-body font-semibold text-ink">{title}</h3>
+                  <h3 className="font-display mt-4 text-body font-semibold text-ink">{title}</h3>
                   <p className="mt-1.5 text-caption leading-relaxed text-muted">
                     {detail}
                   </p>

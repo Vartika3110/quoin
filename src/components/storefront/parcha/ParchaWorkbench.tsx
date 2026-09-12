@@ -808,7 +808,7 @@ function ParchaRow({
           type="button"
           aria-label="Decrease quantity"
           onClick={() => onQty(Math.max(min, row.qty - step))}
-          className="grid size-9 place-items-center rounded-lg text-ink transition-colors hover:bg-hover"
+          className="grid size-10 place-items-center rounded-lg text-ink transition-colors hover:bg-hover"
         >
           <Minus className="size-3.5" />
         </button>
@@ -820,7 +820,7 @@ function ParchaRow({
           type="button"
           aria-label="Increase quantity"
           onClick={() => onQty(row.qty + step)}
-          className="grid size-9 place-items-center rounded-lg text-ink transition-colors hover:bg-hover"
+          className="grid size-10 place-items-center rounded-lg text-ink transition-colors hover:bg-hover"
         >
           <Plus className="size-3.5" />
         </button>

@@ -39,6 +39,11 @@ export function Browse({
   isPro = false,
   /** Hidden on pages whose whole point is one filter, e.g. Deals. */
   showFilters = true,
+  /** `true` on Deals: the whole page is already `discountedOnly`, so
+      re-offering "Under list price" inside the panel and the quick-filter
+      row would be a control that toggles a parameter the page has already
+      forced — clicking it changes nothing on screen. */
+  hideOffersFilter = false,
   departments,
   activeDepartment,
 }: {
@@ -49,6 +54,7 @@ export function Browse({
   params: BrowseParams;
   isPro?: boolean;
   showFilters?: boolean;
+  hideOffersFilter?: boolean;
   /** Renders the phone's department rail. Omitted on the pages where
       switching department makes no sense — Deals, search results. */
   departments?: { id: string; slug: string; title: string }[];
@@ -58,9 +64,16 @@ export function Browse({
   const activeSort = (params.sort as ProductSort | undefined) ?? "name";
   const active = activeFilterCount(params);
   const listView = params.view === "list";
+  const showOffers = !hideOffersFilter;
 
   const panel = (
-    <FilterPanel basePath={basePath} params={params} facets={facets} brandLimit={20} />
+    <FilterPanel
+      basePath={basePath}
+      params={params}
+      facets={facets}
+      brandLimit={20}
+      showOffers={showOffers}
+    />
   );
 
   return (
@@ -69,7 +82,12 @@ export function Browse({
         <aside className="hidden w-60 shrink-0 lg:block">
           <div className="sticky top-24">
             <h2 className="mb-3 px-2 text-caption font-semibold text-ink">Filters</h2>
-            <FilterPanel basePath={basePath} params={params} facets={facets} />
+            <FilterPanel
+              basePath={basePath}
+              params={params}
+              facets={facets}
+              showOffers={showOffers}
+            />
           </div>
         </aside>
       )}
@@ -88,7 +106,12 @@ export function Browse({
         {/* Phone only. The full panel stays behind the Filters button;
             these are the three or four people actually reach for. */}
         {showFilters && (
-          <QuickFilters basePath={basePath} params={params} className="mb-4" />
+          <QuickFilters
+            basePath={basePath}
+            params={params}
+            className="mb-4"
+            hideOffers={hideOffersFilter}
+          />
         )}
 
         <Toolbar
@@ -105,7 +128,12 @@ export function Browse({
         />
 
         {active > 0 && (
-          <ActiveChips basePath={basePath} params={params} facets={facets} />
+          <ActiveChips
+            basePath={basePath}
+            params={params}
+            facets={facets}
+            hideOffers={hideOffersFilter}
+          />
         )}
 
         {total === 0 ? (
@@ -277,10 +305,14 @@ function ActiveChips({
   basePath,
   params,
   facets,
+  /** Matches `Browse`'s `hideOffersFilter` — on Deals, `offers` is not a
+      removable choice, so it should not appear as one. */
+  hideOffers = false,
 }: {
   basePath: string;
   params: BrowseParams;
   facets: ProductFacets;
+  hideOffers?: boolean;
 }) {
   const chips: { label: string; href: string }[] = [];
 
@@ -303,7 +335,7 @@ function ActiveChips({
       href: withParams(basePath, params, { min: undefined, max: undefined }),
     });
   }
-  if (params.offers) {
+  if (params.offers && !hideOffers) {
     chips.push({
       label: "Under list price",
       href: withParams(basePath, params, { offers: undefined }),

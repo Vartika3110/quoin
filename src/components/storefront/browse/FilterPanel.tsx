@@ -36,11 +36,15 @@ export function FilterPanel({
   facets,
   /** Cap the brand list; the drawer can afford more rows than a sidebar. */
   brandLimit = 12,
+  /** `false` on Deals, where the whole page is already the offers filter —
+      see the note on `Browse`'s `hideOffersFilter` prop. */
+  showOffers = true,
 }: {
   basePath: string;
   params: BrowseParams;
   facets: ProductFacets;
   brandLimit?: number;
+  showOffers?: boolean;
 }) {
   const active = activeFilterCount(params);
 
@@ -61,16 +65,18 @@ export function FilterPanel({
         </Link>
       )}
 
-      <Group title="Offers">
-        <OptionLink
-          href={toggleParam(basePath, params, "offers", "1")}
-          selected={params.offers === "1"}
-          count={facets.discountedCount}
-          icon={<Percent className="size-3.5" />}
-        >
-          Under list price
-        </OptionLink>
-      </Group>
+      {showOffers && (
+        <Group title="Offers">
+          <OptionLink
+            href={toggleParam(basePath, params, "offers", "1")}
+            selected={params.offers === "1"}
+            count={facets.discountedCount}
+            icon={<Percent className="size-3.5" />}
+          >
+            Under list price
+          </OptionLink>
+        </Group>
+      )}
 
       <Group title="Delivery">
         {facets.fulfilments.map((f) => (
@@ -166,7 +172,7 @@ function OptionLink({
       href={href}
       aria-current={selected ? "true" : undefined}
       className={cn(
-        "flex min-h-10 items-center gap-2.5 rounded-lg px-2 text-body transition-colors",
+        "flex min-h-11 items-center gap-2.5 rounded-lg px-2 text-body transition-colors",
         selected ? "text-accent" : "text-ink hover:bg-hover",
       )}
     >
@@ -222,7 +228,9 @@ function PriceForm({
             min={0}
             defaultValue={params.min ?? ""}
             placeholder="Min ₹"
-            className="nums h-10 w-full rounded-lg border border-line bg-surface px-2.5 text-body text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+            /* 44px tall and 16px text — 14px would have Safari zoom the
+               whole page in the moment this is focused on an iPhone. */
+            className="nums h-11 w-full rounded-lg border border-line bg-surface px-2.5 text-body-lg text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
           />
         </label>
         <span className="text-faint" aria-hidden>
@@ -237,7 +245,7 @@ function PriceForm({
             min={0}
             defaultValue={params.max ?? ""}
             placeholder="Max ₹"
-            className="nums h-10 w-full rounded-lg border border-line bg-surface px-2.5 text-body text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+            className="nums h-11 w-full rounded-lg border border-line bg-surface px-2.5 text-body-lg text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
           />
         </label>
       </div>

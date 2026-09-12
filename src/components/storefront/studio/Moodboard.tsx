@@ -359,7 +359,11 @@ export function Moodboard({
                     type="button"
                     onClick={() => remove(placement.itemId)}
                     aria-label={`Remove ${item.title || item.kind} from the board`}
-                    className="absolute right-1 top-1 grid size-7 place-items-center rounded-full bg-plate text-ink shadow-sm backdrop-blur-sm hover:bg-danger-wash hover:text-danger"
+                    /* `bg-surface/90`, not `bg-plate`: a tile can be a room
+                       photograph of any colour, and `tap-target` grows the
+                       28px circle to a real touch target without resizing
+                       it, the same trick `IdeaCard`'s save button uses. */
+                    className="tap-target absolute right-1 top-1 grid size-7 place-items-center rounded-full border border-line-soft bg-surface/90 text-ink shadow-sm backdrop-blur-sm hover:bg-danger-wash hover:text-danger"
                   >
                     <Trash className="size-3.5" />
                   </button>
@@ -435,7 +439,10 @@ function Tile({ item }: { item: SpaceItemView }) {
         className="flex h-full w-full items-end p-2"
         style={{ backgroundColor: item.hex ?? "#ffffff" }}
       >
-        <span className="rounded bg-plate px-1.5 py-0.5 text-micro font-medium text-ink backdrop-blur-sm">
+        {/* `bg-surface/90`, not `bg-plate`: the swatch behind this label is
+            whatever hex someone picked, and `plate` cannot promise contrast
+            against a colour it does not know. */}
+        <span className="rounded bg-surface/90 px-1.5 py-0.5 text-micro font-medium text-ink backdrop-blur-sm">
           {item.title || item.hex}
         </span>
       </div>

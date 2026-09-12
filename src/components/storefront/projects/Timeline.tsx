@@ -75,7 +75,7 @@ export function Timeline({
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3
                   className={cn(
-                    "text-body font-semibold",
+                    "font-display text-body font-semibold",
                     phase.state === "pending" ? "text-muted" : "text-ink",
                   )}
                 >
@@ -99,7 +99,7 @@ export function Timeline({
                         )
                       }
                       className={cn(
-                        "flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors",
+                        "flex min-h-11 w-full items-center gap-2.5 rounded-lg px-2 text-left transition-colors",
                         onToggle && "hover:bg-hover",
                       )}
                     >

@@ -23,9 +23,20 @@ export const MODE_ICON: Record<ConsultMode, typeof Video> = {
 
 export function ConsultHero() {
   return (
-    <div className="relative overflow-hidden rounded-card bg-gradient-to-br from-[#f3e6d8] via-[#eddcc9] to-[#e2c9ae] px-6 py-7 lg:px-10 lg:py-9">
+    <div
+      className="relative overflow-hidden rounded-card px-6 py-7 lg:px-10 lg:py-9"
+      /* Token-built gradient rather than a hand-picked hex trio: the tile
+         tints exist for exactly this warm-cream-to-tan range but, like the
+         other flat tints, are not registered in the Tailwind theme, so
+         `bg-gradient-to-br` cannot reach them by class name — the same
+         reason `EntryCards` and `QuickActions` read them with `var()`. */
+      style={{
+        backgroundImage:
+          "linear-gradient(to bottom right, var(--quoin-tile-3), var(--quoin-tile-1), var(--quoin-border-strong))",
+      }}
+    >
       <div className="relative max-w-xl">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-surface/80 px-3 py-1 text-[11px] text-deep-soft">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-surface/80 px-3 py-1 text-micro text-deep-soft">
           <Headset className="size-3.5 text-accent" />
           Talk to an expert
         </span>
@@ -38,7 +49,7 @@ export function ConsultHero() {
           Ask someone who has built it before.
         </h1>
 
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-deep-soft">
+        <p className="mt-3 max-w-md text-body leading-relaxed text-deep-soft">
           Twenty minutes on a call, or an hour on site with a tape measure.
           Either way you leave knowing what the job needs and roughly what it
           costs — before you order anything.
@@ -74,8 +85,8 @@ export function ConsultModeDetail() {
                 <Icon className="size-5" />
               </span>
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-ink">{mode.title}</h3>
-                <p className="text-[11px] text-muted">
+                <h3 className="font-display text-body font-semibold text-ink">{mode.title}</h3>
+                <p className="text-micro text-muted">
                   {mode.duration} · {mode.price}
                 </p>
               </div>
@@ -83,7 +94,7 @@ export function ConsultModeDetail() {
 
             <ul className="mt-3 space-y-1.5">
               {mode.gets.map((line) => (
-                <li key={line} className="flex gap-2 text-xs leading-relaxed text-muted">
+                <li key={line} className="flex gap-2 text-caption leading-relaxed text-muted">
                   <Check className="mt-0.5 size-3.5 shrink-0 text-success" />
                   {line}
                 </li>
@@ -93,7 +104,7 @@ export function ConsultModeDetail() {
             {/* The limit is not small print. Someone who books a call
                 expecting a measured quote has been mis-sold, and finds out
                 at the worst possible moment — on the call. */}
-            <p className="mt-3 flex gap-2 border-t border-line-soft pt-3 text-[11px] leading-relaxed text-faint">
+            <p className="mt-3 flex gap-2 border-t border-line-soft pt-3 text-micro leading-relaxed text-faint">
               <Info className="mt-px size-3.5 shrink-0" />
               {mode.limit}
             </p>
@@ -139,8 +150,8 @@ export function ConsultSteps() {
             )}
           </span>
           <div className="min-w-0 pb-1">
-            <p className="text-sm font-medium leading-tight text-ink">{title}</p>
-            <p className="mt-0.5 text-xs leading-relaxed text-muted">{body}</p>
+            <p className="text-body font-medium leading-tight text-ink">{title}</p>
+            <p className="mt-0.5 text-caption leading-relaxed text-muted">{body}</p>
           </div>
         </li>
       ))}
@@ -160,7 +171,7 @@ export function ConsultAssurances() {
   return (
     <ul className="space-y-2.5">
       {ASSURANCES.map(({ Icon, label }) => (
-        <li key={label} className="flex gap-2.5 text-xs leading-relaxed text-muted">
+        <li key={label} className="flex gap-2.5 text-caption leading-relaxed text-muted">
           <Icon className="mt-px size-4 shrink-0 text-accent" />
           {label}
         </li>

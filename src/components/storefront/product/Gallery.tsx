@@ -48,6 +48,7 @@ export function Gallery({ product }: { product: Product }) {
           }
         }}
         aria-label={photos.length > 0 ? "Zoom the product photograph" : undefined}
+        aria-pressed={photos.length > 0 ? zoomed : undefined}
       >
         <ProductImage
           photo={active}
@@ -63,7 +64,7 @@ export function Gallery({ product }: { product: Product }) {
           /* Says what the picture is. A generated image of a real SKU
              shown without this is a claim about goods the customer will
              receive that nobody has photographed. */
-          <p className="absolute inset-x-0 bottom-0 bg-deep/75 px-4 py-2 text-center text-micro text-white backdrop-blur-sm">
+          <p className="absolute inset-x-0 bottom-0 bg-deep/75 px-4 py-2 text-center text-micro text-on-deep backdrop-blur-sm">
             Illustration only — the product you receive may differ in
             appearance.
           </p>

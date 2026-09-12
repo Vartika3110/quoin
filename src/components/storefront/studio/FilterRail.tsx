@@ -73,7 +73,10 @@ export function FilterRail({
           <button
             type="button"
             onClick={() => onChange(NO_FILTERS)}
-            className="flex min-h-9 items-center gap-1 rounded-full px-2 text-caption font-medium text-accent transition-colors hover:bg-accent-wash"
+            /* `min-h-11`, not `min-h-9`: this has a text label, so the box
+               itself can just be 44px tall rather than borrowing the
+               `tap-target` trick built for icon-only corners. */
+            className="flex min-h-11 items-center gap-1 rounded-full px-2 text-caption font-medium text-accent transition-colors hover:bg-accent-wash"
           >
             <Close className="size-3.5" />
             Clear {active}

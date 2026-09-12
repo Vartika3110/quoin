@@ -56,14 +56,22 @@ export function QuickFilters({
   basePath,
   params,
   className,
+  /** `true` on Deals, where every result is already under list price, so
+      the chip would toggle a parameter that changes nothing on screen. */
+  hideOffers = false,
 }: {
   basePath: string;
   params: BrowseParams;
   className?: string;
+  hideOffers?: boolean;
 }) {
+  const chips = hideOffers
+    ? CHIPS.filter((chip) => !("offers" in chip.params))
+    : CHIPS;
+
   return (
     <div className={cn("rail gap-2 px-5 scroll-pl-5 lg:hidden", className)}>
-      {CHIPS.map((chip) => {
+      {chips.map((chip) => {
         const on = chip.activeWhen(params);
         /* Toggling off means clearing exactly the keys this chip sets —
            not resetting everything, which would drop a brand the customer

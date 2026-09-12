@@ -194,7 +194,7 @@ export function ConsultForm({
         {/* Said out loud rather than discovered by a customer whose area is
             missing from the list. A request from outside the network is
             still worth taking — it just cannot be promised. */}
-        <p className="mt-2 text-[11px] leading-relaxed text-faint">
+        <p className="mt-2 text-micro leading-relaxed text-faint">
           Not on the list? Enter the pincode anyway — we will tell you on the
           call back whether we can reach you.
         </p>
@@ -258,7 +258,7 @@ export function ConsultForm({
       {message && (
         <p
           role="alert"
-          className="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-danger"
+          className="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-body text-danger"
         >
           {message}
         </p>
@@ -268,7 +268,7 @@ export function ConsultForm({
         <button
           type="submit"
           disabled={busy}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-bright disabled:opacity-60"
+          className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-body font-semibold text-white transition-colors hover:bg-accent-bright disabled:opacity-60"
         >
           <Headset className="size-4" />
           {busy ? "Sending…" : `Request a ${CONSULT_MODE_INFO[mode].title.toLowerCase()}`}
@@ -277,7 +277,7 @@ export function ConsultForm({
         {/* The honest label for what the button does. It creates a request;
             a person turns that into a time. Saying "Book now" here would
             be a promise the system cannot keep. */}
-        <p className="text-[11px] leading-relaxed text-faint">
+        <p className="text-micro leading-relaxed text-faint">
           This asks for a call back — it does not confirm a slot yet.
         </p>
       </div>
@@ -297,13 +297,13 @@ function ConsultConfirmation({ request }: { request: ConsultRequestView }) {
         <Check className="size-6" />
       </span>
 
-      <h2 className="mt-3 font-display text-2xl text-ink">We have it.</h2>
-      <p className="mt-1 text-sm leading-relaxed text-muted">
+      <h2 className="mt-3 font-display text-title-lg text-ink">We have it.</h2>
+      <p className="mt-1 text-body leading-relaxed text-muted">
         Quoin will call you on {request.phone} within one working day to fix a
         time{request.mode === "site_visit" ? " and confirm the visit fee" : ""}.
       </p>
 
-      <dl className="mt-4 divide-y divide-line-soft border-y border-line-soft text-sm">
+      <dl className="mt-4 divide-y divide-line-soft border-y border-line-soft text-body">
         <Row term="Reference" detail={<span className="font-semibold tracking-wide">{request.reference}</span>} />
         <Row
           term="Mode"
@@ -339,7 +339,7 @@ function ConsultConfirmation({ request }: { request: ConsultRequestView }) {
         )}
       </dl>
 
-      <p className="mt-4 text-[11px] leading-relaxed text-faint">
+      <p className="mt-4 text-micro leading-relaxed text-faint">
         Keep the reference — it is how we find this request if you call us first.
       </p>
     </div>
@@ -349,8 +349,8 @@ function ConsultConfirmation({ request }: { request: ConsultRequestView }) {
 function Row({ term, detail }: { term: string; detail: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 py-2.5">
-      <dt className="text-xs text-muted">{term}</dt>
-      <dd className="text-right text-sm text-ink">{detail}</dd>
+      <dt className="text-caption text-muted">{term}</dt>
+      <dd className="text-right text-body text-ink">{detail}</dd>
     </div>
   );
 }
@@ -366,7 +366,7 @@ function ModeChooser({
 }) {
   return (
     <fieldset>
-      <legend className="text-sm font-semibold text-ink">How would you like to meet?</legend>
+      <legend className="text-body font-semibold text-ink">How would you like to meet?</legend>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         {CONSULT_MODES.map((id) => {
@@ -402,11 +402,11 @@ function ModeChooser({
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0">
-                <span className="block text-sm font-semibold text-ink">{info.title}</span>
-                <span className="mt-0.5 block text-xs leading-snug text-muted">
+                <span className="block text-body font-semibold text-ink">{info.title}</span>
+                <span className="mt-0.5 block text-caption leading-snug text-muted">
                   {info.summary}
                 </span>
-                <span className="mt-1.5 block text-[11px] text-accent">
+                <span className="mt-1.5 block text-micro text-accent">
                   {info.duration} · {info.price}
                 </span>
               </span>
@@ -437,8 +437,8 @@ function Field({
        `min-width: auto` and has the same failure mode; the fieldset is
        just the one that cannot be fixed by the flex rules around it. */
     <fieldset className="min-w-0 border-t border-line-soft pt-5">
-      <legend className="text-sm font-semibold text-ink">{legend}</legend>
-      {hint && <p className="mb-3 mt-0.5 text-xs text-muted">{hint}</p>}
+      <legend className="text-body font-semibold text-ink">{legend}</legend>
+      {hint && <p className="mb-3 mt-0.5 text-caption text-muted">{hint}</p>}
       <div className={hint ? "" : "mt-3"}>{children}</div>
     </fieldset>
   );
@@ -461,8 +461,12 @@ function DayChip({
          `position: absolute`. Without a positioned ancestor its containing
          block is the page, not this label, so the rail's `overflow-x` never
          clips it — it lands at its static x, up to 1.5k px out, and the
-         whole document scrolls sideways on a phone. */
-      className={`relative cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-2 text-xs transition-colors ${
+         whole document scrolls sideways on a phone.
+         `tap-target`: the chip itself draws at ~36px tall so a row of them
+         reads as a compact rail rather than a stack of buttons, but that is
+         under the 44px thumb target — the invisible pseudo-element grows
+         the hit area without redrawing the pill. */
+      className={`tap-target relative cursor-pointer whitespace-nowrap rounded-full border px-3.5 py-2 text-caption transition-colors ${
         active
           ? "border-accent bg-accent text-white"
           : "border-line bg-surface text-ink hover:border-accent-edge"
@@ -494,7 +498,7 @@ function Chip({
 }) {
   return (
     <label
-      className={`relative cursor-pointer rounded-full border px-3.5 py-2 text-xs transition-colors ${
+      className={`tap-target relative cursor-pointer rounded-full border px-3.5 py-2 text-caption transition-colors ${
         checked
           ? "border-accent bg-accent-wash text-accent"
           : "border-line bg-surface text-ink hover:border-accent-edge"
@@ -522,20 +526,20 @@ function Label({
   optional?: boolean;
 }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-xs text-muted">
+    <label htmlFor={htmlFor} className="mb-1.5 block text-caption text-muted">
       {children}
       {optional && <span className="text-faint"> (optional)</span>}
     </label>
   );
 }
 
-/* `text-base` on a phone rather than `text-sm`: iOS Safari zooms the page
+/* `text-body-lg` on a phone rather than `text-body`: iOS Safari zooms the page
    in when a field under 16px takes focus, and the viewport deliberately
    leaves zoom enabled, so the only fix is to size the type. It also takes
-   the fields to a 44px touch height. `lg:text-sm` keeps the desktop form
+   the fields to a 44px touch height. `lg:text-body` keeps the desktop form
    at the size it was drawn at. */
 const BOX =
-  "w-full rounded-xl border bg-surface px-3.5 py-2.5 text-base text-ink outline-none placeholder:text-faint lg:text-sm";
+  "w-full rounded-xl border bg-surface px-3.5 py-2.5 text-body-lg text-ink outline-none placeholder:text-faint lg:text-body";
 
 function Input({
   name,
@@ -564,7 +568,7 @@ function Input({
         {...rest}
       />
       {error && (
-        <p id={`${id}-error`} className="mt-1 text-[11px] text-danger">
+        <p id={`${id}-error`} className="mt-1 text-micro text-danger">
           {error}
         </p>
       )}
@@ -600,7 +604,7 @@ function Textarea({
         {...rest}
       />
       {error && (
-        <p id={`${id}-error`} className="mt-1 text-[11px] text-danger">
+        <p id={`${id}-error`} className="mt-1 text-micro text-danger">
           {error}
         </p>
       )}
@@ -646,7 +650,7 @@ function Select({
         <Chevron className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 rotate-90 text-muted" />
       </div>
       {error && (
-        <p id={`${id}-error`} className="mt-1 text-[11px] text-danger">
+        <p id={`${id}-error`} className="mt-1 text-micro text-danger">
           {error}
         </p>
       )}
@@ -657,5 +661,5 @@ function Select({
 /** Field-level error for a control that is not one of the boxes above. */
 function ErrorText({ id, fields }: { id: string; fields: Record<string, string> }) {
   if (!fields[id]) return null;
-  return <p className="mt-1 text-[11px] text-danger">{fields[id]}</p>;
+  return <p className="mt-1 text-micro text-danger">{fields[id]}</p>;
 }

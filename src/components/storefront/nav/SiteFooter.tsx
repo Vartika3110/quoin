@@ -62,9 +62,16 @@ const TRUST = [
 export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-line-soft bg-surface">
-      {/* `pb-28` on a phone clears the fixed tab bar. Without it the
-          copyright line sits underneath it and cannot be read. */}
-      <div className="mx-auto max-w-shell px-5 pb-28 pt-8 lg:px-6 lg:pb-14 lg:pt-14">
+      {/* The bottom padding on a phone clears the fixed bars, and there
+          can be two of them: the tab bar is about 60px, and a product
+          page's `StickyBar` — or the floating cart bar — adds roughly 76
+          more above it. `pb-28` cleared only the first, so on exactly the
+          pages a customer reaches by scrolling a product to the end, the
+          line saying what the prices include sat under the buy button.
+          Padded for both rather than measured, because the alternative is
+          making the footer a client component to ask whether a bar is
+          mounted, and the cost of being wrong is 48px of blank paper. */}
+      <div className="mx-auto max-w-shell px-5 pb-36 pt-8 lg:px-6 lg:pb-14 lg:pt-14">
         <ul className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-line-hair pb-6 lg:grid-cols-4 lg:gap-4 lg:pb-8">
           {TRUST.map(({ Icon, label }) => (
             <li key={label} className="flex items-start gap-2">

@@ -387,7 +387,10 @@ export function ProjectWizard({ areas }: { areas: { slug: string; name: string }
         <button
           type="button"
           onClick={() => go(step + 1)}
-          className="mx-auto mt-4 block text-caption text-muted transition-colors hover:text-accent"
+          /* `tap-target`: caption-sized text with no padding of its own is
+             well under the 44px thumb target, and this sits right below a
+             full-width primary button a thumb has just reached for. */
+          className="tap-target relative mx-auto mt-4 block text-caption text-muted transition-colors hover:text-accent"
         >
           Skip this
         </button>

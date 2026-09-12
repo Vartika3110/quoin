@@ -372,7 +372,7 @@ export function ProjectDashboard({ id }: { id: string }) {
             <div className="flex items-baseline justify-between gap-3">
               <label
                 htmlFor="project-notes"
-                className="text-title-sm font-semibold text-ink"
+                className="font-display text-title-sm font-semibold text-ink"
               >
                 Notes
               </label>
@@ -438,7 +438,11 @@ function ProjectSwitcher({ currentId }: { currentId: string }) {
         <Link
           key={project.id}
           href={`/projects/${project.id}`}
-          className="flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line bg-surface px-3.5 text-caption font-medium text-muted transition-colors hover:border-line-strong hover:text-ink"
+          /* `tap-target`: the pill draws at 36px so the rail reads as a
+             row of chips rather than a stack of list items, which is
+             under the 44px thumb target — the invisible pseudo-element
+             grows the hit area without redrawing the pill. */
+          className="tap-target relative flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-line bg-surface px-3.5 text-caption font-medium text-muted transition-colors hover:border-line-strong hover:text-ink"
         >
           <Layers className="size-3.5 shrink-0 text-accent" />
           {project.name}
@@ -655,8 +659,12 @@ function DangerZone({
         <button
           type="button"
           onClick={() => setConfirming(true)}
+          /* `tap-target`: the label draws at caption size with no padding
+             of its own, well under the 44px thumb target — and this is
+             the one destructive control on the page, so an accidental
+             miss-then-hit next to it is worse than most. */
           className={cn(
-            "flex items-center gap-1.5 text-caption text-muted transition-colors hover:text-danger",
+            "tap-target relative flex items-center gap-1.5 text-caption text-muted transition-colors hover:text-danger",
           )}
         >
           <Trash className="size-3.5" />

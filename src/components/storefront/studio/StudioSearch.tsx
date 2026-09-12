@@ -48,6 +48,11 @@ export function StudioSearch({
   return (
     <div className="flex flex-col gap-6">
       <header className="px-5 lg:px-0">
+        {/* Every other Studio route gets its `h1` from `StudioHeader`; this
+            one skips that header entirely to put the search field first, so
+            without this the page would have no top-level heading at all. */}
+        <h1 className="sr-only">Search Studio</h1>
+
         <form
           role="search"
           onSubmit={(event) => {

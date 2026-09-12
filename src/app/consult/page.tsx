@@ -80,19 +80,25 @@ export default async function ConsultPage() {
 
           <aside className="mt-8 space-y-6 lg:mt-0">
             <div className="rounded-card border border-line-soft bg-surface p-5">
-              <h2 className="mb-3 text-sm font-semibold text-ink">How it works</h2>
+              <h2 className="font-display mb-3 text-title-sm font-semibold text-ink">
+                How it works
+              </h2>
               <ConsultSteps />
             </div>
 
             <div className="rounded-card border border-accent-edge bg-accent-wash p-5">
-              <h2 className="mb-3 text-sm font-semibold text-ink">What you can count on</h2>
+              <h2 className="font-display mb-3 text-title-sm font-semibold text-ink">
+                What you can count on
+              </h2>
               <ConsultAssurances />
             </div>
           </aside>
         </div>
 
         <section aria-label="Consultation modes" className="px-5 lg:px-0">
-          <h2 className="mb-3 text-lg font-semibold text-ink">The two ways to do this</h2>
+          <h2 className="font-display mb-3 text-title font-semibold text-ink">
+            The two ways to do this
+          </h2>
           <ConsultModeDetail />
         </section>
       </div>

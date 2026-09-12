@@ -141,7 +141,7 @@ export function ProductCard({
             /* Says what the picture is. A generated image of a real SKU
                shown without this is a claim about goods the customer will
                receive that nobody has photographed. */
-            <span className="absolute inset-x-0 bottom-0 bg-deep/75 px-2 py-1 text-center text-[9px] leading-tight text-white backdrop-blur-sm">
+            <span className="absolute inset-x-0 bottom-0 bg-deep/75 px-2 py-1 text-center text-micro leading-tight text-on-deep backdrop-blur-sm">
               Illustration · actual product may vary
             </span>
           )}
@@ -242,7 +242,10 @@ export function ProductCard({
         ) : (
           <Link
             href={`/p/${product.slug}`}
-            className="mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-line bg-surface text-caption font-medium text-ink transition-colors duration-150 hover:border-accent hover:bg-accent-wash hover:text-accent"
+            /* `tap-target`: the 40px height is the row's fixed footprint
+               (see AddControl below), so the hit area is grown behind it
+               rather than the box itself. */
+            className="tap-target relative mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-line bg-surface text-caption font-medium text-ink transition-colors duration-150 hover:border-accent hover:bg-accent-wash hover:text-accent"
           >
             {bookable ? (
               <>
@@ -278,6 +281,10 @@ export function ProductCard({
  *
  * Decrementing past the minimum removes the line, so the stepper's own
  * "−" empties it rather than sitting at 1 doing nothing.
+ *
+ * Every control in the row is drawn at 40px to hold that footprint, four
+ * short of the 44px a thumb wants — so each one carries `tap-target` to
+ * grow the hit area invisibly rather than the box itself.
  */
 function AddControl({ product }: { product: Product }) {
   const router = useRouter();
@@ -302,7 +309,7 @@ function AddControl({ product }: { product: Product }) {
           });
         }}
         className={cn(
-          "mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border text-caption font-semibold transition-colors duration-150",
+          "tap-target relative mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border text-caption font-semibold transition-colors duration-150",
           flash
             ? "border-success/30 bg-success-wash text-success"
             : "border-accent-edge bg-accent-wash text-accent hover:bg-accent hover:text-on-accent",
@@ -329,7 +336,7 @@ function AddControl({ product }: { product: Product }) {
         type="button"
         aria-label={`Decrease quantity of ${product.title}`}
         onClick={() => setQty(line.id, line.qty - variant.stepQty)}
-        className="grid h-10 w-10 shrink-0 place-items-center rounded-l-lg transition-colors hover:bg-accent-dim"
+        className="tap-target relative grid h-10 w-10 shrink-0 place-items-center rounded-l-lg transition-colors hover:bg-accent-dim"
       >
         {line.qty <= variant.minQty ? (
           <Trash className="size-4" />
@@ -349,7 +356,7 @@ function AddControl({ product }: { product: Product }) {
         type="button"
         aria-label={`Increase quantity of ${product.title}`}
         onClick={() => setQty(line.id, line.qty + variant.stepQty)}
-        className="grid h-10 w-10 shrink-0 place-items-center rounded-r-lg transition-colors hover:bg-accent-dim"
+        className="tap-target relative grid h-10 w-10 shrink-0 place-items-center rounded-r-lg transition-colors hover:bg-accent-dim"
       >
         <Plus className="size-4" />
       </button>

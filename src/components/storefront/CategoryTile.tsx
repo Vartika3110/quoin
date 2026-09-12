@@ -90,15 +90,15 @@ export function CategoryTile({
       <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-deep via-deep/65 to-transparent" />
 
       <div className="relative p-4">
-        <h3 className="text-body font-semibold leading-snug text-white">
+        <h3 className="text-body font-semibold leading-snug text-on-deep">
           {category.title}
         </h3>
         {descriptor && (
-          <p className="mt-0.5 line-clamp-1 text-micro text-white/70">
+          <p className="mt-0.5 line-clamp-1 text-micro text-on-deep/70">
             {descriptor}
           </p>
         )}
-        <span className="mt-1.5 flex items-center gap-1 text-micro text-white/85">
+        <span className="mt-1.5 flex items-center gap-1 text-micro text-on-deep/85">
           {caption}
           <Chevron className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
         </span>

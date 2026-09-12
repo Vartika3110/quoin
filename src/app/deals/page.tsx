@@ -77,6 +77,10 @@ export default async function DealsPage({
             facets={facets}
             basePath="/deals"
             params={params}
+            /* The whole page is already `discountedOnly` — see the query
+               above — so the panel's own "Under list price" toggle would
+               be a control with nothing left for it to do. */
+            hideOffersFilter
           />
         )}
       </div>

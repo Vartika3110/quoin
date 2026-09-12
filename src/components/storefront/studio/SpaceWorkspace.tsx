@@ -347,7 +347,10 @@ function ItemList({
                   type="button"
                   onClick={() => onRemove(item.id)}
                   aria-label={`Remove ${item.title}`}
-                  className="grid size-9 shrink-0 place-items-center rounded-md text-faint transition-colors hover:bg-danger-wash hover:text-danger"
+                  /* Drawn at 36px so it does not dominate the row; `relative
+                     tap-target` grows the actual hit area to 44px, the way
+                     `IdeaCard`'s save button already does. */
+                  className="tap-target relative grid size-9 shrink-0 place-items-center rounded-md text-faint transition-colors hover:bg-danger-wash hover:text-danger"
                 >
                   <Trash className="size-4" />
                 </button>

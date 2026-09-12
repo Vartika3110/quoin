@@ -90,8 +90,17 @@ export function IdeaCard({
         aria-pressed={saved}
         aria-label={saved ? `Remove ${idea.title} from saves` : `Save ${idea.title}`}
         className={cn(
-          "absolute right-2 top-2 flex size-9 items-center justify-center rounded-full",
-          "border border-plate-edge bg-plate backdrop-blur-sm shadow-sm",
+          /* `tap-target` grows the 36px circle to the 44px hit area every
+             other control on the site gets, without redrawing it. */
+          "tap-target absolute right-2 top-2 flex size-9 items-center justify-center rounded-full",
+          /* `bg-surface/90`, not `bg-plate`: this sits on an uploaded room
+             photograph, which can be any colour, and `plate` is only 7%
+             white after dark — nearly invisible against a light photo, and
+             `text-ink` at that point is pale cream on pale wash. `surface`
+             is close to opaque in both palettes (white on paper, near-black
+             after dark), which is what `ProductCard`'s wishlist heart
+             already relies on for the same reason. */
+          "border border-line-soft bg-surface/90 backdrop-blur-sm shadow-sm",
           "transition-[opacity,transform,background-color] duration-200 ease-out-quart",
           "hover:scale-105 active:scale-95",
           "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",

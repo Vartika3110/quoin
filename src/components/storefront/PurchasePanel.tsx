@@ -369,7 +369,11 @@ function Dimension({
         min={0}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="nums h-10 w-full rounded-lg border border-line bg-raised px-3 text-body text-ink outline-none transition-colors focus:border-accent"
+        /* 44px tall and 16px text, same as every other input in the
+           storefront — 14px here would zoom the page in on focus on an
+           iPhone, since Safari zooms to any focused field smaller than
+           16px. */
+        className="nums h-11 w-full rounded-lg border border-line bg-raised px-3 text-body-lg text-ink outline-none transition-colors focus:border-accent"
       />
     </label>
   );
@@ -484,7 +488,7 @@ function SlotPicker({
                 onClick={() => onChange({ date: day, window: t })}
                 aria-pressed={on}
                 className={cn(
-                  "nums flex items-center justify-center gap-1.5 rounded-lg border py-2.5 text-caption transition-colors",
+                  "nums flex min-h-11 items-center justify-center gap-1.5 rounded-lg border text-caption transition-colors",
                   on
                     ? "border-accent bg-accent-wash text-accent"
                     : "border-line text-muted hover:border-line-strong",

@@ -57,6 +57,11 @@ export function LinkToProject({
 
   const [open, setOpen] = useState(false);
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
+  /* Kept separate from `projects === []`, which is the true and common case
+     of an account with no projects yet — collapsing a failed fetch into the
+     same empty list would silently hide the failure behind "start a new
+     one", the section that is always there anyway. */
+  const [projectsError, setProjectsError] = useState(false);
   const [choice, setChoice] = useState<string>("");
   const [name, setName] = useState(spaceName);
   const [kind, setKind] = useState<string>("renovation");
@@ -78,7 +83,9 @@ export function LinkToProject({
         );
       })
       .catch(() => {
-        if (!controller.signal.aborted) setProjects([]);
+        if (controller.signal.aborted) return;
+        setProjects([]);
+        setProjectsError(true);
       });
 
     return () => controller.abort();
@@ -151,6 +158,13 @@ export function LinkToProject({
           description="A project is the whole build — orders, deliveries, tasks and documents. A space is one room in it."
         >
           <div className="flex flex-col gap-6">
+            {projectsError ? (
+              <p className="text-body-sm text-danger">
+                Could not load your existing projects. You can still start a
+                new one below.
+              </p>
+            ) : null}
+
             {projects === null ? (
               <p className="flex items-center gap-2 text-body-sm text-muted">
                 <Spinner className="size-4" />

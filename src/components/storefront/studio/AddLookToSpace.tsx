@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Drawer } from "@/components/ui/Drawer";
 import { Spinner } from "@/components/ui/Spinner";
@@ -31,6 +31,7 @@ import type { LookMatch } from "@/lib/types/studio";
 export function AddLookToSpace({ matches }: { matches: LookMatch[] }) {
   const { spaces, signedIn, ready } = useStudio();
   const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
 
   const [open, setOpen] = useState(false);
@@ -93,8 +94,15 @@ export function AddLookToSpace({ matches }: { matches: LookMatch[] }) {
   }
 
   if (!signedIn) {
+    /* `next` brings them back to this idea rather than dropping them on
+       whatever `/signin` defaults to — the same contract the save button
+       on `IdeaCard` and `IdeaDetail` already honours. */
     return (
-      <Button href="/signin" variant="outline" size="sm">
+      <Button
+        href={`/signin?next=${encodeURIComponent(pathname)}`}
+        variant="outline"
+        size="sm"
+      >
         Sign in to add these to a space
       </Button>
     );
