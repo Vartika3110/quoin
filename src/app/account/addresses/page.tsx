@@ -20,7 +20,10 @@ export default async function AddressesPage() {
       {signedIn ? (
         <AddressBook />
       ) : (
-        <SignInPrompt what="Signing in saves your addresses so a delivery is two taps rather than a form." />
+        <SignInPrompt
+          what="Signing in saves your addresses so a delivery is two taps rather than a form."
+          next="/account/addresses"
+        />
       )}
     </AccountShell>
   );

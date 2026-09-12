@@ -58,7 +58,10 @@ export default async function OrdersPage({
       subtitle="Everything you have bought, and where each one has got to."
     >
       {!session ? (
-        <SignInPrompt what="Signing in keeps every order, booking and invoice against your account." />
+        <SignInPrompt
+          what="Signing in keeps every order, booking and invoice against your account."
+          next="/account/orders"
+        />
       ) : orders.length === 0 ? (
         <EmptyState
           icon={<Package className="size-6" />}

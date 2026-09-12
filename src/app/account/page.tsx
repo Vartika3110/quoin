@@ -54,7 +54,10 @@ export default async function AccountPage() {
       subtitle={user ? undefined : "Sign in to keep your orders and addresses together."}
     >
       {!user ? (
-        <SignInPrompt what="Signing in saves your addresses, keeps your orders together and shows the consultations you have booked." />
+        <SignInPrompt
+          what="Signing in saves your addresses, keeps your orders together and shows the consultations you have booked."
+          next="/account"
+        />
       ) : (
         <div className="space-y-6">
           <Card padding="lg" className="flex flex-wrap items-center gap-4">

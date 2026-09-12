@@ -18,7 +18,10 @@ export default async function AccountProjectsPage() {
       {session ? (
         <ProjectList />
       ) : (
-        <SignInPrompt what="Signing in keeps every project against your account." />
+        <SignInPrompt
+          what="Signing in keeps every project against your account."
+          next="/account/projects"
+        />
       )}
     </AccountShell>
   );

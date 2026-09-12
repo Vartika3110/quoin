@@ -53,7 +53,11 @@ function OrderRow({ order }: { order: OrderDetail }) {
 
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-2">
-            <span className="truncate text-body-sm font-semibold text-ink">
+            {/* `min-w-0` is load-bearing: a flex item's default min-width is
+                its content size, so without it `truncate`'s ellipsis never
+                triggers here and a two-title preview pushes the row wider
+                than the card on a phone instead of clipping. */}
+            <span className="min-w-0 truncate text-body-sm font-semibold text-ink">
               {preview}
               {moreCount > 0 && ` +${moreCount} more`}
             </span>

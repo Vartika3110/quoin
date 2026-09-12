@@ -22,7 +22,10 @@ export default async function SettingsPage() {
   return (
     <AccountShell current="/account/settings" title="Settings">
       {!user ? (
-        <SignInPrompt what="Signing in lets you manage your details and this device's session." />
+        <SignInPrompt
+          what="Signing in lets you manage your details and this device's session."
+          next="/account/settings"
+        />
       ) : (
         <SettingsPanel name={user.name} maskedPhone={maskPhone(user.phone)} />
       )}

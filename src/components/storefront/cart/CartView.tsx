@@ -226,7 +226,7 @@ function Line({ line }: { line: CartLine }) {
                 remove(line.id);
                 toast.toast(`Removed ${s.title}`);
               }}
-              className="rounded-md p-1.5 text-faint transition-colors hover:text-danger"
+              className="tap-target relative rounded-md p-1.5 text-faint transition-colors hover:text-danger"
             >
               <Trash className="size-4" />
             </button>
@@ -251,7 +251,7 @@ function StepButton({
       type="button"
       aria-label={label}
       onClick={onClick}
-      className="grid size-10 place-items-center rounded-lg text-ink transition-colors hover:bg-hover"
+      className="tap-target relative grid size-10 place-items-center rounded-lg text-ink transition-colors hover:bg-hover"
     >
       {children}
     </button>

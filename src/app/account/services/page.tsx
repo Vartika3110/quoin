@@ -49,7 +49,10 @@ export default async function AccountServicesPage() {
       subtitle="Consultations and site visits you have booked."
     >
       {!user ? (
-        <SignInPrompt what="Signing in shows every consultation and site visit booked from your number." />
+        <SignInPrompt
+          what="Signing in shows every consultation and site visit booked from your number."
+          next="/account/services"
+        />
       ) : requests.length === 0 ? (
         <EmptyState
           icon={<Briefcase className="size-6" />}

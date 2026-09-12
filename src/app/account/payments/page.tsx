@@ -28,7 +28,10 @@ export default async function PaymentsPage() {
       subtitle="Your wallet, and the methods Quoin can take."
     >
       {!user ? (
-        <SignInPrompt what="Signing in shows your wallet balance and saved payment methods." />
+        <SignInPrompt
+          what="Signing in shows your wallet balance and saved payment methods."
+          next="/account/payments"
+        />
       ) : (
         <div className="space-y-4">
           <Card padding="lg" className="flex items-center gap-4">
