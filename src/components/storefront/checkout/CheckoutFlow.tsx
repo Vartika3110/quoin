@@ -8,7 +8,7 @@ import { Steps } from "@/components/ui/Progress";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InlineError } from "@/components/ui/ErrorState";
-import { Field, Input } from "@/components/ui/Input";
+import { CheckRow, Field, Input } from "@/components/ui/Input";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { StickyBar } from "@/components/storefront/StickyBar";
 import { SignInPanel } from "@/components/storefront/auth/SignInPanel";
@@ -282,15 +282,21 @@ type PlacedState =
 export function CheckoutFlow({
   isSignedIn,
   needsContactPhone,
+  savedDeliveryPhone,
   paymentsConfigured,
   googleEnabled,
   smsEnabled,
 }: {
   isSignedIn: boolean;
-  /** Signed in with no `User.phone` — a Google account before checkout
-      has ever asked it for one. Drives the mobile-number field on the
-      address step; see `POST /api/v1/checkout/order`'s `contactPhone`. */
+  /** Signed in with no verified `User.phone` and no saved `User.deliveryPhone`
+      — a Google account before checkout, or Settings, has ever given one.
+      Drives the mobile-number field on the address step; see
+      `POST /api/v1/checkout/order`'s `contactPhone`. */
   needsContactPhone: boolean;
+  /** A previously saved delivery number, masked — shown in place of the
+      field above when there is nothing left to ask. Always null when
+      `needsContactPhone` is true. */
+  savedDeliveryPhone: string | null;
   paymentsConfigured: boolean;
   googleEnabled: boolean;
   smsEnabled: boolean;
@@ -301,6 +307,12 @@ export function CheckoutFlow({
   const [address, setAddress] = useState<Address | null>(null);
   const [contactPhone, setContactPhone] = useState("");
   const [contactPhoneError, setContactPhoneError] = useState<string | null>(null);
+  /* Checked by default: a customer who is typing this in specifically so
+     Quoin can reach them almost always wants it remembered, and unchecking
+     one box is a lighter ask than checking one — see the order route for
+     what "saved" actually means (`saveContactPhone`, ignored whenever a
+     verified or already-saved number exists). */
+  const [saveContactPhone, setSaveContactPhone] = useState(true);
   const [payment, setPayment] = useState<PaymentMethod>(
     paymentsConfigured ? "online" : "callback",
   );
@@ -406,9 +418,9 @@ export function CheckoutFlow({
           paymentMode: payment === "online" ? "online" : "callback",
           /* Only meaningful when the account has no phone of its own —
              see `needsContactPhone`. Sent regardless of that flag is
-             harmless too: the route ignores it whenever `user.phone`
-             is already set. */
-          ...(needsContactPhone ? { contactPhone } : {}),
+             harmless too: the route ignores both whenever a verified or
+             already-saved number exists. */
+          ...(needsContactPhone ? { contactPhone, saveContactPhone } : {}),
         }),
       });
       const body = (await res.json()) as {
@@ -604,30 +616,47 @@ export function CheckoutFlow({
                   selectedId={address?.id ?? null}
                   onSelect={setAddress}
                 />
-                {needsContactPhone && (
-                  <Field
-                    label="Mobile number"
-                    htmlFor="contact-phone"
-                    hint="Indian numbers only, with or without +91. Needed so a driver or store can reach you — Google did not give Quoin one."
-                    error={contactPhoneError}
-                    required
-                  >
-                    <Input
-                      id="contact-phone"
-                      name="contactPhone"
-                      type="tel"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      placeholder="98765 43210"
-                      value={contactPhone}
-                      onChange={(e) => {
-                        setContactPhone(e.target.value);
-                        if (contactPhoneError) setContactPhoneError(null);
-                      }}
-                      leading={<Phone className="size-4" />}
-                      aria-invalid={contactPhoneError ? true : undefined}
+                {needsContactPhone ? (
+                  <div>
+                    <Field
+                      label="Mobile number"
+                      htmlFor="contact-phone"
+                      hint="Indian numbers only, with or without +91. Needed so a driver or store can reach you — Google did not give Quoin one."
+                      error={contactPhoneError}
+                      required
+                    >
+                      <Input
+                        id="contact-phone"
+                        name="contactPhone"
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="98765 43210"
+                        value={contactPhone}
+                        onChange={(e) => {
+                          setContactPhone(e.target.value);
+                          if (contactPhoneError) setContactPhoneError(null);
+                        }}
+                        leading={<Phone className="size-4" />}
+                        aria-invalid={contactPhoneError ? true : undefined}
+                      />
+                    </Field>
+                    <CheckRow
+                      className="mt-2"
+                      label="Save this number for future deliveries"
+                      checked={saveContactPhone}
+                      onChange={(e) => setSaveContactPhone(e.target.checked)}
                     />
-                  </Field>
+                  </div>
+                ) : (
+                  savedDeliveryPhone && (
+                    <p className="text-caption text-muted">
+                      Deliveries to <span className="nums text-ink">{savedDeliveryPhone}</span> ·{" "}
+                      <Link href="/account/settings" className="text-accent">
+                        Change in settings
+                      </Link>
+                    </p>
+                  )
                 )}
               </div>
             ) : (

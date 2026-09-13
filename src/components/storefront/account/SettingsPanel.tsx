@@ -7,30 +7,39 @@ import { Card } from "@/components/ui/Card";
 import { Field, Input } from "@/components/ui/Input";
 import { InlineError } from "@/components/ui/ErrorState";
 import { useToast } from "@/components/ui/Toast";
-import { SignOut } from "@/components/icons";
+import { Phone, SignOut } from "@/components/icons";
 import { ThemeToggle } from "@/components/storefront/ThemeToggle";
 
 /**
  * Account settings.
  *
  * Short, because there is genuinely little to set: the account is a
- * verified phone number and a display name. A settings screen padded out
- * with toggles that control nothing is worse than a short one.
+ * verified phone number (or, lacking one, an unverified delivery contact),
+ * a display name and an appearance toggle.
  *
- * The name is not editable here yet — `/api/v1/me` is read-only — so the
- * field says so rather than accepting keystrokes and dropping them.
+ * The name is not editable here yet — `/api/v1/me` is read-only for it —
+ * so that field says so rather than accepting keystrokes and dropping
+ * them. The phone field is not that: `PATCH /api/v1/me` edits
+ * `User.deliveryPhone`, never `User.phone` — see the doc comments on both
+ * columns in `prisma/schema.prisma`, and `deliveryPhoneFor` in
+ * `src/lib/auth/phone.ts` for how the two are reconciled everywhere else.
  */
 export function SettingsPanel({
   name,
   email,
   maskedPhone,
+  maskedDeliveryPhone,
 }: {
   name: string | null;
   email: string | null;
-  /** Null for a Google account that has never given checkout a number —
-      shown as "Not added" rather than inventing a phone-edit feature this
-      screen does not have. */
+  /** The verified, OTP identity number. Null for a Google account that has
+      never verified one — in that case `maskedDeliveryPhone` is what this
+      screen lets the customer manage instead. */
   maskedPhone: string | null;
+  /** The unverified shipping contact, masked. Only ever shown or editable
+      when `maskedPhone` is null — a verified number already answers "where
+      do deliveries go", so there is nothing here for it to add. */
+  maskedDeliveryPhone: string | null;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -74,23 +83,22 @@ export function SettingsPanel({
             />
           </Field>
 
-          <Field
-            label="Mobile number"
-            htmlFor="settings-phone"
-            hint={
-              maskedPhone
-                ? "Masked on purpose — a shoulder over the counter reads a whole number as easily as its owner does."
-                : "Not added yet. Checkout will ask for one the first time it needs to ship you something."
-            }
-          >
-            <Input
-              id="settings-phone"
-              defaultValue={maskedPhone ?? ""}
-              placeholder="Not added"
-              className="nums"
-              disabled
-            />
-          </Field>
+          {maskedPhone ? (
+            <Field
+              label="Mobile number"
+              htmlFor="settings-phone"
+              hint="Masked on purpose — a shoulder over the counter reads a whole number as easily as its owner does."
+            >
+              <Input
+                id="settings-phone"
+                defaultValue={maskedPhone}
+                className="nums"
+                disabled
+              />
+            </Field>
+          ) : (
+            <DeliveryPhoneField maskedDeliveryPhone={maskedDeliveryPhone} />
+          )}
 
           {email && (
             <Field label="Email" htmlFor="settings-email" hint="From your Google account.">
@@ -134,5 +142,167 @@ export function SettingsPanel({
         </Button>
       </Card>
     </div>
+  );
+}
+
+/**
+ * The delivery-phone field for an account with no verified number.
+ *
+ * Three states: nothing saved (a live input, ready to type into), a saved
+ * number (masked and read-only, with Change/Remove), and mid-edit (Change
+ * pressed — an empty input again, with Save/Cancel). `editing` starts true
+ * exactly when there is nothing saved, because in that state there is no
+ * read-only view to show.
+ */
+function DeliveryPhoneField({
+  maskedDeliveryPhone,
+}: {
+  maskedDeliveryPhone: string | null;
+}) {
+  const router = useRouter();
+  const toast = useToast();
+  const [editing, setEditing] = useState(!maskedDeliveryPhone);
+  const [value, setValue] = useState("");
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function patch(body: { deliveryPhone: string | null }) {
+    const res = await fetch("/api/v1/me", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const parsed = (await res.json()) as {
+      data?: { deliveryPhone: string | null };
+      error?: { message: string; fields?: Record<string, string> };
+    };
+    if (!res.ok) {
+      throw new Error(
+        parsed.error?.fields?.deliveryPhone ??
+          parsed.error?.message ??
+          "Something went wrong. Please try again.",
+      );
+    }
+  }
+
+  async function save() {
+    setFieldError(null);
+    setSaving(true);
+    try {
+      await patch({ deliveryPhone: value });
+      toast.toast("Delivery phone saved");
+      setEditing(false);
+      setValue("");
+      router.refresh();
+    } catch (error) {
+      setFieldError(error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function remove() {
+    setFieldError(null);
+    setSaving(true);
+    try {
+      await patch({ deliveryPhone: null });
+      toast.toast("Delivery phone removed");
+      /* Nothing saved any more — back to the live-input state, matching
+         what a fresh account with no number sees. */
+      setEditing(true);
+      router.refresh();
+    } catch (error) {
+      setFieldError(error instanceof Error ? error.message : "Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!editing && maskedDeliveryPhone) {
+    return (
+      <Field label="Delivery phone" htmlFor="settings-delivery-phone">
+        <div className="flex items-center gap-2">
+          <Input
+            id="settings-delivery-phone"
+            defaultValue={maskedDeliveryPhone}
+            className="nums"
+            disabled
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
+            onClick={() => setEditing(true)}
+          >
+            Change
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
+            loading={saving}
+            disabled={saving}
+            onClick={remove}
+          >
+            Remove
+          </Button>
+        </div>
+      </Field>
+    );
+  }
+
+  return (
+    <Field
+      label="Delivery phone"
+      htmlFor="settings-delivery-phone"
+      hint="Indian numbers only, with or without +91. Used by our delivery team to reach you — not for signing in."
+      error={fieldError}
+    >
+      <div className="flex items-center gap-2">
+        <Input
+          id="settings-delivery-phone"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="98765 43210"
+          leading={<Phone className="size-4" />}
+          value={value}
+          disabled={saving}
+          aria-invalid={fieldError ? true : undefined}
+          onChange={(e) => {
+            setValue(e.target.value);
+            if (fieldError) setFieldError(null);
+          }}
+        />
+        <Button
+          type="button"
+          size="sm"
+          className="shrink-0"
+          loading={saving}
+          disabled={saving}
+          onClick={save}
+        >
+          Save
+        </Button>
+        {maskedDeliveryPhone && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
+            disabled={saving}
+            onClick={() => {
+              setEditing(false);
+              setValue("");
+              setFieldError(null);
+            }}
+          >
+            Cancel
+          </Button>
+        )}
+      </div>
+    </Field>
   );
 }

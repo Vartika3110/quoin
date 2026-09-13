@@ -250,6 +250,14 @@ is the expected, working state for a preview, not a bug to chase.
 target database before (or as part of) this deploy; see *3. Vercel*
 above and *2. Load the schema and the catalogue*.
 
+**Delivery phone.** A later migration adds `User.deliveryPhone` — the
+unverified shipping contact a Google account can save at checkout or in
+Settings, kept deliberately separate from the verified `User.phone`
+identity column (see the doc comments on both in `prisma/schema.prisma`).
+Same rule as above: `prisma migrate deploy` must apply it before this
+code reaches the target database, or every route that reads or writes
+`User.deliveryPhone` fails against a column that does not exist yet.
+
 ## Sharing the link
 
 The production URL is `https://<project>.vercel.app`. If opening it prompts

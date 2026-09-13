@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { db } from "@/lib/db";
 import { orderLinesSchema } from "@/lib/cart/line-schema";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
-import { InvalidPhoneError, normalizePhone } from "@/lib/auth/phone";
+import { InvalidPhoneError, deliveryPhoneFor, normalizePhone } from "@/lib/auth/phone";
 import {
   OrderNotPossibleError,
   createPendingOrder,
@@ -40,6 +41,12 @@ const Body = z.object({
    * comment below on why it is never written to `User.phone`.
    */
   contactPhone: z.string().max(20).optional(),
+  /**
+   * Whether `contactPhone`, if it ends up used, should be remembered as
+   * `User.deliveryPhone` for next time. Meaningless — and ignored — unless
+   * `contactPhone` itself was needed; see the write below.
+   */
+  saveContactPhone: z.boolean().optional(),
 });
 
 /**
@@ -82,16 +89,20 @@ const Body = z.object({
  */
 export const POST = handler(async (request) => {
   const user = await requireUser();
-  const { addressId, lines, idempotencyKey, paymentMode, contactPhone } =
+  const { addressId, lines, idempotencyKey, paymentMode, contactPhone, saveContactPhone } =
     await parseBody(request, Body);
 
-  /* `User.phone` is null for a Google account until this moment. It is
-     the identity column OTP sign-in matches on, so an order is not
-     allowed to write anything unverified into it — see the comment on
-     `shipPhone` below. What it can do is ask, once, for a number to ship
-     against, which becomes this order's own `shipPhone` and nothing more
-     durable than that. */
-  let shipPhone = user.phone;
+  /* `deliveryPhoneFor` prefers a verified `phone`, then falls back to a
+     previously saved `deliveryPhone` — either means there is nothing left
+     to ask. Only when both are null (a Google account checkout has never
+     asked, or Settings never saved) does `contactPhone` get used at all —
+     `usedContactPhone` records exactly that, for the save-for-next-time
+     write below. `User.phone` itself is never written here: it is the
+     identity column OTP sign-in matches on, and an order must not put
+     anything unverified into it — see the comment on `deliveryPhone` in
+     `prisma/schema.prisma`. */
+  let shipPhone = deliveryPhoneFor(user);
+  let usedContactPhone = false;
   if (!shipPhone) {
     if (!contactPhone) {
       throw new ApiError(
@@ -110,10 +121,11 @@ export const POST = handler(async (request) => {
       }
       throw error;
     }
+    usedContactPhone = true;
   }
-  /* Present `user.phone` wins outright — `contactPhone` is ignored, not
-     merely unused, so nothing about an already-verified identity can be
-     overridden by a value typed into a checkout form. */
+  /* A verified or already-saved number wins outright — `contactPhone` is
+     ignored, not merely unused, so nothing about it can be overridden by a
+     value typed into a checkout form. */
 
   /* Only "online" needs a gateway to actually hand the customer to. A
      client only ever offers that tile when `isRazorpayConfigured()` is
@@ -159,6 +171,23 @@ export const POST = handler(async (request) => {
       throw new ApiError("conflict", error.message);
     }
     throw error;
+  }
+
+  /* Remember `contactPhone` for next time, when asked to. Deliberately
+     *after* the order above already exists, as a plain update outside its
+     transaction: this is a convenience preference, not money, and it must
+     never be able to fail an order that was in fact successfully written.
+     Errors are swallowed (and logged without the number, which is PII) for
+     exactly that reason — the customer still gets their order either way. */
+  if (usedContactPhone && saveContactPhone === true && !user.phone) {
+    try {
+      await db.user.update({
+        where: { id: user.id },
+        data: { deliveryPhone: shipPhone },
+      });
+    } catch (error) {
+      console.error("[checkout] failed to save delivery phone", error);
+    }
   }
 
   if (paymentMode === "callback") {

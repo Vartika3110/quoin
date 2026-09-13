@@ -141,6 +141,7 @@ export async function requireUser() {
     select: {
       id: true,
       phone: true,
+      deliveryPhone: true,
       name: true,
       email: true,
       tier: true,

@@ -13,9 +13,13 @@ process.env.AUTH_SECRET ??= "test-secret-at-least-32-characters-long!!";
 process.env.RAZORPAY_KEY_SECRET ??= "rzp_test_secret_for_unit_tests";
 process.env.RAZORPAY_WEBHOOK_SECRET ??= "webhook_secret_for_unit_tests";
 
-const { normalizePhone, maskPhone, InvalidPhoneError } = await import(
-  "@/lib/auth/phone"
-);
+const {
+  normalizePhone,
+  maskPhone,
+  InvalidPhoneError,
+  deliveryPhoneFor,
+  resolveDeliveryPhoneInput,
+} = await import("@/lib/auth/phone");
 const { generateCode, hashCode, verifyCode, OTP_LENGTH } = await import(
   "@/lib/auth/otp"
 );
@@ -154,6 +158,45 @@ describe("phone normalisation", () => {
 
   it("masks all but the last five digits", () => {
     assert.equal(maskPhone("+919876543210"), "+91 ***** 43210");
+  });
+});
+
+describe("deliveryPhoneFor", () => {
+  it("prefers a verified phone over a saved delivery number", () => {
+    assert.equal(
+      deliveryPhoneFor({ phone: "+919876543210", deliveryPhone: "+911111111111" }),
+      "+919876543210",
+    );
+  });
+
+  it("falls back to the saved delivery number when there is no verified phone", () => {
+    assert.equal(
+      deliveryPhoneFor({ phone: null, deliveryPhone: "+919876543210" }),
+      "+919876543210",
+    );
+  });
+
+  it("is null when neither exists", () => {
+    assert.equal(deliveryPhoneFor({ phone: null, deliveryPhone: null }), null);
+  });
+});
+
+describe("resolveDeliveryPhoneInput (PATCH /api/v1/me body → column value)", () => {
+  it("clears the column for null", () => {
+    assert.equal(resolveDeliveryPhoneInput(null), null);
+  });
+
+  it("clears the column for a blank or whitespace-only string", () => {
+    assert.equal(resolveDeliveryPhoneInput(""), null);
+    assert.equal(resolveDeliveryPhoneInput("   "), null);
+  });
+
+  it("rejects a number that cannot be an Indian mobile", () => {
+    assert.throws(() => resolveDeliveryPhoneInput("12345"), InvalidPhoneError);
+  });
+
+  it("normalises a valid number to E.164", () => {
+    assert.equal(resolveDeliveryPhoneInput("98765 43210"), "+919876543210");
   });
 });
 

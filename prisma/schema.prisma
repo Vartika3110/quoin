@@ -48,6 +48,21 @@ model User {
   /// see `resolveGoogleUser` in `src/lib/auth/google.ts` for why.
   googleSub String? @unique
 
+  /// E.164, normalised, **unverified**. A shipping contact only — never
+  /// sign-in, never identity. Not unique: a household can share one
+  /// number across two accounts, which `phone` above must never allow but
+  /// this column has no reason to forbid.
+  ///
+  /// Populated from a Google account's checkout `contactPhone` (see
+  /// `POST /api/v1/checkout/order`) or typed directly into Settings, and
+  /// read through `deliveryPhoneFor()` in `src/lib/auth/phone.ts`, which a
+  /// verified `phone` always wins over. Writing an unverified number here
+  /// is safe *because* it is never consulted for sign-in; writing one into
+  /// `phone` would let it hijack whoever that number's real OTP owner is —
+  /// see the comment on `phone` above. Never write to `phone` from here or
+  /// from anything that did not come back through OTP.
+  deliveryPhone String?
+
   /// Drives price resolution. A tier column rather than a boolean because
   /// trade/architect tiers are already implied by the storefront.
   tier UserTier @default(STANDARD)

@@ -60,6 +60,9 @@ export default async function CustomersPage({
             /* Added alongside Google sign-in: that account may have no
                phone at all, so a phone-only search would never find it. */
             { email: { contains: q, mode: "insensitive" } },
+            /* An unverified delivery number is still a number staff might
+               search by — the same reason `phone` is searched. */
+            { deliveryPhone: { contains: q } },
           ],
         }
       : {}),
@@ -76,6 +79,7 @@ export default async function CustomersPage({
         id: true,
         name: true,
         phone: true,
+        deliveryPhone: true,
         email: true,
         tier: true,
         createdAt: true,
@@ -152,7 +156,11 @@ export default async function CustomersPage({
                         {row.name ?? "Unnamed"}
                       </Link>
                       <p className="nums mt-0.5 text-caption text-muted">
-                        {row.phone ? maskPhone(row.phone) : (row.email ?? "—")}
+                        {row.phone
+                          ? maskPhone(row.phone)
+                          : row.deliveryPhone
+                            ? maskPhone(row.deliveryPhone)
+                            : (row.email ?? "—")}
                       </p>
                     </td>
                     <td className="px-4 py-3">

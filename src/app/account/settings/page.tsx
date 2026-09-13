@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   const user = session
     ? await db.user.findUnique({
         where: { id: session.userId },
-        select: { name: true, phone: true, email: true },
+        select: { name: true, phone: true, email: true, deliveryPhone: true },
       })
     : null;
 
@@ -31,6 +31,9 @@ export default async function SettingsPage() {
           name={user.name}
           email={user.email}
           maskedPhone={user.phone ? maskPhone(user.phone) : null}
+          maskedDeliveryPhone={
+            user.deliveryPhone ? maskPhone(user.deliveryPhone) : null
+          }
         />
       )}
     </AccountShell>

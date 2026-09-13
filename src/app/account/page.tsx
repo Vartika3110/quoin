@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Chevron, Crown, User } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { maskPhone } from "@/lib/auth/phone";
+import { deliveryPhoneFor, maskPhone } from "@/lib/auth/phone";
 import {
   listConsultRequestsForPhone,
   listConsultRequestsForUser,
@@ -36,6 +36,7 @@ export default async function AccountPage() {
         where: { id: session.userId },
         select: {
           phone: true,
+          deliveryPhone: true,
           name: true,
           email: true,
           tier: true,
@@ -75,6 +76,22 @@ export default async function AccountPage() {
         />
       ) : (
         <div className="space-y-6">
+          {!deliveryPhoneFor(user) && (
+            <Card padding="lg" className="flex flex-wrap items-center gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-body font-semibold text-ink">
+                  Add a phone for deliveries
+                </p>
+                <p className="mt-0.5 text-caption text-muted">
+                  We need a number to reach you when an order is on its way.
+                </p>
+              </div>
+              <Button href="/account/settings" variant="outline" size="sm">
+                Add phone
+              </Button>
+            </Card>
+          )}
+
           <Card padding="lg" className="flex flex-wrap items-center gap-4">
             <span className="grid size-14 shrink-0 place-items-center rounded-full bg-accent-wash text-accent">
               <User className="size-7" />

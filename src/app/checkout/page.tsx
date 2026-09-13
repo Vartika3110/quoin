@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { isRazorpayConfigured } from "@/lib/payments/razorpay";
 import { isGoogleSignInConfigured } from "@/lib/auth/google";
 import { isOtpDeliveryAvailable } from "@/lib/auth/sender";
+import { deliveryPhoneFor, maskPhone } from "@/lib/auth/phone";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +28,24 @@ export default async function CheckoutPage() {
      against — a Google account may have none. Read here rather than
      rediscovered client-side, for the same reason `isSignedIn` is: the
      first paint of the address step must already know whether to ask for
-     one. */
+     one. `deliveryPhoneFor` prefers a verified `phone` and falls back to a
+     previously saved `deliveryPhone` — see `src/lib/auth/phone.ts`. */
   const user = session
-    ? await db.user.findUnique({ where: { id: session.userId }, select: { phone: true } })
+    ? await db.user.findUnique({
+        where: { id: session.userId },
+        select: { phone: true, deliveryPhone: true },
+      })
     : null;
-  const needsContactPhone = isSignedIn && !user?.phone;
+  const needsContactPhone =
+    isSignedIn && !deliveryPhoneFor({ phone: user?.phone ?? null, deliveryPhone: user?.deliveryPhone ?? null });
+
+  /* A previously saved delivery number, shown instead of the input when
+     there is one and no verified phone — a returning Google customer
+     should not be asked again. Null whenever `needsContactPhone` is false
+     because a verified phone exists, since that phone is what ships the
+     order and there is nothing saved to announce. */
+  const savedDeliveryPhone =
+    !user?.phone && user?.deliveryPhone ? maskPhone(user.deliveryPhone) : null;
 
   /* Whether Razorpay can actually take a payment — decided here rather
      than left for the client to discover after already writing an order,
@@ -57,6 +71,7 @@ export default async function CheckoutPage() {
           <CheckoutFlow
             isSignedIn={isSignedIn}
             needsContactPhone={needsContactPhone}
+            savedDeliveryPhone={savedDeliveryPhone}
             paymentsConfigured={paymentsConfigured}
             googleEnabled={isGoogleSignInConfigured()}
             smsEnabled={isOtpDeliveryAvailable()}

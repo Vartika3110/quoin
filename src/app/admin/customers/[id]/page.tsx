@@ -57,6 +57,7 @@ export default async function CustomerDetailPage({
       id: true,
       name: true,
       phone: true,
+      deliveryPhone: true,
       email: true,
       tier: true,
       walletPaise: true,
@@ -130,6 +131,16 @@ export default async function CustomerDetailPage({
                 {customer.phone ?? "—"}
               </dd>
             </div>
+            {!customer.phone && customer.deliveryPhone && (
+              <div>
+                <dt className="text-micro uppercase tracking-wide text-muted">
+                  Delivery phone (not verified)
+                </dt>
+                <dd className="nums mt-0.5 text-body-sm font-medium text-ink">
+                  {customer.deliveryPhone}
+                </dd>
+              </div>
+            )}
             {!customer.phone && customer.email && (
               <div>
                 <dt className="text-micro uppercase tracking-wide text-muted">Email</dt>
