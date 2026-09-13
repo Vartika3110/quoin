@@ -74,6 +74,11 @@ export default async function AdminOrdersPage({
       current="/admin/orders"
       title="Orders"
       subtitle={`${total} order${total === 1 ? "" : "s"}${status ? ` — ${ORDER_STATUS_LABEL[status]}` : ""}${q ? ` matching “${q}”` : ""}.`}
+      actions={
+        <Button href="/admin/orders/board" variant="outline" size="sm">
+          Order board
+        </Button>
+      }
     >
       <OrderStatusFilterForm status={status} q={q} />
 

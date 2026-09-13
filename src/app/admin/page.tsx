@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { DashboardPaymentBreakdown } from "@/components/admin/DashboardPaymentBreakdown";
@@ -104,6 +105,15 @@ export default async function AdminDashboardPage() {
           <DashboardPaymentBreakdown breakdown={metrics.paymentBreakdownToday} />
         </div>
       </Card>
+
+      <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-caption">
+        <Link href="/admin/orders/board" className="text-muted hover:text-ink">
+          Open the order board
+        </Link>
+        <Link href="/admin/reports" className="text-muted hover:text-ink">
+          This month’s report
+        </Link>
+      </div>
     </AdminShell>
   );
 }

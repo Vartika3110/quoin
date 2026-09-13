@@ -10,6 +10,8 @@ process.env.AUTH_SECRET ??= "test-secret-at-least-32-characters-long!!";
 
 const {
   resolveIstDayRangeUtc,
+  resolveIstMonthRangeUtc,
+  parseMonthParam,
   isRevenueStatus,
   AWAITING_ACTION_STATUSES,
   resolveAdminPage,
@@ -43,27 +45,70 @@ describe("resolveIstDayRangeUtc", () => {
 });
 
 describe("isRevenueStatus", () => {
-  it("counts only PAID as revenue", () => {
-    assert.equal(isRevenueStatus("PAID"), true);
+  const PAID_AT = new Date("2026-09-05T10:00:00.000Z");
+
+  it("counts a paid order that has moved on in fulfilment — the bug this rule fixes", () => {
+    assert.equal(isRevenueStatus("CONFIRMED", PAID_AT), true);
+    assert.equal(isRevenueStatus("DELIVERED", PAID_AT), true);
   });
 
-  it("excludes every non-PAID status, including ones that already moved money once", () => {
-    const nonRevenue = [
-      "PENDING_PAYMENT",
-      "FAILED",
-      "CANCELLED",
-      "CONFIRMED",
-      "PROCESSING",
-      "PACKED",
-      "DISPATCHED",
-      "OUT_FOR_DELIVERY",
-      "DELIVERED",
-      "REFUND_PENDING",
-      "REFUNDED",
-    ] as const;
-    for (const status of nonRevenue) {
-      assert.equal(isRevenueStatus(status), false, `${status} must not count as revenue`);
-    }
+  it("still counts a refund that has been promised but not yet sent to the gateway", () => {
+    assert.equal(isRevenueStatus("REFUND_PENDING", PAID_AT), true);
+  });
+
+  it("excludes a refunded order even though it was paid", () => {
+    assert.equal(isRevenueStatus("REFUNDED", PAID_AT), false);
+  });
+
+  it("excludes anything with no paidAt at all, regardless of status", () => {
+    assert.equal(isRevenueStatus("PAID", null), false);
+    assert.equal(isRevenueStatus("CONFIRMED", null), false);
+  });
+});
+
+describe("resolveIstMonthRangeUtc", () => {
+  it("September 2026 starts and ends at IST midnight, in UTC", () => {
+    const { start, end } = resolveIstMonthRangeUtc(2026, 9);
+    assert.equal(start.toISOString(), "2026-08-31T18:30:00.000Z");
+    assert.equal(end.toISOString(), "2026-09-30T18:30:00.000Z");
+  });
+
+  it("rolls December into January of the next year", () => {
+    const { end } = resolveIstMonthRangeUtc(2026, 12);
+    assert.equal(end.toISOString(), "2026-12-31T18:30:00.000Z");
+    const january = resolveIstMonthRangeUtc(2027, 1);
+    assert.equal(january.start.toISOString(), end.toISOString());
+  });
+});
+
+describe("parseMonthParam", () => {
+  const now = new Date("2026-09-13T10:00:00.000Z"); // 13 Sep 2026, IST
+
+  it("accepts a valid past month", () => {
+    assert.deepEqual(parseMonthParam("2026-06", now), { year: 2026, month: 6 });
+  });
+
+  it("falls back to the current IST month when absent", () => {
+    assert.deepEqual(parseMonthParam(undefined, now), { year: 2026, month: 9 });
+  });
+
+  it("falls back to the current IST month for a malformed value", () => {
+    assert.deepEqual(parseMonthParam("not-a-month", now), { year: 2026, month: 9 });
+    assert.deepEqual(parseMonthParam("2026-9", now), { year: 2026, month: 9 });
+    assert.deepEqual(parseMonthParam("", now), { year: 2026, month: 9 });
+  });
+
+  it("falls back to the current IST month for month 13", () => {
+    assert.deepEqual(parseMonthParam("2026-13", now), { year: 2026, month: 9 });
+  });
+
+  it("clamps a future month back to the current IST month", () => {
+    assert.deepEqual(parseMonthParam("2026-10", now), { year: 2026, month: 9 });
+    assert.deepEqual(parseMonthParam("2027-01", now), { year: 2026, month: 9 });
+  });
+
+  it("accepts the current month itself", () => {
+    assert.deepEqual(parseMonthParam("2026-09", now), { year: 2026, month: 9 });
   });
 });
 

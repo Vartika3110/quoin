@@ -2,11 +2,13 @@ import Link from "next/link";
 import { cn } from "@/components/ui/cn";
 import {
   Box,
+  Boards,
   Grid,
   Package,
   People,
   Rupee,
   Sparkle,
+  Trend,
 } from "@/components/icons";
 
 /**
@@ -30,6 +32,8 @@ import {
 export const ADMIN_SECTIONS = [
   { href: "/admin", label: "Dashboard", Icon: Grid },
   { href: "/admin/orders", label: "Orders", Icon: Package },
+  { href: "/admin/orders/board", label: "Board", Icon: Boards },
+  { href: "/admin/reports", label: "Reports", Icon: Trend },
   { href: "/admin/inventory", label: "Inventory", Icon: Box },
   { href: "/admin/customers", label: "Customers", Icon: People },
   { href: "/admin/pricing", label: "Pricing", Icon: Rupee },
