@@ -800,15 +800,20 @@ export function CheckoutFlow({
               Back
             </Button>
           )}
+          {/* Desktop only: below `lg` the sticky bar carries Continue, and
+              rendering this one too puts the same action on screen twice.
+              Back stays at every width — the bar has no room for it.
+
+              Hidden on a wrapper, not on the Button: `hidden` on the Button
+              itself loses to its own `inline-flex`, which Tailwind emits
+              later in the stylesheet. */}
           {step < 3 && (
-            <Button
-              className="ml-auto"
-              disabled={!canAdvance}
-              onClick={() => setStep((s) => s + 1)}
-            >
-              Continue
-              <ArrowRight className="size-4" />
-            </Button>
+            <div className="ml-auto hidden lg:block">
+              <Button disabled={!canAdvance} onClick={() => setStep((s) => s + 1)}>
+                Continue
+                <ArrowRight className="size-4" />
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -996,15 +1001,14 @@ function Review({
               in that window.
             </span>
           </p>
-          <Button
-            block
-            size="lg"
-            className="mt-4"
-            loading={placing}
-            onClick={onConfirm}
-          >
-            {confirmLabel}
-          </Button>
+          {/* Desktop only, like the step buttons: below `lg` the sticky
+              bar already carries this action. Hidden on the wrapper for the
+              same reason. */}
+          <div className="mt-4 hidden lg:block">
+            <Button block size="lg" loading={placing} onClick={onConfirm}>
+              {confirmLabel}
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="rounded-card border border-accent-edge bg-accent-wash p-4">
@@ -1016,15 +1020,11 @@ function Review({
               take payment and lock your delivery slots.
             </span>
           </p>
-          <Button
-            block
-            size="lg"
-            className="mt-4"
-            loading={placing}
-            onClick={onConfirm}
-          >
-            Confirm this order
-          </Button>
+          <div className="mt-4 hidden lg:block">
+            <Button block size="lg" loading={placing} onClick={onConfirm}>
+              Confirm this order
+            </Button>
+          </div>
         </div>
       )}
     </div>

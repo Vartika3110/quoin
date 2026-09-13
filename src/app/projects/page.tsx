@@ -37,9 +37,13 @@ export default async function ProjectsPage() {
           subtitle="Every order, booking and quote for one site, gathered so a build reads as a single project."
           action={
             session ? (
-              <Button href="/projects/new" size="sm" className="hidden sm:inline-flex">
-                New project
-              </Button>
+              /* Hidden on a wrapper: `hidden` on the Button loses to its own
+                 `inline-flex`, which Tailwind emits later in the stylesheet. */
+              <span className="hidden sm:block">
+                <Button href="/projects/new" size="sm">
+                  New project
+                </Button>
+              </span>
             ) : undefined
           }
         />
