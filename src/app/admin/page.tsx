@@ -54,7 +54,7 @@ export default async function AdminDashboardPage() {
         <Stat
           label="Revenue today"
           value={formatPrice(metrics.revenueTodayPaise)}
-          hint="Captured payments only, GST-inclusive — not tied to when the order was placed."
+          hint="Captured payments only, GST-inclusive — includes money staff recorded offline, not tied to when the order was placed."
           icon={<Rupee className="size-4" />}
           tone="accent"
         />

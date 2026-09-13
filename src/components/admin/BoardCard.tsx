@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { formatPrice } from "@/lib/types/catalog";
 import { ORDER_STATUS_LABEL, ORDER_STATUS_TONE, PAYMENT_STATUS_LABEL } from "@/lib/data/order-history";
 import type { AdminBoardCard as AdminBoardCardData } from "@/lib/data/admin-board";
@@ -79,6 +80,15 @@ export function BoardCard({
           toStatus={card.nextStatus}
           label={`Mark ${ORDER_STATUS_LABEL[card.nextStatus]}`}
         />
+      ) : card.isCallback ? (
+        /* No one-tap move exists for a callback order — see the note on
+           `getOrderBoard` — and money is deliberately not one-tap anyway:
+           this sends staff to the full "Mark payment received" form
+           rather than trying to collect an amount and a method on the
+           board itself. */
+        <Button href={`/admin/orders/${card.reference}#payment`} size="sm" variant="outline" block>
+          Mark paid
+        </Button>
       ) : (
         <Link
           href={`/admin/orders/${card.reference}`}

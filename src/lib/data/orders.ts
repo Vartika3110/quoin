@@ -6,12 +6,13 @@ import { quoteCart, type Quote } from "@/lib/data/checkout";
 import {
   InsufficientStockError,
   RESERVATION_WINDOW_MS,
+  ReservationNotHeldError,
   StoreUnavailableError,
   commitStockForOrder,
   reserveStockForOrder,
   type OrderStockLine,
 } from "@/lib/data/inventory";
-import type { Paise } from "@/lib/types/catalog";
+import { formatPrice, type Paise } from "@/lib/types/catalog";
 
 /**
  * Orders.
@@ -96,6 +97,24 @@ export class IllegalOrderTransitionError extends Error {
   ) {
     super(`Cannot move an order from ${from} to ${to}`);
     this.name = "IllegalOrderTransitionError";
+  }
+}
+
+/**
+ * Another request already moved this order between the read that decided
+ * a write was legal and the guarded write itself.
+ *
+ * Lives here, not in `src/lib/data/admin-orders.ts` where it was first
+ * written, because `recordOfflinePayment` below needs to throw it too and
+ * that module already imports `canTransition` and
+ * `IllegalOrderTransitionError` from here — importing back from
+ * `admin-orders.ts` would be circular. `admin-orders.ts` re-exports this
+ * so `transitionOrderStatus` and its callers see no change.
+ */
+export class OrderStatusRaceError extends Error {
+  constructor() {
+    super("This order's status changed before this update could be applied. Reload and try again.");
+    this.name = "OrderStatusRaceError";
   }
 }
 
@@ -270,9 +289,19 @@ async function readIdempotentOrder(
     totalPaise: existing.totalPaise,
     quote,
     idempotent: true,
-    existingPayment: payment
-      ? { providerOrderId: payment.providerOrderId, amountPaise: payment.amountPaise }
-      : null,
+    /* `payment.providerOrderId` is now nullable — see the model comment —
+       because an OFFLINE row never has one. That case cannot actually
+       reach here today (only an "online" checkout retries into this
+       function; a callback order that was later settled offline has no
+       `idempotencyKey` collision path back to `/checkout/order` at all),
+       but the null check is what keeps this a correct read of the type
+       rather than a cast, and `existingPayment: null` is exactly the
+       right answer if it ever could: there is no gateway order to hand
+       the browser back. */
+    existingPayment:
+      payment?.providerOrderId != null
+        ? { providerOrderId: payment.providerOrderId, amountPaise: payment.amountPaise }
+        : null,
   };
 }
 
@@ -564,6 +593,16 @@ export type SettlementOutcome =
  * The amount is checked before anything moves. A capture for less than
  * the order total is a discrepancy for a person to look at, not a sale to
  * complete, and marking the order paid would hide it.
+ *
+ * This is no longer the only door to `PAID`. `recordOfflinePayment` below
+ * is the other one, for money the owner takes by phone — UPI, cash, a
+ * bank transfer — while online payment is switched off. Neither trusts a
+ * caller's say-so on its own: this function trusts a signature-verified
+ * `payment.captured` delivery, and that one trusts a specific staff
+ * account's claim to have personally received a specific amount, written
+ * down as a `CAPTURED` `Payment` row with its own provider, method and
+ * `recordedByUserId` rather than merely flipping `Order.status`. Nothing
+ * else may — see `PaidNotAdminSettableError`, `src/lib/data/admin-orders.ts`.
  */
 /**
  * Thrown inside the settlement transaction when another delivery has
@@ -725,4 +764,312 @@ export async function recordFailedPayment(input: {
   });
 
   return "recorded";
+}
+
+/** ---- Offline settlement --------------------------------------------------
+ *
+ * Online payment (Razorpay) is not switched on for this deploy, so every
+ * order is written `paymentMode: "callback"` — see `CreateOrderInput` — and
+ * settles the way it has always settled outside software: the owner rings
+ * the customer and takes UPI, cash or a bank transfer over the phone. Until
+ * now nothing could move that order past `PENDING_PAYMENT`, because the
+ * only door to `PAID` was `settleCapturedPayment` above, and that door
+ * only a signature-verified Razorpay webhook may open.
+ *
+ * This is the second door, and it is deliberately much narrower than "an
+ * admin can set any status". It does not take a staff member's word that
+ * an order *is* paid — it takes their word that *they personally
+ * received a specific amount, by a specific method*, and writes that
+ * claim down as durably as a gateway capture: a `CAPTURED` `Payment` row
+ * with `provider: OFFLINE`, the method, whatever reference they were
+ * given, and `recordedByUserId` naming exactly who is vouching for it. A
+ * false claim is now a false claim on the record, not a status that
+ * changed with nothing behind it.
+ */
+
+/** Every method staff can pick when recording money they took by phone. */
+export const OFFLINE_PAYMENT_METHODS = ["UPI", "CASH", "BANK_TRANSFER", "CHEQUE"] as const;
+export type OfflinePaymentMethod = (typeof OFFLINE_PAYMENT_METHODS)[number];
+
+/** Plain-language label for the admin order page's payments list. */
+export const OFFLINE_METHOD_LABEL: Record<OfflinePaymentMethod, string> = {
+  UPI: "UPI",
+  CASH: "Cash",
+  BANK_TRANSFER: "Bank transfer",
+  CHEQUE: "Cheque",
+};
+
+/** Matches the zod body at `POST .../offline-payment` — enforced again
+    here because this function, not the route, is the actual authority:
+    it is called (and tested) independent of any particular caller. */
+const MAX_OFFLINE_REFERENCE_LENGTH = 100;
+const MAX_OFFLINE_NOTE_LENGTH = 500;
+
+/** The claim staff typed in was not one this function can act on — an
+    unknown method, a non-integer or non-positive amount, or an amount
+    that does not equal the order total. Distinct from
+    `OfflinePaymentNotEligibleError`: this is about the *shape* of the
+    claim, not the order's own state. */
+export class InvalidOfflinePaymentError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidOfflinePaymentError";
+  }
+}
+
+export interface OfflinePaymentClaim {
+  method: OfflinePaymentMethod;
+  amountPaise: Paise;
+  offlineReference: string | null;
+  note: string | null;
+}
+
+/**
+ * Validates and normalises what staff typed in, against the total of the
+ * order they are claiming to have collected in full.
+ *
+ * Pure — no database, no clock, no side effect — so it is directly
+ * testable, and so `recordOfflinePayment` below and anything else that
+ * ever needs to check a claim before acting on it share one rule rather
+ * than each restating "must equal the total" in its own words.
+ *
+ * `amountPaise` must equal `totalPaise` **exactly**. Part payments are a
+ * real thing an owner will eventually want to record — a deposit today, a
+ * balance on delivery — but that needs its own ledger against the order
+ * and is not this phase's slice; accepting a lesser amount here and
+ * calling the order PAID would just be quietly wrong, not a smaller
+ * version of the real feature.
+ */
+export function validateOfflinePayment(
+  input: {
+    method: string;
+    amountPaise: number;
+    offlineReference?: string | null;
+    note?: string | null;
+  },
+  totalPaise: Paise,
+): OfflinePaymentClaim {
+  if (!(OFFLINE_PAYMENT_METHODS as readonly string[]).includes(input.method)) {
+    throw new InvalidOfflinePaymentError(
+      `"${input.method}" is not a payment method staff can record here.`,
+    );
+  }
+
+  if (!Number.isInteger(input.amountPaise) || input.amountPaise <= 0) {
+    throw new InvalidOfflinePaymentError("Amount must be a positive whole number of paise.");
+  }
+
+  if (input.amountPaise !== totalPaise) {
+    throw new InvalidOfflinePaymentError(
+      `Amount must equal the order total of ${formatPrice(totalPaise)}. Part payments can't be recorded yet.`,
+    );
+  }
+
+  return {
+    method: input.method as OfflinePaymentMethod,
+    amountPaise: input.amountPaise,
+    offlineReference: input.offlineReference?.trim().slice(0, MAX_OFFLINE_REFERENCE_LENGTH) || null,
+    note: input.note?.trim().slice(0, MAX_OFFLINE_NOTE_LENGTH) || null,
+  };
+}
+
+/** No order matches the reference an offline payment was about to be
+    recorded against. */
+export class OfflinePaymentOrderNotFoundError extends Error {
+  constructor(reference: string) {
+    super(`No such order: ${reference}`);
+    this.name = "OfflinePaymentOrderNotFoundError";
+  }
+}
+
+/** The order itself is not in a state this can act on — not awaiting
+    payment, or already carrying a captured payment (from the gateway or
+    from an earlier offline record). Distinct from
+    `InvalidOfflinePaymentError`, which is about the claim, not the
+    order. */
+export class OfflinePaymentNotEligibleError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OfflinePaymentNotEligibleError";
+  }
+}
+
+export interface RecordOfflinePaymentInput {
+  reference: string;
+  method: string;
+  amountPaise: number;
+  offlineReference?: string;
+  note?: string;
+  /** The staff account vouching for having received the money. Never
+      nullable from the route — there is always a `requireStaff()` behind
+      it — but required here too, since this function is the actual
+      authority and must not write a `CAPTURED` payment attributed to no
+      one. */
+  actorUserId: string;
+}
+
+export interface OfflinePaymentResult {
+  reference: string;
+  /** Always `"CONFIRMED"` on success — see the module comment on why this
+      function moves the order twice. */
+  status: OrderStatus;
+}
+
+/**
+ * Records money staff took by phone and confirms the order.
+ *
+ * Two status writes, `PENDING_PAYMENT -> PAID -> CONFIRMED`, in the one
+ * transaction, not one write to `CONFIRMED` directly: `PAID` is the fact
+ * that money was received, and `CONFIRMED` is a distinct fact — that
+ * staff have looked at the order and are proceeding with it — and a
+ * Razorpay capture produces exactly the first without the second (the
+ * webhook never auto-confirms; a human still has to move `PAID ->
+ * CONFIRMED` through `transitionOrderStatus`). Collapsing them here would
+ * mean an offline order and an online one reach "confirmed" through
+ * different numbers of recorded steps, which makes the audit trail lie
+ * about what happened. Since this function is itself the person telling
+ * the state machine "money moved" for the first edge, it is also the
+ * natural place to take the second, ordinary one straight after — the
+ * owner does not separately click "confirm" immediately after "mark
+ * paid".
+ *
+ * Guarded exactly like `settleCapturedPayment`: each status write is a
+ * conditional `updateMany` re-asserting the state it read, and a zero
+ * count means a concurrent request already moved this order — thrown as
+ * `OrderStatusRaceError` rather than silently overwriting or double-
+ * applying either edge. Stock is committed with `commitStockForOrder`,
+ * the same function and the same call shape `settleCapturedPayment` uses
+ * — including its handling (none) of an already-expired reservation: if
+ * `releaseExpiredReservations` has already given the stock back by the
+ * time staff record the payment, `commitVariantStock`'s own guard
+ * (`reservedQty >= qty`) fails and throws a plain `Error`, which rolls
+ * back this entire transaction — the order stays `PENDING_PAYMENT`, no
+ * `Payment` row is written, and staff see a generic failure rather than a
+ * confirmed order sitting on stock it no longer holds. This function does
+ * not attempt to re-reserve or paper over that; it fails exactly as
+ * loudly as a Razorpay capture would in the same situation, which is the
+ * behaviour being mirrored, not improved on.
+ */
+export async function recordOfflinePayment(
+  input: RecordOfflinePaymentInput,
+): Promise<OfflinePaymentResult> {
+  const order = await db.order.findUnique({
+    where: { reference: input.reference },
+    select: {
+      id: true,
+      status: true,
+      totalPaise: true,
+      /* Whether *any* payment has already been captured against this
+         order — by the gateway, or by an earlier offline record. Status
+         alone should already imply this (only `settleCapturedPayment`
+         and this function ever write CAPTURED, and both move `status`
+         off PENDING_PAYMENT in the same transaction), but the order is
+         staff's whole basis for trusting the amount they are about to
+         claim, so it is checked directly rather than assumed from a
+         column that is *supposed* to always agree with it. */
+      payments: { where: { status: "CAPTURED" }, select: { id: true }, take: 1 },
+    },
+  });
+
+  if (!order) throw new OfflinePaymentOrderNotFoundError(input.reference);
+
+  if (order.status !== "PENDING_PAYMENT") {
+    throw new OfflinePaymentNotEligibleError(
+      `This order is not awaiting payment — its status is ${order.status}.`,
+    );
+  }
+
+  if (order.payments.length > 0) {
+    throw new OfflinePaymentNotEligibleError(
+      "This order already has a captured payment against it.",
+    );
+  }
+
+  /* Both edges checked up front, against the lifecycle table itself
+     rather than assumed — see `transitionOrderStatus`'s own use of
+     `canTransition` before it writes anything. Both are legal today by
+     construction (`ORDER_TRANSITIONS`), so neither throw is reachable
+     while that table matches this function's own hard-coded two writes;
+     the check exists so a future edit to the table that removed either
+     edge would fail here loudly, not silently start writing an illegal
+     transition. */
+  if (!canTransition("PENDING_PAYMENT", "PAID")) {
+    throw new IllegalOrderTransitionError("PENDING_PAYMENT", "PAID");
+  }
+  if (!canTransition("PAID", "CONFIRMED")) {
+    throw new IllegalOrderTransitionError("PAID", "CONFIRMED");
+  }
+
+  const claim = validateOfflinePayment(input, order.totalPaise);
+
+  const referenceSuffix = claim.offlineReference ? ` · ref ${claim.offlineReference}` : "";
+  const paidNote =
+    `Payment received offline: ${OFFLINE_METHOD_LABEL[claim.method]}${referenceSuffix}` +
+    (claim.note ? ` — ${claim.note}` : "");
+
+  await db.$transaction(async (tx) => {
+    const claimedPaid = await tx.order.updateMany({
+      where: { id: order.id, status: "PENDING_PAYMENT" },
+      data: { status: "PAID", paidAt: new Date() },
+    });
+    if (claimedPaid.count === 0) throw new OrderStatusRaceError();
+
+    await tx.payment.create({
+      data: {
+        orderId: order.id,
+        provider: "OFFLINE",
+        status: "CAPTURED",
+        amountPaise: claim.amountPaise,
+        method: claim.method,
+        offlineReference: claim.offlineReference,
+        recordedByUserId: input.actorUserId,
+        /* No providerOrderId or providerPaymentId — this payment never
+           went near a gateway. See the model comment on `Payment`. */
+      },
+    });
+
+    /* A callback order is usually marked paid hours after it was placed,
+       long enough for its reservation to have been released. Thrown
+       inside the transaction, so the PAID claim and the payment row above
+       roll back with it — this only swaps an unexplained 500 for a
+       message staff can act on. */
+    try {
+      await commitStockForOrder(tx, order.id);
+    } catch (error) {
+      if (error instanceof ReservationNotHeldError) {
+        throw new OfflinePaymentNotEligibleError(
+          "The stock held for this order was released when its reservation expired. Check stock is still available, then ask the customer to place the order again.",
+        );
+      }
+      throw error;
+    }
+
+    await tx.orderStatusChange.create({
+      data: {
+        orderId: order.id,
+        fromStatus: "PENDING_PAYMENT",
+        toStatus: "PAID",
+        actorUserId: input.actorUserId,
+        note: paidNote,
+      },
+    });
+
+    const claimedConfirmed = await tx.order.updateMany({
+      where: { id: order.id, status: "PAID" },
+      data: { status: "CONFIRMED" },
+    });
+    if (claimedConfirmed.count === 0) throw new OrderStatusRaceError();
+
+    await tx.orderStatusChange.create({
+      data: {
+        orderId: order.id,
+        fromStatus: "PAID",
+        toStatus: "CONFIRMED",
+        actorUserId: input.actorUserId,
+        note: "Confirmed after offline payment",
+      },
+    });
+  });
+
+  return { reference: input.reference, status: "CONFIRMED" };
 }

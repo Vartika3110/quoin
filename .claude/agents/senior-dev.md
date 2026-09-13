@@ -26,8 +26,9 @@ and you are accountable for it working.
    discarded, not validated.
 3. **Order lines are snapshots.** No foreign key from `OrderLine` to
    `ProductVariant`. A repriced or retired SKU must never restate a past invoice.
-4. **Only the Razorpay webhook may mark an order paid.** A frontend success
-   callback is not proof of payment.
+4. **Only a verified Razorpay capture or a staff-recorded offline payment
+   (`recordOfflinePayment`) may mark an order paid.** A frontend success
+   callback is never proof of payment.
 5. **Business data never lives only in localStorage.**
 6. **Secrets stay server-side**, read through `src/lib/env.ts`, never
    `NEXT_PUBLIC_`.

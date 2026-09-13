@@ -123,7 +123,7 @@ export function parseMonthParam(
  *
  * Takes `paidAt` as a plain value rather than reading it off an `Order`
  * so this stays a pure predicate: `getDashboardMetrics` below and the
- * monthly report's "Paid online" figure
+ * monthly report's "Total received" figure
  * (`getMonthlyReport`/`src/app/admin/reports/page.tsx`) both need "paidAt
  * inside a date range", which only Postgres can answer efficiently, so
  * both express this same rule as `{ paidAt: { gte, lt }, status: { not:
@@ -356,8 +356,28 @@ export interface MonthlyOrderStats {
   orderValuePaise: number;
   /** Sum of `totalPaise` where `paidAt` fell in this IST month and
       `status` is not `REFUNDED` — `isRevenueStatus`, scoped to the month
-      the money landed rather than the month the order was placed. */
+      the money landed rather than the month the order was placed.
+      Money actually received, online *and* offline together — this was
+      called `paidOnlinePaise` before offline settlement existed, but the
+      query it ran was never online-only; every order with `paidAt` set
+      counts, regardless of which `Payment.provider` put it there. See
+      `paidOnlinePaise`/`receivedOfflinePaise` below for the split. */
+  totalReceivedPaise: number;
+  /** The same money as `totalReceivedPaise`, restricted to orders whose
+      `CAPTURED` payment has `provider: RAZORPAY` — summed from `Payment`,
+      not `Order`, but landing on the identical figure in the ordinary
+      case: `createGatewayOrder` is always called with `order.totalPaise`
+      and `recordOfflinePayment` refuses any amount that is not exactly
+      `order.totalPaise` (see `src/lib/data/orders.ts`), and each order
+      carries at most one `CAPTURED` payment, so a provider's own
+      payments sum to the same total its orders do. Grouping on `Payment`
+      rather than `Order` is what lets this and `receivedOfflinePaise`
+      partition `totalReceivedPaise` without a second query re-deriving
+      "which orders were online" by hand. */
   paidOnlinePaise: number;
+  /** `paidOnlinePaise`'s mirror for `provider: OFFLINE` — money the owner
+      took by phone and staff recorded through `recordOfflinePayment`. */
+  receivedOfflinePaise: number;
   /** Orders created in this IST month whose current status is
       `DELIVERED`. */
   deliveredCount: number;
@@ -376,24 +396,38 @@ const ORDER_VALUE_EXCLUDED_STATUSES = ["CANCELLED", "FAILED", "REFUNDED"] as con
 async function computeMonthStats(year: number, month: number): Promise<MonthlyOrderStats> {
   const { start, end } = resolveIstMonthRangeUtc(year, month);
   const createdInMonth = { createdAt: { gte: start, lt: end } };
+  /* `isRevenueStatus`, as a `where` clause — reused as both an `Order`
+     filter (for `totalReceivedPaise`) and a nested `order` filter on
+     `Payment` (for the two below it), so "which orders counted as
+     received this month" cannot drift between the three. */
+  const receivedInMonth = { paidAt: { gte: start, lt: end }, status: { not: "REFUNDED" as const } };
 
-  const [ordersPlaced, valueAgg, deliveredCount, paidOnlineAgg] = await Promise.all([
-    db.order.count({ where: { ...createdInMonth, NOT: abandonedCheckoutWhere() } }),
-    db.order.aggregate({
-      where: {
-        ...createdInMonth,
-        NOT: abandonedCheckoutWhere(),
-        status: { notIn: [...ORDER_VALUE_EXCLUDED_STATUSES] },
-      },
-      _count: { _all: true },
-      _sum: { totalPaise: true },
-    }),
-    db.order.count({ where: { ...createdInMonth, status: "DELIVERED" } }),
-    db.order.aggregate({
-      where: { paidAt: { gte: start, lt: end }, status: { not: "REFUNDED" } },
-      _sum: { totalPaise: true },
-    }),
-  ]);
+  const [ordersPlaced, valueAgg, deliveredCount, totalReceivedAgg, paidOnlineAgg, receivedOfflineAgg] =
+    await Promise.all([
+      db.order.count({ where: { ...createdInMonth, NOT: abandonedCheckoutWhere() } }),
+      db.order.aggregate({
+        where: {
+          ...createdInMonth,
+          NOT: abandonedCheckoutWhere(),
+          status: { notIn: [...ORDER_VALUE_EXCLUDED_STATUSES] },
+        },
+        _count: { _all: true },
+        _sum: { totalPaise: true },
+      }),
+      db.order.count({ where: { ...createdInMonth, status: "DELIVERED" } }),
+      db.order.aggregate({
+        where: receivedInMonth,
+        _sum: { totalPaise: true },
+      }),
+      db.payment.aggregate({
+        where: { status: "CAPTURED", provider: "RAZORPAY", order: receivedInMonth },
+        _sum: { amountPaise: true },
+      }),
+      db.payment.aggregate({
+        where: { status: "CAPTURED", provider: "OFFLINE", order: receivedInMonth },
+        _sum: { amountPaise: true },
+      }),
+    ]);
 
   const orderValuePaise = valueAgg._sum.totalPaise ?? 0;
   const averageDenominator = valueAgg._count._all;
@@ -403,7 +437,9 @@ async function computeMonthStats(year: number, month: number): Promise<MonthlyOr
     month,
     ordersPlaced,
     orderValuePaise,
-    paidOnlinePaise: paidOnlineAgg._sum.totalPaise ?? 0,
+    totalReceivedPaise: totalReceivedAgg._sum.totalPaise ?? 0,
+    paidOnlinePaise: paidOnlineAgg._sum.amountPaise ?? 0,
+    receivedOfflinePaise: receivedOfflineAgg._sum.amountPaise ?? 0,
     deliveredCount,
     averageOrderPaise: averageDenominator > 0 ? Math.round(orderValuePaise / averageDenominator) : null,
   };

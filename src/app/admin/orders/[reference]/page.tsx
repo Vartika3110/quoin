@@ -5,6 +5,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
+import { OfflinePaymentForm } from "@/components/admin/OfflinePaymentForm";
 import { requireStaffPage } from "@/lib/auth/staff";
 import { formatPrice } from "@/lib/types/catalog";
 import {
@@ -18,6 +19,7 @@ import {
   getAdminOrder,
   legalNextStatuses,
 } from "@/lib/data/admin-orders";
+import { OFFLINE_METHOD_LABEL, type OfflinePaymentMethod } from "@/lib/data/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +56,14 @@ export default async function AdminOrderPage({ params }: Ctx) {
     value,
     label: ORDER_STATUS_LABEL[value],
   }));
+
+  /* The same test `recordOfflinePayment` itself enforces
+     (`src/lib/data/orders.ts`) — awaiting payment, and nothing already
+     captured against it — computed here only to decide whether to show
+     the form at all. The route re-checks both regardless. */
+  const canRecordOfflinePayment =
+    order.status === "PENDING_PAYMENT" &&
+    !order.payments.some((payment) => payment.status === "CAPTURED");
 
   return (
     <AdminShell
@@ -125,24 +135,38 @@ export default async function AdminOrderPage({ params }: Ctx) {
                       </Badge>
                       <span className="nums text-ink">{formatPrice(payment.amountPaise)}</span>
                     </div>
-                    <dl className="nums mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-caption text-muted">
-                      <dt>Gateway order</dt>
-                      <dd className="truncate text-ink">{payment.providerOrderId}</dd>
-                      {payment.providerPaymentId && (
-                        <>
-                          <dt>Gateway payment</dt>
-                          <dd className="truncate text-ink">{payment.providerPaymentId}</dd>
-                        </>
-                      )}
-                      {payment.method && (
-                        <>
-                          <dt>Method</dt>
-                          <dd className="text-ink">{payment.method}</dd>
-                        </>
-                      )}
-                      <dt>Attempted</dt>
-                      <dd className="text-ink">{DATE_TIME_FORMAT.format(payment.createdAt)}</dd>
-                    </dl>
+                    {payment.provider === "OFFLINE" ? (
+                      /* No gateway ids to show — this payment never went
+                         near Razorpay. Who recorded it and how is the
+                         evidence here, in place of the ids below. */
+                      <p className="nums mt-2 text-caption text-ink">
+                        Offline · {payment.method ? OFFLINE_METHOD_LABEL[payment.method as OfflinePaymentMethod] : "Unknown method"}
+                        {payment.offlineReference ? ` · ref ${payment.offlineReference}` : ""}
+                        {" · recorded by "}
+                        {payment.recordedByName ?? payment.recordedByPhone ?? "a staff account"}
+                        {" · "}
+                        {DATE_TIME_FORMAT.format(payment.createdAt)}
+                      </p>
+                    ) : (
+                      <dl className="nums mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-caption text-muted">
+                        <dt>Gateway order</dt>
+                        <dd className="truncate text-ink">{payment.providerOrderId}</dd>
+                        {payment.providerPaymentId && (
+                          <>
+                            <dt>Gateway payment</dt>
+                            <dd className="truncate text-ink">{payment.providerPaymentId}</dd>
+                          </>
+                        )}
+                        {payment.method && (
+                          <>
+                            <dt>Method</dt>
+                            <dd className="text-ink">{payment.method}</dd>
+                          </>
+                        )}
+                        <dt>Attempted</dt>
+                        <dd className="text-ink">{DATE_TIME_FORMAT.format(payment.createdAt)}</dd>
+                      </dl>
+                    )}
                     {payment.failureReason && (
                       <p className="mt-2 rounded-lg bg-danger-wash px-3 py-2 text-caption text-danger">
                         {payment.failureReason}
@@ -194,6 +218,18 @@ export default async function AdminOrderPage({ params }: Ctx) {
         </div>
 
         <div className="space-y-6">
+          {canRecordOfflinePayment && (
+            <div id="payment">
+              <Card tone="sunk">
+                <CardHeader
+                  title="Mark payment received"
+                  subtitle="For UPI, cash or a bank transfer taken by phone"
+                />
+                <OfflinePaymentForm reference={order.reference} totalPaise={order.totalPaise} />
+              </Card>
+            </div>
+          )}
+
           <Card tone="sunk">
             <CardHeader title="Change status" />
             <OrderStatusForm reference={order.reference} options={nextStatusOptions} />

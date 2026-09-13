@@ -152,6 +152,26 @@ export class InsufficientStockError extends Error {
 }
 
 /** No store — nearest-in-radius or default — can serve this line at all. */
+/**
+ * Thrown by `commitVariantStock` when the stock an order reserved is no
+ * longer held — most often because `releaseExpiredReservations` let it go
+ * after the reservation window lapsed.
+ *
+ * Its own class, still an `Error`, so the webhook path is unchanged while
+ * `recordOfflinePayment` can tell this apart from a database failure: a
+ * staff member recording cash for an order hours after it was placed is
+ * exactly when a reservation has expired, and a bare 500 tells them
+ * nothing about what to do next.
+ */
+export class ReservationNotHeldError extends Error {
+  constructor(input: { variantId: string; storeId: string; qty: number }) {
+    super(
+      `Cannot commit ${input.qty} of variant ${input.variantId} at store ${input.storeId}: not that much is reserved`,
+    );
+    this.name = "ReservationNotHeldError";
+  }
+}
+
 export class StoreUnavailableError extends Error {
   constructor(readonly variantId: string) {
     super(`No store can serve variant ${variantId} at this address`);
@@ -315,9 +335,7 @@ export async function commitVariantStock(
   `;
 
   if (affected === 0) {
-    throw new Error(
-      `Cannot commit ${input.qty} of variant ${input.variantId} at store ${input.storeId}: not that much is reserved`,
-    );
+    throw new ReservationNotHeldError(input);
   }
 
   const item = await tx.inventoryItem.findUniqueOrThrow({

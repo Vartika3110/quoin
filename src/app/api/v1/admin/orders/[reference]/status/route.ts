@@ -26,9 +26,11 @@ const Body = z.object({
  * Moves an order to a new status, staff only. Every rejection here is a
  * business rule with its own message, not a generic failure:
  *
- *   - `toStatus: "PAID"` is refused outright — only the Razorpay webhook,
- *     via a signature-verified `payment.captured`, may set it. See
- *     `PaidNotAdminSettableError`.
+ *   - `toStatus: "PAID"` is refused outright, on this endpoint always —
+ *     it is reachable only via a signature-verified Razorpay
+ *     `payment.captured` webhook, or through the dedicated
+ *     `POST .../offline-payment` action for money staff took by phone.
+ *     See `PaidNotAdminSettableError`.
  *   - A move `canTransition` does not allow is a 409, not a silent write.
  *   - Two staff transitioning the same order at once: the loser gets a
  *     409 telling them to reload, not a corrupted state — see

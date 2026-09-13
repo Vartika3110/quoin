@@ -1,8 +1,8 @@
 import { OrderStatus, Prisma } from "@prisma/client";
-import type { Fulfilment, PaymentStatus, RefundStatus } from "@prisma/client";
+import type { Fulfilment, PaymentProvider, PaymentStatus, RefundStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { resolveAdminPage } from "@/lib/data/admin-metrics";
-import { canTransition, IllegalOrderTransitionError } from "@/lib/data/orders";
+import { canTransition, IllegalOrderTransitionError, OrderStatusRaceError } from "@/lib/data/orders";
 import { releaseStockForOrder } from "@/lib/data/inventory";
 import type { Paise } from "@/lib/types/catalog";
 
@@ -193,12 +193,24 @@ export interface AdminOrderRefundDetail {
 
 export interface AdminOrderPaymentDetail {
   id: string;
-  providerOrderId: string;
+  provider: PaymentProvider;
+  /** Razorpay's own order id. Null for an `OFFLINE` row — see the model
+      comment on `Payment.providerOrderId`. */
+  providerOrderId: string | null;
   providerPaymentId: string | null;
   amountPaise: Paise;
   status: PaymentStatus;
+  /** `upi`/`card`/… from the gateway for a RAZORPAY row, or the staff-
+      picked `UPI`/`CASH`/`BANK_TRANSFER`/`CHEQUE` for an OFFLINE one. */
   method: string | null;
   failureReason: string | null;
+  /** A UPI transaction id, bank reference or receipt number staff typed
+      in. Always null for a RAZORPAY row. */
+  offlineReference: string | null;
+  /** Who recorded an OFFLINE payment — name, else phone, else null for a
+      RAZORPAY row (nobody "records" a webhook). */
+  recordedByName: string | null;
+  recordedByPhone: string | null;
   createdAt: Date;
   refunds: AdminOrderRefundDetail[];
 }
@@ -304,12 +316,15 @@ export async function getAdminOrder(reference: string): Promise<AdminOrderDetail
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
+          provider: true,
           providerOrderId: true,
           providerPaymentId: true,
           amountPaise: true,
           status: true,
           method: true,
           failureReason: true,
+          offlineReference: true,
+          recordedBy: { select: { name: true, phone: true } },
           createdAt: true,
           refunds: {
             orderBy: { createdAt: "desc" },
@@ -367,12 +382,16 @@ export async function getAdminOrder(reference: string): Promise<AdminOrderDetail
     },
     payments: order.payments.map((payment) => ({
       id: payment.id,
+      provider: payment.provider,
       providerOrderId: payment.providerOrderId,
       providerPaymentId: payment.providerPaymentId,
       amountPaise: payment.amountPaise,
       status: payment.status,
       method: payment.method,
       failureReason: payment.failureReason,
+      offlineReference: payment.offlineReference,
+      recordedByName: payment.recordedBy?.name ?? null,
+      recordedByPhone: payment.recordedBy?.phone ?? null,
       createdAt: payment.createdAt,
       refunds: payment.refunds,
     })),
@@ -399,34 +418,38 @@ export class OrderNotFoundError extends Error {
 }
 
 /**
- * Thrown when this endpoint is asked to set `PAID` by hand.
+ * Thrown when this endpoint — the generic status mover — is asked to set
+ * `PAID` by hand.
  *
  * `PENDING_PAYMENT -> PAID` is a legal edge in `canTransition`'s own
  * table — the lifecycle machine has no opinion on *who* may cross it, only
  * on *whether* the states connect. That authority is narrower than the
- * machine: only `settleCapturedPayment` (`src/lib/data/orders.ts`), acting
- * on a signature-verified `payment.captured` webhook, may assert that
- * money actually moved. A staff click is not proof of payment, so this is
- * checked before `canTransition` is even consulted — the machine being
- * asked the right question does not matter if the asker has no standing
- * to ask it.
+ * machine, and this endpoint has none of it: `PAID` is reachable exactly
+ * two ways, both in `src/lib/data/orders.ts` and neither this one —
+ * `settleCapturedPayment`, acting on a signature-verified Razorpay
+ * `payment.captured` webhook, or `recordOfflinePayment`, the dedicated
+ * staff action (`POST .../offline-payment`) that writes a `CAPTURED`
+ * `OFFLINE` `Payment` row with an actor, a method and a reference before
+ * it moves the order. A bare `toStatus: "PAID"` on *this* endpoint proves
+ * none of that — it is not "the wrong form of proof", it is no proof at
+ * all — so it is refused before `canTransition` is even consulted: the
+ * machine being asked the right question does not matter if the asker has
+ * no standing to ask it.
  */
 export class PaidNotAdminSettableError extends Error {
   constructor() {
     super(
-      "PAID can only be set automatically, when the Razorpay webhook confirms a captured payment. It cannot be set by hand.",
+      "PAID cannot be set here. It is set automatically when the Razorpay webhook confirms a captured payment, or by staff through \"Mark payment received\" on the order page.",
     );
     this.name = "PaidNotAdminSettableError";
   }
 }
 
-/** Another request already moved this order between the read and the write. */
-export class OrderStatusRaceError extends Error {
-  constructor() {
-    super("This order's status changed before this update could be applied. Reload and try again.");
-    this.name = "OrderStatusRaceError";
-  }
-}
+/** Another request already moved this order between the read and the write.
+    Defined in `src/lib/data/orders.ts` — `recordOfflinePayment` needs to
+    throw the same error, and re-exported here so nothing importing it from
+    this module has to change. */
+export { OrderStatusRaceError } from "@/lib/data/orders";
 
 const ALL_ORDER_STATUSES = Object.values(OrderStatus) as OrderStatus[];
 

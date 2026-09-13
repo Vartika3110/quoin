@@ -78,7 +78,7 @@ export default async function AdminReportsPage({
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         <Stat
           label="Orders placed"
           value={<span className="nums">{stats.ordersPlaced}</span>}
@@ -93,9 +93,21 @@ export default async function AdminReportsPage({
           tone="accent"
         />
         <Stat
+          label="Total received"
+          value={formatPrice(stats.totalReceivedPaise)}
+          hint="GST-inclusive. Online and offline payments together."
+          icon={<Rupee className="size-4" />}
+        />
+        <Stat
           label="Paid online"
           value={formatPrice(stats.paidOnlinePaise)}
-          hint="Captured by Razorpay. Payments taken by phone are not recorded here."
+          hint="Captured by Razorpay."
+          icon={<Rupee className="size-4" />}
+        />
+        <Stat
+          label="Received offline"
+          value={formatPrice(stats.receivedOfflinePaise)}
+          hint="Recorded by staff — UPI, cash or bank transfer taken by phone."
           icon={<Rupee className="size-4" />}
         />
         <Stat
@@ -119,7 +131,7 @@ export default async function AdminReportsPage({
                 <th className="py-2 pr-4 font-medium">Month</th>
                 <th className="py-2 pr-4 text-right font-medium">Orders</th>
                 <th className="py-2 pr-4 text-right font-medium">Order value</th>
-                <th className="py-2 text-right font-medium">Paid online</th>
+                <th className="py-2 text-right font-medium">Received (online / offline)</th>
               </tr>
             </thead>
             <tbody>
@@ -142,7 +154,11 @@ export default async function AdminReportsPage({
                     </td>
                     <td className="nums py-2 pr-4 text-right text-ink">{row.ordersPlaced}</td>
                     <td className="nums py-2 pr-4 text-right text-ink">{formatPrice(row.orderValuePaise)}</td>
-                    <td className="nums py-2 text-right text-ink">{formatPrice(row.paidOnlinePaise)}</td>
+                    <td className="nums py-2 text-right text-ink">
+                      {formatPrice(row.paidOnlinePaise)}
+                      <span className="text-muted"> / </span>
+                      {formatPrice(row.receivedOfflinePaise)}
+                    </td>
                   </tr>
                 );
               })}

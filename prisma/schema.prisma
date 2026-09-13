@@ -97,6 +97,9 @@ model User {
   studioSaves        StudioSave[]
   studioSpaces       StudioSpace[]
   stockAlerts        StockAlert[]
+  /// Offline `Payment` rows this account recorded as staff — not this
+  /// account's own payments. See `Payment.recordedBy`.
+  paymentsRecorded   Payment[]            @relation("PaymentRecordedBy")
 
   @@map("users")
 }
@@ -998,6 +1001,12 @@ model OrderStatusChange {
 
 enum PaymentProvider {
   RAZORPAY
+  /// Money taken outside any gateway — UPI, cash or a bank transfer the
+  /// owner collected by phone — and recorded by staff after the fact
+  /// rather than reported by a payment processor. See `recordOfflinePayment`
+  /// (`src/lib/data/orders.ts`): the only writer of a `Payment` row with
+  /// this provider, and the only thing that may set one `CAPTURED`.
+  OFFLINE
 }
 
 /// Mirrors the gateway's own vocabulary rather than inventing one.
@@ -1009,7 +1018,12 @@ enum PaymentStatus {
   /// Funds held, not yet taken. Only appears when the account is set to
   /// manual capture; with auto-capture the next state is CAPTURED.
   AUTHORIZED
-  /// Money taken. The only state that may mark an `Order` PAID.
+  /// Money taken. The only state that may mark an `Order` PAID — reached
+  /// either by a signature-verified Razorpay `payment.captured` webhook
+  /// (`settleCapturedPayment`) or by a staff member recording money they
+  /// personally received offline (`recordOfflinePayment`, which writes
+  /// this status directly onto an `OFFLINE`-provider row). Nothing else
+  /// may set it — see `PaidNotAdminSettableError`.
   CAPTURED
   FAILED
   REFUNDED
@@ -1041,7 +1055,13 @@ model Payment {
   /// it is the only identifier that exists both before the customer has
   /// paid anything and on every event about it afterwards. Unique because
   /// exactly one gateway order is created per row.
-  providerOrderId String @unique
+  ///
+  /// Nullable because an `OFFLINE` row never goes near the gateway at
+  /// all — there is no `order_id` to have. Every `RAZORPAY` row still
+  /// gets one, written in the same request that creates it
+  /// (`recordPaymentAttempt`), so this is null for exactly one provider
+  /// and required in practice for the other.
+  providerOrderId String? @unique
 
   /// Razorpay's `payment_id`, null until the customer actually tries to
   /// pay. Unique, and that index is load-bearing: together with `status`
@@ -1058,13 +1078,31 @@ model Payment {
 
   status PaymentStatus @default(CREATED)
 
-  /// `upi`, `card`, `netbanking`, `wallet` — the gateway's own string,
-  /// stored as text because the list is theirs to extend, not ours.
+  /// `upi`, `card`, `netbanking`, `wallet` for a Razorpay row — the
+  /// gateway's own string, stored as text because the list is theirs to
+  /// extend, not ours. For an `OFFLINE` row this is the method staff
+  /// picked instead: `UPI`, `CASH`, `BANK_TRANSFER` or `CHEQUE` — see
+  /// `recordOfflinePayment`.
   method String?
 
   /// The gateway's failure description, kept verbatim for support. Shown
   /// to no one: these strings are written for integrators, not customers.
   failureReason String?
+
+  /// A UPI transaction id, bank reference or receipt number staff typed
+  /// in when recording an `OFFLINE` payment — free text, not unique: two
+  /// different payments can legitimately carry the same handwritten
+  /// receipt number, and this column is evidence for a phone call, not a
+  /// reconciliation key. Always null for a `RAZORPAY` row.
+  offlineReference String?
+
+  /// Who recorded an `OFFLINE` payment. SetNull, matching
+  /// `OrderStatusChange.actorUserId`: the staff account being removed
+  /// later must not delete the record that money was received, only the
+  /// name attached to it. Always null for a `RAZORPAY` row — nobody
+  /// "records" a webhook.
+  recordedByUserId String?
+  recordedBy       User?   @relation("PaymentRecordedBy", fields: [recordedByUserId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
