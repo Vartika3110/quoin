@@ -15,7 +15,7 @@ export default async function SettingsPage() {
   const user = session
     ? await db.user.findUnique({
         where: { id: session.userId },
-        select: { name: true, phone: true },
+        select: { name: true, phone: true, email: true },
       })
     : null;
 
@@ -27,7 +27,11 @@ export default async function SettingsPage() {
           next="/account/settings"
         />
       ) : (
-        <SettingsPanel name={user.name} maskedPhone={maskPhone(user.phone)} />
+        <SettingsPanel
+          name={user.name}
+          email={user.email}
+          maskedPhone={user.phone ? maskPhone(user.phone) : null}
+        />
       )}
     </AccountShell>
   );

@@ -225,7 +225,9 @@ export default async function AdminOrderPage({ params }: Ctx) {
           <Card>
             <CardHeader title="Customer" />
             <p className="text-body-sm text-ink">{order.customer.name ?? "Unnamed account"}</p>
-            <p className="nums text-body-sm text-muted">{order.customer.phone}</p>
+            <p className="nums text-body-sm text-muted">
+              {order.customer.phone ?? order.customer.email ?? "—"}
+            </p>
           </Card>
 
           <Card>

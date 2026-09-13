@@ -42,7 +42,9 @@ const MAX_SEARCH_LENGTH = 64;
 export interface AdminOrderRow {
   reference: string;
   customerName: string | null;
-  customerPhone: string;
+  /** Null for a Google account that has never given checkout a number. */
+  customerPhone: string | null;
+  customerEmail: string | null;
   status: OrderStatus;
   /** Null when nothing has been sent to the gateway yet — a fresh
       PENDING_PAYMENT order, or any callback order (see `paymentMode`,
@@ -109,7 +111,7 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
         status: true,
         createdAt: true,
         totalPaise: true,
-        user: { select: { name: true, phone: true } },
+        user: { select: { name: true, phone: true, email: true } },
         _count: { select: { lines: true } },
         /* Grain is a checkout attempt, not the order — see `Payment`'s
            model comment — so the most recent row is "where this order's
@@ -125,6 +127,7 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
       reference: row.reference,
       customerName: row.user.name,
       customerPhone: row.user.phone,
+      customerEmail: row.user.email,
       status: row.status,
       paymentStatus: row.payments[0]?.status ?? null,
       totalPaise: row.totalPaise,
@@ -220,7 +223,7 @@ export interface AdminOrderDetail {
   createdAt: Date;
   updatedAt: Date;
   paidAt: Date | null;
-  customer: { id: string; name: string | null; phone: string };
+  customer: { id: string; name: string | null; phone: string | null; email: string | null };
   lines: AdminOrderLineDetail[];
   /** GST-inclusive throughout — `taxPaise` is a component already inside
       `subtotalPaise`, never an amount added on top of it. See
@@ -279,7 +282,7 @@ export async function getAdminOrder(reference: string): Promise<AdminOrderDetail
       shipCity: true,
       shipState: true,
       shipPincode: true,
-      user: { select: { id: true, name: true, phone: true } },
+      user: { select: { id: true, name: true, phone: true, email: true } },
       lines: {
         orderBy: { id: "asc" },
         select: {

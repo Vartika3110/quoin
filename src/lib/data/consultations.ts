@@ -148,6 +148,32 @@ export async function listConsultRequestsForPhone(
   return rows.map(toView);
 }
 
+/**
+ * One customer's own requests, matched by account rather than by phone.
+ *
+ * `User.phone` is now nullable — a Google account has none until
+ * checkout collects one — so `listConsultRequestsForPhone` has nothing to
+ * key on for that account. `ConsultRequest.userId` is set whenever the
+ * customer happened to be signed in at the time of booking (see
+ * `createConsultRequest`), which is the only link available for an
+ * account with no phone. A Google-signed-in customer who books as a
+ * guest with someone else's number is not covered by either function —
+ * the same gap phone-only matching always had for a guest booking under
+ * a number that is not their account's own.
+ */
+export async function listConsultRequestsForUser(
+  userId: string,
+  limit = 20,
+): Promise<ConsultRequestView[]> {
+  const rows = await db.consultRequest.findMany({
+    ...VIEW_QUERY,
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return rows.map(toView);
+}
+
 /** ---- Writes ------------------------------------------------------------- */
 
 export interface NewConsultRequest {

@@ -32,9 +32,21 @@ model User {
 
   /// E.164, always normalised before it reaches the database (+919876543210).
   /// Storing raw user input here guarantees duplicate accounts.
-  phone String  @unique
+  ///
+  /// Nullable: verified by OTP when present, but a Google account has no
+  /// phone at all until checkout collects one (see `contactPhone`,
+  /// `POST /api/v1/checkout/order`). Postgres allows any number of NULLs
+  /// under a unique index, so this stays the identity column for every
+  /// phone-verified account without forcing a placeholder value onto the
+  /// accounts that never verified one.
+  phone String? @unique
   name  String?
   email String? @unique
+
+  /// Google's stable per-account identifier (the `sub` claim) — the only
+  /// thing a Google sign-in is ever matched on. Never matched by email:
+  /// see `resolveGoogleUser` in `src/lib/auth/google.ts` for why.
+  googleSub String? @unique
 
   /// Drives price resolution. A tier column rather than a boolean because
   /// trade/architect tiers are already implied by the storefront.

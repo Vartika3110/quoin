@@ -61,6 +61,12 @@ const { estimateRoomMaterials } = await import(
 type Project = import("@/lib/store/projects").Project;
 type ProjectTask = import("@/lib/store/projects").ProjectTask;
 type ProjectMaterial = import("@/lib/store/projects").ProjectMaterial;
+const { safeNext } = await import("@/lib/auth/next");
+const { codeChallengeS256, verifyGoogleIdToken, GoogleIdTokenError } =
+  await import("@/lib/auth/google");
+const { generateKeyPair, SignJWT, exportJWK, createLocalJWKSet } = await import(
+  "jose"
+);
 const { createHmac } = await import("node:crypto");
 type CatalogProduct = import("@/lib/types/catalog").Product;
 type OrderStatus = import("@prisma/client").OrderStatus;
@@ -148,6 +154,134 @@ describe("phone normalisation", () => {
 
   it("masks all but the last five digits", () => {
     assert.equal(maskPhone("+919876543210"), "+91 ***** 43210");
+  });
+});
+
+describe("safeNext (sign-in redirect target)", () => {
+  it("keeps an ordinary same-origin path", () => {
+    assert.equal(safeNext("/checkout"), "/checkout");
+  });
+
+  it("falls back to /account when nothing was given", () => {
+    assert.equal(safeNext(undefined), "/account");
+  });
+
+  it("refuses an absolute URL — the open-redirect case", () => {
+    assert.equal(safeNext("https://evil.example/phish"), "/account");
+  });
+
+  it("refuses a protocol-relative //host — same attack, no scheme", () => {
+    assert.equal(safeNext("//evil.example/phish"), "/account");
+  });
+});
+
+describe("Google OAuth PKCE (codeChallengeS256)", () => {
+  /* The brief for this suite named an expected output for this verifier
+     that is not actually SHA256(ASCII(verifier)), base64url-encoded — the
+     RFC 7636 formula this function implements. Checked three ways before
+     writing this test (Node's own `crypto`, Python's `hashlib`, and the
+     `openssl dgst` CLI, all independent SHA-256 implementations); all
+     three agree with each other and with the value asserted below, and
+     all three disagree with the value the brief gave. See the senior-dev
+     report for this change. */
+  it("matches SHA256(ASCII(verifier)) base64url-encoded, per RFC 7636 §4.2", () => {
+    assert.equal(
+      codeChallengeS256("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_Ne1q1Hp8oSX8"),
+      "5F7WFvMbgtb5qujtvEI1UWQf6YiKFO8KvGzpJolTE68",
+    );
+  });
+});
+
+describe("Google id_token verification (verifyGoogleIdToken)", () => {
+  const CLIENT_ID = "test-client-id.apps.googleusercontent.com";
+  const NONCE = "expected-nonce";
+
+  /** A locally generated RS256 keypair stands in for Google's own signing
+      key — `createLocalJWKSet` is exactly what the brief calls for, so no
+      network call ever happens in this suite. */
+  async function issueIdToken(overrides: {
+    iss?: string;
+    aud?: string;
+    nonce?: string;
+    emailVerified?: boolean;
+    email?: string | null;
+    exp?: number;
+  } = {}) {
+    const { publicKey, privateKey } = await generateKeyPair("RS256");
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = "test-key";
+    jwk.alg = "RS256";
+    jwk.use = "sig";
+    const jwks = createLocalJWKSet({ keys: [jwk] });
+
+    const now = Math.floor(Date.now() / 1000);
+    const payload: Record<string, unknown> = {
+      nonce: overrides.nonce ?? NONCE,
+      email_verified: overrides.emailVerified ?? true,
+    };
+    if (overrides.email !== null) {
+      payload.email = overrides.email ?? "person@example.com";
+    }
+
+    const idToken = await new SignJWT(payload)
+      .setProtectedHeader({ alg: "RS256", kid: "test-key" })
+      .setIssuer(overrides.iss ?? "https://accounts.google.com")
+      .setAudience(overrides.aud ?? CLIENT_ID)
+      .setSubject("108234567890123456789")
+      .setIssuedAt()
+      .setExpirationTime(overrides.exp ?? now + 300)
+      .sign(privateKey);
+
+    return { idToken, jwks };
+  }
+
+  it("accepts a validly signed token and returns its claims", async () => {
+    const { idToken, jwks } = await issueIdToken();
+    const identity = await verifyGoogleIdToken(idToken, {
+      clientId: CLIENT_ID,
+      nonce: NONCE,
+      jwks,
+    });
+    assert.equal(identity.sub, "108234567890123456789");
+    assert.equal(identity.email, "person@example.com");
+  });
+
+  it("rejects the wrong audience", async () => {
+    const { idToken, jwks } = await issueIdToken({ aud: "someone-elses-client-id" });
+    await assert.rejects(
+      verifyGoogleIdToken(idToken, { clientId: CLIENT_ID, nonce: NONCE, jwks }),
+    );
+  });
+
+  it("rejects the wrong issuer", async () => {
+    const { idToken, jwks } = await issueIdToken({ iss: "https://not-google.example" });
+    await assert.rejects(
+      verifyGoogleIdToken(idToken, { clientId: CLIENT_ID, nonce: NONCE, jwks }),
+    );
+  });
+
+  it("rejects a mismatched nonce — a token replayed from a different attempt", async () => {
+    const { idToken, jwks } = await issueIdToken({ nonce: "a-different-nonce" });
+    await assert.rejects(
+      verifyGoogleIdToken(idToken, { clientId: CLIENT_ID, nonce: NONCE, jwks }),
+      GoogleIdTokenError,
+    );
+  });
+
+  it("rejects an unverified email", async () => {
+    const { idToken, jwks } = await issueIdToken({ emailVerified: false });
+    await assert.rejects(
+      verifyGoogleIdToken(idToken, { clientId: CLIENT_ID, nonce: NONCE, jwks }),
+      GoogleIdTokenError,
+    );
+  });
+
+  it("rejects an expired token", async () => {
+    const now = Math.floor(Date.now() / 1000);
+    const { idToken, jwks } = await issueIdToken({ exp: now - 60 });
+    await assert.rejects(
+      verifyGoogleIdToken(idToken, { clientId: CLIENT_ID, nonce: NONCE, jwks }),
+    );
   });
 });
 

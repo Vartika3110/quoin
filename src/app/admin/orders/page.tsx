@@ -121,7 +121,9 @@ export default async function AdminOrdersPage({
                     <td className="px-4 py-3">
                       <span className="block text-ink">{row.customerName ?? "Unnamed"}</span>
                       <span className="nums block text-caption text-muted">
-                        {maskPhone(row.customerPhone)}
+                        {row.customerPhone
+                          ? maskPhone(row.customerPhone)
+                          : (row.customerEmail ?? "—")}
                       </span>
                     </td>
                     <td className="px-4 py-3">

@@ -57,6 +57,7 @@ export default async function CustomerDetailPage({
       id: true,
       name: true,
       phone: true,
+      email: true,
       tier: true,
       walletPaise: true,
       createdAt: true,
@@ -96,7 +97,7 @@ export default async function CustomerDetailPage({
     <AdminShell
       current="/admin/customers"
       title={customer.name ?? "Unnamed customer"}
-      subtitle={customer.phone}
+      subtitle={customer.phone ?? customer.email ?? "—"}
       actions={
         <Button href="/admin/customers" variant="outline" size="sm">
           Back to customers
@@ -126,9 +127,17 @@ export default async function CustomerDetailPage({
             <div>
               <dt className="text-micro uppercase tracking-wide text-muted">Phone</dt>
               <dd className="nums mt-0.5 text-body-sm font-medium text-ink">
-                {customer.phone}
+                {customer.phone ?? "—"}
               </dd>
             </div>
+            {!customer.phone && customer.email && (
+              <div>
+                <dt className="text-micro uppercase tracking-wide text-muted">Email</dt>
+                <dd className="mt-0.5 text-body-sm font-medium text-ink">
+                  {customer.email}
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="text-micro uppercase tracking-wide text-muted">Orders</dt>
               <dd className="nums mt-0.5 text-body-sm font-medium text-ink">

@@ -57,6 +57,9 @@ export default async function CustomersPage({
           OR: [
             { name: { contains: q, mode: "insensitive" } },
             { phone: { contains: q } },
+            /* Added alongside Google sign-in: that account may have no
+               phone at all, so a phone-only search would never find it. */
+            { email: { contains: q, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -73,6 +76,7 @@ export default async function CustomersPage({
         id: true,
         name: true,
         phone: true,
+        email: true,
         tier: true,
         createdAt: true,
         _count: { select: { orders: true } },
@@ -103,7 +107,7 @@ export default async function CustomersPage({
           type="search"
           name="q"
           defaultValue={q}
-          placeholder="Search by name or phone"
+          placeholder="Search by name, phone or email"
           aria-label="Search customers"
           leading={<Search className="size-4" />}
         />
@@ -148,7 +152,7 @@ export default async function CustomersPage({
                         {row.name ?? "Unnamed"}
                       </Link>
                       <p className="nums mt-0.5 text-caption text-muted">
-                        {maskPhone(row.phone)}
+                        {row.phone ? maskPhone(row.phone) : (row.email ?? "—")}
                       </p>
                     </td>
                     <td className="px-4 py-3">

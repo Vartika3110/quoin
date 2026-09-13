@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
 import { InlineError } from "@/components/ui/ErrorState";
 import { useToast } from "@/components/ui/Toast";
-import { ArrowRight, Back, Phone, Shield } from "@/components/icons";
+import { cn } from "@/components/ui/cn";
+import { ArrowRight, Back, GoogleG, Phone, Shield } from "@/components/icons";
 
 /**
  * Sign in with a code.
@@ -29,9 +30,18 @@ export function SignInPanel({
   /** Where to go once the session exists. Defaults to the account. */
   next = "/account",
   onDone,
+  googleEnabled,
+  smsEnabled,
 }: {
   next?: string;
   onDone?: () => void;
+  /** Whether `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are set —
+      `isGoogleSignInConfigured()`, read by the server parent so the
+      button never renders only to 404 or bounce back unavailable. */
+  googleEnabled: boolean;
+  /** `isOtpDeliveryAvailable()` — true in development regardless, false
+      in production until MSG91's DLT template is approved. */
+  smsEnabled: boolean;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -106,114 +116,159 @@ export function SignInPanel({
     }
   }
 
+  if (!googleEnabled && !smsEnabled) {
+    /* Neither method is configured — an empty card with nothing to press
+       would look broken; this says plainly that it is not ready rather
+       than simulating a sign-in that cannot complete (invariant 8). */
+    return (
+      <p className="text-body-sm leading-relaxed text-muted">
+        Sign-in isn&rsquo;t available yet. Please check back shortly.
+      </p>
+    );
+  }
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (busy) return;
-        if (sentTo) void verify();
-        else void requestCode();
-      }}
-      className="space-y-4"
-    >
-      {!sentTo ? (
-        <>
-          <Field
-            label="Mobile number"
-            htmlFor="phone"
-            hint="Indian numbers only, with or without +91."
-            required
-          >
-            <Input
-              id="phone"
-              name="phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="tel"
-              autoFocus
-              placeholder="98765 43210"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              leading={<Phone className="size-4" />}
-              aria-invalid={error ? true : undefined}
-            />
-          </Field>
-
-          {error && <InlineError>{error}</InlineError>}
-
-          <Button type="submit" block size="lg" loading={busy} disabled={!phone.trim()}>
-            Send me a code
-            <ArrowRight className="size-4" />
-          </Button>
-        </>
-      ) : (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              setSentTo(null);
-              setCode("");
-              setError(null);
-            }}
-            className="flex items-center gap-1.5 text-caption text-muted transition-colors hover:text-ink"
-          >
-            <Back className="size-4" />
-            Change number
-          </button>
-
-          <Field
-            label="Enter the code"
-            htmlFor="code"
-            hint={`Sent to ${sentTo}. It expires in a few minutes.`}
-            required
-          >
-            <Input
-              id="code"
-              ref={codeRef}
-              name="one-time-code"
-              type="text"
-              inputMode="numeric"
-              /* Lets iOS and Android offer the code straight from the SMS
-                 rather than making the customer switch apps to read it. */
-              autoComplete="one-time-code"
-              maxLength={6}
-              placeholder="••••••"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              className="nums tracking-[0.5em]"
-              aria-invalid={error ? true : undefined}
-            />
-          </Field>
-
-          {error && <InlineError>{error}</InlineError>}
-
-          <Button
-            type="submit"
-            block
-            size="lg"
-            loading={busy}
-            disabled={code.length < 6}
-          >
-            Verify and continue
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            block
-            disabled={resendIn > 0 || busy}
-            onClick={() => void requestCode()}
-          >
-            {resendIn > 0 ? `Resend in ${resendIn}s` : "Send another code"}
-          </Button>
-        </>
+    <div className="space-y-4">
+      {googleEnabled && (
+        <a
+          href={`/api/v1/auth/google/start?next=${encodeURIComponent(next)}`}
+          /* A plain anchor, not `<Button href>` — this has to be a real
+             browser navigation to an API route that 302s to Google, and
+             Next's `Link` is written for client-side transitions between
+             pages this app renders. Classes copied from `Button`'s
+             `secondary` variant at `lg` (`src/components/ui/Button.tsx`)
+             rather than importing constants that component does not
+             export. */
+          className={cn(
+            "relative inline-flex h-13 w-full shrink-0 items-center justify-center gap-2 rounded-lg",
+            "bg-deep text-on-deep shadow-xs transition-[background-color,box-shadow] duration-150 ease-out-quart",
+            "hover:-translate-y-0.5 hover:bg-deep-soft hover:shadow-sm active:translate-y-0 active:bg-deep",
+            "text-body-lg font-medium",
+          )}
+        >
+          <GoogleG className="size-4.5" />
+          Continue with Google
+        </a>
       )}
 
-      <p className="flex items-start gap-2 text-micro leading-relaxed text-faint">
-        <Shield className="mt-0.5 size-3.5 shrink-0" />
-        Quoin has no password to forget. A code is sent to your phone each
-        time, and your number is never shown in full back to you.
-      </p>
-    </form>
+      {googleEnabled && smsEnabled && (
+        <div className="flex items-center gap-3 text-micro uppercase tracking-wide text-faint">
+          <span className="h-px flex-1 bg-line-soft" aria-hidden />
+          or
+          <span className="h-px flex-1 bg-line-soft" aria-hidden />
+        </div>
+      )}
+
+      {smsEnabled && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (busy) return;
+            if (sentTo) void verify();
+            else void requestCode();
+          }}
+          className="space-y-4"
+        >
+          {!sentTo ? (
+            <>
+              <Field
+                label="Mobile number"
+                htmlFor="phone"
+                hint="Indian numbers only, with or without +91."
+                required
+              >
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  autoFocus
+                  placeholder="98765 43210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  leading={<Phone className="size-4" />}
+                  aria-invalid={error ? true : undefined}
+                />
+              </Field>
+
+              {error && <InlineError>{error}</InlineError>}
+
+              <Button type="submit" block size="lg" loading={busy} disabled={!phone.trim()}>
+                Send me a code
+                <ArrowRight className="size-4" />
+              </Button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setSentTo(null);
+                  setCode("");
+                  setError(null);
+                }}
+                className="flex items-center gap-1.5 text-caption text-muted transition-colors hover:text-ink"
+              >
+                <Back className="size-4" />
+                Change number
+              </button>
+
+              <Field
+                label="Enter the code"
+                htmlFor="code"
+                hint={`Sent to ${sentTo}. It expires in a few minutes.`}
+                required
+              >
+                <Input
+                  id="code"
+                  ref={codeRef}
+                  name="one-time-code"
+                  type="text"
+                  inputMode="numeric"
+                  /* Lets iOS and Android offer the code straight from the SMS
+                     rather than making the customer switch apps to read it. */
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  placeholder="••••••"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  className="nums tracking-[0.5em]"
+                  aria-invalid={error ? true : undefined}
+                />
+              </Field>
+
+              {error && <InlineError>{error}</InlineError>}
+
+              <Button
+                type="submit"
+                block
+                size="lg"
+                loading={busy}
+                disabled={code.length < 6}
+              >
+                Verify and continue
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                block
+                disabled={resendIn > 0 || busy}
+                onClick={() => void requestCode()}
+              >
+                {resendIn > 0 ? `Resend in ${resendIn}s` : "Send another code"}
+              </Button>
+            </>
+          )}
+
+          <p className="flex items-start gap-2 text-micro leading-relaxed text-faint">
+            <Shield className="mt-0.5 size-3.5 shrink-0" />
+            Quoin has no password to forget. A code is sent to your phone each
+            time, and your number is never shown in full back to you.
+          </p>
+        </form>
+      )}
+    </div>
   );
 }

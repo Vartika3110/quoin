@@ -8,6 +8,7 @@ import { Steps } from "@/components/ui/Progress";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { InlineError } from "@/components/ui/ErrorState";
+import { Field, Input } from "@/components/ui/Input";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { StickyBar } from "@/components/storefront/StickyBar";
 import { SignInPanel } from "@/components/storefront/auth/SignInPanel";
@@ -27,6 +28,7 @@ import {
   Clock,
   CreditCard,
   Headset,
+  Phone,
   Rupee,
   Ruler,
   Truck,
@@ -279,15 +281,26 @@ type PlacedState =
 
 export function CheckoutFlow({
   isSignedIn,
+  needsContactPhone,
   paymentsConfigured,
+  googleEnabled,
+  smsEnabled,
 }: {
   isSignedIn: boolean;
+  /** Signed in with no `User.phone` — a Google account before checkout
+      has ever asked it for one. Drives the mobile-number field on the
+      address step; see `POST /api/v1/checkout/order`'s `contactPhone`. */
+  needsContactPhone: boolean;
   paymentsConfigured: boolean;
+  googleEnabled: boolean;
+  smsEnabled: boolean;
 }) {
   const { lines, groups, ready, subtotalPaise } = useCart();
 
   const [step, setStep] = useState(0);
   const [address, setAddress] = useState<Address | null>(null);
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactPhoneError, setContactPhoneError] = useState<string | null>(null);
   const [payment, setPayment] = useState<PaymentMethod>(
     paymentsConfigured ? "online" : "callback",
   );
@@ -375,6 +388,7 @@ export function CheckoutFlow({
     if (!address) return;
 
     setOrderError(null);
+    setContactPhoneError(null);
     setPlacing(true);
 
     try {
@@ -390,13 +404,27 @@ export function CheckoutFlow({
           })),
           idempotencyKey: idempotencyKeyFor(address.id),
           paymentMode: payment === "online" ? "online" : "callback",
+          /* Only meaningful when the account has no phone of its own —
+             see `needsContactPhone`. Sent regardless of that flag is
+             harmless too: the route ignores it whenever `user.phone`
+             is already set. */
+          ...(needsContactPhone ? { contactPhone } : {}),
         }),
       });
       const body = (await res.json()) as {
         data?: OrderPlacedResponse;
-        error?: { message: string };
+        error?: { message: string; fields?: Record<string, string> };
       };
       if (!res.ok || !body.data) {
+        if (body.error?.fields?.contactPhone) {
+          /* The field lives on the address step, not this one — send the
+             customer back to it rather than leaving the error stranded on
+             a review screen with no matching input. */
+          setContactPhoneError(body.error.fields.contactPhone);
+          setStep(0);
+          setPlacing(false);
+          return;
+        }
         throw new Error(
           body.error?.message ?? "We could not place this order. Please try again.",
         );
@@ -528,7 +556,25 @@ export function CheckoutFlow({
   const savings = quote?.savingsPaise ?? 0;
 
   const canAdvance =
-    step === 0 ? isSignedIn && Boolean(address) : step === 3 ? false : true;
+    step === 0
+      ? isSignedIn &&
+        Boolean(address) &&
+        (!needsContactPhone || contactPhone.trim().length > 0)
+      : step === 3
+        ? false
+        : true;
+
+  /* Truthful for whichever sign-in methods are actually live — mirrors
+     `/signin`'s own subtitle logic (`src/app/signin/page.tsx`) so the two
+     screens never make different claims about what is possible right now. */
+  const checkoutSignInCopy =
+    googleEnabled && smsEnabled
+      ? "Sign in to use a saved address — continue with Google, or with one number and one code."
+      : smsEnabled
+        ? "Sign in to use a saved address. One number, one code — the account is created the first time you verify."
+        : googleEnabled
+          ? "Sign in with Google to use a saved address."
+          : "Sign-in isn't available yet, so a saved address can't be used right now.";
 
   const online = payment === "online";
   const confirmAction = placeOrder;
@@ -553,17 +599,47 @@ export function CheckoutFlow({
             detail="Serviceability and delivery time are decided on the exact spot, not the PIN code."
           >
             {isSignedIn ? (
-              <AddressPicker
-                selectedId={address?.id ?? null}
-                onSelect={setAddress}
-              />
+              <div className="space-y-5">
+                <AddressPicker
+                  selectedId={address?.id ?? null}
+                  onSelect={setAddress}
+                />
+                {needsContactPhone && (
+                  <Field
+                    label="Mobile number"
+                    htmlFor="contact-phone"
+                    hint="Indian numbers only, with or without +91. Needed so a driver or store can reach you — Google did not give Quoin one."
+                    error={contactPhoneError}
+                    required
+                  >
+                    <Input
+                      id="contact-phone"
+                      name="contactPhone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      placeholder="98765 43210"
+                      value={contactPhone}
+                      onChange={(e) => {
+                        setContactPhone(e.target.value);
+                        if (contactPhoneError) setContactPhoneError(null);
+                      }}
+                      leading={<Phone className="size-4" />}
+                      aria-invalid={contactPhoneError ? true : undefined}
+                    />
+                  </Field>
+                )}
+              </div>
             ) : (
               <div>
                 <p className="mb-4 text-body-sm leading-relaxed text-muted">
-                  Sign in to use a saved address. One number, one code — the
-                  account is created the first time you verify.
+                  {checkoutSignInCopy}
                 </p>
-                <SignInPanel next="/checkout" />
+                <SignInPanel
+                  next="/checkout"
+                  googleEnabled={googleEnabled}
+                  smsEnabled={smsEnabled}
+                />
               </div>
             )}
           </StepPanel>

@@ -6,7 +6,10 @@ import { Badge } from "@/components/ui/Badge";
 import { Briefcase, Calendar, Ruler, Video } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
-import { listConsultRequestsForPhone } from "@/lib/data/consultations";
+import {
+  listConsultRequestsForPhone,
+  listConsultRequestsForUser,
+} from "@/lib/data/consultations";
 import {
   CONSULT_MODE_INFO,
   CONSULT_SLOT_LABEL,
@@ -37,10 +40,17 @@ export default async function AccountServicesPage() {
       })
     : null;
 
-  /* Matched on the number rather than the user id: consultations can be
-     booked without an account, so someone who booked as a guest and signed
-     in afterwards still sees theirs. */
-  const requests = user ? await listConsultRequestsForPhone(user.phone) : [];
+  /* Matched on the number where there is one: consultations can be booked
+     without an account, so someone who booked as a guest and signed in
+     afterwards still sees theirs. A Google account with no phone has no
+     number to match on, so it falls back to matching by account instead —
+     narrower (it misses a guest booking placed under someone else's
+     number), but it is the only link that exists for that account. */
+  const requests = !user
+    ? []
+    : user.phone
+      ? await listConsultRequestsForPhone(user.phone)
+      : await listConsultRequestsForUser(session!.userId);
 
   return (
     <AccountShell

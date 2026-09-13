@@ -614,3 +614,31 @@ export const Calculator = (p: IconProps) => (
   </Svg>
 );
 
+/**
+ * The Google "G" — the one icon in this file that does not use the
+ * `Svg` wrapper. Every other icon renders in `currentColor` so a
+ * consuming component can recolour it; Google's own brand guidelines
+ * require its four colours to render fixed, on every button, regardless
+ * of surrounding theme. Rendering it any other colour is not "quieter
+ * branding", it is a different, incorrect mark.
+ */
+export const GoogleG = (p: IconProps) => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" {...p}>
+    <path
+      fill="#4285F4"
+      d="M23.52 12.27c0-.82-.07-1.6-.2-2.36H12v4.47h6.47c-.28 1.5-1.13 2.78-2.4 3.63v3.02h3.89c2.27-2.09 3.57-5.17 3.57-8.76Z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 24c3.24 0 5.96-1.07 7.95-2.9l-3.89-3.02c-1.08.72-2.46 1.15-4.06 1.15-3.12 0-5.77-2.11-6.72-4.94H1.27v3.11A11.999 11.999 0 0 0 12 24Z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.28 14.29a7.2 7.2 0 0 1 0-4.58V6.6H1.27a12 12 0 0 0 0 10.8l4.01-3.11Z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.27 6.6l4.01 3.11c.95-2.83 3.6-4.94 6.72-4.94Z"
+    />
+  </svg>
+);

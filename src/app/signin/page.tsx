@@ -4,8 +4,12 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { SignInPanel } from "@/components/storefront/auth/SignInPanel";
 import { Card } from "@/components/ui/Card";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { InlineError } from "@/components/ui/ErrorState";
 import { CheckCircle } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
+import { safeNext } from "@/lib/auth/next";
+import { isGoogleSignInConfigured } from "@/lib/auth/google";
+import { isOtpDeliveryAvailable } from "@/lib/auth/sender";
 import { one } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
@@ -22,17 +26,47 @@ const REASONS = [
   "Trade pricing applied automatically if you are Pro",
 ];
 
+/**
+ * Copy for `?error=`, set by the Google callback route redirecting back
+ * here. Unknown values are ignored rather than shown, matching how a
+ * stale or hand-edited query string is already treated elsewhere in this
+ * app (`parseOrderStatusFilter`, `safeNext`).
+ */
+const ERROR_COPY: Record<string, string> = {
+  google_cancelled: "Google sign-in was cancelled.",
+  google_failed: "We couldn't sign you in with Google. Please try again.",
+  google_unavailable: "Google sign-in isn't available yet.",
+};
+
 export default async function SignInPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const next = one((await searchParams).next);
+  const sp = await searchParams;
+  const next = one(sp.next);
+  const errorMessage = ERROR_COPY[one(sp.error) ?? ""];
 
   /* Already signed in: this page has nothing to offer, and showing a sign-in
      form to someone with a session is how people end up requesting codes
      they do not need. */
   if (await getSession()) redirect(safeNext(next));
+
+  const googleEnabled = isGoogleSignInConfigured();
+  const smsEnabled = isOtpDeliveryAvailable();
+
+  /* Truthful for whichever methods are actually live — never the fixed
+     "one number, one code" line when SMS is the one thing not working,
+     which is exactly the state this deploy sits in until MSG91's DLT
+     template clears. */
+  const subtitle =
+    googleEnabled && smsEnabled
+      ? "Continue with Google, or use one number and one code. Quoin creates the account the first time you verify."
+      : smsEnabled
+        ? "One number, one code. Quoin creates the account the first time you verify — there is nothing separate to sign up for."
+        : googleEnabled
+          ? "Continue with your Google account. Quoin creates the account the first time you sign in."
+          : "Sign-in isn't available yet. Please check back shortly.";
 
   return (
     <AppShell>
@@ -43,13 +77,20 @@ export default async function SignInPage({
 
         <div className="mx-auto max-w-md px-5 lg:px-0">
           <h1 className="font-display text-headline font-semibold text-ink">Sign in</h1>
-          <p className="mt-2 text-body leading-relaxed text-muted">
-            One number, one code. Quoin creates the account the first time you
-            verify — there is nothing separate to sign up for.
-          </p>
+          <p className="mt-2 text-body leading-relaxed text-muted">{subtitle}</p>
+
+          {errorMessage && (
+            <div className="mt-4">
+              <InlineError>{errorMessage}</InlineError>
+            </div>
+          )}
 
           <Card padding="lg" className="mt-6">
-            <SignInPanel next={safeNext(next)} />
+            <SignInPanel
+              next={safeNext(next)}
+              googleEnabled={googleEnabled}
+              smsEnabled={smsEnabled}
+            />
           </Card>
 
           <ul className="mt-6 space-y-2">
@@ -66,18 +107,4 @@ export default async function SignInPage({
       </div>
     </AppShell>
   );
-}
-
-/**
- * Where to send someone after they verify.
- *
- * Only same-origin paths are honoured. `?next=https://elsewhere` on a
- * sign-in page is an open redirect, and an open redirect on the one screen
- * where people expect to type a credential is a phishing primitive: the
- * link looks like Quoin, the sign-in is real, and the landing is not.
- * Protocol-relative `//host` is rejected for the same reason.
- */
-function safeNext(next: string | undefined): string {
-  if (!next || !next.startsWith("/") || next.startsWith("//")) return "/account";
-  return next;
 }

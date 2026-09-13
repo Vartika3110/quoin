@@ -52,6 +52,15 @@ const schema = z.object({
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
   /**
+   * Google sign-in. Both optional, and — like Razorpay and Supabase above,
+   * and unlike MSG91 — there is deliberately no production guard demanding
+   * them: the unconfigured fallback is simply that the Google button is
+   * not shown, which is a safe state rather than a dangerous one. SMS
+   * stays the only sign-in method until these are set.
+   */
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
+  /**
    * Signs the webhook. Set separately in the Razorpay dashboard and
    * unrelated to the API secret above — a deploy can have valid API
    * credentials and still be unable to trust a single webhook, so the
@@ -189,6 +198,8 @@ function load(): Env {
         RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
         RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
         RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
         SHOW_SOURCE_IMAGES: process.env.SHOW_SOURCE_IMAGES === "1",
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         OPENAI_MODEL: process.env.OPENAI_MODEL,

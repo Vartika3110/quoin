@@ -20,8 +20,10 @@ export const GET = handler(async () => {
     user: {
       ...user,
       /* Masked even to the account owner: this response is rendered into
-         a shared device's page and copied into support tickets. */
-      phone: maskPhone(user.phone),
+         a shared device's page and copied into support tickets. Null for
+         a Google account that has never given checkout a number — there
+         is nothing to mask. */
+      phone: user.phone ? maskPhone(user.phone) : null,
       isPro: user.tier === "PRO",
     },
     defaultAddress,

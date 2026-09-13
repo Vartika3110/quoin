@@ -12,7 +12,10 @@ import { Chevron, Crown, User } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { maskPhone } from "@/lib/auth/phone";
-import { listConsultRequestsForPhone } from "@/lib/data/consultations";
+import {
+  listConsultRequestsForPhone,
+  listConsultRequestsForUser,
+} from "@/lib/data/consultations";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +37,7 @@ export default async function AccountPage() {
         select: {
           phone: true,
           name: true,
+          email: true,
           tier: true,
           walletPaise: true,
           isStaff: true,
@@ -44,10 +48,15 @@ export default async function AccountPage() {
   /* `listConsultRequestsForPhone` is capped at 50 rather than the default
      20 — this page turns the count into a sub-label ("4 consultations
      booked"), and a cap that quietly truncates the number would make that
-     sub-label wrong for anyone who has booked more than the default. */
+     sub-label wrong for anyone who has booked more than the default.
+     A Google account with no phone has nothing for that lookup to match
+     on, so it falls back to matching by account — see the comment on
+     `listConsultRequestsForUser`. */
   const [consultations, addressCount, orderCount] = user
     ? await Promise.all([
-        listConsultRequestsForPhone(user.phone, 50),
+        user.phone
+          ? listConsultRequestsForPhone(user.phone, 50)
+          : listConsultRequestsForUser(session!.userId, 50),
         db.address.count({ where: { userId: session!.userId } }),
         db.order.count({ where: { userId: session!.userId } }),
       ])
@@ -72,10 +81,14 @@ export default async function AccountPage() {
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-title-sm font-semibold text-ink">
-                {user.name ?? maskPhone(user.phone)}
+                {user.name ?? user.email ?? (user.phone ? maskPhone(user.phone) : "Signed in")}
               </p>
               <p className="nums mt-0.5 text-caption text-muted">
-                {user.name ? maskPhone(user.phone) : "Signed in"}
+                {user.name
+                  ? (user.email ?? (user.phone ? maskPhone(user.phone) : "Signed in"))
+                  : user.phone
+                    ? maskPhone(user.phone)
+                    : "Signed in"}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {user.tier === "PRO" ? (

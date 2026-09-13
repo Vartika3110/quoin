@@ -22,10 +22,15 @@ import { ThemeToggle } from "@/components/storefront/ThemeToggle";
  */
 export function SettingsPanel({
   name,
+  email,
   maskedPhone,
 }: {
   name: string | null;
-  maskedPhone: string;
+  email: string | null;
+  /** Null for a Google account that has never given checkout a number —
+      shown as "Not added" rather than inventing a phone-edit feature this
+      screen does not have. */
+  maskedPhone: string | null;
 }) {
   const router = useRouter();
   const toast = useToast();
@@ -72,15 +77,26 @@ export function SettingsPanel({
           <Field
             label="Mobile number"
             htmlFor="settings-phone"
-            hint="Masked on purpose — a shoulder over the counter reads a whole number as easily as its owner does."
+            hint={
+              maskedPhone
+                ? "Masked on purpose — a shoulder over the counter reads a whole number as easily as its owner does."
+                : "Not added yet. Checkout will ask for one the first time it needs to ship you something."
+            }
           >
             <Input
               id="settings-phone"
-              defaultValue={maskedPhone}
+              defaultValue={maskedPhone ?? ""}
+              placeholder="Not added"
               className="nums"
               disabled
             />
           </Field>
+
+          {email && (
+            <Field label="Email" htmlFor="settings-email" hint="From your Google account.">
+              <Input id="settings-email" defaultValue={email} disabled />
+            </Field>
+          )}
         </div>
       </Card>
 

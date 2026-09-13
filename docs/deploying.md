@@ -118,11 +118,20 @@ Environment variables, for Production and Preview:
 | `RAZORPAY_KEY_ID` | from the Razorpay dashboard — see below |
 | `RAZORPAY_KEY_SECRET` | the other half of that pair |
 | `RAZORPAY_WEBHOOK_SECRET` | set when you create the webhook, not the same value |
+| `GOOGLE_CLIENT_ID` | from Google Cloud Console — see *Google sign-in* below |
+| `GOOGLE_CLIENT_SECRET` | the other half of that pair |
 
 The three Razorpay variables are genuinely optional and there is no boot
 guard on them, unlike MSG91. Unset, the storefront runs normally and
 checkout answers that online payment is not available — which is the
-state a deploy sits in for as long as gateway activation takes.
+state a deploy sits in for as long as gateway activation takes. The two
+Google variables are the same shape: optional, no boot guard, and unset
+simply means the "Continue with Google" button is not shown.
+
+Before any of this, apply the migration this feature shipped with —
+`prisma migrate deploy` against the target database (see step 2 above).
+Deploying the app code without it means every route that reads or writes
+`User.googleSub` fails against a column that does not exist yet.
 
 ## The MSG91 catch
 
@@ -181,6 +190,65 @@ digits hard-coded is approved and then useless.
 
 Until all three exist, leave them **unset**. Sign-in reports itself
 unavailable, which is true, and nothing is logged.
+
+## Google sign-in
+
+Optional, and independent of MSG91 above — it exists precisely because
+DLT registration takes days and the owner wants a working sign-in before
+it clears. Setting these two variables does not touch SMS at all; both
+can be live together, and either can be live alone.
+
+1. **Google Cloud Console** (console.cloud.google.com) → create a new
+   project (or pick an existing one).
+2. **OAuth consent screen**: User type **External**. Fill in the app
+   name, a support email, and an authorised domain (your production
+   domain or the `.vercel.app` one). Request only the default,
+   non-sensitive scopes this integration actually uses — `openid`,
+   `email`, `profile` — so the app can stay in "Testing" or go to
+   "Production" with no verification review; requesting anything beyond
+   those is what triggers Google's review process.
+3. **Credentials** → **Create Credentials** → **OAuth client ID** → type
+   **Web application**. Add every redirect URI this deployment will
+   actually use, under **Authorised redirect URIs**:
+
+   ```
+   https://<your-domain>/api/v1/auth/google/callback
+   http://localhost:3000/api/v1/auth/google/callback
+   ```
+
+   Add the `.vercel.app` URL too if the storefront is reachable there:
+
+   ```
+   https://<project>.vercel.app/api/v1/auth/google/callback
+   ```
+
+   Google rejects any redirect Quoin asks for that is not on this exact
+   list, which is what makes `redirect_uri` safe to build from the
+   request's own origin rather than a fixed configured one — see the
+   comment on `googleRedirectUri`, `src/lib/auth/google.ts`.
+
+4. Copy the **Client ID** and **Client secret** into Vercel:
+
+   | Variable | Value |
+   | --- | --- |
+   | `GOOGLE_CLIENT_ID` | the OAuth client id |
+   | `GOOGLE_CLIENT_SECRET` | the OAuth client secret |
+
+5. Redeploy. The "Continue with Google" button appears on `/signin` and
+   on the checkout sign-in step as soon as both variables are present —
+   no other flag to flip.
+
+**Preview deployments will not work.** A preview's hostname is a fresh
+`*.vercel.app` subdomain generated per deployment, and step 3 above is a
+fixed list — there is no redirect URI to register ahead of a hostname
+that does not exist yet. Google sign-in on a preview always redirects
+back with `?error=google_failed`; phone sign-in is unaffected, and this
+is the expected, working state for a preview, not a bug to chase.
+
+**The migration.** This feature adds `User.googleSub` and makes
+`User.phone` nullable — `prisma migrate deploy` must run against the
+target database before (or as part of) this deploy; see *3. Vercel*
+above and *2. Load the schema and the catalogue*.
 
 ## Sharing the link
 

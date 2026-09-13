@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { orderLinesSchema } from "@/lib/cart/line-schema";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
+import { InvalidPhoneError, normalizePhone } from "@/lib/auth/phone";
 import {
   OrderNotPossibleError,
   createPendingOrder,
@@ -30,6 +31,15 @@ const Body = z.object({
    * alone, and must not guess.
    */
   paymentMode: z.enum(["online", "callback"]),
+  /**
+   * Required only when the account has no `User.phone` of its own — a
+   * Google sign-in before checkout has ever asked for one. Never trusted
+   * as a claim of anything beyond "reachable for this delivery": it is
+   * normalised the same way an OTP phone is, but it is not verified by a
+   * code, so it becomes `Order.shipPhone` and nothing else. See the
+   * comment below on why it is never written to `User.phone`.
+   */
+  contactPhone: z.string().max(20).optional(),
 });
 
 /**
@@ -72,10 +82,38 @@ const Body = z.object({
  */
 export const POST = handler(async (request) => {
   const user = await requireUser();
-  const { addressId, lines, idempotencyKey, paymentMode } = await parseBody(
-    request,
-    Body,
-  );
+  const { addressId, lines, idempotencyKey, paymentMode, contactPhone } =
+    await parseBody(request, Body);
+
+  /* `User.phone` is null for a Google account until this moment. It is
+     the identity column OTP sign-in matches on, so an order is not
+     allowed to write anything unverified into it — see the comment on
+     `shipPhone` below. What it can do is ask, once, for a number to ship
+     against, which becomes this order's own `shipPhone` and nothing more
+     durable than that. */
+  let shipPhone = user.phone;
+  if (!shipPhone) {
+    if (!contactPhone) {
+      throw new ApiError(
+        "bad_request",
+        "Enter a mobile number for this order.",
+        { contactPhone: "Enter a mobile number for this order." },
+      );
+    }
+    try {
+      shipPhone = normalizePhone(contactPhone);
+    } catch (error) {
+      if (error instanceof InvalidPhoneError) {
+        throw new ApiError("bad_request", error.message, {
+          contactPhone: error.message,
+        });
+      }
+      throw error;
+    }
+  }
+  /* Present `user.phone` wins outright — `contactPhone` is ignored, not
+     merely unused, so nothing about an already-verified identity can be
+     overridden by a value typed into a checkout form. */
 
   /* Only "online" needs a gateway to actually hand the customer to. A
      client only ever offers that tile when `isRazorpayConfigured()` is
@@ -104,12 +142,15 @@ export const POST = handler(async (request) => {
          Falls back to the phone rather than to "". Accounts are created by
          verifying a number and nothing ever forces a name, so `user.name`
          is null for anyone who has not filled in their profile — which is
-         most people — and `?? ""` put a delivery label with no name on it
-         onto a real order. A number is something a driver can actually
-         act on; an empty string is not. `.trim()` because a name of pure
-         whitespace is the same problem wearing a disguise. */
-      shipName: user.name?.trim() || user.phone,
-      shipPhone: user.phone,
+         most people, and now includes every Google account — and `?? ""`
+         put a delivery label with no name on it onto a real order. A
+         number is something a driver can actually act on; an empty
+         string is not. `.trim()` because a name of pure whitespace is the
+         same problem wearing a disguise. Uses `shipPhone`, resolved
+         above, rather than `user.phone` directly, so this still has
+         something to fall back to when the account itself has none. */
+      shipName: user.name?.trim() || shipPhone,
+      shipPhone,
       idempotencyKey,
       paymentMode,
     });
