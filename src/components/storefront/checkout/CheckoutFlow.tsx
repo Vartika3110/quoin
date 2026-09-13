@@ -301,7 +301,7 @@ export function CheckoutFlow({
   googleEnabled: boolean;
   smsEnabled: boolean;
 }) {
-  const { lines, groups, ready, subtotalPaise } = useCart();
+  const { lines, groups, ready, subtotalPaise, clear } = useCart();
 
   const [step, setStep] = useState(0);
   const [address, setAddress] = useState<Address | null>(null);
@@ -451,8 +451,11 @@ export function CheckoutFlow({
       if (order.quote.changed) setQuote(order.quote);
 
       if (order.paymentMode === "callback") {
-        /* No gateway, no modal — the order itself is the whole outcome. */
+        /* No gateway, no modal — the order itself is the whole outcome.
+           The basket is now that order, so it is emptied here; leaving it
+           full invites the same items being ordered a second time. */
         setPlacing(false);
+        clear();
         setPlacedState({ kind: "callback", reference: order.reference });
         return;
       }
@@ -517,6 +520,12 @@ export function CheckoutFlow({
    * — only as a reason to check `/checkout/verify` and show its answer.
    */
   async function confirmHandoff(response: RazorpayHandoff, reference: string) {
+    /* Emptied on Razorpay's success handoff, before verification, and not
+       on dismiss or `payment.failed`: those keep the basket so "press Pay
+       again" still has something to pay for. Once the customer has paid,
+       a full basket is only a way to buy the same things twice — whether
+       or not `/checkout/verify` answers in time. */
+    clear();
     try {
       const res = await fetch("/api/v1/checkout/verify", {
         method: "POST",
