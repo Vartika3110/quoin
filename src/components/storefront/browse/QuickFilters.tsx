@@ -7,9 +7,18 @@ import { withParams, type BrowseParams } from "@/lib/browse-params";
  *
  * The full panel is behind a button and always will be — fourteen brands
  * and a price range do not belong on a 390px screen by default. But the
- * three or four filters people actually reach for should not need a sheet
- * at all, and these are them: a price ceiling, the fast-delivery cut, and
- * the discount.
+ * filters people actually reach for should not need a sheet at all, and
+ * these are them: the fast-delivery cut, the discount, and the newest
+ * arrivals.
+ *
+ * Price used to have two of its own chips here — "Under ₹1,000" and
+ * "Under ₹5,000" — before the design prototype's chip row added a "Price"
+ * chip with its own sheet of bands just above this one. Keeping both
+ * would mean two different price systems stacked on top of each other on
+ * a 375px screen: one exact ceiling here, four ranges a sheet away, and
+ * no way to tell from either which one is winning. They are folded into
+ * that one sheet instead — see `PRICE_BUCKETS` in `browse-params.ts` —
+ * rather than kept as a second, narrower way to do the same thing.
  *
  * Every chip is a link with a real parameter behind it, and every one
  * toggles: tapping the active chip clears it. Chips that look like filters
@@ -29,16 +38,6 @@ const CHIPS: {
     label: "In 18 minutes",
     params: { fulfilment: "instant" },
     activeWhen: (p) => p.fulfilment === "instant",
-  },
-  {
-    label: "Under ₹1,000",
-    params: { max: "1000" },
-    activeWhen: (p) => p.max === "1000",
-  },
-  {
-    label: "Under ₹5,000",
-    params: { max: "5000" },
-    activeWhen: (p) => p.max === "5000",
   },
   {
     label: "Under list price",

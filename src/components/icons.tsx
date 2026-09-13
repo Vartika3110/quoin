@@ -604,3 +604,13 @@ export const Pencil = (p: IconProps) => (
     <path d="m14.5 6 3 3" />
   </Svg>
 );
+
+/** Calculator — the room material estimator's own action. */
+export const Calculator = (p: IconProps) => (
+  <Svg {...p}>
+    <rect x="4.5" y="2.5" width="15" height="19" rx="2" />
+    <path d="M8 6.5h8" />
+    <path d="M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 18.5h.01M12 18.5h.01M16 18.5h.01" />
+  </Svg>
+);
+

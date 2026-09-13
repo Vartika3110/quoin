@@ -3,6 +3,7 @@ import { ProductCard } from "@/components/storefront/ProductCard";
 import { ProductRow } from "@/components/storefront/browse/ProductRow";
 import { FilterPanel } from "@/components/storefront/browse/FilterPanel";
 import { FilterDrawer } from "@/components/storefront/browse/FilterDrawer";
+import { FilterChipRow } from "@/components/storefront/browse/FilterChipRow";
 import { QuickFilters } from "@/components/storefront/browse/QuickFilters";
 import { DepartmentRail } from "@/components/storefront/browse/DepartmentRail";
 import { SortSheet } from "@/components/storefront/browse/SortSheet";
@@ -17,7 +18,7 @@ import {
   withParams,
   type BrowseParams,
 } from "@/lib/browse-params";
-import type { FulfilmentType } from "@/lib/types/catalog";
+import { PRICING_UNIT_LABEL, type FulfilmentType, type PricingUnit } from "@/lib/types/catalog";
 
 /**
  * Product browsing.
@@ -103,13 +104,27 @@ export function Browse({
           />
         )}
 
+        {/* Phone only. The design prototype's chip row — Brands, Size,
+            Price — each opening a single-select sheet over this same
+            query. QuickFilters below stays for the one-tap toggles the
+            chip row doesn't cover (delivery speed, discount, sort); see
+            the note in QuickFilters.tsx on why price isn't duplicated
+            between the two rows. */}
+        {showFilters && (
+          <FilterChipRow
+            basePath={basePath}
+            params={params}
+            facets={facets}
+          />
+        )}
+
         {/* Phone only. The full panel stays behind the Filters button;
             these are the three or four people actually reach for. */}
         {showFilters && (
           <QuickFilters
             basePath={basePath}
             params={params}
-            className="mb-4"
+            className="mb-4 mt-2"
             hideOffers={hideOffersFilter}
           />
         )}
@@ -327,6 +342,12 @@ function ActiveChips({
     chips.push({
       label: FULFILMENT_LABEL[params.fulfilment as FulfilmentType] ?? params.fulfilment,
       href: withParams(basePath, params, { fulfilment: undefined }),
+    });
+  }
+  if (params.unit) {
+    chips.push({
+      label: PRICING_UNIT_LABEL[params.unit as PricingUnit] ?? params.unit,
+      href: withParams(basePath, params, { unit: undefined }),
     });
   }
   if (params.min || params.max) {

@@ -355,6 +355,8 @@ export interface ProductQuery {
   categorySlug?: string;
   brandSlug?: string;
   fulfilment?: FulfilmentType;
+  /** The phone chip row's "Size" facet — how the price is expressed. */
+  pricingUnit?: PricingUnit;
   /** Matched against product name, SKU, brand name and category name. */
   search?: string;
   /** Inclusive bounds on the cheapest sellable variant, in paise. */
@@ -384,6 +386,16 @@ const DB_FULFILMENT: Record<FulfilmentType, DbFulfilment> = {
   scheduled: "SCHEDULED",
   bookable: "BOOKABLE",
   made_to_order: "MADE_TO_ORDER",
+};
+
+const DB_PRICING_UNIT: Record<PricingUnit, DbPricingUnit> = {
+  per_piece: "PER_PIECE",
+  per_sqft: "PER_SQFT",
+  per_running_ft: "PER_RUNNING_FT",
+  per_visit: "PER_VISIT",
+  per_bag: "PER_BAG",
+  per_litre: "PER_LITRE",
+  per_kg: "PER_KG",
 };
 
 /**
@@ -421,6 +433,7 @@ function productWhere(query: ProductQuery) {
     ...(query.categorySlug ? { category: { slug: query.categorySlug } } : {}),
     ...(query.brandSlug ? { brand: { slug: query.brandSlug } } : {}),
     ...(query.fulfilment ? { fulfilment: DB_FULFILMENT[query.fulfilment] } : {}),
+    ...(query.pricingUnit ? { pricingUnit: DB_PRICING_UNIT[query.pricingUnit] } : {}),
     ...(search
       ? {
           OR: [
@@ -529,6 +542,9 @@ async function byCheapestVariant(
 export interface ProductFacets {
   brands: { slug: string; name: string; count: number }[];
   fulfilments: { id: FulfilmentType; count: number }[];
+  /** The phone chip row's "Size" facet. Empty is not an error — a
+      category priced entirely `per_piece` has nothing to offer here. */
+  pricingUnits: { id: PricingUnit; count: number }[];
   /** Bounds of the cheapest sellable variant across the unpriced query. */
   priceMinPaise: number;
   priceMaxPaise: number;
@@ -543,13 +559,14 @@ export async function getProductFacets(
      otherwise selected rather than collapsing onto itself. */
   const withoutBrand = productWhere({ ...query, brandSlug: undefined });
   const withoutFulfilment = productWhere({ ...query, fulfilment: undefined });
+  const withoutPricingUnit = productWhere({ ...query, pricingUnit: undefined });
   const withoutPrice = productWhere({
     ...query,
     minPricePaise: undefined,
     maxPricePaise: undefined,
   });
 
-  const [brandRows, fulfilmentRows, bounds, discountedIds] = await Promise.all([
+  const [brandRows, fulfilmentRows, pricingUnitRows, bounds, discountedIds] = await Promise.all([
     db.product.groupBy({
       by: ["brandId"],
       where: { ...withoutBrand, brandId: { not: null } },
@@ -558,6 +575,11 @@ export async function getProductFacets(
     db.product.groupBy({
       by: ["fulfilment"],
       where: withoutFulfilment,
+      _count: { _all: true },
+    }),
+    db.product.groupBy({
+      by: ["pricingUnit"],
+      where: withoutPricingUnit,
       _count: { _all: true },
     }),
     db.productVariant.aggregate({
@@ -595,6 +617,11 @@ export async function getProductFacets(
 
     fulfilments: fulfilmentRows.map((row) => ({
       id: FULFILMENT[row.fulfilment],
+      count: row._count._all,
+    })),
+
+    pricingUnits: pricingUnitRows.map((row) => ({
+      id: PRICING_UNIT[row.pricingUnit],
       count: row._count._all,
     })),
 

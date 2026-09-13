@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Check, Percent } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
-import { formatPrice, type FulfilmentType } from "@/lib/types/catalog";
+import { formatPrice, PRICING_UNIT_LABEL, type FulfilmentType, type PricingUnit } from "@/lib/types/catalog";
 import type { ProductFacets } from "@/lib/data/catalog";
 import {
   FULFILMENT_LABEL,
@@ -55,6 +55,7 @@ export function FilterPanel({
           href={withParams(basePath, params, {
             brand: undefined,
             fulfilment: undefined,
+            unit: undefined,
             min: undefined,
             max: undefined,
             offers: undefined,
@@ -90,6 +91,23 @@ export function FilterPanel({
           </OptionLink>
         ))}
       </Group>
+
+      {/* Only past the point of being trivially true: a category priced
+          entirely `per_piece` has one row here and one is not a filter. */}
+      {facets.pricingUnits.length > 1 && (
+        <Group title="Size">
+          {facets.pricingUnits.map((u) => (
+            <OptionLink
+              key={u.id}
+              href={toggleParam(basePath, params, "unit", u.id)}
+              selected={params.unit === u.id}
+              count={u.count}
+            >
+              {PRICING_UNIT_LABEL[u.id as PricingUnit]}
+            </OptionLink>
+          ))}
+        </Group>
+      )}
 
       <Group
         title="Price"
@@ -208,9 +226,9 @@ function PriceForm({
   basePath: string;
   params: BrowseParams;
 }) {
-  const carried = (["q", "brand", "fulfilment", "offers", "sort", "view"] as const).filter(
-    (key) => params[key],
-  );
+  const carried = (
+    ["q", "brand", "fulfilment", "unit", "offers", "sort", "view"] as const
+  ).filter((key) => params[key]);
 
   return (
     <form action={basePath} method="get" className="px-2 pt-1">

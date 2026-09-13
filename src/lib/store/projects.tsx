@@ -656,6 +656,93 @@ export interface ProjectSummary {
   /** Deliveries with a date in the future, soonest first. */
   upcoming: ProjectMaterial[];
   overBudget: boolean;
+  /** Index into `PROJECT_STAGES` — see `deriveStage`. */
+  stage: number;
+}
+
+/**
+ * The five stages a build actually moves through, in order. The design
+ * prototype's `ProjectHubScreen` shows exactly this ladder, but as a
+ * hardcoded `project.stage` — there is no such column here, on purpose,
+ * and `deriveStage` below is what stands in for it.
+ */
+export const PROJECT_STAGES = [
+  "Design",
+  "Procurement",
+  "Construction",
+  "Finishing",
+  "Handover",
+] as const;
+
+/**
+ * The known task phases mapped onto the stage where that trade's work
+ * happens. "Planning" is the pair of tasks every project starts with
+ * (`startingTaskSeeds`); the rest are the eight requirement categories
+ * `ProjectWizard` offers during onboarding — the only phase strings this
+ * app itself ever writes. A task a customer later adds by hand can carry
+ * any phase text it likes, and one outside this table is correctly left
+ * out of the stage calculation below: there is no honest way to place an
+ * arbitrary word someone typed onto a five-step ladder.
+ */
+const PHASE_STAGE: Record<string, number> = {
+  Planning: 0,
+  "Civil work": 2,
+  Flooring: 2,
+  Plumbing: 2,
+  Electrical: 2,
+  Waterproofing: 2,
+  Painting: 3,
+  Joinery: 3,
+  "False ceiling": 3,
+};
+
+/**
+ * Which of the five stages a project is currently in.
+ *
+ * Not stored, for the reason nothing else on this page is stored: a
+ * `stage` column is a second fact about the same tasks and materials that
+ * already describe the build, and the two disagree the moment someone
+ * moves a task without also remembering a stage picker nobody asked them
+ * to touch. This instead rolls the project's *own* task phases and
+ * material statuses up onto the ladder — the highest stage any real
+ * signal supports, never a stage invented ahead of evidence for it.
+ */
+export function deriveStage(project: Project): number {
+  let stage = 0;
+
+  const startedAtOrAbove = (min: number) =>
+    project.tasks.some(
+      (t) => t.status !== "todo" && t.phase != null && (PHASE_STAGE[t.phase] ?? -1) >= min,
+    );
+
+  if (project.materials.some((m) => m.status === "ordered" || m.status === "delivered")) {
+    stage = Math.max(stage, 1); // Procurement: something has actually been ordered.
+  }
+
+  if (startedAtOrAbove(2) || project.materials.some((m) => m.status === "delivered")) {
+    stage = Math.max(stage, 2); // Construction: a site trade is under way, or something has arrived.
+  }
+
+  if (startedAtOrAbove(3)) {
+    stage = Math.max(stage, 3); // Finishing: painting, joinery or a false ceiling has started.
+  }
+
+  /* Handover needs the board cleared *and* evidence a build happened — a
+     site trade on the board or something delivered. Every project starts
+     with two Planning tasks, one already done, so "every task done" alone
+     would read a project as handed over the moment its scope is confirmed. */
+  const builtSomething =
+    project.tasks.some((t) => (PHASE_STAGE[t.phase ?? ""] ?? -1) >= 2) ||
+    project.materials.some((m) => m.status === "delivered");
+  if (
+    builtSomething &&
+    project.tasks.length > 0 &&
+    project.tasks.every((t) => t.status === "done")
+  ) {
+    stage = 4; // Handover: nothing left on the board.
+  }
+
+  return stage;
 }
 
 export function summarise(project: Project): ProjectSummary {
@@ -689,5 +776,6 @@ export function summarise(project: Project): ProjectSummary {
     tasksTotal,
     upcoming,
     overBudget: spentPaise > project.budgetPaise,
+    stage: deriveStage(project),
   };
 }

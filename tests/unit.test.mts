@@ -52,6 +52,15 @@ const {
 const { basketKey } = await import(
   "@/components/storefront/checkout/idempotency"
 );
+const { activeFilterCount, activeBucketId, toggleParam, withParams, PRICE_BUCKETS } =
+  await import("@/lib/browse-params");
+const { deriveStage, PROJECT_STAGES } = await import("@/lib/store/projects");
+const { estimateRoomMaterials } = await import(
+  "@/components/storefront/projects/RoomCalculator"
+);
+type Project = import("@/lib/store/projects").Project;
+type ProjectTask = import("@/lib/store/projects").ProjectTask;
+type ProjectMaterial = import("@/lib/store/projects").ProjectMaterial;
 const { createHmac } = await import("node:crypto");
 type CatalogProduct = import("@/lib/types/catalog").Product;
 type OrderStatus = import("@prisma/client").OrderStatus;
@@ -1001,5 +1010,222 @@ describe("checkout idempotency key basis (basketKey)", () => {
       { variantId: "v2", qty: 1 },
     ];
     assert.notEqual(basketKey("addr-1", one), basketKey("addr-1", two));
+  });
+});
+
+/* ---------------------------------------------------------------------
+   Project Hub: stage derivation and the room material calculator.
+   ------------------------------------------------------------------- */
+
+function makeTask(overrides: Partial<ProjectTask> = {}): ProjectTask {
+  return {
+    id: "t1",
+    title: "Task",
+    status: "todo",
+    phase: null,
+    dueDate: null,
+    ...overrides,
+  };
+}
+
+function makeMaterial(overrides: Partial<ProjectMaterial> = {}): ProjectMaterial {
+  return {
+    id: "m1",
+    title: "Material",
+    qty: 1,
+    unit: "",
+    unitPricePaise: 0,
+    status: "planned",
+    productSlug: null,
+    variantId: null,
+    brand: null,
+    expectedOn: null,
+    ...overrides,
+  };
+}
+
+function makeProject(tasks: ProjectTask[], materials: ProjectMaterial[]): Project {
+  return {
+    id: "p1",
+    name: "Test project",
+    kind: "renovation",
+    sizeSqft: 0,
+    location: "",
+    budgetPaise: 0,
+    startDate: null,
+    targetDate: null,
+    requirements: [],
+    notes: "",
+    isSample: false,
+    archivedAt: null,
+    createdAt: 0,
+    tasks,
+    materials,
+    milestones: [],
+    documents: [],
+    orders: [],
+  };
+}
+
+describe("project stage derivation (deriveStage)", () => {
+  it("has no fake sixth state — five stages, matching the design prototype", () => {
+    assert.deepEqual(PROJECT_STAGES, [
+      "Design",
+      "Procurement",
+      "Construction",
+      "Finishing",
+      "Handover",
+    ]);
+  });
+
+  it("a project with nothing ordered or started reads as Design", () => {
+    const project = makeProject([makeTask({ phase: "Planning", status: "todo" })], []);
+    assert.equal(deriveStage(project), 0);
+  });
+
+  it("an ordered material alone is enough to reach Procurement", () => {
+    const project = makeProject([], [makeMaterial({ status: "ordered" })]);
+    assert.equal(deriveStage(project), 1);
+  });
+
+  it("a delivered material reaches Construction, not just Procurement", () => {
+    const project = makeProject([], [makeMaterial({ status: "delivered" })]);
+    assert.equal(deriveStage(project), 2);
+  });
+
+  it("a site trade under way (Plumbing, in progress) reaches Construction", () => {
+    const project = makeProject(
+      [makeTask({ phase: "Plumbing", status: "doing" })],
+      [],
+    );
+    assert.equal(deriveStage(project), 2);
+  });
+
+  it("a construction-phase task that has not started yet does not advance the stage", () => {
+    const project = makeProject(
+      [makeTask({ phase: "Plumbing", status: "todo" })],
+      [],
+    );
+    assert.equal(deriveStage(project), 0);
+  });
+
+  it("a finishing trade (Painting, done) reaches Finishing", () => {
+    /* A second, unstarted task keeps this project short of "every task
+       done" — otherwise the Handover rule below would rightly win, and
+       this test would not be isolating what it claims to. */
+    const project = makeProject(
+      [
+        makeTask({ id: "t1", phase: "Painting", status: "done" }),
+        makeTask({ id: "t2", phase: "Civil work", status: "todo" }),
+      ],
+      [],
+    );
+    assert.equal(deriveStage(project), 3);
+  });
+
+  it("every task done reaches Handover, overriding an in-progress phase reading", () => {
+    const project = makeProject(
+      [
+        makeTask({ id: "t1", phase: "Plumbing", status: "done" }),
+        makeTask({ id: "t2", phase: "Painting", status: "done" }),
+      ],
+      [],
+    );
+    assert.equal(deriveStage(project), 4);
+  });
+
+  it("an empty task list is not read as Handover — there is nothing to have finished", () => {
+    const project = makeProject([], [makeMaterial({ status: "ordered" })]);
+    assert.notEqual(deriveStage(project), 4);
+  });
+
+  it("finishing only the Planning tasks every project starts with is not Handover", () => {
+    const project = makeProject(
+      [
+        makeTask({ id: "t1", phase: "Planning", status: "done" }),
+        makeTask({ id: "t2", phase: "Planning", status: "done" }),
+      ],
+      [],
+    );
+    assert.equal(deriveStage(project), 0);
+  });
+
+  it("a phase a customer typed by hand is not in the table, and is safely ignored", () => {
+    const project = makeProject(
+      [makeTask({ phase: "Feng shui consultation", status: "doing" })],
+      [],
+    );
+    assert.equal(deriveStage(project), 0);
+  });
+});
+
+describe("room material calculator (estimateRoomMaterials)", () => {
+  it("matches the design prototype's own worked example (120 sq.ft. bedroom)", () => {
+    const result = estimateRoomMaterials("Bedroom", 120);
+    assert.deepEqual(result, {
+      tilesSqft: 132,
+      paintLitres: 18,
+      cementBags: 2,
+      electricalPoints: 4,
+    });
+  });
+
+  it("never estimates zero cement bags or fewer than two electrical points", () => {
+    const result = estimateRoomMaterials("Bathroom", 10);
+    assert.ok(result.cementBags >= 1);
+    assert.ok(result.electricalPoints >= 2);
+  });
+
+  it("a bathroom estimates more tiling per sq.ft. than a bedroom of the same size", () => {
+    const bathroom = estimateRoomMaterials("Bathroom", 100);
+    const bedroom = estimateRoomMaterials("Bedroom", 100);
+    assert.ok(bathroom.tilesSqft > bedroom.tilesSqft);
+  });
+});
+
+describe("browse filter chip row (Brands / Size / Price)", () => {
+  it("counts the phone Size chip's `unit` toward the active filter total", () => {
+    assert.equal(activeFilterCount({ unit: "per_bag" }), 1);
+    assert.equal(activeFilterCount({}), 0);
+  });
+
+  it("PRICE_BUCKETS covers ₹0 upward with no gap between bands", () => {
+    assert.equal(PRICE_BUCKETS[0].min, undefined);
+    for (let i = 1; i < PRICE_BUCKETS.length; i++) {
+      assert.equal(PRICE_BUCKETS[i].min, PRICE_BUCKETS[i - 1].max);
+    }
+    assert.equal(PRICE_BUCKETS.at(-1)?.max, undefined);
+  });
+
+  it("activeBucketId matches the bucket whose min/max the URL currently carries", () => {
+    assert.equal(activeBucketId({ max: "500" }), "under-500");
+    assert.equal(activeBucketId({ min: "500", max: "2000" }), "500-2000");
+    assert.equal(activeBucketId({ min: "10000" }), "above-10000");
+  });
+
+  it("activeBucketId matches nothing for a custom range typed into the full drawer", () => {
+    assert.equal(activeBucketId({ min: "700", max: "1800" }), undefined);
+    assert.equal(activeBucketId({}), undefined);
+  });
+
+  it("picking a bucket builds the same href the chip sheet navigates to", () => {
+    /* The chip row navigates to a bucket's exact params rather than
+       toggling — re-picking "Under ₹500" is a no-op href, and clearing
+       goes through the sheet's separate "All" row. Guard the href shape
+       so a bucket's params always land as `min`/`max` on the query. */
+    const href = withParams("/products", {}, { max: "500" });
+    assert.equal(href, "/products?max=500");
+  });
+
+  it("toggleParam still clears a facet when its own active value is picked again", () => {
+    /* Shared by the sidebar FilterPanel and, for brand/unit, the chip
+       sheets' selected-row behaviour — the sheet re-navigates to `unit`
+       cleared automatically because `FacetSheet`'s options are plain
+       links, but the single-select semantics come from here. */
+    assert.equal(toggleParam("/products", { unit: "per_bag" }, "unit", "per_bag"), "/products");
+    assert.equal(
+      toggleParam("/products", {}, "unit", "per_bag"),
+      "/products?unit=per_bag",
+    );
   });
 });

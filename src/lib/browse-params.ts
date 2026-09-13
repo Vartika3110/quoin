@@ -16,6 +16,8 @@ export interface BrowseParams {
   q?: string;
   brand?: string;
   fulfilment?: string;
+  /** Pricing unit, e.g. "per_bag" — the phone chip row's "Size" facet. */
+  unit?: string;
   /** Rupees in the URL, paise everywhere else — see `toPaise`. */
   min?: string;
   max?: string;
@@ -95,7 +97,47 @@ export function toPaise(rupees: string | undefined): number | undefined {
 
 /** How many filters are on, for the "Filters (3)" button and the reset. */
 export function activeFilterCount(params: BrowseParams): number {
-  return [params.brand, params.fulfilment, params.min, params.max, params.offers].filter(
-    Boolean,
-  ).length;
+  return [
+    params.brand,
+    params.fulfilment,
+    params.unit,
+    params.min,
+    params.max,
+    params.offers,
+  ].filter(Boolean).length;
+}
+
+/**
+ * Price bands for the phone "Price" chip.
+ *
+ * Boundaries touch (₹500 sits in both the first and second band) rather
+ * than stepping by one rupee, matching the `gte`/`lte` — not `lt` — bounds
+ * `productWhere` already applies, and the same inclusive reading the
+ * "Under ₹1,000" quick filter used. A product priced at exactly ₹500 is a
+ * defensible member of either band; a strict boundary would just move
+ * which one, not remove the ambiguity.
+ *
+ * Four bands, not the quick filters' two — chosen as the one coherent set
+ * because the chip's sheet replaces "Under ₹1,000" / "Under ₹5,000"
+ * rather than sitting alongside them; see `QuickFilters.tsx`.
+ */
+export interface PriceBucket {
+  id: string;
+  label: string;
+  min?: string;
+  max?: string;
+}
+
+export const PRICE_BUCKETS: PriceBucket[] = [
+  { id: "under-500", label: "Under ₹500", max: "500" },
+  { id: "500-2000", label: "₹500 – ₹2,000", min: "500", max: "2000" },
+  { id: "2000-10000", label: "₹2,000 – ₹10,000", min: "2000", max: "10000" },
+  { id: "above-10000", label: "Above ₹10,000", min: "10000" },
+];
+
+/** Which band, if any, the current `min`/`max` exactly match. */
+export function activeBucketId(params: BrowseParams): string | undefined {
+  return PRICE_BUCKETS.find(
+    (b) => (b.min ?? "") === (params.min ?? "") && (b.max ?? "") === (params.max ?? ""),
+  )?.id;
 }

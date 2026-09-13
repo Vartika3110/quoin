@@ -16,6 +16,9 @@ import { Textarea } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/Toast";
 import { BudgetBar } from "@/components/storefront/projects/BudgetBar";
 import { Timeline } from "@/components/storefront/projects/Timeline";
+import { StageTracker } from "@/components/storefront/projects/StageTracker";
+import { RoomCalculator } from "@/components/storefront/projects/RoomCalculator";
+import { MoodBoard } from "@/components/storefront/projects/MoodBoard";
 import { cn } from "@/components/ui/cn";
 import {
   ArrowRight,
@@ -39,6 +42,7 @@ import {
   type TaskStatus,
 } from "@/lib/store/projects";
 import { formatPrice } from "@/lib/types/catalog";
+import type { IdeaView } from "@/lib/types/studio";
 
 /**
  * One project, as a dashboard.
@@ -94,7 +98,17 @@ const MATERIAL_TONE: Record<MaterialStatus, "neutral" | "accent" | "success"> = 
   delivered: "success",
 };
 
-export function ProjectDashboard({ id }: { id: string }) {
+export function ProjectDashboard({
+  id,
+  moodboard = [],
+}: {
+  id: string;
+  /** Saved Studio ideas for this account, fetched server-side by the page
+      — see the comment on `MoodBoard`. Defaults empty rather than
+      optional throughout, since "nothing saved yet" and "not fetched"
+      render the same empty state either way. */
+  moodboard?: IdeaView[];
+}) {
   const { get, ready, error, refresh, setTaskStatus, update, remove } = useProjects();
   const [section, setSection] = useState<SectionId>("overview");
   const [taskError, setTaskError] = useState<string | null>(null);
@@ -253,6 +267,12 @@ export function ProjectDashboard({ id }: { id: string }) {
       <div key={section} className="anim-fade">
         {section === "overview" && (
           <div className="grid gap-4 lg:grid-cols-2">
+            {/* Above the fold: the one question a repeat visitor opens
+                the hub to answer, before the two-column detail below. */}
+            <Card padding="lg" className="lg:col-span-2">
+              <StageTracker stage={summary.stage} />
+            </Card>
+
             <Card padding="lg">
               <BudgetBar summary={summary} />
             </Card>
@@ -290,11 +310,32 @@ export function ProjectDashboard({ id }: { id: string }) {
               <h2 className="font-display mb-4 text-title-sm font-semibold text-ink">Timeline</h2>
               <Timeline tasks={project.tasks} onToggle={handleToggleTask} />
             </Card>
+
+            <Card padding="lg" className="lg:col-span-2">
+              <div className="mb-4 flex items-baseline justify-between gap-3">
+                <h2 className="font-display text-title-sm font-semibold text-ink">Mood board</h2>
+                <span className="text-caption text-muted">Ideas you have saved from Quoin Studio</span>
+              </div>
+              <MoodBoard ideas={moodboard} />
+            </Card>
           </div>
         )}
 
         {section === "materials" && (
-          <MaterialsSection project={project} />
+          <div className="space-y-4">
+            <MaterialsSection project={project} />
+            <Card padding="lg">
+              <h2 className="font-display text-title-sm font-semibold text-ink">
+                Estimate a room&rsquo;s requirement
+              </h2>
+              <p className="mt-1 text-caption text-muted">
+                Quick estimate from area alone — refine later with a site visit.
+              </p>
+              <div className="mt-4">
+                <RoomCalculator projectId={project.id} />
+              </div>
+            </Card>
+          </div>
         )}
 
         {section === "budget" && (
@@ -324,7 +365,7 @@ export function ProjectDashboard({ id }: { id: string }) {
                     >
                       <span className="min-w-0 truncate text-ink">{m.title}</span>
                       <span className="nums shrink-0 font-medium text-ink">
-                        {formatPrice(m.unitPricePaise * m.qty)}
+                        {m.unitPricePaise > 0 ? formatPrice(m.unitPricePaise * m.qty) : "Not priced yet"}
                       </span>
                     </li>
                   ))}
@@ -536,7 +577,14 @@ function MaterialsSection({ project }: { project: Project }) {
             )}
             <span className="nums mt-0.5 block text-micro text-faint">
               {material.qty} {material.unit} ·{" "}
-              {formatPrice(material.unitPricePaise)} each
+              {/* A calculator estimate has no catalogue line behind it yet
+                  and is written with `unitPricePaise` unset (0), never a
+                  guessed rupee figure — this says so instead of showing
+                  the misleading "₹0 each" that number would otherwise
+                  read as. */}
+              {material.unitPricePaise > 0
+                ? `${formatPrice(material.unitPricePaise)} each`
+                : "Not priced yet"}
             </span>
           </span>
 
@@ -545,7 +593,9 @@ function MaterialsSection({ project }: { project: Project }) {
           </Badge>
 
           <span className="nums w-24 shrink-0 text-right text-body-sm font-semibold text-ink">
-            {formatPrice(material.unitPricePaise * material.qty)}
+            {material.unitPricePaise > 0
+              ? formatPrice(material.unitPricePaise * material.qty)
+              : "—"}
           </span>
         </li>
       ))}
