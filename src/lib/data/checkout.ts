@@ -61,6 +61,11 @@ export interface QuoteLine {
   linePaise: Paise;
   fulfilment: string;
   issues: QuoteIssue[];
+  /** Sellable units across every store. Only present for a stock-tracked
+      line — an untracked product has no count to report, and a number
+      here would suggest a limit that does not exist. Lets the cart tell
+      "none left" from "fewer left than you asked for". */
+  availableQty?: number;
 }
 
 export interface Quote {
@@ -176,10 +181,9 @@ export async function quoteCart(
     const issues: QuoteIssue[] = [];
     if (qty !== wanted.qty) issues.push("quantity_adjusted");
 
-    if (row.product.stockTracked && isStockBearing(row.product.fulfilment)) {
-      const available = availableByVariant.get(row.id) ?? 0;
-      if (available < qty) issues.push("out_of_stock");
-    }
+    const tracked = row.product.stockTracked && isStockBearing(row.product.fulfilment);
+    const available = tracked ? (availableByVariant.get(row.id) ?? 0) : undefined;
+    if (available !== undefined && available < qty) issues.push("out_of_stock");
 
     lines.push({
       productSlug: row.product.slug,
@@ -193,6 +197,7 @@ export async function quoteCart(
       linePaise: price.amount * qty,
       fulfilment: row.product.fulfilment,
       issues,
+      ...(available !== undefined ? { availableQty: available } : {}),
     });
   }
 

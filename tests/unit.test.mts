@@ -59,6 +59,7 @@ const { basketKey } = await import(
 const { activeFilterCount, activeBucketId, toggleParam, withParams, PRICE_BUCKETS } =
   await import("@/lib/browse-params");
 const { deriveStage, PROJECT_STAGES } = await import("@/lib/store/projects");
+const { lineStock, sellableSubtotal } = await import("@/lib/cart/availability");
 const { estimateRoomMaterials } = await import(
   "@/components/storefront/projects/RoomCalculator"
 );
@@ -1404,5 +1405,75 @@ describe("browse filter chip row (Brands / Size / Price)", () => {
       toggleParam("/products", {}, "unit", "per_bag"),
       "/products?unit=per_bag",
     );
+  });
+});
+
+describe("cart stock state (lineStock, sellableSubtotal)", () => {
+  type Quote = import("@/lib/data/checkout").Quote;
+  type QuoteIssue = import("@/lib/data/checkout").QuoteIssue;
+
+  const quote = (
+    lines: { variantId: string; issues?: QuoteIssue[]; availableQty?: number }[],
+    unavailable: string[] = [],
+  ): Quote => ({
+    lines: lines.map((l) => ({
+      productSlug: "p",
+      variantId: l.variantId,
+      title: "t",
+      variantLabel: "Standard",
+      requestedQty: 1,
+      qty: 1,
+      unitPricePaise: 100,
+      mrpPaise: null,
+      linePaise: 100,
+      fulfilment: "SCHEDULED",
+      issues: l.issues ?? [],
+      ...(l.availableQty !== undefined ? { availableQty: l.availableQty } : {}),
+    })),
+    unavailable: unavailable.map((variantId) => ({ productSlug: "p", variantId })),
+    subtotalPaise: 0,
+    savingsPaise: 0,
+    changed: false,
+  });
+  const line = (variantId: string, minQty = 1) => ({ variantId, snapshot: { minQty } });
+
+  it("reads every line as available until a quote arrives — no flash of 'out of stock'", () => {
+    assert.deepEqual(lineStock(null, line("v1")), { state: "available" });
+  });
+
+  it("a line the quote raised no stock issue for stays available", () => {
+    assert.deepEqual(lineStock(quote([{ variantId: "v1" }]), line("v1")), { state: "available" });
+  });
+
+  it("nothing left reads as out_of_stock", () => {
+    const q = quote([{ variantId: "v1", issues: ["out_of_stock"], availableQty: 0 }]);
+    assert.deepEqual(lineStock(q, line("v1")), { state: "out_of_stock" });
+  });
+
+  it("fewer left than asked for reads as short, with the count to offer", () => {
+    const q = quote([{ variantId: "v1", issues: ["out_of_stock"], availableQty: 3 }]);
+    assert.deepEqual(lineStock(q, line("v1")), { state: "short", available: 3 });
+  });
+
+  it("fewer left than the smallest quantity it is sold in is out_of_stock, not short", () => {
+    const q = quote([{ variantId: "v1", issues: ["out_of_stock"], availableQty: 3 }]);
+    assert.deepEqual(lineStock(q, line("v1", 5)), { state: "out_of_stock" });
+  });
+
+  it("a line gone from the catalogue reads as unavailable", () => {
+    assert.deepEqual(lineStock(quote([], ["v1"]), line("v1")), { state: "unavailable" });
+  });
+
+  it("sellableSubtotal leaves blocked lines out of the total", () => {
+    const q = quote([
+      { variantId: "v1" },
+      { variantId: "v2", issues: ["out_of_stock"], availableQty: 0 },
+    ]);
+    const lines = [
+      { variantId: "v1", qty: 2, snapshot: { pricePaise: 500, minQty: 1 } },
+      { variantId: "v2", qty: 1, snapshot: { pricePaise: 300, minQty: 1 } },
+    ] as never;
+    assert.equal(sellableSubtotal(lines, q), 1000);
+    assert.equal(sellableSubtotal(lines, null), 1300);
   });
 });

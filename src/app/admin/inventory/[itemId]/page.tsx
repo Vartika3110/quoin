@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { StockActions } from "@/components/admin/StockActions";
+import { StockAlertsCard } from "@/components/admin/StockAlertsCard";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Stat } from "@/components/ui/Stat";
@@ -92,6 +93,8 @@ export default async function InventoryItemPage({
         />
         <StockActions itemId={item.id} />
       </Card>
+
+      <StockAlertsCard variantId={item.variantId} />
 
       <Card className="mt-6" padding="lg">
         <CardHeader

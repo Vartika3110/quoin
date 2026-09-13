@@ -27,6 +27,12 @@ import {
   type FulfilmentType,
 } from "@/lib/types/catalog";
 import { useToast } from "@/components/ui/Toast";
+import { cn } from "@/components/ui/cn";
+import {
+  LineStockActions,
+  StockImageOverlay,
+} from "@/components/storefront/cart/StockNotice";
+import { useCartStock } from "@/lib/cart/use-cart-stock";
 
 /**
  * The cart, without leaving the page.
@@ -42,7 +48,12 @@ import { useToast } from "@/components/ui/Toast";
  * arrive together and cannot share one delivery estimate; showing them in
  * one undifferentiated list is what turns a delivery promise into an
  * argument at the door.
+ *
+ * Stock is checked the same way the cart page checks it, and only while
+ * the drawer is open — see `useCartStock`.
  */
+
+type CartStock = ReturnType<typeof useCartStock>;
 
 const GROUP_ICON: Record<FulfilmentType, typeof Clock> = {
   instant: Clock,
@@ -58,7 +69,8 @@ export function CartDrawer({
   open: boolean;
   onClose: () => void;
 }) {
-  const { groups, lines, count, subtotalPaise, savingsPaise } = useCart();
+  const { groups, lines, count, savingsPaise } = useCart();
+  const stock = useCartStock(open);
 
   return (
     <Drawer
@@ -76,8 +88,9 @@ export function CartDrawer({
       footer={
         lines.length > 0 ? (
           <Summary
-            subtotalPaise={subtotalPaise}
+            subtotalPaise={stock.sellableSubtotalPaise}
             savingsPaise={savingsPaise}
+            blockedCount={stock.blockedCount}
             onNavigate={onClose}
           />
         ) : undefined
@@ -98,7 +111,12 @@ export function CartDrawer({
       ) : (
         <div className="space-y-6 p-5">
           {groups.map((group) => (
-            <Group key={group.fulfilment} group={group} onNavigate={onClose} />
+            <Group
+              key={group.fulfilment}
+              group={group}
+              stock={stock}
+              onNavigate={onClose}
+            />
           ))}
         </div>
       )}
@@ -108,9 +126,11 @@ export function CartDrawer({
 
 function Group({
   group,
+  stock,
   onNavigate,
 }: {
   group: CartGroup;
+  stock: CartStock;
   onNavigate: () => void;
 }) {
   const promise = GROUP_PROMISE[group.fulfilment];
@@ -136,32 +156,43 @@ function Group({
 
       <ul className="space-y-3">
         {group.lines.map((line) => (
-          <Line key={line.id} line={line} onNavigate={onNavigate} />
+          <Line key={line.id} line={line} stock={stock} onNavigate={onNavigate} />
         ))}
       </ul>
     </section>
   );
 }
 
-function Line({ line, onNavigate }: { line: CartLine; onNavigate: () => void }) {
+function Line({
+  line,
+  stock,
+  onNavigate,
+}: {
+  line: CartLine;
+  stock: CartStock;
+  onNavigate: () => void;
+}) {
   const { setQty, remove } = useCart();
   const toast = useToast();
   const s = line.snapshot;
   const bookable = s.fulfilment === "bookable";
+  const lineState = stock.stockOf(line);
+  const soldOut = lineState.state === "out_of_stock" || lineState.state === "unavailable";
 
   return (
     <li className="flex gap-3">
       <Link
         href={`/p/${line.productSlug}`}
         onClick={onNavigate}
-        className="size-18 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo"
+        className="relative size-18 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo"
       >
         <ProductImage
           photo={s.photo}
           swatchKey={s.image}
           label={s.title}
-          className="size-full"
+          className={cn("size-full", soldOut && "grayscale")}
         />
+        <StockImageOverlay stock={lineState} />
       </Link>
 
       <div className="min-w-0 flex-1">
@@ -184,35 +215,46 @@ function Line({ line, onNavigate }: { line: CartLine; onNavigate: () => void }) 
           </p>
         )}
 
-        <div className="mt-2 flex items-center justify-between gap-2">
-          {bookable ? (
-            /* A visit is one visit. A stepper here would offer to book
-               the same electrician into the same slot twice. */
-            <span className="text-micro text-muted">One visit</span>
-          ) : (
-            <div className="flex items-center rounded-lg border border-line">
-              <StepButton
-                label={`Decrease quantity of ${s.title}`}
-                onClick={() => setQty(line.id, line.qty - s.stepQty)}
-              >
-                <Minus className="size-3.5" />
-              </StepButton>
-              <span className="nums min-w-10 text-center text-caption font-medium text-ink">
-                {line.qty}
-              </span>
-              <StepButton
-                label={`Increase quantity of ${s.title}`}
-                onClick={() => setQty(line.id, line.qty + s.stepQty)}
-              >
-                <Plus className="size-3.5" />
-              </StepButton>
-            </div>
-          )}
+        {lineState.state !== "available" ? (
+          <div className="mt-2">
+            <LineStockActions
+              stock={lineState}
+              requested={stock.isRequested(line.variantId)}
+              onRequest={() => stock.requestAlert(line)}
+              onShrink={(qty) => setQty(line.id, qty)}
+            />
+          </div>
+        ) : (
+          <div className="mt-2 flex items-center justify-between gap-2">
+            {bookable ? (
+              /* A visit is one visit. A stepper here would offer to book
+                 the same electrician into the same slot twice. */
+              <span className="text-micro text-muted">One visit</span>
+            ) : (
+              <div className="flex items-center rounded-lg border border-line">
+                <StepButton
+                  label={`Decrease quantity of ${s.title}`}
+                  onClick={() => setQty(line.id, line.qty - s.stepQty)}
+                >
+                  <Minus className="size-3.5" />
+                </StepButton>
+                <span className="nums min-w-10 text-center text-caption font-medium text-ink">
+                  {line.qty}
+                </span>
+                <StepButton
+                  label={`Increase quantity of ${s.title}`}
+                  onClick={() => setQty(line.id, line.qty + s.stepQty)}
+                >
+                  <Plus className="size-3.5" />
+                </StepButton>
+              </div>
+            )}
 
-          <span className="nums text-body-sm font-semibold text-ink">
-            {formatPrice(s.pricePaise * line.qty)}
-          </span>
-        </div>
+            <span className="nums text-body-sm font-semibold text-ink">
+              {formatPrice(s.pricePaise * line.qty)}
+            </span>
+          </div>
+        )}
 
         <div className="mt-1.5 flex items-center justify-between gap-2">
           <span className="text-micro text-faint">
@@ -268,10 +310,12 @@ function StepButton({
 function Summary({
   subtotalPaise,
   savingsPaise,
+  blockedCount,
   onNavigate,
 }: {
   subtotalPaise: number;
   savingsPaise: number;
+  blockedCount: number;
   onNavigate: () => void;
 }) {
   return (
@@ -281,6 +325,14 @@ function Summary({
           <dt className="text-muted">Subtotal</dt>
           <dd className="nums font-medium text-ink">{formatPrice(subtotalPaise)}</dd>
         </div>
+        {blockedCount > 0 && (
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted">Not included</dt>
+            <dd className="nums text-micro text-warning">
+              {blockedCount} {blockedCount === 1 ? "item" : "items"} out of stock
+            </dd>
+          </div>
+        )}
         {savingsPaise > 0 && (
           <div className="flex justify-between gap-3">
             <dt className="text-muted">You save</dt>
@@ -304,9 +356,15 @@ function Summary({
         </div>
       </dl>
 
-      <Button href="/checkout" block onClick={onNavigate}>
-        Proceed to checkout
-      </Button>
+      {blockedCount > 0 ? (
+        <Button block disabled>
+          Proceed to checkout
+        </Button>
+      ) : (
+        <Button href="/checkout" block onClick={onNavigate}>
+          Proceed to checkout
+        </Button>
+      )}
       <Link
         href="/cart"
         onClick={onNavigate}

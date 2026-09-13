@@ -96,6 +96,7 @@ model User {
   studioIdeas        StudioIdea[]
   studioSaves        StudioSave[]
   studioSpaces       StudioSpace[]
+  stockAlerts        StockAlert[]
 
   @@map("users")
 }
@@ -389,6 +390,7 @@ model ProductVariant {
 
   priceTiers     PriceTier[]
   inventoryItems InventoryItem[]
+  stockAlerts    StockAlert[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -593,6 +595,41 @@ model InventoryMovement {
   /// Stock history for one item, read newest-first.
   @@index([inventoryItemId, createdAt])
   @@map("inventory_movements")
+}
+
+/// A customer asking to hear when an out-of-stock variant is back.
+///
+/// A request, not a notification: Quoin has no channel that can send a
+/// back-in-stock message yet (MSG91 carries sign-in codes only). Staff read
+/// these on the admin inventory page for the variant when they receive
+/// stock, contact each customer themselves, and set `contactedAt`.
+///
+/// Only ever created for a `stockTracked`, stock-bearing product — an
+/// untracked product cannot run out, so a request for one would never be
+/// read. See `src/lib/data/stock-alerts.ts`.
+model StockAlert {
+  id String @id @default(cuid())
+
+  /// Cascade: a deleted account has nobody left to contact.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Cascade: a variant removed from the catalogue will not come back.
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  /// Null while the customer is still waiting. Cleared again if they ask
+  /// a second time after the item sells out once more.
+  contactedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// One open request per customer per variant; asking twice is a no-op.
+  @@unique([userId, variantId])
+  /// The staff callback list for one variant, open requests first.
+  @@index([variantId, contactedAt])
+  @@map("stock_alerts")
 }
 
 /// ---------------------------------------------------------------------

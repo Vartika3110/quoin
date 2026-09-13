@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ListSkeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import { cn } from "@/components/ui/cn";
 import {
   Calendar,
   Cart,
@@ -29,6 +30,11 @@ import {
   type FulfilmentType,
 } from "@/lib/types/catalog";
 import { StickyBar } from "@/components/storefront/StickyBar";
+import {
+  LineStockActions,
+  StockImageOverlay,
+} from "@/components/storefront/cart/StockNotice";
+import { useCartStock } from "@/lib/cart/use-cart-stock";
 
 /**
  * The full cart page.
@@ -41,7 +47,15 @@ import { StickyBar } from "@/components/storefront/StickyBar";
  * On a phone the summary is a sticky bar at the foot rather than a card
  * below the list — a total you have to scroll past twelve lines to reach is
  * a total nobody checks before paying.
+ *
+ * Stock is checked live against the server (`useCartStock`), because the
+ * cart itself is a snapshot from whenever each item was added. A line that
+ * can no longer be bought as it stands is marked on its picture, left out
+ * of the total, and holds checkout until it is changed or removed — the
+ * order would be refused at payment otherwise.
  */
+
+type CartStock = ReturnType<typeof useCartStock>;
 
 const GROUP_ICON: Record<FulfilmentType, typeof Clock> = {
   instant: Clock,
@@ -51,8 +65,8 @@ const GROUP_ICON: Record<FulfilmentType, typeof Clock> = {
 };
 
 export function CartView() {
-  const { groups, lines, count, subtotalPaise, savingsPaise, ready, clear } =
-    useCart();
+  const { groups, lines, count, savingsPaise, ready, clear } = useCart();
+  const stock = useCartStock();
 
   if (!ready) return <ListSkeleton rows={3} />;
 
@@ -71,11 +85,13 @@ export function CartView() {
     );
   }
 
+  const blocked = stock.blockedCount;
+
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8">
       <div className="space-y-6 pb-4">
         {groups.map((group) => (
-          <Group key={group.fulfilment} group={group} />
+          <Group key={group.fulfilment} group={group} stock={stock} />
         ))}
 
         <button
@@ -94,29 +110,38 @@ export function CartView() {
       >
         <Summary
           count={count}
-          subtotalPaise={subtotalPaise}
+          subtotalPaise={stock.sellableSubtotalPaise}
           savingsPaise={savingsPaise}
+          blockedCount={blocked}
         />
       </Card>
 
       <StickyBar>
         <div className="min-w-0 flex-1">
           <p className="nums text-title-sm font-semibold text-ink">
-            {formatPrice(subtotalPaise)}
+            {formatPrice(stock.sellableSubtotalPaise)}
           </p>
-          <p className="text-micro text-muted">
-            {count} {count === 1 ? "item" : "items"} · delivery at checkout
+          <p className={cn("text-micro", blocked > 0 ? "text-warning" : "text-muted")}>
+            {blocked > 0
+              ? `${blocked} ${blocked === 1 ? "item needs" : "items need"} attention`
+              : `${count} ${count === 1 ? "item" : "items"} · delivery at checkout`}
           </p>
         </div>
-        <Button href="/checkout" size="lg" className="shrink-0">
-          Checkout
-        </Button>
+        {blocked > 0 ? (
+          <Button size="lg" className="shrink-0" disabled>
+            Checkout
+          </Button>
+        ) : (
+          <Button href="/checkout" size="lg" className="shrink-0">
+            Checkout
+          </Button>
+        )}
       </StickyBar>
     </div>
   );
 }
 
-function Group({ group }: { group: CartGroup }) {
+function Group({ group, stock }: { group: CartGroup; stock: CartStock }) {
   const promise = GROUP_PROMISE[group.fulfilment];
   const Icon = GROUP_ICON[group.fulfilment];
   /* The slowest item in the group is what the group actually promises — a
@@ -143,31 +168,48 @@ function Group({ group }: { group: CartGroup }) {
 
       <ul className="divide-y divide-line-hair">
         {group.lines.map((line) => (
-          <Line key={line.id} line={line} />
+          <Line key={line.id} line={line} stock={stock} />
         ))}
       </ul>
     </section>
   );
 }
 
-function Line({ line }: { line: CartLine }) {
+function Line({ line, stock }: { line: CartLine; stock: CartStock }) {
   const { setQty, remove } = useCart();
   const toast = useToast();
   const s = line.snapshot;
   const bookable = s.fulfilment === "bookable";
+  const lineState = stock.stockOf(line);
+  const soldOut = lineState.state === "out_of_stock" || lineState.state === "unavailable";
+
+  const removeButton = (
+    <button
+      type="button"
+      aria-label={`Remove ${s.title}`}
+      onClick={() => {
+        remove(line.id);
+        toast.toast(`Removed ${s.title}`);
+      }}
+      className="tap-target relative shrink-0 rounded-md p-1.5 text-faint transition-colors hover:text-danger"
+    >
+      <Trash className="size-4" />
+    </button>
+  );
 
   return (
     <li className="flex gap-3 p-4">
       <Link
         href={`/p/${line.productSlug}`}
-        className="size-20 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo"
+        className="relative size-20 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo"
       >
         <ProductImage
           photo={s.photo}
           swatchKey={s.image}
           label={s.title}
-          className="size-full"
+          className={cn("size-full", soldOut && "grayscale")}
         />
+        <StockImageOverlay stock={lineState} />
       </Link>
 
       <div className="min-w-0 flex-1">
@@ -192,46 +234,48 @@ function Line({ line }: { line: CartLine }) {
           </p>
         )}
 
-        <div className="mt-2.5 flex items-center justify-between gap-3">
-          {bookable ? (
-            <span className="text-micro text-muted">One visit</span>
-          ) : (
-            <div className="flex items-center rounded-lg border border-line">
-              <StepButton
-                label={`Decrease quantity of ${s.title}`}
-                onClick={() => setQty(line.id, line.qty - s.stepQty)}
-              >
-                <Minus className="size-3.5" />
-              </StepButton>
-              <span className="nums min-w-11 text-center text-caption font-semibold text-ink">
-                {line.qty}
-              </span>
-              <StepButton
-                label={`Increase quantity of ${s.title}`}
-                onClick={() => setQty(line.id, line.qty + s.stepQty)}
-              >
-                <Plus className="size-3.5" />
-              </StepButton>
-            </div>
-          )}
-
-          <div className="flex items-center gap-3">
-            <span className="nums text-body font-semibold text-ink">
-              {formatPrice(s.pricePaise * line.qty)}
-            </span>
-            <button
-              type="button"
-              aria-label={`Remove ${s.title}`}
-              onClick={() => {
-                remove(line.id);
-                toast.toast(`Removed ${s.title}`);
-              }}
-              className="tap-target relative rounded-md p-1.5 text-faint transition-colors hover:text-danger"
-            >
-              <Trash className="size-4" />
-            </button>
+        {lineState.state !== "available" ? (
+          <div className="mt-2.5 flex items-start justify-between gap-3">
+            <LineStockActions
+              stock={lineState}
+              requested={stock.isRequested(line.variantId)}
+              onRequest={() => stock.requestAlert(line)}
+              onShrink={(qty) => setQty(line.id, qty)}
+            />
+            {removeButton}
           </div>
-        </div>
+        ) : (
+          <div className="mt-2.5 flex items-center justify-between gap-3">
+            {bookable ? (
+              <span className="text-micro text-muted">One visit</span>
+            ) : (
+              <div className="flex items-center rounded-lg border border-line">
+                <StepButton
+                  label={`Decrease quantity of ${s.title}`}
+                  onClick={() => setQty(line.id, line.qty - s.stepQty)}
+                >
+                  <Minus className="size-3.5" />
+                </StepButton>
+                <span className="nums min-w-11 text-center text-caption font-semibold text-ink">
+                  {line.qty}
+                </span>
+                <StepButton
+                  label={`Increase quantity of ${s.title}`}
+                  onClick={() => setQty(line.id, line.qty + s.stepQty)}
+                >
+                  <Plus className="size-3.5" />
+                </StepButton>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <span className="nums text-body font-semibold text-ink">
+                {formatPrice(s.pricePaise * line.qty)}
+              </span>
+              {removeButton}
+            </div>
+          </div>
+        )}
       </div>
     </li>
   );
@@ -271,10 +315,12 @@ function Summary({
   count,
   subtotalPaise,
   savingsPaise,
+  blockedCount,
 }: {
   count: number;
   subtotalPaise: number;
   savingsPaise: number;
+  blockedCount: number;
 }) {
   return (
     <div>
@@ -287,6 +333,14 @@ function Summary({
           </dt>
           <dd className="nums font-medium text-ink">{formatPrice(subtotalPaise)}</dd>
         </div>
+        {blockedCount > 0 && (
+          <div className="flex justify-between gap-3">
+            <dt className="text-muted">Not included</dt>
+            <dd className="nums text-micro text-warning">
+              {blockedCount} {blockedCount === 1 ? "item" : "items"} out of stock
+            </dd>
+          </div>
+        )}
         {savingsPaise > 0 && (
           <div className="flex justify-between gap-3">
             <dt className="text-muted">You save</dt>
@@ -312,13 +366,25 @@ function Summary({
         </span>
       </div>
 
-      <Button href="/checkout" block size="lg" className="mt-5">
-        Proceed to checkout
-      </Button>
-
-      <p className="mt-3 text-center text-micro text-faint">
-        Prices are re-checked against the catalogue before payment.
-      </p>
+      {blockedCount > 0 ? (
+        <>
+          <Button block size="lg" className="mt-5" disabled>
+            Proceed to checkout
+          </Button>
+          <p className="mt-3 text-center text-micro text-warning">
+            Change or remove the items marked out of stock to check out.
+          </p>
+        </>
+      ) : (
+        <>
+          <Button href="/checkout" block size="lg" className="mt-5">
+            Proceed to checkout
+          </Button>
+          <p className="mt-3 text-center text-micro text-faint">
+            Prices are re-checked against the catalogue before payment.
+          </p>
+        </>
+      )}
     </div>
   );
 }
