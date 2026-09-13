@@ -1477,3 +1477,68 @@ describe("cart stock state (lineStock, sellableSubtotal)", () => {
     assert.equal(sellableSubtotal(lines, null), 1300);
   });
 });
+
+const { productStockState } = await import("@/lib/data/product-stock");
+
+describe("saved-product stock state (productStockState)", () => {
+  const product = (
+    over: Partial<{
+      isActive: boolean;
+      stockTracked: boolean;
+      fulfilment: Fulfilment;
+      variants: { id: string; minQty: number }[];
+    }> = {},
+  ) => ({
+    isActive: true,
+    stockTracked: true,
+    fulfilment: "SCHEDULED" as Fulfilment,
+    variants: [{ id: "v1", minQty: 1 }],
+    ...over,
+  });
+
+  it("a product missing from the catalogue reads as unavailable", () => {
+    assert.deepEqual(productStockState(undefined, new Map()), { state: "unavailable" });
+  });
+
+  it("a retired product, or one with no active variant, reads as unavailable", () => {
+    assert.deepEqual(productStockState(product({ isActive: false }), new Map()), {
+      state: "unavailable",
+    });
+    assert.deepEqual(productStockState(product({ variants: [] }), new Map()), {
+      state: "unavailable",
+    });
+  });
+
+  it("an untracked product is always available — it cannot run out", () => {
+    assert.deepEqual(productStockState(product({ stockTracked: false }), new Map()), {
+      state: "available",
+    });
+  });
+
+  it("a made-to-order product holds no stock, so stays available even when tracked", () => {
+    assert.deepEqual(
+      productStockState(product({ fulfilment: "MADE_TO_ORDER" as Fulfilment }), new Map()),
+      { state: "available" },
+    );
+  });
+
+  it("tracked with nothing left is out_of_stock, naming the default variant for the request", () => {
+    assert.deepEqual(productStockState(product(), new Map()), {
+      state: "out_of_stock",
+      variantId: "v1",
+    });
+  });
+
+  it("one variant still buyable keeps the whole product available", () => {
+    const p = product({ variants: [{ id: "v1", minQty: 1 }, { id: "v2", minQty: 1 }] });
+    assert.deepEqual(productStockState(p, new Map([["v2", 4]])), { state: "available" });
+  });
+
+  it("fewer left than a variant's smallest order counts as none left", () => {
+    const p = product({ variants: [{ id: "v1", minQty: 5 }] });
+    assert.deepEqual(productStockState(p, new Map([["v1", 3]])), {
+      state: "out_of_stock",
+      variantId: "v1",
+    });
+  });
+});

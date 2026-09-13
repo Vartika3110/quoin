@@ -6,8 +6,14 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ProductGridSkeleton } from "@/components/ui/Skeleton";
 import { useToast } from "@/components/ui/Toast";
+import { cn } from "@/components/ui/cn";
 import { Close, Heart } from "@/components/icons";
+import {
+  NotifyMe,
+  StockImageOverlay,
+} from "@/components/storefront/cart/StockNotice";
 import { useWishlist } from "@/lib/store/wishlist";
+import { useProductStock } from "@/lib/stock/use-product-stock";
 import { formatPrice } from "@/lib/types/catalog";
 
 /**
@@ -18,10 +24,15 @@ import { formatPrice } from "@/lib/types/catalog";
  * forty requests before anything appears, and the price shown is labelled
  * as the saved one for exactly that reason — the detail page is where
  * today's price is authoritative.
+ *
+ * Stock is the exception, because a snapshot cannot know that something
+ * sold out since. One request (`useProductStock`) marks those on their
+ * picture, the same way the cart does, with "Notify me" underneath.
  */
 export function WishlistGrid() {
   const { items, ready, remove, clear } = useWishlist();
   const toast = useToast();
+  const stock = useProductStock(ready ? items.map((i) => i.slug) : []);
 
   if (!ready) return <ProductGridSkeleton count={4} />;
 
@@ -58,51 +69,76 @@ export function WishlistGrid() {
       </div>
 
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {items.map((item) => (
-          <li
-            key={item.slug}
-            className="group relative overflow-hidden rounded-card border border-line-soft bg-surface transition-[border-color,box-shadow] duration-200 hover:border-line hover:shadow-md"
-          >
-            <Link href={`/p/${item.slug}`} className="block">
-              <span className="block aspect-square overflow-hidden bg-photo">
-                <ProductImage
-                  photo={item.photo}
-                  swatchKey={item.image}
-                  label={item.title}
-                  className="size-full transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
-                />
-              </span>
-              <span className="block p-3">
-                {item.brand && (
-                  <span className="block truncate text-micro uppercase tracking-wide text-muted">
-                    {item.brand}
-                  </span>
-                )}
-                <span className="mt-0.5 line-clamp-2 text-body-sm leading-snug text-ink">
-                  {item.title}
-                </span>
-                <span className="nums mt-2 block text-body font-semibold text-ink">
-                  {formatPrice(item.pricePaise)}
-                </span>
-                <span className="mt-0.5 block text-micro text-faint">
-                  Price when saved
-                </span>
-              </span>
-            </Link>
+        {items.map((item) => {
+          const itemStock = stock.stockOf(item.slug);
+          const soldOut = itemStock.state !== "available";
 
-            <button
-              type="button"
-              aria-label={`Remove ${item.title} from your wishlist`}
-              onClick={() => {
-                remove(item.slug);
-                toast.toast("Removed from your wishlist");
-              }}
-              className="tap-target absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm transition-colors hover:text-danger"
+          return (
+            <li
+              key={item.slug}
+              className="group relative flex flex-col overflow-hidden rounded-card border border-line-soft bg-surface transition-[border-color,box-shadow] duration-200 hover:border-line hover:shadow-md"
             >
-              <Close className="size-4" />
-            </button>
-          </li>
-        ))}
+              <Link href={`/p/${item.slug}`} className="block">
+                <span className="relative block aspect-square overflow-hidden bg-photo">
+                  <ProductImage
+                    photo={item.photo}
+                    swatchKey={item.image}
+                    label={item.title}
+                    className={cn(
+                      "size-full transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]",
+                      soldOut && "grayscale",
+                    )}
+                  />
+                  <StockImageOverlay stock={itemStock} />
+                </span>
+                <span className="block p-3">
+                  {item.brand && (
+                    <span className="block truncate text-micro uppercase tracking-wide text-muted">
+                      {item.brand}
+                    </span>
+                  )}
+                  <span className="mt-0.5 line-clamp-2 text-body-sm leading-snug text-ink">
+                    {item.title}
+                  </span>
+                  <span className="nums mt-2 block text-body font-semibold text-ink">
+                    {formatPrice(item.pricePaise)}
+                  </span>
+                  <span className="mt-0.5 block text-micro text-faint">
+                    Price when saved
+                  </span>
+                </span>
+              </Link>
+
+              {/* Outside the link: a button inside an anchor is invalid
+                  markup, and tapping "Notify me" must not open the page. */}
+              {itemStock.state === "out_of_stock" && (
+                <div className="mt-auto px-3 pb-3">
+                  <NotifyMe
+                    requested={stock.isRequested(item.slug)}
+                    onRequest={() => stock.requestAlert(item.slug)}
+                  />
+                </div>
+              )}
+              {itemStock.state === "unavailable" && (
+                <p className="mt-auto px-3 pb-3 text-micro text-muted">
+                  No longer sold.
+                </p>
+              )}
+
+              <button
+                type="button"
+                aria-label={`Remove ${item.title} from your wishlist`}
+                onClick={() => {
+                  remove(item.slug);
+                  toast.toast("Removed from your wishlist");
+                }}
+                className="tap-target absolute right-2 top-2 grid size-8 place-items-center rounded-full border border-line-soft bg-surface/90 text-muted backdrop-blur-sm transition-colors hover:text-danger"
+              >
+                <Close className="size-4" />
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
       <Button href="/products" variant="outline" block className="mt-6">

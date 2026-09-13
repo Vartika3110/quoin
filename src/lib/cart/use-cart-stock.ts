@@ -3,12 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCart, type CartLine } from "@/lib/store/cart";
 import { lineStock, sellableSubtotal, type LineStock } from "@/lib/cart/availability";
+import {
+  fetchOpenAlertVariantIds,
+  postStockAlert,
+  type StockAlertOutcome,
+} from "@/lib/stock/request-alert";
 import type { Quote } from "@/lib/data/checkout";
 
-export type StockAlertOutcome =
-  | { kind: "saved" }
-  | { kind: "signin" }
-  | { kind: "error"; message: string };
+export type { StockAlertOutcome };
 
 /**
  * Live stock for the cart the customer is looking at.
@@ -67,12 +69,9 @@ export function useCartStock(enabled = true) {
   useEffect(() => {
     if (!enabled) return;
     let ignore = false;
-    fetch("/api/v1/stock-alerts")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((body: { data: { variantIds: string[] } } | null) => {
-        if (!ignore && body) setRequested(new Set(body.data.variantIds));
-      })
-      .catch(() => {});
+    fetchOpenAlertVariantIds().then((ids) => {
+      if (!ignore) setRequested(new Set(ids));
+    });
     return () => {
       ignore = true;
     };
@@ -85,27 +84,11 @@ export function useCartStock(enabled = true) {
     const blockedCount = lines.filter((l) => stockOf(l).state !== "available").length;
 
     async function requestAlert(line: CartLine): Promise<StockAlertOutcome> {
-      try {
-        const res = await fetch("/api/v1/stock-alerts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productSlug: line.productSlug, variantId: line.variantId }),
-        });
-        if (res.status === 401) return { kind: "signin" };
-        if (!res.ok) {
-          const body = (await res.json().catch(() => null)) as
-            | { error?: { message?: string } }
-            | null;
-          return {
-            kind: "error",
-            message: body?.error?.message ?? "We could not save that. Try again.",
-          };
-        }
+      const outcome = await postStockAlert(line.productSlug, line.variantId);
+      if (outcome.kind === "saved") {
         setRequested((prev) => new Set(prev).add(line.variantId));
-        return { kind: "saved" };
-      } catch {
-        return { kind: "error", message: "We could not save that. Try again." };
       }
+      return outcome;
     }
 
     return {
