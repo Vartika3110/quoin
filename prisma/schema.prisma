@@ -82,24 +82,30 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  addresses          Address[]
-  consultRequests    ConsultRequest[]
-  orders             Order[]
-  inventoryMovements InventoryMovement[]
+  addresses                   Address[]
+  consultRequests             ConsultRequest[]
+  orders                      Order[]
+  inventoryMovements          InventoryMovement[]
   /// Every status change this account made as staff, across every order —
   /// not this account's own orders. Nullable on the other side: the
   /// account can be deleted without deleting the audit row it wrote.
-  orderStatusChanges OrderStatusChange[]
-  storedFiles        StoredFile[]
-  parchaSubmissions  ParchaSubmission[]
-  projects           Project[]
-  studioIdeas        StudioIdea[]
-  studioSaves        StudioSave[]
-  studioSpaces       StudioSpace[]
-  stockAlerts        StockAlert[]
+  orderStatusChanges          OrderStatusChange[]
+  storedFiles                 StoredFile[]
+  parchaSubmissions           ParchaSubmission[]
+  projects                    Project[]
+  studioIdeas                 StudioIdea[]
+  studioSaves                 StudioSave[]
+  studioSpaces                StudioSpace[]
+  stockAlerts                 StockAlert[]
   /// Offline `Payment` rows this account recorded as staff — not this
   /// account's own payments. See `Payment.recordedBy`.
-  paymentsRecorded   Payment[]            @relation("PaymentRecordedBy")
+  paymentsRecorded            Payment[]                    @relation("PaymentRecordedBy")
+  serviceBookings             ServiceBooking[]
+  /// Every service-booking status change this account made — its own
+  /// (accepting a quote, cancelling) or, as staff, anyone's.
+  serviceBookingStatusChanges ServiceBookingStatusChange[]
+  notifications               Notification[]
+  supportRequests             SupportRequest[]
 
   @@map("users")
 }
@@ -125,6 +131,16 @@ model Address {
   state    String
   pincode  String
 
+  /// Who receives a delivery here, when it is not the account holder — a
+  /// site supervisor, an office reception. Both optional: null falls back
+  /// to the account's own name and delivery phone at checkout.
+  ///
+  /// `recipientPhone` is E.164, normalised and **unverified**, exactly like
+  /// `User.deliveryPhone`: a shipping contact, never identity, never
+  /// consulted by sign-in.
+  recipientName  String?
+  recipientPhone String?
+
   /// Serviceability is decided by coordinates, never by pincode. Pincodes
   /// straddle store radii and would make the 18-minute promise a lie.
   lat Float
@@ -132,9 +148,10 @@ model Address {
 
   isDefault Boolean @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  orders          Order[]
+  serviceBookings ServiceBooking[]
 
   @@index([userId])
   @@map("addresses")
@@ -892,9 +909,17 @@ model Order {
   /// delivery of the same event must not move it.
   paidAt DateTime?
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  projectOrders ProjectOrder[]
+  /// The delivery day a person at Quoin has actually committed to, set in
+  /// the admin order view. Null until then, and the storefront says "date
+  /// confirmed on call" rather than computing one: nothing behind this app
+  /// schedules a slot, so a date derived from lead times would be a promise
+  /// nobody made. `@db.Date` for the reason `Project.startDate` is.
+  expectedDeliveryOn DateTime? @db.Date
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  projectOrders   ProjectOrder[]
+  supportRequests SupportRequest[]
 
   /// The arbiter for a double-clicked pay button. A repeat key for the
   /// same user returns the order this index found rather than creating
@@ -1241,6 +1266,8 @@ enum StoredFileKind {
   PRODUCT_IMAGE
   /// A photograph of a finished room, uploaded into Project Studio.
   STUDIO_IDEA
+  /// A site photograph or drawing attached to a service booking.
+  SERVICE_DOCUMENT
   OTHER
 }
 
@@ -1291,9 +1318,10 @@ model StoredFile {
   createdAt   DateTime  @default(now())
   confirmedAt DateTime?
 
-  parchaSubmissions ParchaSubmission[]
-  projectDocuments  ProjectDocument[]
-  studioIdeas       StudioIdea[]
+  parchaSubmissions   ParchaSubmission[]
+  projectDocuments    ProjectDocument[]
+  studioIdeas         StudioIdea[]
+  serviceBookingFiles ServiceBookingFile[]
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
@@ -1515,14 +1543,17 @@ model Project {
   /// told apart from a real project when counting anything.
   isSample Boolean @default(false)
 
-  tasks        ProjectTask[]
-  materials    ProjectMaterial[]
-  milestones   ProjectMilestone[]
-  documents    ProjectDocument[]
-  orders       ProjectOrder[]
+  tasks           ProjectTask[]
+  materials       ProjectMaterial[]
+  milestones      ProjectMilestone[]
+  documents       ProjectDocument[]
+  orders          ProjectOrder[]
+  /// SetNull on the other side: deleting a project must not delete the
+  /// record that a professional was booked or quoted.
+  serviceBookings ServiceBooking[]
   /// The rooms of this build. SetNull on the other side: unlinking a room
   /// from a project must never destroy the ideas collected in it.
-  studioSpaces StudioSpace[]
+  studioSpaces    StudioSpace[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2009,4 +2040,256 @@ model MoodboardItem {
   /// one item.
   @@index([moodboardId, z])
   @@map("studio_moodboard_items")
+}
+
+/// ---------------------------------------------------------------------
+/// Project services.
+///
+/// A professional engaged against a build — an architect, an electrician,
+/// a site inspection. Sits beside `ConsultRequest` rather than replacing
+/// it: that table is the guest-capable "call me back" funnel and stays so.
+/// This one needs an account, can belong to a project, and carries a quote.
+///
+/// Nothing here takes money. There is no roster and no fixed service price
+/// in the business yet, so a booking is a request a person at Quoin
+/// confirms, and a quoted engagement is paid the way callback orders are —
+/// taken by staff. `quotePaise` is an agreed figure, not a charge.
+///
+/// The status machine lives in `src/lib/services/booking-status.ts`, the
+/// one place transitions are decided.
+/// ---------------------------------------------------------------------
+
+/// How the customer started it. Decides the first status, and nothing else.
+enum ServiceBookingKind {
+  /// Fixed-scope work booked straight onto a preferred day.
+  BOOKING
+  /// Open-scope work that has to be seen and priced first.
+  QUOTE
+}
+
+enum ServiceBookingStatus {
+  /// A `BOOKING`, submitted, not yet confirmed by a person.
+  REQUESTED
+  /// A `QUOTE`, submitted, waiting on Quoin to price it.
+  QUOTE_PENDING
+  /// Staff have entered `quotePaise`. The customer's move.
+  QUOTE_RECEIVED
+  /// Accepted by the customer, or a booking confirmed by staff.
+  CONFIRMED
+  /// A person has agreed an exact time — `scheduledAt` is set.
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model ServiceBooking {
+  id String @id @default(cuid())
+
+  /// `QS-XXXXXX`, same alphabet as every other reference here.
+  reference String @unique
+
+  /// Cascade, like `Project`: a booking is the customer's record of a
+  /// request, and no money moved through this table.
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  /// The slug in `src/lib/data/services.ts`, a plain string like
+  /// `OrderLine.productSlug`: services are config today and may become
+  /// rows later, and neither change should rewrite what was booked.
+  serviceSlug String
+  /// The name as it read on the day.
+  serviceName String
+
+  kind   ServiceBookingKind
+  status ServiceBookingStatus
+
+  /// What the customer asked for: a calendar day and a half-day window,
+  /// the same honest shape `ConsultRequest` uses. Never an exact time.
+  preferredDate DateTime?    @db.Date
+  preferredSlot ConsultSlot?
+
+  /// The exact time a person agreed. Null until `SCHEDULED`.
+  scheduledAt DateTime?
+
+  /// ---- site, snapshotted -----------------------------------------------
+  /// Copied for the reason `Order.ship*` is: a corrected address next month
+  /// must not move where a visit already happened.
+  addressId    String?
+  address      Address?     @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  siteLine     String
+  siteCity     String       @default("")
+  sitePincode  String       @default("")
+  projectKind  ProjectKind?
+  areaSqft     Int?
+  requirements String       @default("")
+  notes        String       @default("")
+
+  /// ---- quote -----------------------------------------------------------
+  /// Paise, GST-inclusive like every customer-facing figure in this schema.
+  quotePaise Int?
+  quoteNote  String?
+  quotedAt   DateTime?
+  acceptedAt DateTime?
+
+  completedAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+
+  files           ServiceBookingFile[]
+  statusChanges   ServiceBookingStatusChange[]
+  supportRequests SupportRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([projectId])
+  @@index([status, createdAt])
+  @@map("service_bookings")
+}
+
+/// A photograph or drawing attached to a booking. Same shape as
+/// `ProjectDocument`, and Restrict on the file for the same reason.
+model ServiceBookingFile {
+  id String @id @default(cuid())
+
+  bookingId String
+  booking   ServiceBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  fileId String
+  file   StoredFile @relation(fields: [fileId], references: [id], onDelete: Restrict)
+
+  createdAt DateTime @default(now())
+
+  @@unique([bookingId, fileId])
+  @@index([bookingId])
+  @@map("service_booking_files")
+}
+
+/// Every move of `ServiceBooking.status`, customer's or staff's. Written in
+/// the same transaction as the status it describes, as
+/// `OrderStatusChange` is. The creation itself writes the first row, with
+/// `fromStatus` null.
+model ServiceBookingStatusChange {
+  id String @id @default(cuid())
+
+  bookingId String
+  booking   ServiceBooking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  fromStatus ServiceBookingStatus?
+  toStatus   ServiceBookingStatus
+
+  actorUserId String?
+  actor       User?   @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  note String?
+
+  createdAt DateTime @default(now())
+
+  @@index([bookingId, createdAt])
+  @@map("service_booking_status_changes")
+}
+
+/// ---------------------------------------------------------------------
+/// Notifications — in-app only.
+///
+/// There is no email or push channel, and MSG91 carries sign-in codes only,
+/// so these are rows a customer reads under the bell and nothing more. The
+/// table is the channel-independent record a future sender reads from.
+/// ---------------------------------------------------------------------
+
+enum NotificationKind {
+  ORDER_CONFIRMED
+  PAYMENT_SUCCESSFUL
+  ORDER_SHIPPED
+  ORDER_DELIVERED
+  SERVICE_BOOKED
+  /// Defined, never written: nothing in this app runs on a schedule to
+  /// send a reminder. Present so a future job has a kind to write.
+  SERVICE_REMINDER
+  QUOTE_RECEIVED
+  PROJECT_UPDATE
+}
+
+model Notification {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  kind  NotificationKind
+  title String
+  body  String           @default("")
+  /// A same-origin path, never an absolute URL.
+  href  String?
+
+  /// What makes a write safe to repeat — `payment:{providerPaymentId}`,
+  /// `order:{reference}:DELIVERED`. The webhook is retried by design, and a
+  /// retry must not ring the bell twice. Unique per user; NULLs never
+  /// collide, so an un-keyed notification is always written.
+  dedupeKey String?
+
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, readAt, createdAt])
+  @@map("notifications")
+}
+
+/// ---------------------------------------------------------------------
+/// Support.
+/// ---------------------------------------------------------------------
+
+enum SupportCategory {
+  ORDERS
+  PAYMENTS
+  DELIVERY
+  PRODUCTS
+  PROJECTS
+  SERVICES
+  PARCHA
+  ACCOUNT
+}
+
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+model SupportRequest {
+  id String @id @default(cuid())
+
+  /// `QH-XXXXXX`.
+  reference String @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  category SupportCategory
+  status   SupportStatus   @default(OPEN)
+
+  /// The order or booking this is about, when there is one. Resolved from a
+  /// reference the customer owns, never trusted as a raw id. SetNull: the
+  /// request outlives either.
+  orderId   String?
+  order     Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  bookingId String?
+  booking   ServiceBooking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  subject String
+  message String
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@map("support_requests")
 }

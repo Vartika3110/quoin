@@ -3,7 +3,9 @@ import { cn } from "@/components/ui/cn";
 import {
   Box,
   Boards,
+  Briefcase,
   Grid,
+  Headset,
   Package,
   People,
   Rupee,
@@ -33,6 +35,8 @@ export const ADMIN_SECTIONS = [
   { href: "/admin", label: "Dashboard", Icon: Grid },
   { href: "/admin/orders", label: "Orders", Icon: Package },
   { href: "/admin/orders/board", label: "Board", Icon: Boards },
+  { href: "/admin/services", label: "Services", Icon: Briefcase },
+  { href: "/admin/support", label: "Support", Icon: Headset },
   { href: "/admin/reports", label: "Reports", Icon: Trend },
   { href: "/admin/inventory", label: "Inventory", Icon: Box },
   { href: "/admin/customers", label: "Customers", Icon: People },
