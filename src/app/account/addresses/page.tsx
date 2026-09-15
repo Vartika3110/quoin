@@ -15,7 +15,7 @@ export default async function AddressesPage() {
     <AccountShell
       current="/account/addresses"
       title="Addresses"
-      subtitle="Where Quoin delivers. Serviceability is decided on the exact spot, not the PIN code."
+      subtitle="Where Quoin delivers. Serviceability is decided on the exact spot, not the PIN code. A project site saved here can be picked again when booking a service and at checkout."
     >
       {signedIn ? (
         <AddressBook />
