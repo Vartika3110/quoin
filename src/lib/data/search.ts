@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { resolvePhoto } from "@/lib/data/catalog";
+import { matchParchaTerm } from "@/lib/data/parcha-match";
 
 /**
  * Search across everything Quoin holds.
@@ -346,6 +347,20 @@ export async function suggest(
 /**
  * Matches a parsed materials list against the catalogue.
  *
+ * Used to call `suggest(q, 1)` — a single `contains: q` requiring the
+ * product name to contain the customer's entire phrase as one substring.
+ * Real handwritten lines almost never satisfy that ("Royal Luxury
+ * emulsion" vs. "Royale Shyne Luxury Emulsion"), so a real 16-line list
+ * matched 0 of 16 though the catalogue held a good answer for 11 of them.
+ * Matching now delegates to `parcha-match.ts`, which scores a line's
+ * *words* against a candidate's words instead of requiring the whole
+ * phrase as a substring — a near match (misspelling, extra word, trade
+ * slang) is allowed through, but a match on a single common word is not:
+ * see that module's doc comment for why a wrong line on a priced list is
+ * worse than an honest blank, and for the threshold that enforces it.
+ * `suggest()` itself is untouched — the header typeahead still needs its
+ * single fast `contains` lookup and must not go looser.
+ *
  * One query per line, run together rather than in sequence — a
  * twenty-line parcha is twenty index lookups, which Postgres answers in a
  * few milliseconds, and doing them serially would take twenty round trips
@@ -362,8 +377,16 @@ export async function matchParchaLines(
     terms.map(async (term) => {
       const q = term.trim();
       if (q.length < 2) return null;
-      const { products } = await suggest(q, 1);
-      return products[0] ?? null;
+      const candidate = await matchParchaTerm(q);
+      if (!candidate) return null;
+      return {
+        kind: "product",
+        id: `p-${candidate.id}`,
+        label: candidate.name,
+        sublabel: candidate.brandName ?? candidate.sku,
+        href: `/p/${candidate.slug}`,
+        photo: resolvePhoto(candidate),
+      } satisfies Suggestion;
     }),
   );
 }
