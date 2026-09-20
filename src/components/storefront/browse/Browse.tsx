@@ -1,19 +1,19 @@
 import Link from "next/link";
-import { ProductCard } from "@/components/storefront/ProductCard";
-import { ProductRow } from "@/components/storefront/browse/ProductRow";
+import { InfiniteGrid } from "@/components/storefront/browse/InfiniteGrid";
 import { FilterPanel } from "@/components/storefront/browse/FilterPanel";
 import { FilterChipRow } from "@/components/storefront/browse/FilterChipRow";
 import { QuickFilters } from "@/components/storefront/browse/QuickFilters";
 import { DepartmentRail } from "@/components/storefront/browse/DepartmentRail";
 import { BrowseActionBar } from "@/components/storefront/browse/BrowseActionBar";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Chevron, Grid, Menu, Search, Sort } from "@/components/icons";
+import { Grid, Menu, Search, Sort } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import type { ProductFacets, ProductPage, ProductSort } from "@/lib/data/catalog";
 import {
   FULFILMENT_LABEL,
   SORTS,
   activeFilterCount,
+  toFetchQuery,
   withParams,
   type BrowseParams,
 } from "@/lib/browse-params";
@@ -23,8 +23,11 @@ import { PRICING_UNIT_LABEL, type FulfilmentType, type PricingUnit } from "@/lib
  * Product browsing.
  *
  * Sidebar and grid at `lg`, a filter sheet and a grid on a phone. Sort,
- * paging, filters and the view toggle are all plain links, so the whole
- * page works without JavaScript and every state it can be in has a URL.
+ * filters, the view toggle and the grid's "Show more" are all plain
+ * links, so the whole page works without JavaScript and every state it
+ * can be in has a URL. The pager is gone — `InfiniteGrid` appends, and
+ * its control is still an anchor to `?page=2` that the observer presses
+ * early rather than a button that only scrolling can reach.
  *
  * The header row is doing more work than it looks: it carries the count,
  * the active filters as removable chips, the sort, and the grid/list
@@ -46,6 +49,7 @@ export function Browse({
   hideOffersFilter = false,
   departments,
   activeDepartment,
+  scope,
 }: {
   page: ProductPage;
   facets: ProductFacets;
@@ -59,12 +63,24 @@ export function Browse({
       switching department makes no sense — Deals, search results. */
   departments?: { id: string; slug: string; title: string }[];
   activeDepartment?: string;
+  /**
+   * Filters the page applies that are not in its query string, so the
+   * grid can fetch its own next page against the same listing.
+   *
+   * Deliberately separate from `activeDepartment` and `hideOffersFilter`,
+   * which happen to hold the same two facts today and mean something
+   * else: one highlights a chip, the other hides a control. A fetch that
+   * read its filters off a prop about chip styling is a fetch that breaks
+   * the first time someone wants the chip without the filter.
+   */
+  scope?: { category?: string; discountedOnly?: boolean };
 }) {
-  const { items, page, pageSize, total, totalPages } = result;
+  const { items, page, total, totalPages } = result;
   const activeSort = (params.sort as ProductSort | undefined) ?? "name";
   const active = activeFilterCount(params);
   const listView = params.view === "list";
   const showOffers = !hideOffersFilter;
+  const fetchQuery = toFetchQuery(params, scope);
 
   const panel = (
     <FilterPanel
@@ -136,8 +152,6 @@ export function Browse({
           basePath={basePath}
           params={params}
           total={total}
-          first={(page - 1) * pageSize + 1}
-          last={Math.min(page * pageSize, total)}
           activeSort={activeSort}
           listView={listView}
         />
@@ -180,26 +194,19 @@ export function Browse({
                 : "Nothing in this section is priced for sale yet. It arrives as merchandising catches up with the import."}
             </EmptyState>
           </div>
-        ) : listView ? (
-          <ul className="divide-y divide-line-hair border-y border-line-hair">
-            {items.map((product) => (
-              <ProductRow key={product.id} product={product} isPro={isPro} />
-            ))}
-          </ul>
         ) : (
-          <div className="grid grid-cols-2 gap-3 px-5 sm:grid-cols-3 lg:grid-cols-3 lg:px-0 xl:grid-cols-4">
-            {items.map((product) => (
-              <ProductCard key={product.id} product={product} isPro={isPro} fill />
-            ))}
-          </div>
-        )}
-
-        {totalPages > 1 && (
-          <Pagination
-            basePath={basePath}
-            params={params}
-            page={page}
+          /* Keyed on the query, so changing a filter or a sort replaces
+             the component rather than appending the new first page to
+             the old one's accumulated rows. */
+          <InfiniteGrid
+            key={fetchQuery}
+            initial={items}
+            initialPage={page}
             totalPages={totalPages}
+            query={fetchQuery}
+            pageHrefTemplate={withParams(basePath, params, { page: "__PAGE__" })}
+            isPro={isPro}
+            listView={listView}
           />
         )}
       </div>
@@ -213,23 +220,25 @@ function Toolbar({
   basePath,
   params,
   total,
-  first,
-  last,
   activeSort,
   listView,
 }: {
   basePath: string;
   params: BrowseParams;
   total: number;
-  first: number;
-  last: number;
   activeSort: ProductSort;
   listView: boolean;
 }) {
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-5 lg:px-0">
+      {/* The size of the result, not a window into it. "1–24 of 2,556"
+          was true of a pager and is a lie the moment the grid appends its
+          second page — and the running count of what is on screen is
+          already announced by the grid's own live region. */}
       <p className="nums text-caption text-muted">
-        {total === 0 ? "No products" : `${first}–${last} of ${total}`}
+        {total === 0
+          ? "No products"
+          : `${total.toLocaleString("en-IN")} ${total === 1 ? "product" : "products"}`}
       </p>
 
       {/* Desktop only. Sort and Filter are in `BrowseActionBar` on a
@@ -384,83 +393,5 @@ function ActiveChips({
         </li>
       ))}
     </ul>
-  );
-}
-
-/* ------------------------------------------------------------- pagination */
-
-function Pagination({
-  basePath,
-  params,
-  page,
-  totalPages,
-}: {
-  basePath: string;
-  params: BrowseParams;
-  page: number;
-  totalPages: number;
-}) {
-  return (
-    <nav
-      aria-label="Pagination"
-      className="mt-10 flex items-center justify-center gap-4 px-5 lg:px-0"
-    >
-      <PageLink
-        href={withParams(basePath, params, { page: String(page - 1) })}
-        disabled={page <= 1}
-        label="Previous page"
-      >
-        <Chevron className="size-3.5 rotate-180" />
-        Previous
-      </PageLink>
-
-      <span className="nums text-caption text-muted">
-        Page {page} of {totalPages}
-      </span>
-
-      <PageLink
-        href={withParams(basePath, params, { page: String(page + 1) })}
-        disabled={page >= totalPages}
-        label="Next page"
-      >
-        Next
-        <Chevron className="size-3.5" />
-      </PageLink>
-    </nav>
-  );
-}
-
-function PageLink({
-  href,
-  disabled,
-  label,
-  children,
-}: {
-  href: string;
-  disabled: boolean;
-  label: string;
-  children: React.ReactNode;
-}) {
-  const className =
-    "flex min-h-11 items-center gap-1 rounded-lg border px-4 text-caption font-medium transition-colors";
-
-  /* A disabled control must not be a link — a span cannot be focused or
-     followed, which is the behaviour screen readers and keyboards expect. */
-  if (disabled) {
-    return (
-      <span aria-disabled="true" className={`${className} border-line-hair text-faint`}>
-        {children}
-      </span>
-    );
-  }
-
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      className={`${className} border-line text-ink hover:border-accent hover:text-accent`}
-    >
-      {children}
-    </Link>
   );
 }

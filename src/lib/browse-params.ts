@@ -69,6 +69,37 @@ export function withParams(
   return qs ? `${basePath}?${qs}` : basePath;
 }
 
+/**
+ * What the grid sends to `GET /api/v1/products` to fetch its next page.
+ *
+ * Every filter the listing is under, and nothing else. `page` is left out
+ * because the caller appends the one it wants; `view` is left out because
+ * grid-or-list changes nothing about which products match.
+ *
+ * `scope` carries the filters a page applies that are *not* in its query
+ * string — the department in the path on `/c/[slug]`, the permanent
+ * `discountedOnly` on Deals. Without them the second page of a department
+ * listing is the second page of the whole catalogue.
+ */
+export function toFetchQuery(
+  params: BrowseParams,
+  scope: { category?: string; discountedOnly?: boolean } = {},
+): string {
+  const next = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (key === "page" || key === "view" || !value) continue;
+    next.set(key, value);
+  }
+
+  if (scope.category) next.set("category", scope.category);
+  /* `offers=1` is how `toProductQuery` spells `discountedOnly`, and the
+     route parses this string with exactly that function. */
+  if (scope.discountedOnly) next.set("offers", "1");
+
+  return next.toString();
+}
+
 /** Toggles a single-select filter: picking the active value clears it. */
 export function toggleParam(
   basePath: string,

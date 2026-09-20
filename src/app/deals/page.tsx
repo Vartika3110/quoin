@@ -81,6 +81,11 @@ export default async function DealsPage({
                above — so the panel's own "Under list price" toggle would
                be a control with nothing left for it to do. */
             hideOffersFilter
+            /* And the same fact again, as data rather than as a UI flag:
+               without it the grid's second page is the second page of the
+               whole catalogue, appended under a heading that says these
+               are the discounted lines. */
+            scope={{ discountedOnly: true }}
           />
         )}
       </div>
