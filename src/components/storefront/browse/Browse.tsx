@@ -2,11 +2,10 @@ import Link from "next/link";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { ProductRow } from "@/components/storefront/browse/ProductRow";
 import { FilterPanel } from "@/components/storefront/browse/FilterPanel";
-import { FilterDrawer } from "@/components/storefront/browse/FilterDrawer";
 import { FilterChipRow } from "@/components/storefront/browse/FilterChipRow";
 import { QuickFilters } from "@/components/storefront/browse/QuickFilters";
 import { DepartmentRail } from "@/components/storefront/browse/DepartmentRail";
-import { SortSheet } from "@/components/storefront/browse/SortSheet";
+import { BrowseActionBar } from "@/components/storefront/browse/BrowseActionBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Chevron, Grid, Menu, Search, Sort } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
@@ -93,7 +92,11 @@ export function Browse({
         </aside>
       )}
 
-      <div className="min-w-0 flex-1">
+      {/* Clearance for `BrowseActionBar`, which is fixed: its own 52px
+          and the home indicator, and no more — the tab bar stands down
+          while it is mounted. Without it the last row of tiles and the
+          pager sit underneath it. */}
+      <div className="min-w-0 flex-1 pb-20 lg:pb-0">
         {/* Phone only, and above the filters on purpose: department is a
             bigger decision than price, so it reads first. */}
         {departments && departments.length > 0 && (
@@ -136,8 +139,17 @@ export function Browse({
           first={(page - 1) * pageSize + 1}
           last={Math.min(page * pageSize, total)}
           activeSort={activeSort}
-          activeCount={active}
           listView={listView}
+        />
+
+        {/* Phone only. Sort and Filter used to live in the toolbar above,
+            which is where a pointer wants them and where a thumb cannot
+            reach them once the grid has scrolled. */}
+        <BrowseActionBar
+          basePath={basePath}
+          params={params}
+          activeSort={activeSort}
+          activeCount={active}
           showFilters={showFilters}
           panel={panel}
         />
@@ -204,10 +216,7 @@ function Toolbar({
   first,
   last,
   activeSort,
-  activeCount,
   listView,
-  showFilters,
-  panel,
 }: {
   basePath: string;
   params: BrowseParams;
@@ -215,10 +224,7 @@ function Toolbar({
   first: number;
   last: number;
   activeSort: ProductSort;
-  activeCount: number;
   listView: boolean;
-  showFilters: boolean;
-  panel: React.ReactNode;
 }) {
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-5 lg:px-0">
@@ -226,13 +232,11 @@ function Toolbar({
         {total === 0 ? "No products" : `${first}–${last} of ${total}`}
       </p>
 
+      {/* Desktop only. Sort and Filter are in `BrowseActionBar` on a
+          phone; what is left here — the sort popover and the grid/list
+          toggle — is already `hidden` below `sm`/`lg`, so the row
+          collapses to the count alone. */}
       <div className="flex items-center gap-2">
-        {showFilters && <FilterDrawer activeCount={activeCount}>{panel}</FilterDrawer>}
-
-        {/* A bottom sheet on a phone, a popover on a desktop. Same
-            options, same links, two different reaches. */}
-        <SortSheet basePath={basePath} params={params} activeSort={activeSort} />
-
         {/* Sort as links inside a details/summary: a popover that needs no
             JavaScript and closes on selection because selecting navigates. */}
         <details className="relative hidden lg:block">

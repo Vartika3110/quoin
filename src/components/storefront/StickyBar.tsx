@@ -13,19 +13,15 @@ import { cn } from "@/components/ui/cn";
 /**
  * A phone's sticky action bar.
  *
- * Sits above the fixed tab bar, never under it. The offset is the tab
- * bar's own height plus the home indicator, expressed with `env()` so it
- * is right on an iPhone with a gesture bar, an iPhone with a home button
- * and an Android with on-screen keys — three different numbers that no
- * fixed value satisfies. `max()` rather than a sum: on a device reporting
- * no inset the tab bar is 60px and on one reporting 34px it is 94px, and
- * taking the larger of the two expressions gets both without branching.
- *
- * The underscores in that arbitrary value are load-bearing. `calc()`
- * requires whitespace around `+`, Tailwind forbids literal spaces inside
- * `[...]`, and `_` is how it writes one — without them the declaration is
- * invalid, the browser drops it silently, and the bar sits directly on top
- * of the tab bar. Which is exactly what it did.
+ * **It sits on the bottom edge, and the tab bar stands down for it.** It
+ * used to be offset upwards by the tab bar's height — a `max()` of two
+ * `env()` expressions, because a device with a gesture bar, one with a
+ * home button and an Android with on-screen keys are three different
+ * numbers no fixed value satisfies. That offset is gone along with the
+ * stacking it existed for: `MobileTabBar` returns null while any bar is
+ * mounted here, so there is nothing underneath to clear and the two are
+ * never on screen together. What is left is `safe-bottom-0`, which is
+ * only the home indicator.
  *
  * Hidden from `lg` up, where the same content lives in a sticky column and
  * a bar pinned across a 1440px screen reads as a phone app in a window.
@@ -71,9 +67,21 @@ export function useStickyBarTaken(): boolean {
 export function StickyBar({
   children,
   className,
+  padded = true,
 }: {
   children: ReactNode;
   className?: string;
+  /**
+   * `false` for a bar whose children are the full-bleed targets — the
+   * browse bar's two 52px halves, which meet at a divider and run to both
+   * edges.
+   *
+   * A prop rather than `px-0 py-0` from the caller, because `cn` here is
+   * not `tailwind-merge`: `className` goes last in the *attribute*, but
+   * Tailwind emits `py-0` before `py-3` in the stylesheet, so the padding
+   * wins on source order and the override silently does nothing. It did.
+   */
+  padded?: boolean;
 }) {
   const slot = useContext(StickyBarSlot);
 
@@ -86,8 +94,19 @@ export function StickyBar({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-[max(3.75rem,calc(3.25rem_+_env(safe-area-inset-bottom)))] z-30",
-        "flex items-center gap-3 border-t border-line-soft bg-bg/95 px-4 py-3 backdrop-blur-xl",
+        "fixed inset-x-0 bottom-0 z-30",
+        "flex items-center border-t border-line-soft bg-bg/95 backdrop-blur-xl",
+        /* The home indicator is added to whatever bottom padding the bar
+           already has, rather than applied by a `.safe-bottom-0` class
+           alongside it: two rules setting `padding-bottom` resolve by
+           stylesheet order, not by the order they are written here, and
+           `cn` does not merge. One declaration per case leaves nothing to
+           resolve. The underscores are load-bearing — `calc()` needs
+           whitespace around `+`, Tailwind forbids literal spaces inside
+           `[...]`, and `_` is how it writes one. */
+        padded
+          ? "gap-3 px-4 pt-3 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))]"
+          : "pb-[env(safe-area-inset-bottom)]",
         "lg:hidden",
         className,
       )}

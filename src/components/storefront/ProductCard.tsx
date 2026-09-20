@@ -35,6 +35,19 @@ import {
 /**
  * The commerce card.
  *
+ * **It is not a box.** The border, the surface fill and the lift-on-hover
+ * are gone, and the photo plate is the only drawn edge. A bordered card
+ * spends roughly 24px of every tile on chrome — two hairlines, 12px of
+ * padding each side — which on a 375px screen is a tenth of the grid
+ * given over to saying "these are separate things", something the gutter
+ * and the photo plate already say. Taking it back is most of a third
+ * row of products above the fold, and it is how every catalogue app on a
+ * phone draws a grid.
+ *
+ * The plate keeps `photo-edge` around it, because catalogue imagery is
+ * cut out on white and a white square on the cream ground needs a
+ * hairline or it floats.
+ *
  * Fulfilment is surfaced here, not hidden until checkout. The hero
  * promises 18 minutes; three of the four fulfilment types cannot honour
  * that, and showing each card's real promise is the single cheapest way to
@@ -110,9 +123,7 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "group relative flex flex-col overflow-hidden rounded-card border border-line-soft bg-surface",
-        "transition-[border-color,box-shadow,transform] duration-200 ease-out-quart",
-        "hover:-translate-y-0.5 hover:border-line hover:shadow-md",
+        "group relative flex flex-col",
         /* Viewport-relative, not a fixed 168px.
 
            At 375px a 168px card lands two-abreast with four pixels to
@@ -129,7 +140,7 @@ export function ProductCard({
         fill ? "w-full" : "w-[40vw] max-w-52 lg:w-auto lg:max-w-none",
       )}
     >
-      <div className="relative aspect-square overflow-hidden bg-photo">
+      <div className="relative aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
         <Link href={`/p/${product.slug}`} className="block size-full">
           <ProductImage
             photo={product.photo}
@@ -185,7 +196,7 @@ export function ProductCard({
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-3">
+      <div className="flex flex-1 flex-col pt-2.5">
         <Link href={`/p/${product.slug}`} className="flex flex-1 flex-col gap-1">
           {product.brand && (
             <span className="truncate text-micro uppercase tracking-wide text-muted">

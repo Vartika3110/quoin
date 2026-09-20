@@ -24,24 +24,38 @@ export function SortSheet({
   basePath,
   params,
   activeSort,
+  trigger,
 }: {
   basePath: string;
   params: BrowseParams;
   activeSort: ProductSort;
+  /**
+   * Draws the control that opens the sheet, given the opener.
+   *
+   * The sheet owns its open state and the browse action bar owns its own
+   * geometry — a half-width cell with a divider down the middle, which no
+   * amount of `className` on a bordered pill gets to. Passing the opener
+   * out is cheaper than passing the bar's layout in.
+   */
+  trigger?: (open: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const current = SORTS.find((s) => s.id === activeSort);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex h-9 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-caption font-medium text-ink transition-colors active:bg-hover lg:hidden"
-      >
-        <Sort className="size-4" />
-        Sort
-      </button>
+      {trigger ? (
+        trigger(() => setOpen(true))
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex h-9 items-center gap-1.5 rounded-lg border border-line bg-surface px-3 text-caption font-medium text-ink transition-colors active:bg-hover lg:hidden"
+        >
+          <Sort className="size-4" />
+          Sort
+        </button>
+      )}
 
       <Drawer
         open={open}
