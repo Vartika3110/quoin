@@ -114,6 +114,15 @@ export interface Product {
   pricingUnit: PricingUnit;
   variants: Variant[];
   badges: BadgeKind[];
+  /**
+   * The GST slab this product sits on, as a percentage.
+   *
+   * Carried into the storefront so the product page can show the tax
+   * *contained in* the price — see `taxForLine`. It is not used to
+   * compute anything the customer is charged: checkout re-reads the slab
+   * from the database and freezes it onto the order line.
+   */
+  gstRatePct: number;
   /** Swatch key for the generated stand-in. Always present. */
   image: string;
   /**
@@ -210,6 +219,35 @@ export function proSaving(variant: Variant): Paise | null {
   if (variant.proPrice == null) return null;
   const saving = variant.price - variant.proPrice;
   return saving > 0 ? saving : null;
+}
+
+/**
+ * GST is **extracted from** the line, not added on top of it.
+ *
+ * Both catalogue importers write a tax-inclusive figure into `pricePaise`
+ * — `prisma/import-brand-catalogue.ts` writes the manufacturer MRP, and
+ * `prisma/import-catalogue.ts` writes the scraped competitor retail price,
+ * and an Indian MRP or retail price is inclusive of GST by law. That is a
+ * fact about where the number in the database came from, not a choice
+ * this function makes: every `pricePaise` already contains its tax, so
+ * the only correct move is to back the tax back out of it. A ₹1,000 tap
+ * on the 18% slab stays ₹1,000 on the product page and at checkout; ₹153
+ * of that ₹1,000 is shown as GST, it is not charged in addition to it.
+ *
+ * Rounded half-up to the paise, per line rather than on the subtotal,
+ * because a mixed basket spans four GST slabs and there is no single rate
+ * that could be applied to a total — and per-line is also what a GST
+ * invoice has to show: the rate and the tax against each line, not one
+ * blended figure for the basket.
+ *
+ * It lives here, with the other pure pricing functions, rather than in
+ * `src/lib/data/orders.ts` where the rest of the tax handling is: the
+ * product page shows this figure, that module imports `db`, and one
+ * formula shared by the storefront and the invoice is the only way the
+ * two can be made to agree. `orders.ts` re-exports it.
+ */
+export function taxForLine(linePaise: Paise, gstRatePct: number): Paise {
+  return Math.round((linePaise * gstRatePct) / (100 + gstRatePct));
 }
 
 /** Formats paise as ₹ with Indian digit grouping and no trailing decimals. */

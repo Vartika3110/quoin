@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { orderLinesSchema } from "@/lib/cart/line-schema";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
 import { InvalidPhoneError, deliveryPhoneFor, normalizePhone } from "@/lib/auth/phone";
+import { resolveShipContact } from "@/lib/addresses/format";
 import {
   OrderNotPossibleError,
   createPendingOrder,
@@ -92,16 +93,31 @@ export const POST = handler(async (request) => {
   const { addressId, lines, idempotencyKey, paymentMode, contactPhone, saveContactPhone } =
     await parseBody(request, Body);
 
+  /* An address can name its own delivery contact — see the doc comment on
+     `recipientName`/`recipientPhone` in prisma/schema.prisma — and that
+     changes what the phone resolution below requires, so it is read
+     first. Scoped by `userId` like every other address read in this
+     codebase; `createPendingOrder` re-reads and re-scopes the address
+     again for its own purposes, so a caller passing someone else's
+     `addressId` gets nothing from this lookup and then that function's own
+     "address not available" error, not a leaked contact. */
+  const addressContact = await db.address.findFirst({
+    where: { id: addressId, userId: user.id },
+    select: { recipientName: true, recipientPhone: true },
+  });
+
   /* `deliveryPhoneFor` prefers a verified `phone`, then falls back to a
      previously saved `deliveryPhone` — either means there is nothing left
-     to ask. Only when both are null (a Google account checkout has never
-     asked, or Settings never saved) does `contactPhone` get used at all —
-     `usedContactPhone` records exactly that, for the save-for-next-time
-     write below. `User.phone` itself is never written here: it is the
-     identity column OTP sign-in matches on, and an order must not put
-     anything unverified into it — see the comment on `deliveryPhone` in
-     `prisma/schema.prisma`. */
-  let shipPhone = deliveryPhoneFor(user);
+     to ask. A saved address contact outranks both: it is what the
+     customer typed for *this* delivery, not merely what the account has
+     on file. Only when the address has none and neither does the account
+     (a Google account checkout that has never asked, or Settings never
+     saved) does `contactPhone` get used at all — `usedContactPhone`
+     records exactly that, for the save-for-next-time write below.
+     `User.phone` itself is never written here: it is the identity column
+     OTP sign-in matches on, and an order must not put anything unverified
+     into it — see the comment on `deliveryPhone` in `prisma/schema.prisma`. */
+  let shipPhone = addressContact?.recipientPhone ?? deliveryPhoneFor(user);
   let usedContactPhone = false;
   if (!shipPhone) {
     if (!contactPhone) {
@@ -127,6 +143,20 @@ export const POST = handler(async (request) => {
      ignored, not merely unused, so nothing about it can be overridden by a
      value typed into a checkout form. */
 
+  /* Same precedence as `shipPhone` above, and the same reason: the
+     address's own contact — a site supervisor, an office reception — is
+     who should be on the delivery slip when one was saved for it. One
+     function rather than repeating the fallback chain here, because
+     `resolveShipContact` also has to treat a field the customer cleared
+     the same as one they never touched, which is easy to get right once
+     and easy to get wrong twice. */
+  const { shipName } = resolveShipContact({
+    recipientName: addressContact?.recipientName,
+    recipientPhone: addressContact?.recipientPhone,
+    userName: user.name,
+    accountPhone: shipPhone,
+  });
+
   /* Only "online" needs a gateway to actually hand the customer to. A
      client only ever offers that tile when `isRazorpayConfigured()` is
      true (see `paymentMethods` in `CheckoutFlow`), so reaching here with
@@ -147,21 +177,15 @@ export const POST = handler(async (request) => {
       isPro: user.tier === "PRO",
       lines,
       addressId,
-      /* The account's own details. A different recipient is a field the
-         checkout does not collect yet, and inventing one here would be
-         inventing a customer-facing feature in an API.
-
-         Falls back to the phone rather than to "". Accounts are created by
-         verifying a number and nothing ever forces a name, so `user.name`
-         is null for anyone who has not filled in their profile — which is
-         most people, and now includes every Google account — and `?? ""`
-         put a delivery label with no name on it onto a real order. A
-         number is something a driver can actually act on; an empty
-         string is not. `.trim()` because a name of pure whitespace is the
-         same problem wearing a disguise. Uses `shipPhone`, resolved
-         above, rather than `user.phone` directly, so this still has
-         something to fall back to when the account itself has none. */
-      shipName: user.name?.trim() || shipPhone,
+      /* `shipName` is resolved above by `resolveShipContact`, which prefers
+         the address's own `recipientName`, then the account's `user.name`,
+         and only then `shipPhone` itself — never `?? ""`. Accounts are
+         created by verifying a number and nothing ever forces a name, so
+         `user.name` is null for anyone who has not filled in their profile
+         — which is most people, and now includes every Google account —
+         and an empty string on a delivery label is not something a driver
+         can act on the way a phone number is. */
+      shipName,
       shipPhone,
       idempotencyKey,
       paymentMode,

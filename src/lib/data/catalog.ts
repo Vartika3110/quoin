@@ -133,6 +133,7 @@ function toProduct(row: ProductRow): Product {
     pricingUnit: PRICING_UNIT[row.pricingUnit],
     variants: row.variants.map(toVariant),
     badges: row.badges.map((b) => BADGE[b]),
+    gstRatePct: row.gstRatePct,
     /* Always a swatch key, never a URL: this is what renders when there
        is no picture at all, and what a failed image load falls back to. */
     image: row.category

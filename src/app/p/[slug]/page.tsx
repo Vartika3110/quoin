@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { PurchasePanel } from "@/components/storefront/PurchasePanel";
+import { DeliveryCheck } from "@/components/storefront/product/DeliveryCheck";
 import { Gallery } from "@/components/storefront/product/Gallery";
 import { Specs } from "@/components/storefront/product/Specs";
 import { RecordView } from "@/components/storefront/product/RecordView";
@@ -177,6 +178,20 @@ export default async function ProductPage({
                     {promise.body}
                   </p>
                 </div>
+              </div>
+
+              {/* Directly under the promise, because it is the same
+                  question narrowed to one address: the block above says
+                  what Quoin does for this product, this says whether it
+                  does it where the customer is. Above the buy panel on
+                  purpose — "will it reach me" is decided before "how
+                  many", and asking it after the add is how a cart
+                  becomes an argument at the door. */}
+              <div className="mt-3">
+                <DeliveryCheck
+                  fulfilment={product.fulfilment}
+                  leadTimeDays={product.leadTimeDays}
+                />
               </div>
 
               {/* `id` is the sticky bar's scroll target for products

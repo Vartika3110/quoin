@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
-import { AddressInput } from "../route";
+import { InvalidPhoneError } from "@/lib/auth/phone";
+import { AddressInput, resolveRecipientFields } from "../route";
 
 const AddressPatch = AddressInput.partial();
 
@@ -30,6 +31,16 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
 
   const input = await parseBody(request, AddressPatch);
 
+  let recipient: { recipientName?: string | null; recipientPhone?: string | null };
+  try {
+    recipient = resolveRecipientFields(input);
+  } catch (error) {
+    if (error instanceof InvalidPhoneError) {
+      throw new ApiError("bad_request", error.message, { recipientPhone: error.message });
+    }
+    throw error;
+  }
+
   const address = await db.$transaction(async (tx) => {
     if (input.isDefault) {
       await tx.address.updateMany({
@@ -37,7 +48,7 @@ export const PATCH = handler(async (request, { params }: Ctx) => {
         data: { isDefault: false },
       });
     }
-    return tx.address.update({ where: { id }, data: input });
+    return tx.address.update({ where: { id }, data: { ...input, ...recipient } });
   });
 
   return ok({ address });

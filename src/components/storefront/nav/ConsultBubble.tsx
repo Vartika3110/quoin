@@ -50,12 +50,23 @@ export function ConsultBubble() {
 
   if (SILENT_PATHS.some((p) => pathname.startsWith(p))) return null;
 
-  /* Either the cart bar or a page's own action bar is occupying the strip
-     the bubble would otherwise sit in. `ready` is false until the cart has
-     been read out of storage, so the first paint puts the bubble low and
-     the transition slides it up — which is a slide rather than the jump
-     you get from swapping the class with no transition on it. */
-  const stripTaken = stickyTaken || (ready && count > 0);
+  /**
+   * How much is stacked below the bubble — which is not the same as
+   * "is anything down there".
+   *
+   * These two cases used to share a height, and no longer can. A page's
+   * own `StickyBar` now sits on the bottom edge and `MobileTabBar` stands
+   * down for it, so that strip is *one* bar tall. The floating cart bar
+   * does not displace the tab bar — it rides above it — so that strip is
+   * two. Treating them alike left the bubble floating a tab bar's height
+   * above nothing on every product and listing page.
+   *
+   * `ready` is false until the cart has been read out of storage, so the
+   * first paint puts the bubble low and the transition slides it up —
+   * which is a slide rather than the jump you get from swapping the class
+   * with no transition on it.
+   */
+  const twoBarsBelow = !stickyTaken && ready && count > 0;
 
   return (
     <Link
@@ -73,7 +84,10 @@ export function ConsultBubble() {
         scrolled
           ? "scale-100 opacity-100"
           : "pointer-events-none scale-90 opacity-0",
-        stripTaken
+        /* One bar below (a tab bar, or a page's own action bar standing
+           in its place) clears at the shorter offset; the cart bar riding
+           above the tab bar needs both. */
+        twoBarsBelow
           ? "bottom-[max(8.75rem,calc(8.25rem_+_env(safe-area-inset-bottom)))]"
           : "bottom-[max(4.75rem,calc(4.25rem_+_env(safe-area-inset-bottom)))]",
       )}

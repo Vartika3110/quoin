@@ -21,24 +21,31 @@ import { Counter } from "@/components/ui/Badge";
 export function FilterDrawer({
   children,
   activeCount,
+  trigger,
 }: {
   children: ReactNode;
   activeCount: number;
+  /** See the note on `SortSheet`'s own `trigger`. */
+  trigger?: (open: () => void) => ReactNode;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setOpen(true)}
-        className="lg:hidden"
-      >
-        <Sliders className="size-4" />
-        Filters
-        {activeCount > 0 && <Counter value={activeCount} className="ml-0.5" />}
-      </Button>
+      {trigger ? (
+        trigger(() => setOpen(true))
+      ) : (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setOpen(true)}
+          className="lg:hidden"
+        >
+          <Sliders className="size-4" />
+          Filters
+          {activeCount > 0 && <Counter value={activeCount} className="ml-0.5" />}
+        </Button>
+      )}
 
       <Drawer
         open={open}

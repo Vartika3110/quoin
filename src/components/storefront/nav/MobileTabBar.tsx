@@ -2,25 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Grid, Home, Layers, Tag, Upload, User } from "@/components/icons";
+import { Grid, Home, Layers, User } from "@/components/icons";
+import { useStickyBarTaken } from "@/components/storefront/StickyBar";
 import { cn } from "@/components/ui/cn";
 
 /**
  * The phone's primary navigation.
  *
- * Six destinations, matching the reference design. An earlier version cut
- * this to five on the argument that six tabs on a 360px screen leave 60px
- * each and force a label that wraps — which is true of a *centred* label
- * under a 22px glyph, and is why this bar is built differently: the glyph
- * drops to 20px, the label to 10px with its tracking tightened, and every
- * label is one word except the two that are allowed to wrap onto a second
- * line. The tab itself is still a 56px target, comfortably over the 44px
- * minimum, because the height is what a thumb actually hits.
+ * **Four destinations, not six.** The bar used to carry Upload Parcha and
+ * Deals as well, and defended them on the grounds that a 20px glyph over
+ * a 10px label with tightened tracking fits six across a 360px screen. It
+ * does fit. What it costs is that every label is set two steps below the
+ * type scale's smallest prose size, two of them wrap onto a second line,
+ * and each tab is a 60px slice of the one row a thumb uses without
+ * looking. Four tabs are 94px each, the labels are one word at the size
+ * the scale actually offers, and nothing wraps.
+ *
+ * The two that went are *actions*, not destinations, and both had a home
+ * already:
+ *
+ *  - **Upload Parcha** is the camera in the search field — on every page,
+ *    at the point where someone is already trying to describe what they
+ *    want. It is also a quick action and a promo on the home page, and it
+ *    is in the footer. The old claim here that it was "unfindable
+ *    anywhere else" stopped being true once the header grew that icon.
+ *  - **Deals** is "Under list price", a one-tap quick filter on every
+ *    browse page, which is the same set scoped to whatever the customer
+ *    is actually looking at. The standalone page keeps its home rail and
+ *    its footer link.
+ *
+ * What is left is what a materials buyer returns to: the front door, the
+ * catalogue, their projects, and their orders.
  *
  * Deliberately not a mirror of the desktop nav: a phone's bar is for the
  * things you return to, and a desktop's is for the things you browse.
- * Upload Parcha earns a tab because it is the fastest path from "I have a
- * builder's list" to a priced basket, and it is unfindable anywhere else.
  *
  * No cart badge here, on purpose. There is no cart tab — the cart lives in
  * the header and in the floating bar — and hanging its count off another
@@ -30,27 +45,44 @@ import { cn } from "@/components/ui/cn";
 const TABS = [
   { href: "/", label: "Home", Icon: Home },
   { href: "/categories", label: "Categories", Icon: Grid },
-  { href: "/projects", label: "Project Hub", Icon: Layers },
-  { href: "/upload", label: "Upload Parcha", Icon: Upload },
-  { href: "/deals", label: "Deals", Icon: Tag },
+  { href: "/projects", label: "Projects", Icon: Layers },
   { href: "/account", label: "Account", Icon: User },
 ] as const;
 
 function isCurrent(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
-  /* `/account` must not light up on `/account/orders`, which has its own
-     tab — an exact match for the parent, subtree matching for the rest. */
-  if (href === "/account") return pathname === "/account";
+  /* Subtree matching, `/account` included: it used to be an exact match
+     on the grounds that `/account/orders` "has its own tab", which no
+     version of this bar has ever been true of. The effect was that every
+     page inside Account lit up no tab at all, so the one screen where a
+     customer is deepest in their own records was the one that stopped
+     telling them where they were. */
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function MobileTabBar() {
   const pathname = usePathname();
+  const stickyTaken = useStickyBarTaken();
+
+  /**
+   * A page with its own bottom bar takes the strip outright.
+   *
+   * Sort and Filter on a listing, price and Add to cart on a product:
+   * two fixed bars stacked is 112px of an 812px screen spent on chrome,
+   * and the lower one is navigation the customer is not using while they
+   * are deciding *this*. Every catalogue app on a phone resolves it the
+   * same way, by standing the tab bar down.
+   *
+   * The signal is the one `CartBar` and `ConsultBubble` already use, so a
+   * page claims the strip by mounting a `StickyBar` and nothing has to
+   * know which page it is on. Reverting this is deleting the next line.
+   */
+  if (stickyTaken) return null;
 
   return (
     <nav
       aria-label="Primary"
-      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-line-soft bg-bg/95 pt-1.5 backdrop-blur-xl lg:hidden"
+      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-line-soft bg-bg/95 pt-1.5 backdrop-blur-xl lg:hidden"
     >
       {TABS.map(({ href, label, Icon }) => {
         const on = isCurrent(pathname, href);
@@ -64,12 +96,12 @@ export function MobileTabBar() {
               on ? "text-accent" : "text-muted",
             )}
           >
-            <Icon className="size-5" />
-            {/* Not a scale token: 10px with negative tracking is below
-                anything the type scale should offer for prose, and it
-                exists here only because six labels have to fit across a
-                360px screen without hyphenating. */}
-            <span className="text-center text-[10px] leading-[1.15] tracking-[-0.01em]">
+            <Icon className="size-5.5" />
+            {/* `text-micro`, off the scale, with its own tracking left
+                alone. Four labels across 360px have 94px each and the
+                longest is "Categories" — the arbitrary 10px and the
+                negative tracking were both there to fit six. */}
+            <span className="text-center text-micro leading-[1.15]">
               {label}
             </span>
           </Link>

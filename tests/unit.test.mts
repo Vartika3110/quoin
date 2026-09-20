@@ -91,6 +91,7 @@ const MARBLE: CatalogProduct = {
   categoryId: "c_construction",
   fulfilment: "made_to_order",
   pricingUnit: "per_sqft",
+  gstRatePct: 18,
   badges: ["premium_quality"],
   image: "marble",
   leadTimeDays: 7,
@@ -128,6 +129,7 @@ const PAINT: CatalogProduct = {
   categoryId: "c_construction",
   fulfilment: "instant",
   pricingUnit: "per_litre",
+  gstRatePct: 28,
   badges: ["top_brand"],
   image: "paint",
   variants: [

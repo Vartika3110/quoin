@@ -74,6 +74,9 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
           params={browseParams}
           departments={departments}
           activeDepartment={slug}
+          /* The department is in the path, not the query string, so the
+             grid has to be told about it to fetch its own next page. */
+          scope={{ category: slug }}
         />
       </div>
     </AppShell>

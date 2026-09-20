@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { PriceDetails } from "@/components/storefront/product/PriceDetails";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
@@ -264,6 +265,16 @@ export function PurchasePanel({
             </span>
           </p>
         )}
+
+        {/* What the total is made of, folded shut. The catalogue is
+            tax-inclusive, so this adds nothing to the figure above it —
+            it lets someone check the split before they are asked to
+            trust it at the payment screen. */}
+        <PriceDetails
+          total={total}
+          mrpTotal={price.strikethrough ? lineTotal(price.strikethrough, qty) : null}
+          gstRatePct={product.gstRatePct}
+        />
 
         {!isPro && saving && (
           <p className="mt-3 flex items-start gap-2 rounded-lg bg-pro-wash px-3 py-2 text-micro leading-snug text-pro">
