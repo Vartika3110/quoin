@@ -622,6 +622,15 @@ export const Calculator = (p: IconProps) => (
  * of surrounding theme. Rendering it any other colour is not "quieter
  * branding", it is a different, incorrect mark.
  */
+/** Bell — the notifications control. Struck through nothing: an unread
+    dot or count sits beside it, drawn by the caller, not baked in here. */
+export const Bell = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M6 10a6 6 0 0 1 12 0c0 3.5 1 5.5 1.8 6.5a1 1 0 0 1-.8 1.6H5a1 1 0 0 1-.8-1.6C5 15.5 6 13.5 6 10z" />
+    <path d="M9.5 19a2.5 2.5 0 0 0 5 0" />
+  </Svg>
+);
+
 export const GoogleG = (p: IconProps) => (
   <svg viewBox="0 0 24 24" aria-hidden="true" {...p}>
     <path

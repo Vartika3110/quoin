@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
 import { ThemeToggle } from "@/components/storefront/ThemeToggle";
 import { CartDrawer } from "@/components/storefront/nav/CartDrawer";
+import { NotificationBell } from "@/components/storefront/nav/NotificationBell";
 import { useSearch } from "@/components/storefront/nav/SearchContext";
 import { VoiceSearch } from "@/components/storefront/nav/VoiceSearch";
 import { useScrolled } from "@/components/storefront/nav/useScrolled";
@@ -64,10 +65,18 @@ export function SiteHeader({
   chosen,
   categories,
   mobileSlot,
+  signedIn,
+  phoneBar = true,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
   categories: Category[];
+  /**
+   * `false` on a page that supplies its own phone chrome — see
+   * `AppShell`'s `phoneChrome`. The desktop bar still renders, so the
+   * header does not vanish at a width where nothing replaces it.
+   */
+  phoneBar?: boolean;
   /**
    * Rendered on a phone between the area row and the search row, and
    * collapsed along with search on scroll.
@@ -79,6 +88,9 @@ export function SiteHeader({
    * pathname and reaching for a component only one route owns.
    */
   mobileSlot?: ReactNode;
+  /** Whether the bell renders at all — see `AppShell`'s own note on why
+      this is read on the server rather than discovered here. */
+  signedIn: boolean;
 }) {
   const scrolled = useScrolled();
   const [cartOpen, setCartOpen] = useState(false);
@@ -87,25 +99,34 @@ export function SiteHeader({
     <>
       <header
         className={cn(
-          "sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-200 ease-out-quart",
+          /* `safe-top` is what keeps the bar out from under the iOS
+             status bar once Quoin is installed — the app paints edge to
+             edge under a translucent clock, so the space has to be
+             reserved by whatever is at the top of the page. It resolves
+             to nothing in a browser tab. */
+          "safe-top sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-200 ease-out-quart",
           scrolled
             ? "header-edge bg-bg/85 backdrop-blur-xl"
             : "bg-bg",
         )}
       >
-        <MobileBar
-          areas={areas}
-          chosen={chosen}
-          scrolled={scrolled}
-          slot={mobileSlot}
-          onOpenCart={() => setCartOpen(true)}
-        />
+        {phoneBar && (
+          <MobileBar
+            areas={areas}
+            chosen={chosen}
+            scrolled={scrolled}
+            slot={mobileSlot}
+            onOpenCart={() => setCartOpen(true)}
+            signedIn={signedIn}
+          />
+        )}
         <DesktopBar
           areas={areas}
           chosen={chosen}
           categories={categories}
           scrolled={scrolled}
           onOpenCart={() => setCartOpen(true)}
+          signedIn={signedIn}
         />
       </header>
 
@@ -122,12 +143,14 @@ function DesktopBar({
   categories,
   scrolled,
   onOpenCart,
+  signedIn,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
   categories: Category[];
   scrolled: boolean;
   onOpenCart: () => void;
+  signedIn: boolean;
 }) {
   const pathname = usePathname();
 
@@ -189,6 +212,7 @@ function DesktopBar({
 
         <WishlistButton />
         <CartButton onClick={onOpenCart} />
+        {signedIn && <NotificationBell buttonClassName="size-10 rounded-lg border-0" />}
         <ThemeToggle className="size-10 border-0" />
         <Link
           href="/account"
@@ -304,12 +328,14 @@ function MobileBar({
   scrolled,
   slot,
   onOpenCart,
+  signedIn,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
   scrolled: boolean;
   slot?: ReactNode;
   onOpenCart: () => void;
+  signedIn: boolean;
 }) {
   const { open } = useSearch();
 
@@ -354,6 +380,7 @@ function MobileBar({
             not the reach. */}
         <ThemeToggle className="tap-target relative" />
         <CartTotalPill onClick={onOpenCart} />
+        {signedIn && <NotificationBell buttonClassName="tap-target relative" />}
 
         <Link
           href="/account"
