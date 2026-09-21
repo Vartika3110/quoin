@@ -105,9 +105,24 @@ export function StudioNav() {
           resulting scrollbar on engines that implement `clip`, which is
           exactly why it survived: the bug was invisible on the machine it
           was written on and a sideways drag everywhere else. */}
+      {/* Phone and tablet chip row — not on the feed.
+
+          `StudioTopBar` carries Discover, Saved, Spaces and Add as icons
+          on a phone now, and this row was the same four destinations a
+          second time, 56px tall, directly under them. Two navigations
+          stacked is not twice the navigation; it is one of them being
+          scrolled past to reach a photograph.
+
+          Kept for the tablet band, where the top bar is still the phone's
+          and there is room for words. */}
       <nav
         aria-label="Studio"
-        className="no-scrollbar flex items-center gap-2 overflow-x-auto px-5 pb-1 scroll-pl-5 lg:hidden"
+        /* `hidden` at every width below `lg`, because that is exactly
+           where `StudioTopBar` is. An earlier attempt kept this for the
+           tablet band and hid it only on a phone, which produced the
+           duplication it was meant to remove — the bar's four icons and
+           this row's five chips, stacked, from 640px to 1024px. */
+        className="no-scrollbar hidden items-center gap-2 overflow-x-auto px-5 pb-1 scroll-pl-5"
       >
         {[...LINKS, ...ELSEWHERE].map(({ href, label, Icon, exact }) => {
           const on = isCurrent(pathname, href, exact);

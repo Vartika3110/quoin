@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MasonrySkeleton } from "@/components/storefront/studio/Masonry";
 import { IdeaMasonry } from "@/components/storefront/studio/IdeaMasonry";
+import { FeedSkeleton, IdeaFeed } from "@/components/storefront/studio/IdeaFeed";
 import {
   FilterRail,
   NO_FILTERS,
@@ -275,17 +276,40 @@ export function DiscoveryFeed({
             retry={() => setFilters({ ...filters })}
           />
         ) : refetching ? (
-          <MasonrySkeleton />
+          /* Shaped like whatever is about to arrive — see `FeedSkeleton`. */
+          tab === "saved" ? (
+            <MasonrySkeleton />
+          ) : (
+            <FeedSkeleton />
+          )
         ) : ideas.length === 0 ? (
           <FeedEmpty tab={tab} filtered={countFilters(filters) > 0 || Boolean(query)} />
         ) : (
           <>
-            <IdeaMasonry
-              ideas={ideas}
-              label="Inspiration"
-              sizes={SIZES}
-              preloadCount={PRELOAD_COUNT}
-            />
+            {/* Discover is a feed; Saved stays a grid.
+
+                They are asked two different questions. Discover is "show
+                me something", and a photograph the width of the screen
+                with its materials priced underneath is what answers it.
+                Saved is "where is the one I kept", and forty of someone's
+                own tiles at six a screen answers that far better than
+                forty full-bleed posts they would have to scroll past. */}
+            {tab === "saved" ? (
+              <IdeaMasonry
+                ideas={ideas}
+                label="Saved ideas"
+                sizes={SIZES}
+                preloadCount={PRELOAD_COUNT}
+              />
+            ) : (
+              /* Negative margin because a post's photograph is full-bleed
+                 on a phone and has to reach through this container's
+                 gutter; the post puts the padding back on its own text.
+                 The same trick the header slot uses in `AppShell`. */
+              <div className="-mx-5 lg:mx-0">
+                <IdeaFeed ideas={ideas} />
+              </div>
+            )}
 
             <div ref={sentinel} className="h-px" aria-hidden />
 
