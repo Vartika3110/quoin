@@ -3,7 +3,6 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Hero } from "@/components/storefront/home/Hero";
-import { BannerCarousel } from "@/components/storefront/home/BannerCarousel";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CatalogTabs } from "@/components/storefront/home/CatalogTabs";
 import { QuickActions } from "@/components/storefront/home/QuickActions";
@@ -98,21 +97,29 @@ export default async function HomePage() {
     <AppShell fullBleed headerSlot={<EntryCards />}>
       <div className="mx-auto w-full max-w-shell lg:px-6">
         <PageSections>
-          {/* Two first screens, one at a time. The rail and the carousel
-              are the reference design's, sized for a thumb; the editorial
-              hero is what a 1440px page wants and would be a full screen
-              of type before the first product on a phone.
+          {/* One first screen at every width.
 
-              The rail and the banner are one block rather than two page
-              sections — the rail reads as a caption on the banner, and
-              `PageSections`' 40px between them would say they are two
-              unrelated things. */}
-          <div className="space-y-5 lg:hidden">
-            <CatalogTabs />
-            <BannerCarousel />
-          </div>
+              There used to be two: an editorial hero from `lg`, and a
+              rail plus a three-slide banner carousel on a phone. The
+              carousel is gone. It carried the scaffolding artwork this
+              page is not supposed to lead with, it said "Sorted in
+              Minutes" over a photograph of a building site, and two
+              different first screens meant two different answers to what
+              Quoin is — the one question the top of a home page exists to
+              settle.
 
-          <div className="hidden lg:block">
+              The hero stacks on a phone and the photograph is on top, so
+              a reader sees a finished room before they read a word about
+              it. The rail stays above it: it is a filter on the
+              catalogue, not a banner, and it belongs where a thumb starts.
+
+              `space-y-5` rather than a page section between them — the
+              rail reads as part of the same block, and `PageSections`'
+              40px would say they are two unrelated things. */}
+          <div className="space-y-5">
+            <div className="lg:hidden">
+              <CatalogTabs />
+            </div>
             <Hero chosen={chosen} photo={heroRoom} />
           </div>
 

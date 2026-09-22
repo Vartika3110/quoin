@@ -1244,6 +1244,11 @@ function makeProject(tasks: ProjectTask[], materials: ProjectMaterial[]): Projec
     milestones: [],
     documents: [],
     orders: [],
+    /* Added when `ProjectDetailView` gained engaged professionals. Empty
+       rather than omitted: every assertion below is about tasks and
+       materials, and a fixture that quietly stopped compiling is how a
+       whole test file drops out of the build. */
+    services: [],
   };
 }
 

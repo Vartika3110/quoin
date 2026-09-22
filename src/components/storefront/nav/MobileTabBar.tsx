@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Grid, Home, Layers, Upload, User } from "@/components/icons";
+import { Building, Grid, Home, Layers, Upload } from "@/components/icons";
 import { useStickyBarTaken } from "@/components/storefront/StickyBar";
 import { cn } from "@/components/ui/cn";
 
@@ -18,6 +18,25 @@ import { cn } from "@/components/ui/cn";
  * uses without looking. Five tabs are 75px each, the labels are one word
  * at the size the scale actually offers, and nothing wraps.
  *
+ * **The five are the five parts of the business, in the order somebody
+ * moves through them**: the front door, the catalogue, the room you are
+ * designing, the fastest way to price a written list, and the build it
+ * all belongs to.
+ *
+ * Two changes from the version before this one, and both are about what a
+ * phone's bar is *for* — the things you return to:
+ *
+ *  - **Studio replaced Account.** Studio is a place somebody comes back
+ *    to across a whole renovation; an account page is somewhere you go
+ *    once to check an address. Account did not lose its entry point, it
+ *    moved to the header, which is where every other site on a phone puts
+ *    it and where it sits beside the cart it belongs with.
+ *  - **"Shop" replaced "Categories."** The tab went to a list of
+ *    departments rather than to the catalogue, which made the one tab a
+ *    materials buyer presses most an index page they then had to press
+ *    again. `/products` is the shop; the department list is one tap
+ *    inside it and still has its own rail on the home page.
+ *
  * **Upload Parcha came back, and that is a correction.** It was cut on
  * the argument that the camera in the search field covers it — on every
  * page, at the point where someone is already describing what they want,
@@ -27,16 +46,14 @@ import { cn } from "@/components/ui/cn";
  * reachable through four indirect affordances and no direct one is a
  * feature people stop using, and a 20px camera glyph inside a search
  * field does not read as "turn a builder's list into a priced basket".
- * Five tabs at 75px still hold a one-word label; this one is "Parcha".
+ * Five tabs at 75px still hold a one-word label; this one is "Parcha",
+ * and it goes straight to the upload screen rather than to a page about
+ * it.
  *
  * **Deals stayed cut.** It is "Under list price", a one-tap quick filter
  * on every browse page — the same set, scoped to whatever the customer is
  * actually looking at — and the standalone page keeps its home rail and
  * its footer link. Nobody has gone looking for it and failed.
- *
- * What is left is what a materials buyer returns to: the front door, the
- * catalogue, the fastest way to price a list, their projects, and their
- * orders.
  *
  * Deliberately not a mirror of the desktop nav: a phone's bar is for the
  * things you return to, and a desktop's is for the things you browse.
@@ -48,20 +65,18 @@ import { cn } from "@/components/ui/cn";
  */
 const TABS = [
   { href: "/", label: "Home", Icon: Home },
-  { href: "/categories", label: "Categories", Icon: Grid },
+  { href: "/products", label: "Shop", Icon: Grid },
+  { href: "/studio", label: "Studio", Icon: Building },
   { href: "/upload", label: "Parcha", Icon: Upload },
   { href: "/projects", label: "Projects", Icon: Layers },
-  { href: "/account", label: "Account", Icon: User },
 ] as const;
 
 function isCurrent(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
-  /* Subtree matching, `/account` included: it used to be an exact match
-     on the grounds that `/account/orders` "has its own tab", which no
-     version of this bar has ever been true of. The effect was that every
-     page inside Account lit up no tab at all, so the one screen where a
-     customer is deepest in their own records was the one that stopped
-     telling them where they were. */
+  /* Subtree matching. A tab that only lights on its own exact URL leaves
+     every page beneath it telling the reader nothing about where they
+     are, which is worst exactly where somebody is deepest in — a product
+     inside the shop, a room inside Studio. */
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 

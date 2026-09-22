@@ -341,18 +341,39 @@ function MobileBar({
 
   return (
     <div className="px-5 lg:hidden">
-      {/* The area, then the three controls that are about *you* rather
-          than about the catalogue: the palette, the basket total and the
-          account. No wordmark — the reference design gives the whole top
-          line to the address, which is the one piece of state on this
-          screen a customer has to be able to check and correct, and Home
-          already has a tab of its own at the bottom. */}
+      {/* The wordmark, the area, and the controls that are about *you*
+          rather than about the catalogue: the palette, the basket total
+          and the account.
+
+          The wordmark is back. It was dropped on the argument that the
+          reference design gives the whole top line to the address and
+          that Home has a tab at the bottom — both true, and neither is
+          the job a wordmark does. On a phone, with the site's own chrome
+          gone on Studio and a bottom bar that looks like an app's, the
+          top-left mark is the only thing on screen that says which site
+          this is, and it is the control everyone reaches for to get back
+          to the front. `shrink-0` so it never compresses; the address
+          beside it truncates instead, because a truncated place name is
+          still legible and a squeezed wordmark is not.
+
+          16px and 0.1em, not the desktop's 24px and 0.18em: five capitals
+          with generous tracking is 80px of a 350px line, and the address
+          is what pays for it. Once an area is chosen the label is one
+          short word and both fit; "Choose your area" is the unset state
+          and the one that truncates. */}
       <div
         className={cn(
           "flex items-center gap-1.5 transition-[padding] duration-200 ease-out-quart",
           scrolled ? "py-2" : "pb-1 pt-3",
         )}
       >
+        <Link
+          href="/"
+          className="font-display shrink-0 text-body-lg tracking-[0.1em] text-ink transition-colors hover:text-accent"
+        >
+          QUOIN
+        </Link>
+
         <LocationPicker
           areas={areas}
           selected={chosen}

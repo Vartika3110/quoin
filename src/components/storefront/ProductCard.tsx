@@ -257,7 +257,7 @@ export function ProductCard({
             /* `tap-target`: the 40px height is the row's fixed footprint
                (see AddControl below), so the hit area is grown behind it
                rather than the box itself. */
-            className="tap-target relative mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-line bg-surface text-caption font-medium text-ink transition-colors duration-150 hover:border-accent hover:bg-accent-wash hover:text-accent"
+            className="tap-target relative mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-line bg-surface text-caption font-medium text-ink transition-colors duration-150 hover:border-accent hover:bg-accent-wash hover:text-accent lg:h-10"
           >
             {bookable ? (
               <>
@@ -280,7 +280,13 @@ export function ProductCard({
 /**
  * Add, then adjust — without leaving the grid.
  *
- * Three states in one 40px row:
+ * Three states in one row — 44px under a thumb, 40px where there is a
+ * pointer. The stepper's `−` and `+` are the two most mis-tapped controls
+ * in the app: they sit next to each other, they are used repeatedly, and
+ * getting one wrong costs a unit of cement. 44 is the floor for a target
+ * a finger drives, and this is exactly the case it exists for.
+ *
+ * Three states:
  *
  *   not in cart   a full-width "Add" button
  *   just added    a brief confirmed state, so the tap is visibly received
@@ -321,7 +327,7 @@ function AddControl({ product }: { product: Product }) {
           });
         }}
         className={cn(
-          "tap-target relative mt-3 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border text-caption font-semibold transition-colors duration-150",
+          "tap-target relative mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border text-caption font-semibold transition-colors duration-150 lg:h-10",
           flash
             ? "border-success/30 bg-success-wash text-success"
             : "border-accent-edge bg-accent-wash text-accent hover:bg-accent hover:text-on-accent",
@@ -343,12 +349,12 @@ function AddControl({ product }: { product: Product }) {
   }
 
   return (
-    <div className="mt-3 flex h-10 items-center justify-between rounded-lg bg-accent text-on-accent">
+    <div className="mt-3 flex h-11 items-center justify-between rounded-lg bg-accent text-on-accent lg:h-10">
       <button
         type="button"
         aria-label={`Decrease quantity of ${product.title}`}
         onClick={() => setQty(line.id, line.qty - variant.stepQty)}
-        className="tap-target relative grid h-10 w-10 shrink-0 place-items-center rounded-l-lg transition-colors hover:bg-accent-dim"
+        className="tap-target relative grid h-full w-11 shrink-0 place-items-center rounded-l-lg transition-colors hover:bg-accent-dim lg:w-10"
       >
         {line.qty <= variant.minQty ? (
           <Trash className="size-4" />
@@ -368,7 +374,7 @@ function AddControl({ product }: { product: Product }) {
         type="button"
         aria-label={`Increase quantity of ${product.title}`}
         onClick={() => setQty(line.id, line.qty + variant.stepQty)}
-        className="tap-target relative grid h-10 w-10 shrink-0 place-items-center rounded-r-lg transition-colors hover:bg-accent-dim"
+        className="tap-target relative grid h-full w-11 shrink-0 place-items-center rounded-r-lg transition-colors hover:bg-accent-dim lg:w-10"
       >
         <Plus className="size-4" />
       </button>
