@@ -1,8 +1,5 @@
-import Image from "next/image";
-import Link from "next/link";
-import { Swatch } from "@/components/Swatch";
 import { CATEGORY_PHOTOS } from "@/lib/category-photos";
-import { Chevron } from "@/components/icons";
+import { ImageCard } from "@/components/ui/Card";
 import { cn } from "@/components/ui/cn";
 import type { Category } from "@/lib/types/catalog";
 
@@ -18,11 +15,19 @@ import type { Category } from "@/lib/types/catalog";
  * rather than disguising it: there is no second surface left to step
  * against.
  *
- * The cost is that the type sits on the photograph, which is why the scrim
- * is not optional and why it is espresso rather than black — a neutral
- * scrim over warm photography greys it, and the palette is warm everywhere
- * else.
+ * That is `ImageCard`, and this is now a thin call to it: the scrim, the
+ * radius, the serif title, the hover scale and the missing-photograph
+ * fallback are the card's, shared with every other photographic card on
+ * the site. What stays here is the part that is about *categories* — the
+ * photo lookup, the aspect ratios the rails and grids ask for, and the
+ * descriptor table at the bottom of the file.
  */
+const RATIO = {
+  portrait: "4 / 5",
+  landscape: "3 / 2",
+  square: "1 / 1",
+} as const;
+
 export function CategoryTile({
   category,
   caption,
@@ -37,7 +42,7 @@ export function CategoryTile({
   caption: string;
   /** One line of what the category actually holds. Optional. */
   descriptor?: string;
-  ratio?: "portrait" | "landscape" | "square";
+  ratio?: keyof typeof RATIO;
   /**
    * `true` when the tile is a grid item and the column already sets its
    * width. The default keeps the fixed width a scrolling rail needs,
@@ -48,62 +53,19 @@ export function CategoryTile({
   priority?: boolean;
   className?: string;
 }) {
-  const photo = CATEGORY_PHOTOS[category.slug];
-
   return (
-    <Link
+    <ImageCard
       href={`/c/${category.slug}`}
-      className={cn(
-        "group relative flex flex-col justify-end overflow-hidden rounded-card",
-        ratio === "portrait" && "aspect-4/5",
-        ratio === "landscape" && "aspect-3/2",
-        ratio === "square" && "aspect-square",
-        fill ? "w-full" : "w-44 shrink-0 lg:w-auto",
-        className,
-      )}
-    >
-      {photo ? (
-        <Image
-          src={photo}
-          /* Decorative: the heading below is inside this same link and
-             already names the category. */
-          alt=""
-          fill
-          priority={priority}
-          sizes="(min-width: 1280px) 340px, (min-width: 1024px) 280px, (min-width: 640px) 45vw, 80vw"
-          className="object-cover transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
-        />
-      ) : (
-        /* Still reachable: a category added after the shoot has no file,
-           and the swatch fills its box the same way a cover-fitted
-           photograph does. */
-        <Swatch
-          swatchKey={category.images[0] ?? "cement"}
-          label=""
-          className="absolute inset-0 size-full"
-        />
-      )}
-
-      {/* Tall enough to cover every line of type at its longest — a scrim
-          sized to the short titles leaves "Home appliances & security"
-          sitting half on bare photograph. */}
-      <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-deep via-deep/65 to-transparent" />
-
-      <div className="relative p-4">
-        <h3 className="text-body font-semibold leading-snug text-on-deep">
-          {category.title}
-        </h3>
-        {descriptor && (
-          <p className="mt-0.5 line-clamp-1 text-micro text-on-deep/70">
-            {descriptor}
-          </p>
-        )}
-        <span className="mt-1.5 flex items-center gap-1 text-micro text-on-deep/85">
-          {caption}
-          <Chevron className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-        </span>
-      </div>
-    </Link>
+      src={CATEGORY_PHOTOS[category.slug]}
+      title={category.title}
+      subtitle={descriptor}
+      caption={caption}
+      label={category.title}
+      ratio={RATIO[ratio]}
+      priority={priority}
+      sizes="(min-width: 1280px) 340px, (min-width: 1024px) 280px, (min-width: 640px) 45vw, 80vw"
+      className={cn(fill ? "w-full" : "w-44 shrink-0 lg:w-auto", className)}
+    />
   );
 }
 

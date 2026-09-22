@@ -113,3 +113,31 @@ export function PageSections({
     </div>
   );
 }
+
+/**
+ * The smallest number of things a section may show.
+ *
+ * Four, because that is one full row at every width the storefront lays
+ * out — four across on a desktop grid, two by two on a phone. A rail of
+ * one product under a heading that says "Project Essentials" does not
+ * read as a small selection; it reads as a query that failed, and it
+ * makes the rest of the page's numbers look unreliable too. Below four,
+ * the section is not a thin version of itself — it is nothing, and
+ * nothing is what it should render.
+ */
+export const MIN_SECTION_ITEMS = 4;
+
+/**
+ * Whether a section has enough to be worth drawing.
+ *
+ * A type guard as well as a test, so `hasEnough(deals) && <Rail …/>`
+ * narrows away the null and the caller does not need a second check.
+ * Sections that are genuinely one thing — a hero, a promo, a single
+ * summary card — are not collections and do not come through here.
+ */
+export function hasEnough<T>(
+  items: readonly T[] | null | undefined,
+  min: number = MIN_SECTION_ITEMS,
+): items is readonly T[] {
+  return Array.isArray(items) && items.length >= min;
+}

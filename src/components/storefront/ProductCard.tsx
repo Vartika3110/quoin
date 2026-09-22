@@ -146,6 +146,7 @@ export function ProductCard({
             photo={product.photo}
             swatchKey={product.image}
             label={product.title}
+            brand={product.brand}
             className="size-full transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
           />
           {product.photoIsIllustration && (

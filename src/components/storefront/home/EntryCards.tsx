@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Box, Building, Chevron, Crown, Helmet } from "@/components/icons";
+import { ContentCard } from "@/components/ui/Card";
 
 /**
  * The four doors into Quoin, at the very top of the home screen.
@@ -28,21 +28,18 @@ const ENTRIES = [
     title: "QUOIN\nSTUDIO",
     detail: "Your design\nplatform",
     Icon: Building,
-    tint: "var(--quoin-tile-1)",
   },
   {
     href: "/services",
     title: "SERVICES",
     detail: "Professional\nservices",
     Icon: Helmet,
-    tint: "var(--quoin-tile-2)",
   },
   {
     href: "/products",
     title: "PRODUCTS",
     detail: "Construction\nmaterials",
     Icon: Box,
-    tint: "var(--quoin-tile-3)",
   },
   {
     /* The premium door is Quoin Pro. There is no separate bespoke-
@@ -58,31 +55,36 @@ const ENTRIES = [
     title: "PREMIUM\nSTUDIO",
     detail: "Bespoke\nproducts",
     Icon: Crown,
-    tint: "var(--quoin-tile-4)",
   },
 ];
 
 export function EntryCards() {
   return (
     <div className="grid grid-cols-4 gap-2 px-5 pb-1 lg:gap-3 lg:px-0">
-      {ENTRIES.map(({ href, title, detail, Icon, tint }) => (
-        <Link
+      {ENTRIES.map(({ href, title, detail, Icon }) => (
+        <ContentCard
           key={href}
           href={href}
-          style={{ background: tint }}
-          className="group relative flex h-[7.75rem] flex-col overflow-hidden rounded-card border border-line-hair p-1.5 transition-transform duration-200 ease-out-quart active:scale-[0.98] sm:h-[8.5rem] sm:p-2.5 lg:h-36 lg:p-4 hover:lg:-translate-y-0.5"
+          size="sm"
+          /* The icon slot's 36px accent plate is most of a 52px card at
+             320px, so the mark is rendered inline instead. The card is
+             still a content card — white surface, hairline, sans type —
+             which is the part that has to be the same across the site. */
+          title={
+            /* A net, not a plan: every label here is chosen to fit its
+               own line down to 320px, and this only decides what happens
+               if a future one is not. A word spilling out of its card is
+               worse than a word broken inside it. */
+            <span
+              lang="en"
+              className="block whitespace-pre-line text-[8px] font-bold uppercase leading-[1.25] tracking-[0.02em] [overflow-wrap:anywhere] sm:text-[9.5px] sm:tracking-[0.05em] lg:text-[11px] lg:tracking-[0.07em]"
+            >
+              {title}
+            </span>
+          }
+          padding="none"
+          className="h-[7.75rem] p-1.5 sm:h-[8.5rem] sm:p-2.5 lg:h-36 lg:p-4"
         >
-          {/* A net, not a plan: every label here is chosen to fit its own
-              line down to 320px, and this only decides what happens if a
-              future one is not. A word spilling out of its card is worse
-              than a word broken inside it. */}
-          <span
-            lang="en"
-            className="whitespace-pre-line font-display text-[8px] font-bold uppercase leading-[1.25] tracking-[0.02em] text-ink [overflow-wrap:anywhere] sm:text-[9.5px] sm:tracking-[0.05em] lg:text-[11px] lg:tracking-[0.07em]"
-          >
-            {title}
-          </span>
-
           <Icon className="mx-auto my-auto size-5 text-ink sm:size-6 lg:size-8" />
 
           <span className="flex items-end justify-between gap-1">
@@ -98,7 +100,7 @@ export function EntryCards() {
               <Chevron className="size-2.5 sm:size-3 lg:size-4" />
             </span>
           </span>
-        </Link>
+        </ContentCard>
       ))}
     </div>
   );

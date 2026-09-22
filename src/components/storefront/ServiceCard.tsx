@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   Bolt,
   Building,
@@ -6,11 +5,14 @@ import {
   Hammer,
   Headset,
   Roller,
+  Ruler,
+  Shield,
   Sofa,
   Tap,
   Wrench,
 } from "@/components/icons";
-import { cn } from "@/components/ui/cn";
+import { Badge } from "@/components/ui/Badge";
+import { ContentCard } from "@/components/ui/Card";
 import type { Service, ServiceIcon } from "@/lib/data/services";
 
 /**
@@ -34,6 +36,8 @@ const ICON: Record<ServiceIcon, typeof Building> = {
   civil: Hammer,
   installation: Wrench,
   consultation: Headset,
+  inspection: Ruler,
+  waterproofing: Shield,
 };
 
 export function ServiceCard({
@@ -46,37 +50,33 @@ export function ServiceCard({
   const Icon = ICON[service.icon];
 
   return (
-    <Link
+    <ContentCard
       href={`/services/${service.slug}`}
-      className={cn(
-        "group flex flex-col rounded-card border border-line-soft bg-surface p-5 transition-[transform,box-shadow,border-color] duration-200 ease-out-quart hover:-translate-y-0.5 hover:border-line hover:shadow-md",
-        className,
-      )}
-    >
-      <span className="grid size-11 place-items-center rounded-lg bg-accent-wash text-accent transition-colors group-hover:bg-accent group-hover:text-on-accent">
-        <Icon className="size-5.5" />
-      </span>
-
-      <h3 className="font-display mt-4 text-title-sm font-semibold text-ink">{service.name}</h3>
-      <p className="mt-1.5 text-body-sm leading-relaxed text-muted">
-        {service.summary}
-      </p>
-
-      <dl className="mt-4 space-y-1 border-t border-line-hair pt-3 text-micro">
-        <div className="flex gap-2">
-          <dt className="w-16 shrink-0 text-faint">Pricing</dt>
-          <dd className="min-w-0 flex-1 text-muted">{service.pricing}</dd>
-        </div>
-        <div className="flex gap-2">
-          <dt className="w-16 shrink-0 text-faint">Timeline</dt>
-          <dd className="min-w-0 flex-1 text-muted">{service.timeline}</dd>
-        </div>
-      </dl>
-
-      <span className="mt-4 flex items-center gap-1 text-caption font-medium text-accent">
-        See what is included
-        <Chevron className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-      </span>
-    </Link>
+      className={className}
+      icon={<Icon className="size-5.5" />}
+      badge={
+        <Badge tone={service.bookingMode === "book" ? "success" : "info"} size="sm">
+          {service.bookingMode === "book" ? "Book a day" : "Quote first"}
+        </Badge>
+      }
+      title={service.name}
+      subtitle={service.summary}
+      /* The card owns the alignment, not this file: `h-full` plus a
+         `flex-1` body is what puts "Pricing" on the same line across four
+         cards whose summaries run to different lengths, and "See what is
+         included" on one baseline under them. Four hand-tuned
+         min-heights was the alternative and it survives exactly one copy
+         change. */
+      rows={[
+        { term: "Pricing", detail: service.pricing },
+        { term: "Timeline", detail: service.timeline },
+      ]}
+      footer={
+        <span className="flex items-center gap-1 text-caption font-medium text-accent">
+          See what is included
+          <Chevron className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+        </span>
+      }
+    />
   );
 }
