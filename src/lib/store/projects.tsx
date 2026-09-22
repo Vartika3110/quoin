@@ -19,12 +19,17 @@ import type {
   ProjectMaterialView,
   ProjectMilestoneView,
   ProjectDetailView,
+  ProjectOrderView,
+  ProjectServiceView,
+  ProjectDocumentView,
   NewProjectInput,
   NewTaskInput,
   NewMaterialInput,
   NewMilestoneInput,
   ProjectPatch,
 } from "@/lib/data/projects";
+import { projectMoney } from "@/lib/projects/money";
+import { moneyMoved } from "@/lib/orders/status-groups";
 
 /**
  * Projects.
@@ -61,6 +66,9 @@ export type { ProjectKind, TaskStatus, MaterialStatus };
 export type ProjectTask = ProjectTaskView;
 export type ProjectMaterial = ProjectMaterialView;
 export type ProjectMilestone = ProjectMilestoneView;
+export type ProjectOrder = ProjectOrderView;
+export type ProjectService = ProjectServiceView;
+export type ProjectDocument = ProjectDocumentView;
 /** The richer, single-project shape (adds `documents`/`orders`). List rows
     are widened to this with empty arrays — see `withDetailDefaults` — so
     the store has one `Project` type rather than a list/detail split that
@@ -97,6 +105,16 @@ interface ProjectsApi {
   addMaterial: (id: string, material: NewMaterialInput) => Promise<void>;
   addTask: (id: string, task: NewTaskInput) => Promise<void>;
   setTaskStatus: (id: string, taskId: string, status: TaskStatus) => Promise<void>;
+  /** Links an order the caller already owns to this project — see the
+      file-level note on `linkOrder` in `src/lib/data/projects.ts` for why
+      it takes a `reference`, not the order's internal id. Throws (with
+      the server's own message) on a reference that is not this
+      customer's own or is already linked, so the Orders tab can show it
+      inline rather than as a silently-ignored click. */
+  linkOrder: (id: string, reference: string) => Promise<void>;
+  unlinkOrder: (id: string, reference: string) => Promise<void>;
+  addDocument: (id: string, fileId: string, label?: string) => Promise<void>;
+  removeDocument: (id: string, fileId: string) => Promise<void>;
   refresh: () => void;
   /** The offer to import whatever this browser had in `localStorage`
       before projects moved to the account. See the file-level comment on
@@ -169,7 +187,7 @@ const patchJson = <T,>(url: string, body: unknown) =>
 const deleteJson = <T,>(url: string) => request<T>(url, { method: "DELETE" });
 
 function withDetailDefaults(project: ProjectView): Project {
-  return { ...project, documents: [], orders: [] };
+  return { ...project, documents: [], orders: [], services: [] };
 }
 
 /* ------------------------------------------------------- local import */
@@ -338,7 +356,7 @@ async function importLegacyProject(legacy: LegacyProject): Promise<Project> {
     milestones.push(milestone);
   }
 
-  return { ...project, tasks, materials, milestones, documents: [], orders: [] };
+  return { ...project, tasks, materials, milestones, documents: [], orders: [], services: [] };
 }
 
 /* --------------------------------------------------------------- tasks */
@@ -477,7 +495,15 @@ export function ProjectsProvider({
       }
     }
 
-    const full: Project = { ...project, tasks, materials: [], milestones: [], documents: [], orders: [] };
+    const full: Project = {
+      ...project,
+      tasks,
+      materials: [],
+      milestones: [],
+      documents: [],
+      orders: [],
+      services: [],
+    };
     setProjects((current) => [full, ...current]);
     return full;
   }, []);
@@ -558,6 +584,46 @@ export function ProjectsProvider({
     [],
   );
 
+  const linkOrder = useCallback(async (id: string, reference: string): Promise<void> => {
+    const { order } = await postJson<{ order: ProjectOrderView }>(
+      `/api/v1/projects/${id}/orders`,
+      { reference },
+    );
+    setProjects((current) =>
+      current.map((p) => (p.id === id ? { ...p, orders: [order, ...p.orders] } : p)),
+    );
+  }, []);
+
+  const unlinkOrder = useCallback(async (id: string, reference: string): Promise<void> => {
+    /* Pessimistic, like `remove` above: the row only leaves the Orders tab
+       once the server confirms the join is gone. */
+    await deleteJson(`/api/v1/projects/${id}/orders/${reference}`);
+    setProjects((current) =>
+      current.map((p) =>
+        p.id === id ? { ...p, orders: p.orders.filter((o) => o.reference !== reference) } : p,
+      ),
+    );
+  }, []);
+
+  const addDocument = useCallback(async (id: string, fileId: string, label?: string): Promise<void> => {
+    const { document } = await postJson<{ document: ProjectDocumentView }>(
+      `/api/v1/projects/${id}/documents`,
+      { fileId, label },
+    );
+    setProjects((current) =>
+      current.map((p) => (p.id === id ? { ...p, documents: [document, ...p.documents] } : p)),
+    );
+  }, []);
+
+  const removeDocument = useCallback(async (id: string, fileId: string): Promise<void> => {
+    await deleteJson(`/api/v1/projects/${id}/documents/${fileId}`);
+    setProjects((current) =>
+      current.map((p) =>
+        p.id === id ? { ...p, documents: p.documents.filter((d) => d.fileId !== fileId) } : p,
+      ),
+    );
+  }, []);
+
   const acceptLocalImport = useCallback(async (): Promise<void> => {
     setImportBusy(true);
     setImportError(null);
@@ -621,10 +687,31 @@ export function ProjectsProvider({
       addMaterial,
       addTask,
       setTaskStatus,
+      linkOrder,
+      unlinkOrder,
+      addDocument,
+      removeDocument,
       refresh,
       localImport,
     }),
-    [projects, ready, error, get, create, update, remove, addMaterial, addTask, setTaskStatus, refresh, localImport],
+    [
+      projects,
+      ready,
+      error,
+      get,
+      create,
+      update,
+      remove,
+      addMaterial,
+      addTask,
+      setTaskStatus,
+      linkOrder,
+      unlinkOrder,
+      addDocument,
+      removeDocument,
+      refresh,
+      localImport,
+    ],
   );
 
   return (
@@ -644,8 +731,15 @@ export function ProjectsProvider({
  */
 export interface ProjectSummary {
   budgetPaise: number;
-  /** Committed: ordered and delivered lines, not what is merely planned. */
+  /** Orders filed under this project whose money has actually moved — see
+      `projectMoney`. No longer material commitments; those are
+      `committedPaise` below, split out once a project could also spend
+      through Quoin's own checkout rather than only by hand-tracked
+      materials and quotes. */
   spentPaise: number;
+  /** Agreed but not paid through checkout: material lines marked ordered
+      or delivered, plus accepted service quotes. */
+  committedPaise: number;
   /** Priced but not yet ordered. Shown separately so it is not "spent". */
   plannedPaise: number;
   remainingPaise: number;
@@ -715,12 +809,22 @@ export function deriveStage(project: Project): number {
       (t) => t.status !== "todo" && t.phase != null && (PHASE_STAGE[t.phase] ?? -1) >= min,
     );
 
-  if (project.materials.some((m) => m.status === "ordered" || m.status === "delivered")) {
-    stage = Math.max(stage, 1); // Procurement: something has actually been ordered.
+  if (
+    project.materials.some((m) => m.status === "ordered" || m.status === "delivered") ||
+    project.orders.some((o) => moneyMoved(o.status))
+  ) {
+    // Procurement: something has actually been ordered — by hand, or
+    // through a linked order whose money has moved.
+    stage = Math.max(stage, 1);
   }
 
-  if (startedAtOrAbove(2) || project.materials.some((m) => m.status === "delivered")) {
-    stage = Math.max(stage, 2); // Construction: a site trade is under way, or something has arrived.
+  if (
+    startedAtOrAbove(2) ||
+    project.materials.some((m) => m.status === "delivered") ||
+    project.orders.some((o) => o.status === "DELIVERED")
+  ) {
+    // Construction: a site trade is under way, or something has arrived.
+    stage = Math.max(stage, 2);
   }
 
   if (startedAtOrAbove(3)) {
@@ -746,14 +850,16 @@ export function deriveStage(project: Project): number {
 }
 
 export function summarise(project: Project): ProjectSummary {
-  const value = (m: ProjectMaterial) => m.unitPricePaise * m.qty;
-
-  const spentPaise = project.materials
-    .filter((m) => m.status !== "planned")
-    .reduce((sum, m) => sum + value(m), 0);
-  const plannedPaise = project.materials
-    .filter((m) => m.status === "planned")
-    .reduce((sum, m) => sum + value(m), 0);
+  /* One function for this page and the account dashboard — see the doc
+     comment on `projectMoney` for why `spentPaise`/`committedPaise` are
+     different kinds of number rather than slices of one, and why
+     `remainingPaise` is shown negative rather than clamped to zero. */
+  const money = projectMoney({
+    budgetPaise: project.budgetPaise,
+    orders: project.orders,
+    materials: project.materials,
+    services: project.services,
+  });
 
   const tasksTotal = project.tasks.length;
   const tasksDone = project.tasks.filter((t) => t.status === "done").length;
@@ -764,18 +870,16 @@ export function summarise(project: Project): ProjectSummary {
     .sort((a, b) => (a.expectedOn ?? "").localeCompare(b.expectedOn ?? ""));
 
   return {
-    budgetPaise: project.budgetPaise,
-    spentPaise,
-    plannedPaise,
-    /* Can go negative, and is shown negative rather than clamped to zero.
-       A budget that quietly bottoms out at ₹0 hides the one number the
-       customer most needs to see. */
-    remainingPaise: project.budgetPaise - spentPaise,
+    budgetPaise: money.budgetPaise,
+    spentPaise: money.spentPaise,
+    committedPaise: money.committedPaise,
+    plannedPaise: money.plannedPaise,
+    remainingPaise: money.remainingPaise,
     progressPct: tasksTotal === 0 ? null : Math.round((tasksDone / tasksTotal) * 100),
     tasksDone,
     tasksTotal,
     upcoming,
-    overBudget: spentPaise > project.budgetPaise,
+    overBudget: money.overBudget,
     stage: deriveStage(project),
   };
 }

@@ -10,6 +10,8 @@ import {
 } from "@/lib/data/orders";
 import { getAdminOrder } from "@/lib/data/admin-orders";
 import { ApiError, handler, ok, parseBody, requireStaff } from "@/lib/http";
+import { notify } from "@/lib/data/notifications";
+import { formatPrice } from "@/lib/types/catalog";
 
 type Ctx = { params: Promise<{ reference: string }> };
 
@@ -79,6 +81,30 @@ export const POST = handler(async (request, { params }: Ctx) => {
      exact order inside the same request. */
   const order = await getAdminOrder(reference);
   if (!order) throw new Error("Order vanished immediately after its own offline payment");
+
+  /* Best-effort, after the fact — same shape as the webhook's own
+     notification, and swallowed the same way: staff have already been
+     told the order is confirmed by this response, and a bell-icon write
+     failing here must not turn a genuinely recorded payment into a 500
+     for them. `recordOfflinePayment` guarantees at most one CAPTURED
+     payment on this order, so this is the one it just wrote. */
+  try {
+    const payment = order.payments.find(
+      (p) => p.provider === "OFFLINE" && p.status === "CAPTURED",
+    );
+    if (payment) {
+      await notify({
+        userId: order.customer.id,
+        kind: "PAYMENT_SUCCESSFUL",
+        title: "Payment successful",
+        body: `We've received ${formatPrice(order.totalPaise)} for order ${order.reference}.`,
+        href: `/account/orders/${order.reference}`,
+        dedupeKey: `payment:offline:${payment.id}`,
+      });
+    }
+  } catch (error) {
+    console.error("[payments] failed to notify after an offline payment", error);
+  }
 
   return ok({ order });
 });

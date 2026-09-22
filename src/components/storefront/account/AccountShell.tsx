@@ -4,6 +4,7 @@ import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { SectionHead } from "@/components/ui/Section";
 import { cn } from "@/components/ui/cn";
 import { ACCOUNT_SECTIONS } from "@/components/storefront/account/account-sections";
+import { AccountSectionChips } from "@/components/storefront/account/AccountSectionChips";
 
 /**
  * The account area's frame.
@@ -79,33 +80,7 @@ export function AccountShell({
                 overview renders `AccountLinks` instead, which is the same
                 destinations as a proper list; showing both would be the
                 navigation twice above the content. */}
-            <ul
-              className={cn(
-                "rail mb-6 gap-2 px-5 scroll-pl-5 lg:hidden",
-                current === "/account" && "hidden",
-              )}
-            >
-              {ACCOUNT_SECTIONS.map(({ href, label, Icon }) => {
-                const on = href === current;
-                return (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      aria-current={on ? "page" : undefined}
-                      className={cn(
-                        "flex min-h-9 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-caption transition-colors",
-                        on
-                          ? "border-accent-edge bg-accent-wash font-medium text-accent"
-                          : "border-line-soft bg-surface text-muted",
-                      )}
-                    >
-                      <Icon className="size-4" />
-                      {label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+            {current !== "/account" && <AccountSectionChips current={current} />}
           </nav>
 
           <div className="min-w-0 flex-1 px-5 lg:px-0">{children}</div>

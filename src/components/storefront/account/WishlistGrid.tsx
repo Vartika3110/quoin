@@ -40,8 +40,8 @@ export function WishlistGrid() {
     return (
       <EmptyState
         icon={<Heart className="size-6" />}
-        title="Save products you love"
-        action={{ href: "/products", label: "Browse the catalogue" }}
+        title="Save products you want to come back to."
+        action={{ href: "/products", label: "Explore Products" }}
         secondaryAction={{ href: "/categories", label: "Shop by category" }}
       >
         Tap the heart on any product and it waits here — useful when you are

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
+import type { OrderStatus } from "@prisma/client";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -19,11 +20,15 @@ import { Timeline } from "@/components/storefront/projects/Timeline";
 import { StageTracker } from "@/components/storefront/projects/StageTracker";
 import { RoomCalculator } from "@/components/storefront/projects/RoomCalculator";
 import { MoodBoard } from "@/components/storefront/projects/MoodBoard";
+import { JourneyCard } from "@/components/storefront/projects/JourneyCard";
+import { AddMaterialForm } from "@/components/storefront/projects/AddMaterialForm";
+import { OrdersPanel } from "@/components/storefront/projects/OrdersPanel";
+import { ServicesPanel } from "@/components/storefront/projects/ServicesPanel";
+import { DocumentsPanel } from "@/components/storefront/projects/DocumentsPanel";
 import { cn } from "@/components/ui/cn";
 import {
   ArrowRight,
   Briefcase,
-  CheckCircle,
   Document,
   Layers,
   Package,
@@ -39,28 +44,34 @@ import {
   useProjects,
   type MaterialStatus,
   type Project,
+  type ProjectOrder,
   type TaskStatus,
 } from "@/lib/store/projects";
+import { moneyMoved } from "@/lib/orders/status-groups";
+import { bookingGroup } from "@/lib/services/booking-status";
 import { formatPrice } from "@/lib/types/catalog";
+import type { OrderStatusTone } from "@/lib/data/order-history";
 import type { IdeaView } from "@/lib/types/studio";
 
 /**
- * One project, as a dashboard.
+ * One project, as a dashboard — the heart of Quoin: every order, booking,
+ * quote and material for one site, in one place.
  *
- * The sections are tabs rather than a long scroll, because eight sections
+ * The sections are tabs rather than a long scroll, because nine sections
  * stacked is a page nobody reaches the bottom of, and the thing a customer
- * opens this for — "how much is left" — has to be above the fold every
- * time. Overview carries the three figures that answer that; the rest is
- * one tap away.
+ * opens this for — "how much is left, and what is coming" — has to be
+ * above the fold every time. Overview and the top stats carry that; the
+ * rest is one tap away.
  *
- * Every number is derived from the project's own materials and tasks by
- * `summarise`, never stored. A budget with its own "spent" column is a
- * budget that drifts from the lines that made it.
+ * Every number is derived from the project's own materials, orders and
+ * services by `summarise`, never stored. A budget with its own "spent"
+ * column is a budget that drifts from the rows that made it.
  */
 
 type SectionId =
   | "overview"
   | "materials"
+  | "orders"
   | "budget"
   | "tasks"
   | "services"
@@ -71,6 +82,7 @@ type SectionId =
 const SECTIONS: TabItem<SectionId>[] = [
   { id: "overview", label: "Overview" },
   { id: "materials", label: "Materials" },
+  { id: "orders", label: "Orders" },
   { id: "budget", label: "Budget" },
   { id: "tasks", label: "Tasks" },
   { id: "services", label: "Services" },
@@ -82,14 +94,16 @@ const SECTIONS: TabItem<SectionId>[] = [
 /**
  * The four sections a customer opens between visits to the site.
  *
- * Not the first four tabs — "Overview" is where they already are, and
- * "Notes" is not something anyone opens on the way to a delivery.
+ * Not the first four tabs — "Overview" is where they already are. Orders
+ * and Services replace Budget and Tasks here: the top stats already carry
+ * the budget headline, and a repeat visitor checking on a build is more
+ * often chasing a delivery or a booking than re-reading the task board.
  */
 const JUMPS: { id: SectionId; label: string; Icon: typeof Package }[] = [
   { id: "materials", label: "Materials", Icon: Layers },
-  { id: "budget", label: "Budget", Icon: Rupee },
-  { id: "tasks", label: "Tasks", Icon: CheckCircle },
-  { id: "deliveries", label: "Deliveries", Icon: Truck },
+  { id: "orders", label: "Orders", Icon: Package },
+  { id: "services", label: "Services", Icon: Briefcase },
+  { id: "documents", label: "Documents", Icon: Document },
 ];
 
 const MATERIAL_TONE: Record<MaterialStatus, "neutral" | "accent" | "success"> = {
@@ -101,6 +115,8 @@ const MATERIAL_TONE: Record<MaterialStatus, "neutral" | "accent" | "success"> = 
 export function ProjectDashboard({
   id,
   moodboard = [],
+  orderStatusLabel,
+  orderStatusTone,
 }: {
   id: string;
   /** Saved Studio ideas for this account, fetched server-side by the page
@@ -108,6 +124,13 @@ export function ProjectDashboard({
       optional throughout, since "nothing saved yet" and "not fetched"
       render the same empty state either way. */
   moodboard?: IdeaView[];
+  /** `ORDER_STATUS_LABEL`/`ORDER_STATUS_TONE`
+      (`src/lib/data/order-history.ts`), read once by the (server) project
+      page and passed down as plain Records — that module also imports
+      `@/lib/db`, and a value import here, a "use client" boundary, would
+      drag Prisma into the browser bundle. */
+  orderStatusLabel: Record<OrderStatus, string>;
+  orderStatusTone: Record<OrderStatus, OrderStatusTone>;
 }) {
   const { get, ready, error, refresh, setTaskStatus, update, remove } = useProjects();
   const [section, setSection] = useState<SectionId>("overview");
@@ -126,7 +149,7 @@ export function ProjectDashboard({
   if (!ready) {
     return (
       <div className="space-y-6">
-        <StatRowSkeleton count={3} />
+        <StatRowSkeleton count={4} />
         <ListSkeleton rows={3} />
       </div>
     );
@@ -143,6 +166,7 @@ export function ProjectDashboard({
   if (!project) notFound();
 
   const summary = summarise(project);
+  const ordersSpent = project.orders.filter((o) => moneyMoved(o.status));
 
   async function handleToggleTask(taskId: string, status: TaskStatus) {
     setTaskError(null);
@@ -179,23 +203,26 @@ export function ProjectDashboard({
     <div className="space-y-6">
       <Header project={project} />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Budget" value={formatPrice(summary.budgetPaise)} icon={<Rupee className="size-4" />} />
         <Stat
-          label="Progress"
-          value={summary.progressPct != null ? `${summary.progressPct}%` : "—"}
-          hint={`${summary.tasksDone} of ${summary.tasksTotal} tasks`}
-          icon={<Layers className="size-4" />}
+          label="Spent"
+          value={formatPrice(summary.spentPaise)}
+          hint={ordersSpent.length > 0 ? `Across ${ordersSpent.length} ${ordersSpent.length === 1 ? "order" : "orders"}` : "No orders yet"}
+          icon={<Package className="size-4" />}
           tone="accent"
         />
         <Stat
           label="Committed"
-          value={formatPrice(summary.spentPaise)}
+          value={formatPrice(summary.committedPaise)}
           hint={
             summary.plannedPaise > 0
               ? `+ ${formatPrice(summary.plannedPaise)} planned`
-              : "Nothing ordered yet"
+              : summary.committedPaise === 0
+                ? "Nothing committed yet"
+                : undefined
           }
-          icon={<Rupee className="size-4" />}
+          icon={<Layers className="size-4" />}
         />
         <Stat
           label={summary.overBudget ? "Over budget" : "Remaining"}
@@ -207,8 +234,8 @@ export function ProjectDashboard({
       </div>
 
       {/* Phone-only shortcuts into the four sections people actually open,
-          plus whatever is next. The tab strip below still holds all eight,
-          but on a 390px screen it scrolls, and the two sections a customer
+          plus whatever is next. The tab strip below still holds all nine,
+          but on a 390px screen it scrolls, and the sections a customer
           checks daily should not be a swipe away. */}
       <div className="grid grid-cols-4 gap-2 lg:hidden">
         {JUMPS.map(({ id, label, Icon }) => (
@@ -278,6 +305,10 @@ export function ProjectDashboard({
             </Card>
 
             <Card padding="lg">
+              <JourneyCard project={project} />
+            </Card>
+
+            <Card padding="lg">
               <h2 className="font-display text-title-sm font-semibold text-ink">Next up</h2>
               {project.tasks.filter((t) => t.status !== "done").length === 0 ? (
                 <p className="mt-3 text-body-sm text-muted">
@@ -307,9 +338,12 @@ export function ProjectDashboard({
             </Card>
 
             <Card padding="lg" className="lg:col-span-2">
-              <h2 className="font-display mb-4 text-title-sm font-semibold text-ink">Timeline</h2>
+              <h2 className="font-display mb-4 text-title-sm font-semibold text-ink">Tasks</h2>
               <Timeline tasks={project.tasks} onToggle={handleToggleTask} />
             </Card>
+
+            <UpcomingServicesCard project={project} />
+            <RecentOrdersCard project={project} orderStatusLabel={orderStatusLabel} orderStatusTone={orderStatusTone} />
 
             <Card padding="lg" className="lg:col-span-2">
               <div className="mb-4 flex items-baseline justify-between gap-3">
@@ -323,7 +357,11 @@ export function ProjectDashboard({
 
         {section === "materials" && (
           <div className="space-y-4">
-            <MaterialsSection project={project} />
+            <MaterialsSection
+              project={project}
+              orderStatusLabel={orderStatusLabel}
+              orderStatusTone={orderStatusTone}
+            />
             <Card padding="lg">
               <h2 className="font-display text-title-sm font-semibold text-ink">
                 Estimate a room&rsquo;s requirement
@@ -338,14 +376,25 @@ export function ProjectDashboard({
           </div>
         )}
 
+        {section === "orders" && (
+          <OrdersPanel
+            project={project}
+            orderStatusLabel={orderStatusLabel}
+            orderStatusTone={orderStatusTone}
+          />
+        )}
+
         {section === "budget" && (
           <div className="grid gap-4 lg:grid-cols-2">
             <Card padding="lg">
               <BudgetBar summary={summary} />
               <p className="mt-4 text-caption leading-relaxed text-muted">
-                Committed counts material lines you have ordered or received.
-                Planned counts lines that are priced but not yet ordered — they
-                are not spend until they are.
+                Spent counts orders filed under this project whose money has
+                actually moved. Committed counts material lines you have
+                marked ordered or received, plus service quotes you have
+                accepted — agreed, but not paid through checkout. Planned
+                counts lines that are priced but not yet ordered — they are
+                not spend until they are.
               </p>
             </Card>
             <Card padding="lg">
@@ -381,32 +430,13 @@ export function ProjectDashboard({
           </Card>
         )}
 
-        {section === "services" && (
-          <EmptyState
-            icon={<Briefcase className="size-6" />}
-            title="No professionals booked"
-            action={{ href: "/services", label: "Find a professional" }}
-            secondaryAction={{ href: "/consult", label: "Talk to an expert" }}
-          >
-            Architects, contractors and fitters booked through Quoin will
-            appear here against this project, with their visit dates.
-          </EmptyState>
-        )}
+        {section === "services" && <ServicesPanel project={project} />}
 
         {section === "deliveries" && (
           <DeliveriesSection project={project} />
         )}
 
-        {section === "documents" && (
-          <EmptyState
-            icon={<Document className="size-6" />}
-            title="No documents yet"
-            action={{ href: "/upload", label: "Upload a parcha" }}
-          >
-            Drawings, invoices, parchas and specifications for this site will
-            collect here so they are not spread across a phone gallery.
-          </EmptyState>
-        )}
+        {section === "documents" && <DocumentsPanel project={project} />}
 
         {section === "notes" && (
           <Card padding="lg">
@@ -505,6 +535,9 @@ function Header({ project }: { project: Project }) {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-display text-headline font-semibold text-ink">{project.name}</h1>
             {project.isSample && <Badge tone="info">Sample</Badge>}
+            <Badge tone={project.archivedAt ? "neutral" : "success"}>
+              {project.archivedAt ? "Archived" : "Active"}
+            </Badge>
           </div>
           <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted">
             <span>{PROJECT_KIND_LABEL[project.kind]}</span>
@@ -543,63 +576,277 @@ function Header({ project }: { project: Project }) {
   );
 }
 
-function MaterialsSection({ project }: { project: Project }) {
-  if (project.materials.length === 0) {
-    return (
-      <EmptyState
-        icon={<Layers className="size-6" />}
-        title="No materials on this list yet"
-        action={{ href: "/upload", label: "Price a parcha" }}
-        secondaryAction={{ href: "/products", label: "Browse the catalogue" }}
-      >
-        Everything you specify or order against this site collects here, with
-        what it cost and where it has got to.
-      </EmptyState>
-    );
-  }
+function CountTile({ label, count }: { label: string; count: number }) {
+  return (
+    <div className="px-2 py-1 text-center">
+      <p className="nums font-display text-title font-semibold text-ink">{count}</p>
+      <p className="mt-0.5 text-micro text-muted">{label}</p>
+    </div>
+  );
+}
+
+function MaterialsSection({
+  project,
+  orderStatusLabel,
+  orderStatusTone,
+}: {
+  project: Project;
+  orderStatusLabel: Record<OrderStatus, string>;
+  orderStatusTone: Record<OrderStatus, OrderStatusTone>;
+}) {
+  const [addingMaterial, setAddingMaterial] = useState(false);
+
+  /* Purchased/Pending/Delivered count *lines*, not orders — a linked
+     order contributes its real `itemCount` (never the 50-line cap; see
+     the doc comment on `ProjectOrderView.lines`), and a hand-tracked
+     material contributes one line each, so the three counts read the same
+     way a customer reads "12 items" regardless of where a line came from. */
+  const purchasedCount =
+    project.orders
+      .filter((o) => moneyMoved(o.status) && o.status !== "DELIVERED")
+      .reduce((sum, o) => sum + o.itemCount, 0) +
+    project.materials.filter((m) => m.status === "ordered").length;
+  const pendingCount =
+    project.orders
+      .filter((o) => o.status === "PENDING_PAYMENT")
+      .reduce((sum, o) => sum + o.itemCount, 0) +
+    project.materials.filter((m) => m.status === "planned").length;
+  const deliveredCount =
+    project.orders
+      .filter((o) => o.status === "DELIVERED")
+      .reduce((sum, o) => sum + o.itemCount, 0) +
+    project.materials.filter((m) => m.status === "delivered").length;
+
+  const hasAnything = project.orders.length > 0 || project.materials.length > 0;
 
   return (
-    <ul className="divide-y divide-line-hair overflow-hidden rounded-card border border-line-soft bg-surface">
-      {project.materials.map((material) => (
-        <li key={material.id} className="flex items-center gap-3 px-4 py-3">
-          <span className="min-w-0 flex-1">
-            {material.productSlug ? (
-              <Link
-                href={`/p/${material.productSlug}`}
-                className="line-clamp-1 text-body-sm text-ink hover:text-accent"
-              >
-                {material.title}
-              </Link>
-            ) : (
-              <span className="line-clamp-1 text-body-sm text-ink">
-                {material.title}
+    <div className="space-y-4">
+      <Card padding="lg">
+        <div className="grid grid-cols-3 divide-x divide-line-hair">
+          <CountTile label="Purchased" count={purchasedCount} />
+          <CountTile label="Pending" count={pendingCount} />
+          <CountTile label="Delivered" count={deliveredCount} />
+        </div>
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={() => setAddingMaterial((v) => !v)}>
+          <Plus className="size-4" />
+          Add Material
+        </Button>
+        <Button href="/upload" variant="outline" size="sm">
+          Upload Parcha
+        </Button>
+        <Button href="/products" variant="outline" size="sm">
+          Browse Products
+        </Button>
+      </div>
+
+      {addingMaterial && (
+        <Card padding="lg">
+          <AddMaterialForm projectId={project.id} onAdded={() => setAddingMaterial(false)} />
+        </Card>
+      )}
+
+      {!hasAnything ? (
+        <EmptyState
+          icon={<Layers className="size-6" />}
+          title="No materials on this list yet"
+          action={{ href: "/upload", label: "Price a parcha" }}
+          secondaryAction={{ href: "/products", label: "Browse the catalogue" }}
+        >
+          Everything you specify or order against this site collects here, with
+          what it cost and where it has got to.
+        </EmptyState>
+      ) : (
+        <>
+          {project.orders.length > 0 && (
+            <Card padding="lg">
+              <h2 className="font-display text-title-sm font-semibold text-ink">From your orders</h2>
+              <div className="mt-3 space-y-4">
+                {project.orders.map((order) => (
+                  <div key={order.reference}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-caption font-semibold text-ink">
+                        {order.reference}
+                      </span>
+                      <Badge tone={orderStatusTone[order.status]} size="sm">
+                        {orderStatusLabel[order.status]}
+                      </Badge>
+                    </div>
+                    {order.lines.length === 0 ? (
+                      <p className="mt-1 text-micro text-muted">No line details available.</p>
+                    ) : (
+                      <ul className="mt-2 space-y-1.5">
+                        {order.lines.map((line, i) => (
+                          <li
+                            key={i}
+                            className="flex items-baseline justify-between gap-3 text-body-sm"
+                          >
+                            <span className="min-w-0 truncate text-ink">
+                              {line.title}
+                              {line.variantLabel && (
+                                <span className="text-muted"> · {line.variantLabel}</span>
+                              )}
+                            </span>
+                            <span className="nums shrink-0 text-muted">× {line.qty}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {project.materials.length > 0 && (
+            <div>
+              <h2 className="mb-3 font-display text-title-sm font-semibold text-ink">
+                Tracked by hand
+              </h2>
+              <ul className="divide-y divide-line-hair overflow-hidden rounded-card border border-line-soft bg-surface">
+                {project.materials.map((material) => (
+                  <li key={material.id} className="flex items-center gap-3 px-4 py-3">
+                    <span className="min-w-0 flex-1">
+                      {material.productSlug ? (
+                        <Link
+                          href={`/p/${material.productSlug}`}
+                          className="line-clamp-1 text-body-sm text-ink hover:text-accent"
+                        >
+                          {material.title}
+                        </Link>
+                      ) : (
+                        <span className="line-clamp-1 text-body-sm text-ink">
+                          {material.title}
+                        </span>
+                      )}
+                      <span className="nums mt-0.5 block text-micro text-faint">
+                        {material.qty} {material.unit} ·{" "}
+                        {/* A calculator estimate has no catalogue line behind it yet
+                            and is written with `unitPricePaise` unset (0), never a
+                            guessed rupee figure — this says so instead of showing
+                            the misleading "₹0 each" that number would otherwise
+                            read as. */}
+                        {material.unitPricePaise > 0
+                          ? `${formatPrice(material.unitPricePaise)} each`
+                          : "Not priced yet"}
+                      </span>
+                    </span>
+
+                    <Badge tone={MATERIAL_TONE[material.status]} size="sm">
+                      {material.status}
+                    </Badge>
+
+                    <span className="nums w-24 shrink-0 text-right text-body-sm font-semibold text-ink">
+                      {material.unitPricePaise > 0
+                        ? formatPrice(material.unitPricePaise * material.qty)
+                        : "—"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+/** The next two upcoming bookings, chronologically — `bookingGroup` says
+    which services count as "upcoming" at all; this only orders and caps
+    them. Renders nothing when there is none, so the overview grid never
+    shows an empty card. */
+function UpcomingServicesCard({ project }: { project: Project }) {
+  const upcoming = project.services
+    .filter((s) => bookingGroup(s.status) === "upcoming")
+    .slice()
+    .sort((a, b) =>
+      (a.scheduledAt ?? a.preferredDate ?? a.createdAt).localeCompare(
+        b.scheduledAt ?? b.preferredDate ?? b.createdAt,
+      ),
+    )
+    .slice(0, 2);
+
+  if (upcoming.length === 0) return null;
+
+  return (
+    <Card padding="lg">
+      <h2 className="mb-3 font-display text-title-sm font-semibold text-ink">Upcoming services</h2>
+      <ul className="space-y-3">
+        {upcoming.map((service) => (
+          <li key={service.reference}>
+            <Link
+              href={`/account/services/${service.reference}`}
+              className="flex items-center gap-3 rounded-lg px-2 py-1.5 -mx-2 transition-colors hover:bg-hover"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent-wash text-accent">
+                <Briefcase className="size-4.5" />
               </span>
-            )}
-            <span className="nums mt-0.5 block text-micro text-faint">
-              {material.qty} {material.unit} ·{" "}
-              {/* A calculator estimate has no catalogue line behind it yet
-                  and is written with `unitPricePaise` unset (0), never a
-                  guessed rupee figure — this says so instead of showing
-                  the misleading "₹0 each" that number would otherwise
-                  read as. */}
-              {material.unitPricePaise > 0
-                ? `${formatPrice(material.unitPricePaise)} each`
-                : "Not priced yet"}
-            </span>
-          </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-body-sm font-medium text-ink">
+                  {service.serviceName}
+                </span>
+                <span className="nums block text-micro text-muted">
+                  {service.scheduledAt
+                    ? "Scheduled"
+                    : service.preferredDate
+                      ? "Preferred date set"
+                      : "Date to be agreed"}
+                </span>
+              </span>
+              <ArrowRight className="size-4 shrink-0 text-faint" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
 
-          <Badge tone={MATERIAL_TONE[material.status]} size="sm">
-            {material.status}
-          </Badge>
+/** The latest two linked orders — `project.orders` already arrives
+    newest-first from the server, so this only caps it. */
+function RecentOrdersCard({
+  project,
+  orderStatusLabel,
+  orderStatusTone,
+}: {
+  project: Project;
+  orderStatusLabel: Record<OrderStatus, string>;
+  orderStatusTone: Record<OrderStatus, OrderStatusTone>;
+}) {
+  const recent: ProjectOrder[] = project.orders.slice(0, 2);
+  if (recent.length === 0) return null;
 
-          <span className="nums w-24 shrink-0 text-right text-body-sm font-semibold text-ink">
-            {material.unitPricePaise > 0
-              ? formatPrice(material.unitPricePaise * material.qty)
-              : "—"}
-          </span>
-        </li>
-      ))}
-    </ul>
+  return (
+    <Card padding="lg">
+      <h2 className="mb-3 font-display text-title-sm font-semibold text-ink">Recent orders</h2>
+      <ul className="space-y-3">
+        {recent.map((order) => (
+          <li key={order.reference}>
+            <Link
+              href={`/account/orders/${order.reference}`}
+              className="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-hover"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-accent-wash text-accent">
+                <Package className="size-4.5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <span className="font-mono text-body-sm font-medium text-ink">{order.reference}</span>
+                  <Badge tone={orderStatusTone[order.status]} size="sm">
+                    {orderStatusLabel[order.status]}
+                  </Badge>
+                </span>
+                <span className="nums block text-micro text-muted">{formatPrice(order.totalPaise)}</span>
+              </span>
+              <ArrowRight className="size-4 shrink-0 text-faint" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </Card>
   );
 }
 

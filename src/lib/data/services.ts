@@ -20,9 +20,17 @@ import type { ConsultMode } from "@/lib/types/consult";
  *    of invented names with invented ratings is the single most damaging
  *    thing a marketplace can ship.
  *  - **No reviews.** Same reason.
+ *  - **No capacity is promised.** `availability` says a person confirms
+ *    the day by phone, never "3 slots left today" — there is no roster
+ *    behind this app to make that true.
  *
- * Every booking routes to the consultation flow, which is real: it writes
- * a row, mails the team and shows up in the account.
+ * `bookingMode` decides what `POST /api/v1/services/bookings`
+ * (`src/lib/data/service-bookings.ts`) will accept for this slug: `"book"`
+ * takes either a fixed-scope `BOOKING` (a preferred day and window) or a
+ * `QUOTE`; `"quote"` — open-ended trade work nobody can price without
+ * seeing it — takes only a `QUOTE`. Every booking still starts a
+ * conversation, never a contract: nothing here or downstream ever takes a
+ * payment online.
  *
  * The accessors are async and return the shapes a `/api/v1/services`
  * endpoint would, so moving this to the database later is an
@@ -37,7 +45,11 @@ export type ServiceIcon =
   | "painting"
   | "civil"
   | "installation"
-  | "consultation";
+  | "consultation"
+  | "inspection"
+  | "waterproofing";
+
+export type ServiceBookingMode = "book" | "quote";
 
 export interface Service {
   slug: string;
@@ -53,10 +65,27 @@ export interface Service {
   excludes: string[];
   /** How the fee is arrived at. Never a number nobody has agreed to. */
   pricing: string;
-  /** Realistic elapsed time, stated as a range. */
+  /** Realistic elapsed time for the whole job, stated as a range. */
   timeline: string;
-  /** Which consultation mode this service starts from. */
+  /** How long the visit or session itself runs — distinct from
+      `timeline`, which is the job, not the appointment. */
+  duration: string;
+  /** What "booking a day" actually means here. Never a promise of
+      capacity — see the module comment. */
+  availability: string;
+  /** Where Quoin can send someone, stated honestly rather than as a map
+      nobody can act on. */
+  serviceArea: string;
+  /** What the customer needs to have ready — concrete, not "be
+      cooperative". */
+  youProvide: string[];
+  /** Which consultation mode this service starts from, on the old
+      `/consult` flow. Kept for the "Talk to an expert" fallback on a
+      quote-mode service's page — see `ServicePage`. */
   startsWith: ConsultMode;
+  /** Whether `/services/book` offers a fixed booking, a quote, or forces
+      a quote — see the module comment. */
+  bookingMode: ServiceBookingMode;
   /** Catalogue category to shop alongside the service, when there is one. */
   shopCategorySlug?: string;
 }
@@ -81,7 +110,16 @@ const SERVICES: Service[] = [
     ],
     pricing: "Quoted per square foot after the site visit.",
     timeline: "Four to ten weeks, depending on approvals.",
+    duration: "About 90 minutes for the site survey visit.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access for the survey",
+      "Any existing drawings or approvals you already have",
+      "A rough budget range",
+    ],
     startsWith: "site_visit",
+    bookingMode: "quote",
   },
   {
     slug: "interior-design",
@@ -102,7 +140,16 @@ const SERVICES: Service[] = [
     ],
     pricing: "Quoted per room after the site visit.",
     timeline: "Three to six weeks per home.",
+    duration: "About an hour per room, on site.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access, including any rooms still under work",
+      "Photos of the space if it is mid-renovation",
+      "A style or material preference, if you have one",
+    ],
     startsWith: "site_visit",
+    bookingMode: "quote",
     shopCategorySlug: "plywood-laminates",
   },
   {
@@ -121,7 +168,16 @@ const SERVICES: Service[] = [
     excludes: ["Structural alterations without an engineer's drawing"],
     pricing: "Quoted against a measured scope. Materials billed separately.",
     timeline: "Two to twelve weeks by scope.",
+    duration: "Site visit is about an hour; the work itself runs to the quoted timeline.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access with water and power available",
+      "Any structural drawings from an engineer, if the job needs one",
+      "A debris disposal point, if you have one arranged",
+    ],
     startsWith: "site_visit",
+    bookingMode: "quote",
     shopCategorySlug: "cement-steel",
   },
   {
@@ -140,7 +196,16 @@ const SERVICES: Service[] = [
     excludes: ["Utility meter applications and supply upgrades"],
     pricing: "Quoted per point, or per day for repairs.",
     timeline: "Three days to four weeks.",
+    duration: "Site visit is about 45 minutes; repairs are usually same-day.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access with the supply isolated for testing",
+      "The load list or appliances you plan to run",
+      "Existing wiring diagrams, if any",
+    ],
     startsWith: "site_visit",
+    bookingMode: "quote",
     shopCategorySlug: "electricals-lighting",
   },
   {
@@ -159,7 +224,16 @@ const SERVICES: Service[] = [
     excludes: ["Municipal connection work and borewell installation"],
     pricing: "Quoted per point, or per day for repairs.",
     timeline: "Two days to three weeks.",
+    duration: "Site visit is about 45 minutes; repairs are usually same-day.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access with the water supply available",
+      "Sanitaryware or fittings you have already bought",
+      "Existing plumbing drawings, if any",
+    ],
     startsWith: "site_visit",
+    bookingMode: "quote",
     shopCategorySlug: "bathware-plumbing",
   },
   {
@@ -178,8 +252,48 @@ const SERVICES: Service[] = [
     excludes: ["Structural crack repair and damp treatment"],
     pricing: "Quoted per square foot of painted area.",
     timeline: "Three days to two weeks.",
+    duration: "Site visit is about 30 minutes to scope the area.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access with furniture moved clear of the walls",
+      "A colour or finish preference, if you have decided",
+      "A power point nearby for equipment",
+    ],
     startsWith: "site_visit",
+    bookingMode: "quote",
     shopCategorySlug: "paints-finishes",
+  },
+  {
+    slug: "waterproofing",
+    name: "Waterproofing",
+    summary: "Stopping a leak or a damp patch for good, not papering over it.",
+    icon: "waterproofing",
+    description:
+      "A leak is diagnosed before it is treated — the membrane, coving and slope get looked at, not just the patch that stains the ceiling. Applied to roofs, terraces, bathrooms and basements by a contractor who tests the fix before handing it back.",
+    includes: [
+      "Site assessment of the leak or damp area",
+      "Surface preparation and crack treatment",
+      "Waterproofing membrane or coating application",
+      "Water test before sign-off",
+    ],
+    excludes: [
+      "Structural repair of the cause, if one is found",
+      "Tiling or finishing work after treatment",
+    ],
+    pricing: "Quoted against a measured scope. Materials billed separately.",
+    timeline: "Two days to two weeks, by scope.",
+    duration: "Site visit is about 45 minutes.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access to the affected area",
+      "How long the leak or damp has been there",
+      "Access to the roof, terrace or bathroom, as relevant",
+    ],
+    startsWith: "site_visit",
+    bookingMode: "quote",
+    shopCategorySlug: "waterproofing",
   },
   {
     slug: "installation",
@@ -187,7 +301,7 @@ const SERVICES: Service[] = [
     summary: "Fitting what you bought — from a single mixer to a full kitchen.",
     icon: "installation",
     description:
-      "A fitter attends with the right tools for what is being installed, and takes the packaging away. Booked against a date rather than quoted, because the scope is known before anyone arrives.",
+      "A fitter attends with the right tools for what is being installed, and takes the packaging away. Booked against a preferred day rather than quoted, because the scope is known before anyone arrives.",
     includes: [
       "Fitting of the products in your order",
       "Testing and demonstration on completion",
@@ -196,7 +310,45 @@ const SERVICES: Service[] = [
     excludes: ["Civil or electrical alterations needed to make an item fit"],
     pricing: "Booked per visit. The fee is shown before you confirm.",
     timeline: "Same week, in serviceable areas.",
+    duration: "A single visit, usually under two hours.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "The product you bought from Quoin, on site",
+      "Clear access to where it will be fitted",
+      "A power or water point nearby, if the product needs one",
+    ],
     startsWith: "site_visit",
+    bookingMode: "book",
+  },
+  {
+    slug: "site-inspection",
+    name: "Site inspection",
+    summary: "A professional looks at the site before anything is booked or quoted.",
+    icon: "inspection",
+    description:
+      "A visit to assess condition, measurements and access — before you commit to a quote or a booking. Useful before buying, before a renovation starts, or before a disagreement over what is actually going on gets expensive.",
+    includes: [
+      "A walk-through of the site with a professional",
+      "Photographs and notes on condition",
+      "A short written summary of what was seen",
+    ],
+    excludes: [
+      "No repair or construction work — this is inspection only",
+      "No structural certification or engineering sign-off",
+    ],
+    pricing: "Quoted before the visit is confirmed. Nothing is charged online.",
+    timeline: "Usually within a week of booking.",
+    duration: "About 30 to 45 minutes on site.",
+    availability: "Your preferred day is confirmed by a person at Quoin before anyone visits.",
+    serviceArea: "Areas Quoin currently serves.",
+    youProvide: [
+      "Site access on the confirmed day",
+      "Any drawings or previous quotes you already have",
+      "Someone available on site to answer questions",
+    ],
+    startsWith: "site_visit",
+    bookingMode: "book",
   },
   {
     slug: "consultation",
@@ -214,7 +366,16 @@ const SERVICES: Service[] = [
     excludes: ["Nothing is measured on a call — a quote needs a site visit"],
     pricing: "Free.",
     timeline: "Usually within 48 hours.",
+    duration: "Twenty minutes, on video.",
+    availability: "Your preferred day is confirmed by a person at Quoin before the call.",
+    serviceArea: "Available anywhere — this is a video call, not a site visit.",
+    youProvide: [
+      "Photos or a video of the space",
+      "A rough budget range",
+      "Your questions, written down if you can",
+    ],
     startsWith: "video",
+    bookingMode: "book",
   },
 ];
 

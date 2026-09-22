@@ -4,6 +4,10 @@ import type {
   ProjectKind as DbProjectKind,
   ProjectTaskStatus as DbTaskStatus,
   ProjectMaterialStatus as DbMaterialStatus,
+  OrderStatus,
+  ServiceBookingKind,
+  ServiceBookingStatus,
+  ConsultSlot,
 } from "@prisma/client";
 import { db } from "@/lib/db";
 import type { Paise } from "@/lib/types/catalog";
@@ -212,10 +216,48 @@ export interface ProjectDocumentView {
   createdAt: string;
 }
 
+/** One order line, frozen at sale — see the model comment on `OrderLine`
+    for why there is no relation to a variant to follow instead. */
+export interface ProjectOrderLineView {
+  title: string;
+  variantLabel: string;
+  qty: number;
+  productSlug: string;
+  linePaise: Paise;
+}
+
 export interface ProjectOrderView {
   reference: string;
-  status: string;
+  status: OrderStatus;
   totalPaise: Paise;
+  createdAt: string;
+  /** Null until staff commit to a day — see the model comment on
+      `Order.expectedDeliveryOn`. The dashboard says "date confirmed on
+      call" for null rather than computing one. */
+  expectedDeliveryOn: string | null;
+  /** The real count of lines on the order — never capped, unlike
+      `lines` below, so a project with a 60-line order still says 60. */
+  itemCount: number;
+  /** Capped at 50: a hub card, not the order itself — the full line list
+      already exists at `/account/orders/{reference}`. */
+  lines: ProjectOrderLineView[];
+}
+
+/** A booking or quote request against this project. Wire vocabulary is
+    the `ServiceBooking` enums as-is (`REQUESTED`, `QUOTE_PENDING`, …),
+    the same "no lower/upper mapping" choice `OrderStatus` already makes
+    on `ProjectOrderView.status` above — unlike `ProjectKind`, neither
+    enum has a pre-existing lower-snake client vocabulary to preserve. */
+export interface ProjectServiceView {
+  reference: string;
+  serviceSlug: string;
+  serviceName: string;
+  kind: ServiceBookingKind;
+  status: ServiceBookingStatus;
+  preferredDate: string | null;
+  preferredSlot: ConsultSlot | null;
+  scheduledAt: string | null;
+  quotePaise: Paise | null;
   createdAt: string;
 }
 
@@ -241,6 +283,7 @@ export interface ProjectView {
 export interface ProjectDetailView extends ProjectView {
   documents: ProjectDocumentView[];
   orders: ProjectOrderView[];
+  services: ProjectServiceView[];
 }
 
 /** ---- Row → view -----------------------------------------------------------
@@ -296,28 +339,74 @@ const PROJECT_SELECT = {
   milestones: { orderBy: { date: "asc" }, select: MILESTONE_SELECT },
 } as const satisfies Prisma.ProjectSelect;
 
-const PROJECT_DETAIL_SELECT = {
-  ...PROJECT_SELECT,
-  documents: {
-    orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      fileId: true,
-      label: true,
-      createdAt: true,
-      file: { select: { originalName: true, contentType: true, sizeBytes: true } },
+const ORDER_LINE_SELECT = {
+  title: true,
+  variantLabel: true,
+  qty: true,
+  productSlug: true,
+  linePaise: true,
+} as const satisfies Prisma.OrderLineSelect;
+
+const SERVICE_SELECT = {
+  reference: true,
+  serviceSlug: true,
+  serviceName: true,
+  kind: true,
+  status: true,
+  preferredDate: true,
+  preferredSlot: true,
+  scheduledAt: true,
+  quotePaise: true,
+  createdAt: true,
+} as const satisfies Prisma.ServiceBookingSelect;
+
+/**
+ * The detail select is a function of `userId`, unlike `PROJECT_SELECT`
+ * above, because `serviceBookings` needs it inside the nested `where` —
+ * see the file-level note on `ProjectServiceView` for why a booking's own
+ * `userId` is re-checked here rather than trusted from "it hangs off a
+ * project this caller already owns".
+ */
+function projectDetailSelect(userId: string) {
+  return {
+    ...PROJECT_SELECT,
+    documents: {
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        fileId: true,
+        label: true,
+        createdAt: true,
+        file: { select: { originalName: true, contentType: true, sizeBytes: true } },
+      },
     },
-  },
-  orders: {
-    orderBy: { createdAt: "desc" },
-    select: {
-      order: { select: { reference: true, status: true, totalPaise: true, createdAt: true } },
+    orders: {
+      orderBy: { createdAt: "desc" },
+      select: {
+        order: {
+          select: {
+            reference: true,
+            status: true,
+            totalPaise: true,
+            createdAt: true,
+            expectedDeliveryOn: true,
+            /* Capped — see the doc comment on `ProjectOrderView.lines`. */
+            lines: { take: 50, select: ORDER_LINE_SELECT },
+            _count: { select: { lines: true } },
+          },
+        },
+      },
     },
-  },
-} as const satisfies Prisma.ProjectSelect;
+    serviceBookings: {
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      select: SERVICE_SELECT,
+    },
+  } as const satisfies Prisma.ProjectSelect;
+}
 
 type ProjectRow = Prisma.ProjectGetPayload<{ select: typeof PROJECT_SELECT }>;
-type ProjectDetailRow = Prisma.ProjectGetPayload<{ select: typeof PROJECT_DETAIL_SELECT }>;
+type ProjectDetailRow = Prisma.ProjectGetPayload<{ select: ReturnType<typeof projectDetailSelect> }>;
 
 function taskToView(row: ProjectRow["tasks"][number]): ProjectTaskView {
   return {
@@ -374,6 +463,37 @@ function projectToView(row: ProjectRow): ProjectView {
   };
 }
 
+function orderLineToView(row: {
+  title: string;
+  variantLabel: string;
+  qty: number;
+  productSlug: string;
+  linePaise: number;
+}): ProjectOrderLineView {
+  return {
+    title: row.title,
+    variantLabel: row.variantLabel,
+    qty: row.qty,
+    productSlug: row.productSlug,
+    linePaise: row.linePaise,
+  };
+}
+
+function serviceToView(row: ProjectDetailRow["serviceBookings"][number]): ProjectServiceView {
+  return {
+    reference: row.reference,
+    serviceSlug: row.serviceSlug,
+    serviceName: row.serviceName,
+    kind: row.kind,
+    status: row.status,
+    preferredDate: row.preferredDate ? fromCalendarDate(row.preferredDate) : null,
+    preferredSlot: row.preferredSlot,
+    scheduledAt: row.scheduledAt ? row.scheduledAt.toISOString() : null,
+    quotePaise: row.quotePaise,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
 function projectDetailToView(row: ProjectDetailRow): ProjectDetailView {
   return {
     ...projectToView(row),
@@ -391,7 +511,13 @@ function projectDetailToView(row: ProjectDetailRow): ProjectDetailView {
       status: po.order.status,
       totalPaise: po.order.totalPaise,
       createdAt: po.order.createdAt.toISOString(),
+      expectedDeliveryOn: po.order.expectedDeliveryOn
+        ? fromCalendarDate(po.order.expectedDeliveryOn)
+        : null,
+      itemCount: po.order._count.lines,
+      lines: po.order.lines.map(orderLineToView),
     })),
+    services: row.serviceBookings.map(serviceToView),
   };
 }
 
@@ -427,7 +553,7 @@ export async function getProjectForUser(
 ): Promise<ProjectDetailView | null> {
   const row = await db.project.findFirst({
     where: { id, userId },
-    select: PROJECT_DETAIL_SELECT,
+    select: projectDetailSelect(userId),
   });
   return row ? projectDetailToView(row) : null;
 }
@@ -852,7 +978,16 @@ export async function linkOrder(
 
   const order = await db.order.findFirst({
     where: { reference, userId },
-    select: { id: true, reference: true, status: true, totalPaise: true, createdAt: true },
+    select: {
+      id: true,
+      reference: true,
+      status: true,
+      totalPaise: true,
+      createdAt: true,
+      expectedDeliveryOn: true,
+      lines: { take: 50, select: ORDER_LINE_SELECT },
+      _count: { select: { lines: true } },
+    },
   });
   if (!order) throw new ProjectOrderLinkNotFoundError();
 
@@ -870,6 +1005,9 @@ export async function linkOrder(
     status: order.status,
     totalPaise: order.totalPaise,
     createdAt: order.createdAt.toISOString(),
+    expectedDeliveryOn: order.expectedDeliveryOn ? fromCalendarDate(order.expectedDeliveryOn) : null,
+    itemCount: order._count.lines,
+    lines: order.lines.map(orderLineToView),
   };
 }
 

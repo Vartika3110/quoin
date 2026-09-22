@@ -16,6 +16,7 @@ import {
   AddressPicker,
   type Address,
 } from "@/components/storefront/checkout/AddressPicker";
+import { OrderPlaced, type PlacedState } from "@/components/storefront/checkout/OrderPlaced";
 import { cn } from "@/components/ui/cn";
 import {
   Alert,
@@ -24,7 +25,6 @@ import {
   Calendar,
   Cart,
   Check,
-  CheckCircle,
   Clock,
   CreditCard,
   Headset,
@@ -37,6 +37,7 @@ import { GROUP_PROMISE, useCart } from "@/lib/store/cart";
 import { formatPrice, type FulfilmentType } from "@/lib/types/catalog";
 import type { Quote } from "@/lib/data/checkout";
 import { basketKey } from "@/components/storefront/checkout/idempotency";
+import { track } from "@/lib/analytics";
 
 /**
  * Checkout.
@@ -273,11 +274,8 @@ interface VerifyResponse {
  * involved and so no `Payment` row. `online`'s order was written the
  * moment "Pay" was pressed, before Razorpay's modal ever opened, and
  * `verified`/`status` are what make its copy honest rather than
- * optimistic. See `Placed` below.
+ * optimistic. See `OrderPlaced`, which owns the type.
  */
-type PlacedState =
-  | { kind: "callback"; reference: string }
-  | { kind: "online"; reference: string; status: string | null; verified: boolean };
 
 export function CheckoutFlow({
   isSignedIn,
@@ -333,6 +331,18 @@ export function CheckoutFlow({
     }
     return idempotencyRef.current.key;
   }
+
+  /* Fired once per visit to this screen with something to check out, not
+     once per render of it: `lines` is a new array on every cart read, so
+     gating on a ref rather than re-deriving "have I already sent this"
+     from state is what keeps a re-render from ever counting as a second
+     checkout starting. */
+  const checkoutStartedFiredRef = useRef(false);
+  useEffect(() => {
+    if (!ready || lines.length === 0 || checkoutStartedFiredRef.current) return;
+    checkoutStartedFiredRef.current = true;
+    track("checkout_started", { itemCount: lines.length, subtotalPaise });
+  }, [ready, lines, subtotalPaise]);
 
   /* Priced by the server the moment the cart is known, not at the last
      step: a customer should meet a price change on the first screen, when
@@ -404,25 +414,38 @@ export function CheckoutFlow({
     setPlacing(true);
 
     try {
-      const res = await fetch("/api/v1/checkout/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          addressId: address.id,
-          lines: lines.map((l) => ({
-            productSlug: l.productSlug,
-            variantId: l.variantId,
-            qty: l.qty,
-          })),
-          idempotencyKey: idempotencyKeyFor(address.id),
-          paymentMode: payment === "online" ? "online" : "callback",
-          /* Only meaningful when the account has no phone of its own —
-             see `needsContactPhone`. Sent regardless of that flag is
-             harmless too: the route ignores both whenever a verified or
-             already-saved number exists. */
-          ...(needsContactPhone ? { contactPhone, saveContactPhone } : {}),
-        }),
-      });
+      let res: Response;
+      try {
+        res = await fetch("/api/v1/checkout/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            addressId: address.id,
+            lines: lines.map((l) => ({
+              productSlug: l.productSlug,
+              variantId: l.variantId,
+              qty: l.qty,
+            })),
+            idempotencyKey: idempotencyKeyFor(address.id),
+            paymentMode: payment === "online" ? "online" : "callback",
+            /* Only meaningful when the account has no phone of its own —
+               see `needsContactPhone`. Sent regardless of that flag is
+               harmless too: the route ignores both whenever a verified or
+               already-saved number exists. */
+            ...(needsContactPhone ? { contactPhone, saveContactPhone } : {}),
+          }),
+        });
+      } catch {
+        /* The request never reached the server at all — a dropped Wi-Fi,
+           not a rejection from it. The idempotency key above already
+           guarantees a retry cannot double-write the order, so the fix is
+           just to say that and let the same press-Pay path run again,
+           rather than the generic message below, which reads as "did
+           this even go through?" precisely when it did not. */
+        throw new Error(
+          "Connection lost before we heard back. Press Pay again — it won't create a second order.",
+        );
+      }
       const body = (await res.json()) as {
         data?: OrderPlacedResponse;
         error?: { message: string; fields?: Record<string, string> };
@@ -474,6 +497,15 @@ export function CheckoutFlow({
         throw new Error("We could not load the payment screen. Please try again.");
       }
 
+      /* Scoped to this one Razorpay instance rather than a component-level
+         ref: a fresh `rzp` — and so a fresh `handoffHandled` — is created
+         every time `placeOrder` runs, which is exactly the "press Pay
+         again" path. What this guards against is Razorpay itself calling
+         `handler` twice for the *same* instance, which it has been known
+         to do on a slow or flaky close; a second call must not open a
+         second `/checkout/verify` race against the first. */
+      let handoffHandled = false;
+
       const rzp = new window.Razorpay({
         key: order.razorpay.keyId,
         order_id: order.razorpay.orderId,
@@ -482,6 +514,8 @@ export function CheckoutFlow({
         name: "Quoin",
         description: `Order ${order.reference}`,
         handler: (response) => {
+          if (handoffHandled) return;
+          handoffHandled = true;
           void confirmHandoff(response, order.reference);
         },
         modal: {
@@ -494,6 +528,7 @@ export function CheckoutFlow({
             setOrderError(
               `Payment window closed before finishing. Order ${order.reference} is saved — press Pay again to retry.`,
             );
+            track("payment_failed", { reference: order.reference, reason: "dismissed" });
           },
         },
       });
@@ -503,8 +538,13 @@ export function CheckoutFlow({
         setOrderError(
           `The payment did not go through. Order ${order.reference} is saved — press Pay again to retry.`,
         );
+        track("payment_failed", { reference: order.reference, reason: "failed" });
       });
 
+      track("payment_started", {
+        reference: order.reference,
+        amountPaise: order.razorpay.amountPaise,
+      });
       rzp.open();
     } catch (error) {
       setPlacing(false);
@@ -552,13 +592,14 @@ export function CheckoutFlow({
 
     /* The order exists regardless — it was written before the modal ever
        opened — so the reference is still shown. Only the *confidence* of
-       the copy changes; see `Placed`. */
+       the copy changes; see `OrderPlaced`. */
+    track("payment_failed", { reference, reason: "unverified" });
     setPlacedState({ kind: "online", reference, status: null, verified: false });
   }
 
   if (!ready) return <ListSkeleton rows={3} />;
 
-  if (placedState) return <Placed state={placedState} />;
+  if (placedState) return <OrderPlaced state={placedState} />;
 
   if (lines.length === 0) {
     return (
@@ -1098,63 +1139,3 @@ function OrderTotals({
   );
 }
 
-function Placed({ state }: { state: PlacedState }) {
-  if (state.kind === "callback") {
-    return (
-      <div className="anim-rise mx-auto max-w-md text-center">
-        <span className="mx-auto grid size-14 place-items-center rounded-full bg-success-wash text-success">
-          <CheckCircle className="size-7" />
-        </span>
-        <h2 className="font-display mt-5 text-headline font-semibold text-ink">
-          Your order is with us
-        </h2>
-        <p className="mt-3 text-body leading-relaxed text-muted">
-          Order{" "}
-          <span className="nums font-semibold text-ink">{state.reference}</span>{" "}
-          is saved. An expert calls back within the hour to take payment and
-          confirm each delivery date — have this reference ready. Nothing has
-          been charged yet.
-        </p>
-        <div className="mt-7 flex flex-wrap justify-center gap-2">
-          <Button href="/projects">Track it in a project</Button>
-          <Button href="/products" variant="outline">
-            Keep browsing
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const { reference, status, verified } = state;
-  const paid = status === "PAID";
-
-  /* Never a claim stronger than what is actually known. `verified` only
-     means the browser's own handoff checked out — the webhook, elsewhere,
-     is what actually moves `status` to PAID, and it can genuinely lag this
-     screen by a few seconds. See the module doc comment. */
-  const heading = paid
-    ? "Your order is confirmed"
-    : "Payment received, confirming your order";
-
-  const detail = paid
-    ? `Order ${reference} is paid.`
-    : verified
-      ? `Order ${reference} — your payment was received and is being confirmed. This finishes automatically within moments.`
-      : `Order ${reference} is saved. We could not confirm the payment immediately — check your orders shortly, and if it still looks unpaid, contact support with this reference.`;
-
-  return (
-    <div className="anim-rise mx-auto max-w-md text-center">
-      <span className="mx-auto grid size-14 place-items-center rounded-full bg-success-wash text-success">
-        <CheckCircle className="size-7" />
-      </span>
-      <h2 className="font-display mt-5 text-headline font-semibold text-ink">{heading}</h2>
-      <p className="mt-3 text-body leading-relaxed text-muted">{detail}</p>
-      <div className="mt-7 flex flex-wrap justify-center gap-2">
-        <Button href="/account/orders">View my orders</Button>
-        <Button href="/products" variant="outline">
-          Keep browsing
-        </Button>
-      </div>
-    </div>
-  );
-}

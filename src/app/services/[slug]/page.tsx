@@ -8,13 +8,25 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Badge";
 import { StickyBar } from "@/components/storefront/StickyBar";
-import { Alert, ArrowRight, CheckCircle, Clock, Rupee } from "@/components/icons";
+import { TrackEvent } from "@/components/analytics/TrackEvent";
+import {
+  Alert,
+  ArrowRight,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Pin,
+  Rupee,
+} from "@/components/icons";
 import { getServiceBySlug, listServices } from "@/lib/data/services";
-import { CONSULT_MODE_INFO } from "@/lib/types/consult";
+import { one } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
 
-type Ctx = { params: Promise<{ slug: string }> };
+type Ctx = {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
   const { slug } = await params;
@@ -26,17 +38,24 @@ export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
   };
 }
 
-export default async function ServicePage({ params }: Ctx) {
+export default async function ServicePage({ params, searchParams }: Ctx) {
   const { slug } = await params;
   const service = await getServiceBySlug(slug);
   if (!service) notFound();
 
+  const sp = await searchParams;
+  const projectId = one(sp.project);
+  const projectQuery = projectId ? `&project=${encodeURIComponent(projectId)}` : "";
+
   const all = await listServices();
   const others = all.filter((s) => s.slug !== slug).slice(0, 3);
-  const mode = CONSULT_MODE_INFO[service.startsWith];
+
+  const bookHref = `/services/book?service=${slug}${projectQuery}`;
+  const quoteHref = `/services/book?service=${slug}&mode=quote${projectQuery}`;
 
   return (
     <AppShell>
+      <TrackEvent event="service_viewed" props={{ service: slug }} />
       <div className="pt-4 lg:pt-6">
         <div className="mb-4 px-5 lg:px-0">
           <Breadcrumb
@@ -89,23 +108,52 @@ export default async function ServicePage({ params }: Ctx) {
             </section>
 
             <section className="mt-10">
-              <h2 className="font-display text-title font-semibold text-ink">How it starts</h2>
+              <h2 className="font-display text-title font-semibold text-ink">
+                What you need to provide
+              </h2>
+              <ul className="mt-4 space-y-2.5">
+                {service.youProvide.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5">
+                    <CheckCircle className="mt-0.5 size-4 shrink-0 text-accent" />
+                    <span className="text-body leading-relaxed text-ink">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="mt-10">
+              <h2 className="font-display text-title font-semibold text-ink">
+                Duration, availability and area
+              </h2>
               <Card padding="lg" className="mt-4">
-                <p className="text-body-sm font-semibold text-ink">{mode.title}</p>
-                <p className="mt-1 text-caption text-muted">{mode.summary}</p>
-                <dl className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div>
-                    <dt className="text-micro text-muted">Duration</dt>
-                    <dd className="mt-0.5 text-body-sm text-ink">{mode.duration}</dd>
+                <dl className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex gap-3">
+                    <Clock className="mt-0.5 size-4 shrink-0 text-muted" />
+                    <div>
+                      <dt className="text-micro text-muted">Duration</dt>
+                      <dd className="mt-0.5 text-body-sm text-ink">{service.duration}</dd>
+                    </div>
                   </div>
-                  <div>
-                    <dt className="text-micro text-muted">Fee</dt>
-                    <dd className="mt-0.5 text-body-sm text-ink">{mode.price}</dd>
+                  <div className="flex gap-3">
+                    <Calendar className="mt-0.5 size-4 shrink-0 text-muted" />
+                    <div>
+                      <dt className="text-micro text-muted">Availability</dt>
+                      <dd className="mt-0.5 text-body-sm text-ink">{service.availability}</dd>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 sm:col-span-2">
+                    <Pin className="mt-0.5 size-4 shrink-0 text-muted" />
+                    <div>
+                      <dt className="text-micro text-muted">Service area</dt>
+                      <dd className="mt-0.5 text-body-sm text-ink">
+                        {service.serviceArea}{" "}
+                        <a href="/consult" className="text-accent">
+                          Check your area
+                        </a>
+                      </dd>
+                    </div>
                   </div>
                 </dl>
-                <p className="mt-4 border-t border-line-hair pt-3 text-caption leading-relaxed text-muted">
-                  {mode.limit}
-                </p>
               </Card>
             </section>
           </div>
@@ -118,7 +166,7 @@ export default async function ServicePage({ params }: Ctx) {
                 <div>
                   <dt className="flex items-center gap-1.5 text-micro font-semibold uppercase tracking-wide text-muted">
                     <Rupee className="size-3.5" />
-                    Pricing
+                    Starting price
                   </dt>
                   <dd className="mt-1 text-body leading-relaxed text-ink">
                     {service.pricing}
@@ -135,15 +183,31 @@ export default async function ServicePage({ params }: Ctx) {
                 </div>
               </dl>
 
-              <Button href="/consult" block size="lg" className="mt-6">
-                Book a {mode.title.toLowerCase()}
-              </Button>
+              {service.bookingMode === "book" ? (
+                <>
+                  <Button href={bookHref} block size="lg" className="mt-6">
+                    Book Service
+                  </Button>
+                  <Button href={quoteHref} block variant="outline" className="mt-2">
+                    Request a Quote
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button href={quoteHref} block size="lg" className="mt-6">
+                    Request a Quote
+                  </Button>
+                  <Button href="/consult" block variant="outline" className="mt-2">
+                    Talk to an expert
+                  </Button>
+                </>
+              )}
 
               {service.shopCategorySlug && (
                 <Button
                   href={`/c/${service.shopCategorySlug}`}
                   block
-                  variant="outline"
+                  variant="ghost"
                   className="mt-2"
                 >
                   Shop the materials
@@ -151,8 +215,8 @@ export default async function ServicePage({ params }: Ctx) {
               )}
 
               <p className="mt-4 text-micro leading-relaxed text-faint">
-                Booking starts a conversation, not a contract. Nothing is
-                charged until a scope is agreed.
+                Nothing is charged online. A booking or a quote request only
+                starts the conversation.
               </p>
             </Card>
           </aside>
@@ -180,8 +244,12 @@ export default async function ServicePage({ params }: Ctx) {
             </p>
             <p className="truncate text-micro text-muted">{service.pricing}</p>
           </div>
-          <Button href="/consult" size="lg" className="shrink-0">
-            Book
+          <Button
+            href={service.bookingMode === "book" ? bookHref : quoteHref}
+            size="lg"
+            className="shrink-0"
+          >
+            {service.bookingMode === "book" ? "Book" : "Get a quote"}
             <ArrowRight className="size-4" />
           </Button>
         </StickyBar>

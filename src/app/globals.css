@@ -1,5 +1,37 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------- 0. app mode
+
+   `app:` — true when Quoin is running as the installed app rather than as
+   a page in a browser.
+
+   This is a media query and not a cookie on purpose. The obvious
+   alternative is to read the `?source=pwa` the manifest's `start_url`
+   carries and remember it, but on Android the installed app shares its
+   cookie jar with Chrome: one visit through the icon would then dress the
+   browser tab up as the app for as long as the cookie lived. The display
+   mode is a property of the *window*, so it is right in both directions,
+   costs no JavaScript, and is already true at first paint — nothing here
+   corrects itself after hydration.
+
+   `fullscreen` and `minimal-ui` are here because a manifest asking for
+   `standalone` does not always get it: some launchers hand back one of
+   the neighbouring modes, and all three mean the same thing to us — no
+   URL bar, no browser tabs, our chrome is the only chrome.
+--------------------------------------------------------------------------- */
+
+@custom-variant app {
+  @media (display-mode: standalone) {
+    @slot;
+  }
+  @media (display-mode: fullscreen) {
+    @slot;
+  }
+  @media (display-mode: minimal-ui) {
+    @slot;
+  }
+}
+
 /* ==========================================================================
    QUOIN DESIGN SYSTEM
    --------------------------------------------------------------------------
@@ -8,6 +40,7 @@
    needed once it is still a token, because the second use always arrives.
 
    Layers, in order:
+     0. App mode     — the `app:` variant, registered before anything uses it
      1. Palette      — the brand's colours, light and dark
      2. Elevation    — shadows, which are not colour-independent
      3. Scale        — type, space, radius, motion
@@ -506,6 +539,23 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Installed, the page stops behaving like a page.
+
+   Two things give a web app away the moment a thumb touches it: the
+   whole document rubber-bands at the top of a list, and dragging down on
+   a scrolled-to-top screen fires the browser's pull-to-refresh, which
+   throws away the app's client state to re-fetch a page it already has.
+   Neither exists in a native app and neither is wanted here.
+
+   Only under `display-mode`, because in a browser tab pull-to-refresh is
+   the visitor's own reload gesture and is not ours to take away. */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
 ::selection {
   background: var(--quoin-accent-wash-strong);
   color: var(--quoin-text);
@@ -625,6 +675,21 @@ body {
       0 1px 0 0 var(--quoin-border-soft),
       var(--quoin-shadow-sm);
   }
+}
+
+/* The sticky header clears the iOS status bar.
+
+   `appleWebApp.statusBarStyle` is `black-translucent`, which is what lets
+   the installed app paint under the clock instead of sitting below a
+   solid band — and which means the top of the page is *behind* the clock
+   until something reserves the space. Without this the header's own row
+   of controls shares its pixels with the carrier name and the battery.
+
+   Not scoped to `app:`, because it does not need to be: in a browser tab
+   the chrome already covers that inset and `env(safe-area-inset-top)`
+   resolves to 0, so this costs a rule and changes nothing there. */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
 }
 
 /* Bottom nav sits above the iOS home indicator on installed PWAs. */

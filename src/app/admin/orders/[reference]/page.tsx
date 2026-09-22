@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { OfflinePaymentForm } from "@/components/admin/OfflinePaymentForm";
+import { DeliveryDateForm } from "@/components/admin/DeliveryDateForm";
 import { requireStaffPage } from "@/lib/auth/staff";
+import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/types/catalog";
 import {
   ORDER_STATUS_LABEL,
@@ -51,6 +53,18 @@ export default async function AdminOrderPage({ params }: Ctx) {
   const { reference } = await params;
   const order = await getAdminOrder(reference);
   if (!order) notFound();
+
+  /* `AdminOrderDetail` (src/lib/data/admin-orders.ts) does not carry
+     `expectedDeliveryOn` — nothing there reads it yet — so this page
+     reads the one extra column itself rather than widening that
+     module's projection for a single field only this card needs. */
+  const deliveryRow = await db.order.findUnique({
+    where: { id: order.id },
+    select: { expectedDeliveryOn: true },
+  });
+  const expectedDeliveryOn = deliveryRow?.expectedDeliveryOn
+    ? deliveryRow.expectedDeliveryOn.toISOString().slice(0, 10)
+    : null;
 
   const nextStatusOptions = legalNextStatuses(order.status).map((value) => ({
     value,
@@ -233,6 +247,11 @@ export default async function AdminOrderPage({ params }: Ctx) {
           <Card tone="sunk">
             <CardHeader title="Change status" />
             <OrderStatusForm reference={order.reference} options={nextStatusOptions} />
+          </Card>
+
+          <Card tone="sunk">
+            <CardHeader title="Delivery" />
+            <DeliveryDateForm reference={order.reference} expectedDeliveryOn={expectedDeliveryOn} />
           </Card>
 
           <Card>

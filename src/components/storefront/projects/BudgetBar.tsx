@@ -4,26 +4,29 @@ import type { ProjectSummary } from "@/lib/store/projects";
 /**
  * The budget, as one bar.
  *
- * Three segments — committed, planned, and what is left — because those
- * are three genuinely different states and a single "spent" figure hides
- * the middle one. A customer with ₹3L committed and ₹2L sitting in a
- * material list they have not ordered is not in the same position as one
- * with ₹3L committed and nothing planned, and a two-segment bar says they
- * are.
+ * Four segments — spent, committed, planned, and what is left — because
+ * those are four genuinely different states and a single "spent" figure
+ * hides the other three. Spent is money that has actually moved through
+ * Quoin's own checkout; committed is agreed but not paid that way (a
+ * material marked ordered by hand, an accepted service quote); planned is
+ * priced but not yet ordered, and is never subtracted from the budget — see
+ * `projectMoney` (`src/lib/projects/money.ts`) for the definitions this bar
+ * only draws.
  *
- * Drawn with CSS rather than a chart library: three widths and a legend
- * do not justify 40kB of JavaScript, and the bar has to render on the
- * server anyway.
+ * Drawn with CSS rather than a chart library: four widths and a legend do
+ * not justify 40kB of JavaScript, and the bar has to render on the server
+ * anyway.
  */
 export function BudgetBar({ summary }: { summary: ProjectSummary }) {
-  const { budgetPaise, spentPaise, plannedPaise } = summary;
+  const { budgetPaise, spentPaise, committedPaise, plannedPaise } = summary;
+  const committedTotal = spentPaise + committedPaise;
 
   /* Over budget, the bar is scaled to the commitment rather than the
      budget — otherwise the overspend is simply invisible, which is the one
      thing this component exists to prevent. */
-  const scale = Math.max(budgetPaise, spentPaise + plannedPaise, 1);
+  const scale = Math.max(budgetPaise, committedTotal + plannedPaise, 1);
   const pct = (paise: number) => `${Math.min(100, (paise / scale) * 100)}%`;
-  const remaining = Math.max(0, budgetPaise - spentPaise - plannedPaise);
+  const remaining = Math.max(0, budgetPaise - committedTotal - plannedPaise);
 
   return (
     <div>
@@ -37,31 +40,40 @@ export function BudgetBar({ summary }: { summary: ProjectSummary }) {
       <div
         className="mt-2 flex h-2.5 w-full overflow-hidden rounded-full bg-sunk"
         role="img"
-        aria-label={`${formatPrice(spentPaise)} committed and ${formatPrice(
-          plannedPaise,
-        )} planned against a budget of ${formatPrice(budgetPaise)}`}
+        aria-label={`${formatPrice(spentPaise)} spent, ${formatPrice(
+          committedPaise,
+        )} committed and ${formatPrice(plannedPaise)} planned against a budget of ${formatPrice(
+          budgetPaise,
+        )}`}
       >
         <span
           style={{ width: pct(spentPaise) }}
           className="h-full bg-accent transition-[width] duration-500 ease-out-quart"
         />
         <span
+          style={{ width: pct(committedPaise) }}
+          /* A deeper, flat tint rather than a second hatch: spent and
+             committed are both real money, just moved through different
+             doors — planned below is the one that is not spend at all. */
+          className="h-full bg-deep transition-[width] duration-500 ease-out-quart"
+        />
+        <span
           style={{ width: pct(plannedPaise) }}
-          /* Hatched rather than a second flat colour: "planned" is not a
-             smaller amount of "spent", it is a different kind of number,
-             and the texture says so without adding a fourth hue. */
+          /* Hatched-reading tint: "planned" is not a smaller amount of
+             "spent", it is a different kind of number. */
           className="h-full bg-accent/35 transition-[width] duration-500 ease-out-quart"
         />
       </div>
 
-      <dl className="mt-3 grid grid-cols-3 gap-2">
-        <Legend swatch="bg-accent" label="Committed" value={formatPrice(spentPaise)} />
+      <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Legend swatch="bg-accent" label="Spent" value={formatPrice(spentPaise)} />
+        <Legend swatch="bg-deep" label="Committed" value={formatPrice(committedPaise)} />
         <Legend swatch="bg-accent/35" label="Planned" value={formatPrice(plannedPaise)} />
         <Legend
           swatch="bg-sunk"
           label={summary.overBudget ? "Over" : "Left"}
           value={formatPrice(
-            summary.overBudget ? spentPaise - budgetPaise : remaining,
+            summary.overBudget ? committedTotal - budgetPaise : remaining,
           )}
           tone={summary.overBudget ? "danger" : undefined}
         />

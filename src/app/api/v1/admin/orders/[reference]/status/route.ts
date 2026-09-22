@@ -7,6 +7,7 @@ import {
   PaidNotAdminSettableError,
   transitionOrderStatus,
 } from "@/lib/data/admin-orders";
+import { notifyOrderStatus } from "@/lib/data/order-notifications";
 import { ApiError, handler, ok, parseBody, requireStaff } from "@/lib/http";
 
 type Ctx = { params: Promise<{ reference: string }> };
@@ -52,6 +53,12 @@ export const POST = handler(async (request, { params }: Ctx) => {
       actorUserId: staff.id,
       note,
     });
+
+    /* After the transition's own transaction has committed, never inside
+       it — see the module comment on `notify`. A no-op for every status
+       this function does not ring a bell for. */
+    await notifyOrderStatus({ userId: order.customer.id, reference: order.reference, status: order.status });
+
     return ok({ order });
   } catch (error) {
     if (error instanceof OrderNotFoundError) {

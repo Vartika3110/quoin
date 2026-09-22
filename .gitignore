@@ -66,3 +66,10 @@ next-env.d.ts
 # against one database, and neither belongs in the repo.
 /rebrand-plan.tsv
 /.backups/
+
+# Working files that live on the desktop rather than in the repo: a zip of
+# the repo itself, image-model output, and the source spreadsheet the
+# catalogue was imported from. None of them is an input to a build.
+/quoin-main.zip
+/ChatGPT Image *.png
+/Quoin _ DATA SEMI FINAL.docx

@@ -8,6 +8,7 @@ import { InlineError } from "@/components/ui/ErrorState";
 import { Steps } from "@/components/ui/Progress";
 import { cn } from "@/components/ui/cn";
 import { useToast } from "@/components/ui/Toast";
+import { track } from "@/lib/analytics";
 import {
   ArrowRight,
   Back,
@@ -148,6 +149,7 @@ export function ProjectWizard({ areas }: { areas: { slug: string; name: string }
       });
 
       setDraft(EMPTY);
+      track("project_created", { kind: draft.kind ?? "other" });
       toast.success("Project created");
       router.push(`/projects/${project.id}`);
     } catch (err) {

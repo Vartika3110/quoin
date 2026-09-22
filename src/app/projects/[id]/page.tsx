@@ -5,6 +5,7 @@ import { SignInPrompt } from "@/components/storefront/account/SignInPrompt";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { getSession } from "@/lib/auth/session";
 import { listFeed } from "@/lib/data/studio";
+import { ORDER_STATUS_LABEL, ORDER_STATUS_TONE } from "@/lib/data/order-history";
 import type { IdeaView } from "@/lib/types/studio";
 
 /** Tiles for a mood-board preview inside the dashboard, not a feed page —
@@ -52,7 +53,12 @@ export default async function ProjectPage({
 
         <div className="px-5 lg:px-0">
           {session ? (
-            <ProjectDashboard id={id} moodboard={moodboard} />
+            <ProjectDashboard
+              id={id}
+              moodboard={moodboard}
+              orderStatusLabel={ORDER_STATUS_LABEL}
+              orderStatusTone={ORDER_STATUS_TONE}
+            />
           ) : (
             <SignInPrompt what="Sign in to see this project — it lives on your account now, not this browser." />
           )}

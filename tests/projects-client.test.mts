@@ -37,12 +37,13 @@ function makeProject(overrides: Partial<Project> = {}): Project {
     milestones: [],
     documents: [],
     orders: [],
+    services: [],
     ...overrides,
   } as Project;
 }
 
-describe("summarise: budget arithmetic", () => {
-  it("splits materials into committed (ordered/delivered) and planned", () => {
+describe("summarise: money wiring (projectMoney)", () => {
+  it("splits materials into committed (ordered/delivered) and planned, with no orders spent", () => {
     const project = makeProject({
       budgetPaise: 100_000,
       materials: [
@@ -54,10 +55,11 @@ describe("summarise: budget arithmetic", () => {
 
     const summary = summarise(project);
 
-    assert.equal(summary.spentPaise, 10 * 1_000 + 5 * 2_000);
+    assert.equal(summary.spentPaise, 0); // no linked orders — nothing moved through checkout
+    assert.equal(summary.committedPaise, 10 * 1_000 + 5 * 2_000);
     assert.equal(summary.plannedPaise, 2 * 3_000);
-    assert.equal(summary.remainingPaise, 100_000 - summary.spentPaise);
-    assert.equal(summary.overBudget, summary.spentPaise > 100_000);
+    assert.equal(summary.remainingPaise, 100_000 - summary.committedPaise);
+    assert.equal(summary.overBudget, summary.committedPaise > 100_000);
   });
 
   it("shows overspend as a negative remainder rather than clamping to zero", () => {
@@ -72,6 +74,39 @@ describe("summarise: budget arithmetic", () => {
 
     assert.equal(summary.remainingPaise, 1_000 - 5_000);
     assert.equal(summary.overBudget, true);
+  });
+
+  it("counts a linked order whose money moved as spent, separate from committed materials", () => {
+    const project = makeProject({
+      budgetPaise: 100_000,
+      orders: [
+        { reference: "QO-1", status: "DELIVERED", totalPaise: 40_000, createdAt: "2026-01-01T00:00:00.000Z", expectedDeliveryOn: null, itemCount: 1, lines: [] },
+        { reference: "QO-2", status: "PENDING_PAYMENT", totalPaise: 9_999, createdAt: "2026-01-02T00:00:00.000Z", expectedDeliveryOn: null, itemCount: 1, lines: [] },
+      ],
+      materials: [
+        { id: "m1", title: "Cement", qty: 10, unit: "bags", unitPricePaise: 1_000, status: "ordered", productSlug: null, variantId: null, brand: null, expectedOn: null },
+      ],
+    });
+
+    const summary = summarise(project);
+
+    assert.equal(summary.spentPaise, 40_000); // PENDING_PAYMENT never moved money
+    assert.equal(summary.committedPaise, 10 * 1_000);
+    assert.equal(summary.remainingPaise, 100_000 - 40_000 - 10 * 1_000);
+  });
+
+  it("counts an accepted service quote as committed, not a quote merely received", () => {
+    const project = makeProject({
+      budgetPaise: 100_000,
+      services: [
+        { reference: "QS-1", serviceSlug: "installation", serviceName: "Installation", kind: "BOOKING", status: "CONFIRMED", preferredDate: null, preferredSlot: null, scheduledAt: null, quotePaise: 15_000, createdAt: "2026-01-01T00:00:00.000Z" },
+        { reference: "QS-2", serviceSlug: "site-inspection", serviceName: "Site inspection", kind: "QUOTE", status: "QUOTE_RECEIVED", preferredDate: null, preferredSlot: null, scheduledAt: null, quotePaise: 5_000, createdAt: "2026-01-01T00:00:00.000Z" },
+      ],
+    });
+
+    const summary = summarise(project);
+
+    assert.equal(summary.committedPaise, 15_000); // QUOTE_RECEIVED is an offer, not yet accepted
   });
 });
 

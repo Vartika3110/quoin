@@ -104,6 +104,105 @@ export function buildPrompt(product: ProductBrief): string {
 }
 
 /**
+ * Google's image models, as an alternative provider.
+ *
+ * Here because the OpenAI account funding this ran dry and a Gemini key
+ * was the one to hand — not because either provider is better. Both
+ * satisfy the same one-method interface, so the scripts never learn which
+ * one made a picture.
+ *
+ * Two things the REST shape gets right for Studio and OpenAI's does not:
+ * `aspect_ratio` is a first-class parameter (so 3:4 portrait costs nothing
+ * extra to ask for), and 1K images are about a third of the price.
+ *
+ * `image_size` is case-sensitive at the far end — "1k" is rejected, "1K"
+ * is not — which is the kind of detail worth a comment because the error
+ * it produces says nothing about capitalisation.
+ */
+export class GeminiImageGenerator implements ImageGenerator {
+  readonly name = "gemini";
+
+  constructor(
+    private readonly apiKey: string,
+    private readonly model = "gemini-3.1-flash-image",
+    /** Portrait for Studio's wall of tiles. See `aspect_ratio` values in
+        Google's docs: 1:1, 3:4, 4:3, 9:16 and the rest. */
+    private readonly aspectRatio = "3:4",
+    private readonly imageSize: "1K" | "2K" | "4K" = "1K",
+  ) {
+    if (!apiKey) throw new Error("GEMINI_API_KEY is required to generate images");
+  }
+
+  async generate(prompt: string): Promise<GeneratedImage> {
+    const res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/interactions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": this.apiKey,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          input: [{ type: "text", text: prompt }],
+          response_format: {
+            type: "image",
+            aspect_ratio: this.aspectRatio,
+            image_size: this.imageSize,
+          },
+        }),
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Image provider returned ${res.status}: ${await res.text()}`);
+    }
+
+    const body = (await res.json()) as GeminiResponse;
+    const data = firstImageData(body);
+
+    if (!data) {
+      /* Named rather than swallowed: a 200 with no image is a refusal —
+         a prompt the safety filter declined — and it must not be mistaken
+         for a network fault the caller should retry. */
+      throw new Error("Image provider returned no image for this prompt");
+    }
+
+    return { data: Buffer.from(data, "base64"), extension: "png" };
+  }
+}
+
+/* Both response shapes are read, because an account may still be served
+   the 2.5-era `candidates[]` envelope while the docs describe `steps[]`,
+   and a picture is a picture either way. */
+interface GeminiContentBlock {
+  type?: string;
+  data?: string;
+  mime_type?: string;
+}
+
+interface GeminiResponse {
+  steps?: { type?: string; content?: GeminiContentBlock[] }[];
+  candidates?: { content?: { parts?: { inlineData?: { data?: string } }[] } }[];
+}
+
+function firstImageData(body: GeminiResponse): string | undefined {
+  for (const step of body.steps ?? []) {
+    for (const block of step.content ?? []) {
+      if (block.data) return block.data;
+    }
+  }
+
+  for (const candidate of body.candidates ?? []) {
+    for (const part of candidate.content?.parts ?? []) {
+      if (part.inlineData?.data) return part.inlineData.data;
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Prints the prompt and returns a placeholder instead of calling anyone.
  *
  * Lets the whole pipeline — querying, prompting, naming, writing back —
@@ -134,6 +233,10 @@ export class OpenAiImageGenerator implements ImageGenerator {
     private readonly model = "gpt-image-1",
     /** `low` is the right default here: these are 400px catalogue tiles. */
     private readonly quality: "low" | "medium" | "high" = "low",
+    /** Square by default, because a catalogue tile is square. Studio asks
+        for portrait — a feed of tall tiles is a wall, a feed of squares is
+        a grid — see `scripts/generate-studio-images.ts`. */
+    private readonly size: "1024x1024" | "1024x1536" | "1536x1024" = "1024x1024",
   ) {
     if (!apiKey) throw new Error("OPENAI_API_KEY is required to generate images");
   }
@@ -149,7 +252,7 @@ export class OpenAiImageGenerator implements ImageGenerator {
         model: this.model,
         prompt,
         n: 1,
-        size: "1024x1024",
+        size: this.size,
         quality: this.quality,
       }),
     });
