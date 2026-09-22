@@ -21,9 +21,9 @@ import { formatPrice } from "@/lib/types/catalog";
  *
  * A plain responsive grid, not masonry: these are covers of a fixed
  * shape, and a ragged grid of equal-sized cards is a masonry layout doing
- * no work. The photograph is the room's most recently added idea unless
- * a cover has been chosen — set on the server when the first idea lands
- * (see `addSpaceItem`), so a new space is never a blank card for long.
+ * no work. The cover is a collage of up to three of the board's pins —
+ * a board is a collection, and one photograph on it looks like a single
+ * pin with a name under it.
  *
  * `?new=1` opens the create dialog on arrival, which is what the rail's
  * "New space" button links to. A URL that opens a dialog is worth more
@@ -37,7 +37,7 @@ export function SpacesGrid({ openNew = false }: { openNew?: boolean }) {
   if (spacesError) {
     return (
       <ErrorState
-        title="We could not load your spaces"
+        title="We could not load your boards"
         description={spacesError}
         retry={refreshSpaces}
       />
@@ -65,11 +65,11 @@ export function SpacesGrid({ openNew = false }: { openNew?: boolean }) {
       {spaces.length === 0 ? (
         <EmptyState
           icon={<Sofa className="size-6" />}
-          title="No spaces yet"
-          action={{ label: "Create a space", onClick: () => setDialog(true) }}
+          title="No boards yet"
+          action={{ label: "Create a board", onClick: () => setDialog(true) }}
           secondaryAction={{ href: "/studio", label: "Find inspiration first" }}
         >
-          A space is one room you are working on — a kitchen, a bathroom, a
+          A board is one room you are working on — a kitchen, a bathroom, a
           balcony. It holds the ideas you save for it, the products you
           choose, and what the whole thing is going to cost.
         </EmptyState>
@@ -81,30 +81,12 @@ export function SpacesGrid({ openNew = false }: { openNew?: boolean }) {
               href={`/studio/spaces/${space.id}`}
               className="group flex flex-col overflow-hidden rounded-card border border-line-soft bg-surface outline-none transition-[transform,box-shadow] duration-200 ease-out-quart hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <div className="aspect-[4/3] overflow-hidden bg-sunk">
-                {space.coverUrl ? (
-                  <IdeaImage
-                    src={space.coverUrl}
-                    alt=""
-                    /* The cover is cropped to a fixed 4:3 box, so the
-                       intrinsic ratio does not matter here — only that
-                       `next/image` gets a size to work from. */
-                    width={800}
-                    height={600}
-                    sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 30vw, 45vw"
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out-quart group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-caption text-faint">
-                    No cover yet
-                  </div>
-                )}
-              </div>
+              <CoverCollage urls={space.coverUrls} />
 
               <div className="flex flex-1 flex-col gap-0.5 p-3">
                 <p className="truncate text-body font-medium text-ink">{space.name}</p>
                 <p className="nums text-caption text-faint">
-                  {space.ideaCount} {space.ideaCount === 1 ? "idea" : "ideas"}
+                  {space.ideaCount} {space.ideaCount === 1 ? "pin" : "pins"}
                   {space.productCount > 0 ? ` · ${space.productCount} products` : ""}
                 </p>
                 {space.plannedPaise > 0 ? (
@@ -128,7 +110,7 @@ export function SpacesGrid({ openNew = false }: { openNew?: boolean }) {
       {spaces.length > 0 ? (
         <Button className="mt-6" variant="outline" onClick={() => setDialog(true)}>
           <Plus className="size-4" />
-          New space
+          New board
         </Button>
       ) : null}
     </>
@@ -172,7 +154,7 @@ function NewSpaceDialog({
       toast.success(`${trimmed} created`);
       onClose();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not create the space");
+      toast.error(error instanceof Error ? error.message : "Could not create the board");
     } finally {
       setBusy(false);
     }
@@ -182,7 +164,7 @@ function NewSpaceDialog({
     <Modal
       open
       onClose={onClose}
-      title="Create a space"
+      title="Create a board"
       description="One room you are working on."
       footer={
         <div className="flex gap-2">
@@ -237,5 +219,57 @@ function NewSpaceDialog({
         </Field>
       </div>
     </Modal>
+  );
+}
+
+/**
+ * Up to three pins, as one cover.
+ *
+ * One large pane and two stacked beside it, which is the arrangement that
+ * survives having fewer than three: at two it is a pair, at one it is a
+ * single photograph filling the box, and none of those needs a grey
+ * rectangle standing in for a picture that does not exist. Padding a
+ * collage out to three panes is how an empty board ends up looking
+ * broken instead of new.
+ */
+function CoverCollage({ urls }: { urls: string[] }) {
+  if (urls.length === 0) {
+    return (
+      <div className="flex aspect-[4/3] items-center justify-center bg-sunk text-caption text-faint">
+        No pins yet
+      </div>
+    );
+  }
+
+  const [first, ...rest] = urls.slice(0, 3);
+
+  return (
+    <div className="flex aspect-[4/3] gap-0.5 overflow-hidden bg-sunk">
+      <Pane src={first} className="flex-[2]" />
+      {rest.length > 0 && (
+        <div className="flex flex-1 flex-col gap-0.5">
+          {rest.map((url) => (
+            <Pane key={url} src={url} className="min-h-0 flex-1" />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Pane({ src, className }: { src: string; className: string }) {
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      <IdeaImage
+        src={src}
+        alt=""
+        /* Cropped to its pane, so the intrinsic ratio does not matter —
+           only that `next/image` has a size to work from. */
+        width={800}
+        height={600}
+        sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 30vw, 45vw"
+        className="size-full object-cover transition-transform duration-500 ease-out-quart group-hover:scale-105"
+      />
+    </div>
   );
 }

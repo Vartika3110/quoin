@@ -51,7 +51,9 @@ const FULFILMENT: Record<DbFulfilment, FulfilmentType> = {
   MADE_TO_ORDER: "made_to_order",
 };
 
-const PRICING_UNIT: Record<DbPricingUnit, PricingUnit> = {
+/** Exported so Studio can price a room's materials from the same
+    vocabulary the product pages use, rather than a second copy of it. */
+export const PRICING_UNIT: Record<DbPricingUnit, PricingUnit> = {
   PER_PIECE: "per_piece",
   PER_SQFT: "per_sqft",
   PER_RUNNING_FT: "per_running_ft",
@@ -182,7 +184,7 @@ const CATEGORY_SWATCHES: Record<string, string[]> = {
  * A product with its own `image` always wins; this only fills the gap,
  * and the map goes away when photography lands.
  */
-const PRODUCT_SWATCH_BY_CATEGORY: Record<string, string> = {
+export const PRODUCT_SWATCH_BY_CATEGORY: Record<string, string> = {
   "bathware-plumbing": "basin",
   "kitchen-sinks-faucets": "faucet",
   "electricals-lighting": "bulb",
@@ -326,6 +328,28 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
     where: { ...PRODUCT_QUERY.where, slug },
   });
   return row ? toProduct(row) : null;
+}
+
+/**
+ * Several products at once, by slug.
+ *
+ * One query for a list that would otherwise be one `getProductBySlug` per
+ * row — a room with eighteen materials is eighteen round trips answered
+ * by the same index. Returned in no particular order; callers that care
+ * about order build their own map, because the order they want is the
+ * order *they* wrote, not the one Postgres returned.
+ *
+ * Slugs that do not resolve are simply absent. A retired SKU is ordinary,
+ * and the alternative — throwing, or returning a null in the middle of
+ * the array — pushes that handling into every caller.
+ */
+export async function listProductsBySlugs(slugs: string[]): Promise<Product[]> {
+  if (slugs.length === 0) return [];
+  const rows = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: { ...PRODUCT_QUERY.where, slug: { in: [...new Set(slugs)] } },
+  });
+  return rows.map(toProduct);
 }
 
 /** Cheap cross-sell: same category, excluding the product being viewed. */

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { Camera, Chevron, Heart, Search, Sofa } from "@/components/icons";
+import { Boards, Camera, Chevron, Heart, Search } from "@/components/icons";
 
 /**
  * Studio's own bar, on a phone.
@@ -63,10 +63,10 @@ export function StudioTopBar({ title = "Studio" }: { title?: string }) {
       <BarLink href="/studio/saved" label="Saved ideas">
         <Heart className="size-5" />
       </BarLink>
-      <BarLink href="/studio/spaces" label="Your spaces">
-        <Sofa className="size-5" />
+      <BarLink href="/studio/spaces" label="Your boards">
+        <Boards className="size-5" />
       </BarLink>
-      <BarLink href="/studio/upload" label="Add a photograph">
+      <BarLink href="/studio/upload" label="Add a room">
         <Camera className="size-5" />
       </BarLink>
     </div>

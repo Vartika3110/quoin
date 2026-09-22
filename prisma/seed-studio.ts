@@ -246,6 +246,97 @@ async function describe(assetPath: string) {
   };
 }
 
+/** How many catalogue lines each seeded room gets. Six is what the
+    materials list shows before "Show N more", so it exercises the list
+    without needing the expander on every single pin. */
+const LINES_PER_ROOM = 6;
+
+/**
+ * The materials list for each seeded room.
+ *
+ * Matched by *category*, not by fuzzy text: every one of these
+ * photographs is a department shot and its `assetPath` is literally
+ * `/categories/<slug>.webp`, so the products in the frame are the
+ * products in that category. That is an exact join rather than a guess,
+ * which matters here for the same reason it matters in
+ * `matchParchaLines` — a wrong product on a priced list is worse than a
+ * short list.
+ *
+ * **Quantities are one of each, and coordinates are null.** Neither can
+ * be derived from a photograph, and inventing either would make the
+ * total under the picture a number nobody agreed to and the dots a claim
+ * about where things are that is simply false. `StudioHotspot` allows a
+ * line with no coordinate on purpose — it renders in the list and not on
+ * the image. Real quantities and real dots arrive with real room
+ * photography; until then the list is honest about being a list.
+ *
+ * Idempotent: a room's lines are replaced wholesale, so re-running after
+ * a catalogue import refreshes them rather than stacking a second set.
+ */
+async function seedHotspots(): Promise<number> {
+  let written = 0;
+
+  for (const seed of SEEDS) {
+    const categorySlug = seed.assetPath.replace("/categories/", "").replace(".webp", "");
+
+    const idea = await db.studioIdea.findFirst({
+      where: { assetPath: seed.assetPath, userId: null },
+      select: { id: true },
+    });
+    if (!idea) continue;
+
+    const where = {
+      isActive: true,
+      category: { slug: categorySlug },
+      variants: { some: { isActive: true } },
+    };
+
+    /* Photographed rows first, in their own query rather than an
+       `orderBy` on it — `Product.image` is a non-null column that is
+       empty until a picture exists, so "has one" is a `not: ""` filter
+       and not a sort key. Topped up from the rest of the department only if
+       there are not six with a picture, because a list of six grey
+       placeholders is technically correct and reads as broken. */
+    const photographed = await db.product.findMany({
+      where: { ...where, image: { not: "" } },
+      orderBy: { name: "asc" },
+      take: LINES_PER_ROOM,
+      select: { slug: true },
+    });
+
+    const products =
+      photographed.length >= LINES_PER_ROOM
+        ? photographed
+        : [
+            ...photographed,
+            ...(await db.product.findMany({
+              where: { ...where, image: "" },
+              orderBy: { name: "asc" },
+              take: LINES_PER_ROOM - photographed.length,
+              select: { slug: true },
+            })),
+          ];
+
+    await db.studioHotspot.deleteMany({ where: { ideaId: idea.id } });
+    if (products.length === 0) continue;
+
+    await db.studioHotspot.createMany({
+      data: products.map((product, index) => ({
+        ideaId: idea.id,
+        productSlug: product.slug,
+        x: null,
+        y: null,
+        qty: 1,
+        unit: "",
+        position: index,
+      })),
+    });
+    written += products.length;
+  }
+
+  return written;
+}
+
 async function main() {
   let created = 0;
   let updated = 0;
@@ -273,6 +364,17 @@ async function main() {
       materials: seed.materials,
       colors: seed.colors,
       visibility: "PUBLIC" as const,
+      /* Reclassified from the database default, which is `PRODUCT`. See
+         `StudioIdeaKind` in the schema: everything stays out of the
+         discovery wall until something says it is a room, and this seed
+         is that something for the fourteen shipped photographs.
+
+         Said plainly: these are department photographs, not finished
+         rooms, and they are in the wall because the wall would otherwise
+         be empty. They are placeholders for real interiors and the
+         `location` column is left null rather than filled with a
+         plausible "3BHK · Dwarka" nobody has been to. */
+      kind: "SPACE" as const,
     };
 
     if (existing) {
@@ -286,7 +388,10 @@ async function main() {
     }
   }
 
+  const hotspots = await seedHotspots();
+
   console.log(`[studio] ${created} ideas created, ${updated} updated.`);
+  console.log(`[studio] ${hotspots} material lines written.`);
   console.log(
     "[studio] These are Quoin's own commissioned category photographs. " +
       "The feed grows from customer uploads at /studio/upload.",

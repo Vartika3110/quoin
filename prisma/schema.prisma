@@ -1739,6 +1739,67 @@ enum StudioRoom {
   OTHER
 }
 
+/// What a Studio photograph actually is.
+///
+/// The Studio feed is a wall of finished rooms — that is its whole
+/// proposition — and the imagery this repo shipped with was the
+/// catalogue's own department photography: a hard hat, a stack of cement
+/// bags, a tray of door handles. Those are useful pictures and they
+/// belong in the shop; a reader who opens Studio to see what a kitchen
+/// could look like and is shown safety equipment has been answered a
+/// different question than the one they asked.
+///
+/// So the feed filters on this, and the default is deliberately the
+/// *exclusive* value: a row written before this column existed, or by an
+/// importer that never thought about it, stays out of the feed until a
+/// person says it is a room. The failure mode of getting this wrong is a
+/// product shot in the inspiration wall, and defaulting the other way
+/// makes that the automatic outcome.
+enum StudioIdeaKind {
+  /// A finished room, photographed.
+  SPACE
+  /// A product, a material, a tool, a site photograph. Reachable by URL
+  /// and by search, never in the discovery feed.
+  PRODUCT
+}
+
+/// Someone who designed a room in Studio.
+///
+/// Deliberately its own table and deliberately empty until a real person
+/// is entered into it. `src/lib/data/services.ts` sets the rule this
+/// follows: there is no vendor roster behind this app, and a page of
+/// invented names beside a real catalogue is the single most damaging
+/// thing a marketplace can ship. A space pin with no designer renders no
+/// byline rather than a plausible one.
+///
+/// `serviceSlug` is the soft link back to the services side — the trade
+/// this person is listed under — rather than a foreign key, because
+/// services are presentation config in that module and not rows.
+model StudioDesigner {
+  id String @id @default(cuid())
+
+  /// The public URL — `/studio/designers/{slug}`.
+  slug String @unique
+  name String
+
+  /// One line under the name. "Interiors, West Delhi."
+  headline String @default("")
+  bio      String @default("")
+
+  /// A path under `public/`, on the same terms as `StudioIdea.assetPath`.
+  avatarPath String?
+
+  /// Which entry in `src/lib/data/services.ts` this person works under.
+  serviceSlug String?
+
+  ideas StudioIdea[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("studio_designers")
+}
+
 /// One inspiration photograph.
 model StudioIdea {
   id   String @id @default(cuid())
@@ -1769,6 +1830,21 @@ model StudioIdea {
 
   title       String
   description String @default("")
+
+  /// See `StudioIdeaKind`. The feed reads this and nothing else to decide
+  /// what a photograph is.
+  kind StudioIdeaKind @default(PRODUCT)
+
+  /// Where the room is — "3BHK · Dwarka". Free text and not a
+  /// `ServiceArea`: this is the shape and the neighbourhood of a home
+  /// someone actually built, which is what makes a photograph credible,
+  /// and it is not the same question as whether Quoin delivers there.
+  location String?
+
+  /// Who designed it. Null for everything until a real professional is
+  /// entered — see `StudioDesigner`.
+  designerId String?
+  designer   StudioDesigner? @relation(fields: [designerId], references: [id], onDelete: SetNull)
 
   /// Read off the bytes with `sharp` at upload time. See the file-level
   /// note above: the grid needs these before the image loads.
@@ -1810,6 +1886,7 @@ model StudioIdea {
 
   saves      StudioSave[]
   spaceItems StudioSpaceItem[]
+  hotspots   StudioHotspot[]
   /// Spaces using this as their cover. SetNull, not Cascade — deleting an
   /// idea must not delete the room it was the picture of.
   coverOf    StudioSpace[]
@@ -1817,15 +1894,78 @@ model StudioIdea {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  /// The feed: public, newest first.
-  @@index([visibility, createdAt])
+  /// The feed: spaces, public, newest first. `kind` leads every one of
+  /// these because it is now the first thing the feed's `where` clause
+  /// says, and an index that starts with the column the query filters
+  /// last is an index the planner will not use.
+  @@index([kind, visibility, createdAt])
   /// The feed, ordered by popularity.
-  @@index([visibility, saveCount])
+  @@index([kind, visibility, saveCount])
   /// "Kitchens", filtered.
-  @@index([visibility, room, createdAt])
+  @@index([kind, visibility, room, createdAt])
   /// Someone's own uploads, including the private ones.
   @@index([userId, createdAt])
+  /// A designer's own rooms.
+  @@index([designerId, createdAt])
   @@map("studio_ideas")
+}
+
+/// One catalogue product used in a room, and where it is in the picture.
+///
+/// The brief asked for two lists — the products a room is made of, and
+/// the hotspots dotted over the photograph — and they are one table here
+/// because they are one fact with an optional coordinate. Every dot is a
+/// line on the materials list; not every line has a dot, because a room
+/// contains cement and adhesive that are not visible anywhere in the
+/// photograph and still have to be priced. Two tables would need a join
+/// to answer "what is in this room" and a rule for what a hotspot
+/// pointing at nothing means.
+///
+/// Money is *not* stored here. The price comes from the catalogue at read
+/// time through `productSlug`, exactly as the cart re-resolves a line
+/// before anything is charged: a room priced when it was photographed and
+/// shown a year later at that price is a quote nobody agreed to.
+model StudioHotspot {
+  id String @id @default(cuid())
+
+  ideaId String
+  idea   StudioIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  /// Percent of the photograph's width and height, 0–100, from the top
+  /// left. Percent rather than pixels because the same room is rendered
+  /// at five column widths and a phone's full bleed, and a coordinate
+  /// that only lines up at the size it was authored is worse than none.
+  ///
+  /// Null for a line that is in the room but not visible in the frame —
+  /// see the note above. Both are null together; one without the other is
+  /// rejected where these are written.
+  x Float?
+  y Float?
+
+  /// The catalogue row. Not a foreign key to `Product`: products are
+  /// re-imported wholesale and a hard reference would cascade a room's
+  /// materials list away on a routine catalogue refresh. A slug that no
+  /// longer resolves is dropped from the list at read time, which is the
+  /// same thing the parcha matcher does with a line it cannot place.
+  productSlug String
+  /// Which variant, when the room used a specific one.
+  variantId   String?
+
+  /// How much of it the room used. Float because area-priced goods are
+  /// bought in square feet and cement is bought in bags.
+  qty  Float  @default(1)
+  /// The word next to the number — "bags", "sq.ft.", "nos". Display only;
+  /// the priced unit comes from the catalogue with the price.
+  unit String @default("")
+
+  /// The number in the dot, and the order of the list under it.
+  position Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  /// The whole list, in order, for one room. Never queried for one dot.
+  @@index([ideaId, position])
+  @@map("studio_hotspots")
 }
 
 /// One person saving one idea.

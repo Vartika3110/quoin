@@ -26,13 +26,18 @@ import { useSyncExternalStore } from "react";
  * photographs.
  */
 
-/* Deliberately the same widths Tailwind's own `sm`/`lg`/`xl` use, so the
-   column count changes at the breakpoint everything else on the page
-   changes at rather than a pixel off it. */
+/* Two of these are Tailwind's own widths (`lg`, `md`) and the top one is
+   not, on purpose: five columns at Tailwind's `xl` (1280px) gives a
+   256px tile, which is narrower than the four-column tile at 1024px and
+   makes the grid get *smaller* as the window gets bigger. 1440 is where
+   a fifth column is an improvement rather than an arithmetic accident.
+
+   `sizes` on every grid that uses this has to say the same thing, or the
+   browser picks a source for a box that is not the one it renders. */
 const QUERIES = [
-  { query: "(min-width: 1280px)", columns: 5 },
+  { query: "(min-width: 1440px)", columns: 5 },
   { query: "(min-width: 1024px)", columns: 4 },
-  { query: "(min-width: 640px)", columns: 3 },
+  { query: "(min-width: 768px)", columns: 3 },
 ] as const;
 
 /** Two columns on a phone. Section 3 of the brief, and the right answer:

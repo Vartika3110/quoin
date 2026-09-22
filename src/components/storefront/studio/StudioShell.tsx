@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/storefront/AppShell";
-import { StudioNav } from "@/components/storefront/studio/StudioNav";
 import { StudioTopBar } from "@/components/storefront/studio/StudioTopBar";
-import { StudioProvider } from "@/lib/store/studio";
-import { getSession } from "@/lib/auth/session";
 
 /**
  * Studio's chrome — the site's on a desktop, its own on a phone.
@@ -19,20 +16,24 @@ import { getSession } from "@/lib/auth/session";
  *
  * So on a phone Studio takes the screen: `phoneChrome={false}` stands the
  * site's phone bar, tab bar, cart bar, bubble and footer down, and
- * `StudioTopBar` replaces them with back, title, search and saved. From
- * `lg` nothing changes — the header costs nothing beside a 1440px page
- * and the rail is already the navigation.
+ * `StudioTopBar` replaces them with back, title, search and saved.
  *
- * `signedIn` is read from the session cookie here, on the server, and
- * handed to the provider. The cookie is `httpOnly`, so the browser cannot
- * see it; without this the store would have to ask the server on every
- * page just to be told nobody is signed in — the same reasoning, and the
- * same fix, as the root layout already applies to the projects store.
+ * **The desktop rail is gone too.** It was 208px of every page spent on
+ * four links, permanently, beside a grid whose whole job is to be as wide
+ * as the container allows — and at 1440px it was the difference between
+ * four columns of rooms and five. The same four destinations are pills on
+ * the masthead line now, where they cost nothing, and `StudioChrome`
+ * draws them.
+ *
+ * `StudioProvider` is *not* here. It sits in `src/app/studio/layout.tsx`,
+ * above both this and the intercepted pin route — a provider mounted
+ * inside the page would not contain the modal slot beside it, and the
+ * save button in an open pin would throw for want of a context.
  */
-export async function StudioShell({
+export function StudioShell({
   children,
-  /** Rendered above the rail and the content, full width. Desktop only —
-      see the note above on what a masthead costs on a phone. */
+  /** The masthead, full width above the content. Desktop only — see the
+      note above on what a masthead costs on a phone. */
   header,
   /** What the phone bar says. "Studio" unless a page is more specific. */
   barTitle,
@@ -41,31 +42,19 @@ export async function StudioShell({
   header?: ReactNode;
   barTitle?: string;
 }) {
-  const signedIn = Boolean(await getSession());
-
   return (
     <AppShell phoneChrome={false}>
-      <StudioProvider signedIn={signedIn}>
-        <StudioTopBar title={barTitle} />
+      <StudioTopBar title={barTitle} />
 
-        <div className="pt-4 lg:pt-6">
-          {/* The masthead is a desktop luxury. On a phone the top bar
-              already says where you are, and an eyebrow, a line of
-              display type and a paragraph saying what Studio is for is
-              the better part of a screen spent not showing a room. */}
-          <div className="hidden lg:block">{header}</div>
+      <div className="pt-4 lg:pt-6">
+        {/* The masthead is a desktop luxury. On a phone the top bar
+            already says where you are, and a line of display type plus a
+            paragraph saying what Studio is for is the better part of a
+            screen spent not showing a room. */}
+        <div className="hidden lg:block">{header}</div>
 
-          {/* Stacked below `lg`, side by side above it. `StudioNav` renders
-              a chip row on a phone and a rail on a desktop, and without
-              the column direction here the chip row becomes a *column* of
-              the same flex line as the content — 300px of vertical pills
-              beside a 40px-wide feed. */}
-          <div className="flex flex-col gap-5 lg:flex-row lg:gap-10">
-            <StudioNav />
-            <div className="min-w-0 flex-1">{children}</div>
-          </div>
-        </div>
-      </StudioProvider>
+        <div className="min-w-0">{children}</div>
+      </div>
     </AppShell>
   );
 }

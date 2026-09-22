@@ -5,9 +5,11 @@ import type {
   StudioRoom as DbRoom,
   StudioVisibility as DbVisibility,
   StudioItemKind as DbItemKind,
+  StudioIdeaKind as DbIdeaKind,
 } from "@prisma/client";
 import { db } from "@/lib/db";
 import { matchParchaLines } from "@/lib/data/search";
+import { listProductsBySlugs } from "@/lib/data/catalog";
 import { ApiError } from "@/lib/http";
 import type { Paise } from "@/lib/types/catalog";
 import type {
@@ -15,6 +17,10 @@ import type {
   LookMatch,
   ShopTheLook,
   ItemKind,
+  IdeaKind,
+  DesignerView,
+  RoomMaterial,
+  SpacePinView,
   Swatch,
   StudioRoom,
   Visibility,
@@ -97,6 +103,18 @@ export const ROOM_FROM_DB: Record<DbRoom, StudioRoom> = {
   ENTRANCE: "entrance",
   EXTERIOR: "exterior",
   OTHER: "other",
+};
+
+export const IdeaKindSchema = z.enum(["space", "product"]);
+
+export const IDEA_KIND_TO_DB: Record<IdeaKind, DbIdeaKind> = {
+  space: "SPACE",
+  product: "PRODUCT",
+};
+
+export const IDEA_KIND_FROM_DB: Record<DbIdeaKind, IdeaKind> = {
+  SPACE: "space",
+  PRODUCT: "product",
 };
 
 export const VisibilitySchema = z.enum(["private", "public"]);
@@ -238,7 +256,11 @@ const IDEA_SELECT = {
   visibility: true,
   saveCount: true,
   createdAt: true,
+  kind: true,
+  location: true,
   user: { select: { name: true } },
+  designer: { select: { slug: true, name: true, headline: true } },
+  _count: { select: { hotspots: true } },
 } satisfies Prisma.StudioIdeaSelect;
 
 type IdeaRow = Prisma.StudioIdeaGetPayload<{ select: typeof IDEA_SELECT }>;
@@ -249,6 +271,9 @@ function toIdeaView(row: IdeaRow, savedIds: Set<string> | null): IdeaView {
     slug: row.slug,
     title: row.title,
     description: row.description,
+    kind: IDEA_KIND_FROM_DB[row.kind],
+    location: row.location,
+    designer: row.designer,
     imageUrl: imageUrlFor(row),
     width: row.width,
     height: row.height,
@@ -259,6 +284,7 @@ function toIdeaView(row: IdeaRow, savedIds: Set<string> | null): IdeaView {
     colors: readSwatches(row.colors),
     visibility: VISIBILITY_FROM_DB[row.visibility],
     saveCount: row.saveCount,
+    materialCount: row._count.hotspots,
     saved: savedIds ? savedIds.has(row.id) : null,
     /* A creator with no name on their account is shown as no creator
        rather than as an empty byline — `name` is optional on `User`. */
@@ -340,6 +366,18 @@ export async function listFeed(
   if (tab === "saved") return listSavedFeed(viewerId, query, limit);
 
   const where: Prisma.StudioIdeaWhereInput = {
+    /* Finished rooms, and nothing else. The catalogue's department
+       photography lives in the same table — a hard hat, a pallet of
+       cement, a tray of door handles — and it is genuinely useful on a
+       product page and useless here. Someone opening Studio is asking
+       "what could my kitchen look like", and answering with safety
+       equipment is answering a different question.
+
+       In the `where` clause rather than filtered afterwards, so the
+       keyset pagination counts the rows it actually returns. A filter
+       applied to the page would give short pages, or empty ones, with a
+       cursor that still says there is more. */
+    kind: "SPACE",
     visibility: "PUBLIC",
     ...filterClause(query),
   };
@@ -378,6 +416,28 @@ export async function listFeed(
   });
 
   return page(rows, limit, viewerId);
+}
+
+/**
+ * How many rooms the current filters found.
+ *
+ * A real `count`, not `ideas.length`: the grid holds one page of forty
+ * and the line above it says "63 rooms match", which is the number that
+ * tells somebody whether their filter was too narrow. Counting the page
+ * would say "40" forever and be wrong in the one direction that matters.
+ *
+ * Deliberately not part of `listFeed`. Most callers of the feed — the
+ * infinite-scroll append, the API route — do not want a second query per
+ * page, and a count that rides along with every page is exactly that.
+ */
+export async function countFeed(query: FeedQuery = {}): Promise<number> {
+  return db.studioIdea.count({
+    where: {
+      kind: "SPACE",
+      visibility: "PUBLIC",
+      ...filterClause(query),
+    },
+  });
 }
 
 /** The `saved` tab. Signed out, this is empty rather than an error —
@@ -490,32 +550,67 @@ async function affinityFor(
  * "Japandi" to a catalogue that has no Japandi in it — an empty result
  * set behind a filter chip is the fastest way to make a feed feel broken.
  */
+export interface RoomFacet {
+  room: StudioRoom;
+  count: number;
+  /** A real room from behind this filter, for the bubble. Null only when
+      the rows behind it somehow have no image — never a stock photograph
+      of a kitchen standing in for the kitchens Quoin actually has. */
+  imageUrl: string | null;
+  blurDataUrl: string | null;
+}
+
 export async function listFacets(): Promise<{
-  rooms: { room: StudioRoom; count: number }[];
+  rooms: RoomFacet[];
   styles: string[];
   materials: string[];
 }> {
   const [byRoom, tagRows] = await Promise.all([
     db.studioIdea.groupBy({
       by: ["room"],
-      where: { visibility: "PUBLIC", room: { not: null } },
+      /* The same population the feed draws from. A rail that counts
+         product shots offers "Kitchen · 9" and then shows three rooms,
+         which is worse than offering nothing. */
+      where: { kind: "SPACE", visibility: "PUBLIC", room: { not: null } },
       _count: { _all: true },
     }),
     db.studioIdea.findMany({
-      where: { visibility: "PUBLIC" },
-      select: { styles: true, materials: true },
+      where: { kind: "SPACE", visibility: "PUBLIC" },
+      /* The image columns ride along so the room bubbles can show a real
+         room from behind each filter rather than a stock photograph of
+         someone else's kitchen. Ordered by saves, so the bubble is the
+         best-liked room in that filter and not whichever one was
+         uploaded most recently. */
+      select: {
+        id: true,
+        room: true,
+        assetPath: true,
+        fileId: true,
+        blurDataUrl: true,
+        styles: true,
+        materials: true,
+      },
       /* A sample, not the table. The rail shows a dozen chips; reading
          every row to build it would grow linearly with the feed forever. */
       take: 500,
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ saveCount: "desc" }, { createdAt: "desc" }],
     }),
   ]);
 
   const styles = new Map<string, number>();
   const materials = new Map<string, number>();
+  /* First row wins, and the rows arrive most-saved first. */
+  const cover = new Map<DbRoom, { imageUrl: string; blurDataUrl: string | null }>();
+
   for (const row of tagRows) {
     for (const s of row.styles) styles.set(s, (styles.get(s) ?? 0) + 1);
     for (const m of row.materials) materials.set(m, (materials.get(m) ?? 0) + 1);
+    if (row.room && !cover.has(row.room)) {
+      cover.set(row.room, {
+        imageUrl: imageUrlFor(row),
+        blurDataUrl: row.blurDataUrl,
+      });
+    }
   }
 
   const top = (counts: Map<string, number>, n: number) =>
@@ -527,7 +622,12 @@ export async function listFacets(): Promise<{
   return {
     rooms: byRoom
       .filter((r): r is typeof r & { room: DbRoom } => r.room !== null)
-      .map((r) => ({ room: ROOM_FROM_DB[r.room], count: r._count._all }))
+      .map((r) => ({
+        room: ROOM_FROM_DB[r.room],
+        count: r._count._all,
+        imageUrl: cover.get(r.room)?.imageUrl ?? null,
+        blurDataUrl: cover.get(r.room)?.blurDataUrl ?? null,
+      }))
       .sort((a, b) => b.count - a.count),
     styles: top(styles, 14),
     materials: top(materials, 14),
@@ -605,6 +705,7 @@ export async function listRelatedIdeas(
 ): Promise<IdeaView[]> {
   const rows = await db.studioIdea.findMany({
     where: {
+      kind: "SPACE",
       visibility: "PUBLIC",
       id: { not: idea.id },
       OR: [
@@ -621,6 +722,179 @@ export async function listRelatedIdeas(
 
   const saved = await savedIdSet(viewerId, rows.map((r) => r.id));
   return rows.map((row) => toIdeaView(row, saved));
+}
+
+/* ---- What a room is made of ---------------------------------------------- */
+
+/**
+ * A space pin with its materials list, priced from the catalogue now.
+ *
+ * Three queries and never more, whatever the room holds: the pin, its
+ * hotspots, and one `findMany` over every product slug those hotspots
+ * name. A room with eighteen lines must not be eighteen round trips.
+ *
+ * **Prices are read, not stored.** `StudioHotspot` carries a slug and a
+ * quantity and no money at all, and that is the point: a kitchen
+ * photographed in March and shown in September has to be priced in
+ * September or the total under it is a quote nobody agreed to. The same
+ * rule the cart follows when it re-resolves a line before anything is
+ * charged.
+ *
+ * A slug that no longer resolves is dropped rather than rendered as a
+ * blank row. The catalogue is re-imported wholesale and SKUs retire; a
+ * list that quietly gets shorter is better than one with a hole in it
+ * linking nowhere — and it is what `matchParchaLines` already does with a
+ * line it cannot place.
+ */
+export async function getSpacePin(
+  idOrSlug: string,
+  viewerId: string | null,
+): Promise<SpacePinView | null> {
+  const row = await db.studioIdea.findFirst({
+    where: {
+      OR: [{ id: idOrSlug }, { slug: idOrSlug }],
+      AND: [
+        { OR: [{ visibility: "PUBLIC" }, ...(viewerId ? [{ userId: viewerId }] : [])] },
+      ],
+    },
+    select: IDEA_SELECT,
+  });
+  if (!row) return null;
+
+  const [saved, materials] = await Promise.all([
+    savedIdSet(viewerId, [row.id]),
+    listRoomMaterials(row.id),
+  ]);
+
+  return {
+    pin: toIdeaView(row, saved),
+    materials,
+    totalPaise: materials.reduce((sum, line) => sum + line.linePaise, 0),
+  };
+}
+
+/**
+ * The priced lines for one room.
+ *
+ * Numbered so the dots on the photograph run 1..n with no gaps: lines
+ * that carry a coordinate are numbered first, in their stored order, and
+ * the lines with no dot — the cement under the floor, the adhesive
+ * behind the tile — follow. A list numbered in storage order instead
+ * would put dot 4 between dots 1 and 2 on the photograph as soon as one
+ * line in the middle had no coordinate.
+ */
+export async function listRoomMaterials(ideaId: string): Promise<RoomMaterial[]> {
+  const hotspots = await db.studioHotspot.findMany({
+    where: { ideaId },
+    orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+  });
+  if (hotspots.length === 0) return [];
+
+  const products = await listProductsBySlugs(hotspots.map((h) => h.productSlug));
+  const bySlug = new Map(products.map((p) => [p.slug, p]));
+
+  /* Pinned lines first, then the rest — see the note above on numbering. */
+  const ordered = [
+    ...hotspots.filter((h) => h.x !== null && h.y !== null),
+    ...hotspots.filter((h) => h.x === null || h.y === null),
+  ];
+
+  const lines: RoomMaterial[] = [];
+  for (const hotspot of ordered) {
+    const product = bySlug.get(hotspot.productSlug);
+    if (!product) continue;
+
+    /* The variant the room actually used, or the cheapest active one. A
+       room that named a variant which has since been retired falls back
+       rather than dropping the line: it is still the right product, and
+       still a real price. */
+    const variant =
+      product.variants.find((v) => v.id === hotspot.variantId) ?? product.variants[0];
+    if (!variant) continue;
+
+    lines.push({
+      id: hotspot.id,
+      number: lines.length + 1,
+      x: hotspot.x,
+      y: hotspot.y,
+      product,
+      variant,
+      qty: hotspot.qty,
+      unit: hotspot.unit,
+      /* Rounded per line, not at the end. `summariseItems` carries the
+         reasoning: a fraction of a paisa per line, accumulated over
+         eighteen of them, gives a total that does not equal the sum of
+         what is on screen. */
+      linePaise: Math.round(hotspot.qty * variant.price),
+    });
+  }
+
+  return lines;
+}
+
+/* ---- Designers ----------------------------------------------------------- */
+
+/**
+ * The designers with public rooms.
+ *
+ * Empty until a real person is entered into `studio_designers`, and that
+ * is the correct state rather than a gap to fill with plausible names.
+ * `src/lib/data/services.ts` sets the rule and gives the reason: there is
+ * no vendor roster behind this app, and a page of invented professionals
+ * beside a real catalogue is the single most damaging thing a
+ * marketplace can ship. The Designers tab says so in words.
+ */
+export async function listDesigners(): Promise<DesignerView[]> {
+  const rows = await db.studioDesigner.findMany({
+    orderBy: { name: "asc" },
+    include: {
+      _count: { select: { ideas: { where: { kind: "SPACE", visibility: "PUBLIC" } } } },
+    },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    headline: row.headline,
+    bio: row.bio,
+    avatarPath: row.avatarPath,
+    serviceSlug: row.serviceSlug,
+    roomCount: row._count.ideas,
+  }));
+}
+
+export async function getDesignerBySlug(
+  slug: string,
+): Promise<{ designer: DesignerView; rooms: IdeaView[] } | null> {
+  const row = await db.studioDesigner.findUnique({
+    where: { slug },
+    include: {
+      _count: { select: { ideas: { where: { kind: "SPACE", visibility: "PUBLIC" } } } },
+    },
+  });
+  if (!row) return null;
+
+  const rooms = await db.studioIdea.findMany({
+    where: { designerId: row.id, kind: "SPACE", visibility: "PUBLIC" },
+    orderBy: { createdAt: "desc" },
+    select: IDEA_SELECT,
+    take: 60,
+  });
+
+  return {
+    designer: {
+      id: row.id,
+      slug: row.slug,
+      name: row.name,
+      headline: row.headline,
+      bio: row.bio,
+      avatarPath: row.avatarPath,
+      serviceSlug: row.serviceSlug,
+      roomCount: row._count.ideas,
+    },
+    rooms: rooms.map((r) => toIdeaView(r, null)),
+  };
 }
 
 export interface NewIdeaInput {
@@ -854,6 +1128,10 @@ function toSpaceView(
     name: row.name,
     room: ROOM_FROM_DB[row.room],
     description: row.description,
+    /* The collage is built by `listSpaces`, which is the only caller with
+       the board's pins in hand. Everywhere else a board is read one at a
+       time and its cover alone is the picture. */
+    coverUrls: row.coverIdea ? [imageUrlFor(row.coverIdea)] : [],
     coverUrl: row.coverIdea ? imageUrlFor(row.coverIdea) : null,
     ideaCount: totals.ideas,
     productCount: totals.products,
@@ -875,7 +1153,18 @@ export async function listSpaces(userId: string): Promise<SpaceView[]> {
 
   const items = await db.studioSpaceItem.findMany({
     where: { spaceId: { in: rows.map((r) => r.id) } },
-    select: { spaceId: true, kind: true, qty: true, unitPricePaise: true },
+    orderBy: { createdAt: "desc" },
+    select: {
+      spaceId: true,
+      kind: true,
+      qty: true,
+      unitPricePaise: true,
+      /* The image columns ride along for the cover collage. Still one
+         query for every board on the page — a collage built with its own
+         "three pins per board" query would be one round trip per card,
+         which is exactly what this function exists to avoid. */
+      idea: { select: { id: true, assetPath: true, fileId: true } },
+    },
   });
 
   const bySpace = new Map<string, typeof items>();
@@ -885,18 +1174,38 @@ export async function listSpaces(userId: string): Promise<SpaceView[]> {
     else bySpace.set(item.spaceId, [item]);
   }
 
-  return rows.map((row) =>
-    toSpaceView(
-      row,
-      summariseItems(
-        (bySpace.get(row.id) ?? []).map((i) => ({
-          kind: ITEM_KIND_FROM_DB[i.kind],
-          qty: i.qty,
-          unitPricePaise: i.unitPricePaise,
-        })),
+  return rows.map((row) => {
+    const own = bySpace.get(row.id) ?? [];
+
+    /* The chosen cover first, then the most recent pins after it, with
+       no repeats — a collage whose three panes are the same photograph
+       three times is worse than one pane. */
+    const covers: string[] = [];
+    const cover = row.coverIdea ? imageUrlFor(row.coverIdea) : null;
+    if (cover) covers.push(cover);
+    for (const item of own) {
+      if (covers.length >= 3) break;
+      if (!item.idea) continue;
+      const url = imageUrlFor(item.idea);
+      if (!covers.includes(url)) covers.push(url);
+    }
+
+    return {
+      /* `coverUrls` below replaces the single-cover default
+         `toSpaceView` sets. */
+      ...toSpaceView(
+        row,
+        summariseItems(
+          own.map((i) => ({
+            kind: ITEM_KIND_FROM_DB[i.kind],
+            qty: i.qty,
+            unitPricePaise: i.unitPricePaise,
+          })),
+        ),
       ),
-    ),
-  );
+      coverUrls: covers,
+    };
+  });
 }
 
 const ITEM_SELECT = {

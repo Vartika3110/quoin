@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { StudioShell } from "@/components/storefront/studio/StudioShell";
-import { StudioHeader } from "@/components/storefront/studio/StudioHeader";
+import { StudioChrome } from "@/components/storefront/studio/StudioChrome";
 import { UploadIdea } from "@/components/storefront/studio/UploadIdea";
 import { SignInPrompt } from "@/components/storefront/account/SignInPrompt";
 import { getSession } from "@/lib/auth/session";
@@ -17,10 +17,7 @@ export default async function UploadIdeaPage() {
   return (
     <StudioShell
       header={
-        <StudioHeader
-          title="Add inspiration"
-          subtitle="A room you have finished, or one you are working on. Tag what it is made of and Studio will look for those materials in the catalogue."
-        />
+        <StudioChrome title="Add inspiration" subtitle="A room you have finished, or one you are working on. Tag what it is made of and Studio will look for those materials in the catalogue." />
       }
     >
       <div className="px-5 lg:px-0">

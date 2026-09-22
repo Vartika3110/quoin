@@ -2,54 +2,50 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { DiscoveryFeed } from "@/components/storefront/studio/DiscoveryFeed";
 import { Search } from "@/components/icons";
-import type { IdeaView, StudioRoom } from "@/lib/types/studio";
+import { StudioFilters } from "@/components/storefront/studio/StudioFilters";
+import { PinGrid } from "@/components/storefront/studio/PinGrid";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Sparkle } from "@/components/icons";
+import type { RoomFacet } from "@/lib/data/studio";
+import type { IdeaView } from "@/lib/types/studio";
+import { toQueryString, type StudioFilters as Filters } from "@/lib/studio/query";
 
 /**
  * Searching Studio.
  *
- * A real page at a real URL, not a filter in a header. `?q=japandi` can
- * be linked, bookmarked, shared and reached with the back button, which
- * is what makes search worth having at all.
+ * The same wall, the same three filter rows and the same masonry as
+ * `/studio` — this page adds a field and a term, and nothing else. It
+ * used to be a different component with its own tab strip and its own
+ * filter rail, which is how a search page and the page it searches start
+ * disagreeing about what a filter does.
  *
- * Submitting navigates rather than fetching. The server then renders the
- * first page of results the same way `/studio` renders the feed — the
- * result is on screen in the first paint, and `DiscoveryFeed` takes over
- * for filters, tabs and pagination from there. One feed component, three
- * pages.
- *
- * Deliberately narrower than section 22 asks for. That section wants one
- * search across ideas, spaces, projects, products, materials and
- * creators. Products already have a search — the header's palette, over
- * `/api/v1/search`, which knows about category synonyms and brand
- * matching — and building a second one here that answered differently for
- * the same word would be worse than sending people to the one that
- * works. So this searches ideas, and says so, and links out for the rest.
+ * The first result is server-rendered, so it is on screen in the first
+ * paint rather than one round trip after it.
  */
 export function StudioSearch({
   query,
   initial,
   initialCursor,
   facets,
+  filters,
+  resultCount,
 }: {
   query: string;
   initial: IdeaView[];
   initialCursor: string | null;
-  facets: {
-    rooms: { room: StudioRoom; count: number }[];
-    styles: string[];
-    materials: string[];
-  };
+  facets: { rooms: RoomFacet[]; styles: string[]; materials: string[] };
+  filters: Filters;
+  resultCount: number;
 }) {
   const router = useRouter();
   const [term, setTerm] = useState(query);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <header className="px-5 lg:px-0">
-        {/* Every other Studio route gets its `h1` from `StudioHeader`; this
-            one skips that header entirely to put the search field first, so
+        {/* Every other Studio route gets its `h1` from `StudioChrome`; this
+            one skips the masthead entirely to put the field first, so
             without this the page would have no top-level heading at all. */}
         <h1 className="sr-only">Search Studio</h1>
 
@@ -58,14 +54,18 @@ export function StudioSearch({
           onSubmit={(event) => {
             event.preventDefault();
             const next = term.trim();
-            /* `replace`, not `push`: a search refined four times should
-               leave one entry in history, not four, so Back returns to
-               wherever the search started. */
-            router.replace(next ? `/studio/search?q=${encodeURIComponent(next)}` : "/studio/search");
+            /* Carries the filters across, so refining a search does not
+               silently drop the room somebody already chose. `replace`,
+               not `push`: a search refined four times should leave one
+               entry in history, not four. */
+            const search = toQueryString(
+              { ...filters, q: next || null },
+            );
+            router.replace(search ? `/studio/search?${search}` : "/studio/search");
           }}
         >
           <label htmlFor="studio-search" className="sr-only">
-            Search inspiration
+            Search rooms
           </label>
           <div className="flex h-12 max-w-xl items-center gap-3 rounded-full border border-line bg-surface px-5 shadow-xs focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/30">
             <Search className="size-4 shrink-0 text-faint" />
@@ -84,9 +84,7 @@ export function StudioSearch({
 
         {query ? (
           <p className="mt-3 text-body-sm text-muted">
-            {initial.length === 0
-              ? `No ideas matching “${query}”.`
-              : `Ideas matching “${query}”.`}{" "}
+            Rooms matching &ldquo;{query}&rdquo;.{" "}
             <a
               href={`/products?q=${encodeURIComponent(query)}`}
               className="font-medium text-accent hover:underline"
@@ -97,11 +95,24 @@ export function StudioSearch({
         ) : null}
       </header>
 
-      <DiscoveryFeed
+      <StudioFilters facets={facets} filters={filters} resultCount={resultCount} />
+
+      <PinGrid
         initial={initial}
         initialCursor={initialCursor}
-        facets={facets}
-        query={query || undefined}
+        queryString={toQueryString(filters, { tab: "new" })}
+        label="Search results"
+        empty={
+          <EmptyState
+            icon={<Sparkle className="size-6" />}
+            title={query ? `Nothing matching “${query}”` : "Nothing matches those filters"}
+            action={{ href: "/studio", label: "Browse every room" }}
+            compact
+          >
+            Studio searches the room titles and the tags on them. The catalogue
+            is a different search — the link above the grid goes there.
+          </EmptyState>
+        }
       />
     </div>
   );

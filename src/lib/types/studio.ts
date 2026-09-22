@@ -1,4 +1,4 @@
-import type { Paise } from "@/lib/types/catalog";
+import type { Paise, Product, Variant } from "@/lib/types/catalog";
 
 /**
  * Project Studio's vocabulary, without the database.
@@ -55,8 +55,17 @@ export const ROOM_LABEL: Record<StudioRoom, string> = {
 
 export const ROOMS: StudioRoom[] = Object.keys(ROOM_LABEL) as StudioRoom[];
 
-/* ---- Visibility ---------------------------------------------------------- */
+/* ---- What a photograph is ------------------------------------------------ */
 
+/**
+ * `space` is a finished room; `product` is everything else — a tool, a
+ * bag of cement, a tray of handles.
+ *
+ * The discovery feed shows only `space`. See `StudioIdeaKind` in
+ * `prisma/schema.prisma` for why the database default is the *exclusive*
+ * value rather than the inclusive one.
+ */
+export type IdeaKind = "space" | "product";
 
 /* ---- Visibility ---------------------------------------------------------- */
 
@@ -104,6 +113,11 @@ export interface IdeaView {
   slug: string;
   title: string;
   description: string;
+  kind: IdeaKind;
+  /** "3BHK · Dwarka". Null when nobody said, which is most of them. */
+  location: string | null;
+  /** Null until a real professional is in the table. See `StudioDesigner`. */
+  designer: DesignerRef | null;
   /** Ready to put in `src`. See `imageUrlFor`. */
   imageUrl: string;
   /** The real pixel dimensions. The masonry grid needs the ratio before
@@ -117,6 +131,10 @@ export interface IdeaView {
   colors: Swatch[];
   visibility: Visibility;
   saveCount: number;
+  /** How many catalogue lines this room is made of — the "N items" on the
+      card's shop pill. Counted rather than joined: the grid needs the
+      number and none of the rows. */
+  materialCount: number;
   /** Whether *this viewer* has saved it. Null when signed out — which is
       not `false`: a signed-out visitor has no save state, and rendering a
       hollow heart as though they had one is a lie the moment they sign
@@ -133,8 +151,12 @@ export interface SpaceView {
   name: string;
   room: StudioRoom;
   description: string;
-  /** The cover, or the most recently added idea, or null for a new Space. */
+  /** The cover, or the most recently added idea, or null for a new board. */
   coverUrl: string | null;
+  /** Up to three of the board's pins, for the cover collage — the cover
+      first, then the next most recent. Fewer than three is normal and the
+      collage draws what it has rather than padding with grey boxes. */
+  coverUrls: string[];
   ideaCount: number;
   productCount: number;
   budgetPaise: Paise;
@@ -187,6 +209,84 @@ export interface MoodboardView {
   canvasWidth: number;
   canvasHeight: number;
   items: MoodboardItemView[];
+}
+
+/* ---- Designers ----------------------------------------------------------- */
+
+/** Enough of a designer to put a byline on a pin and link to their page. */
+export interface DesignerRef {
+  slug: string;
+  name: string;
+  headline: string;
+}
+
+export interface DesignerView extends DesignerRef {
+  id: string;
+  bio: string;
+  avatarPath: string | null;
+  serviceSlug: string | null;
+  /** How many public rooms they have. */
+  roomCount: number;
+}
+
+/* ---- What a room is made of ---------------------------------------------- */
+
+/**
+ * One line of a room's materials list, priced from the catalogue now.
+ *
+ * `number` is the dot on the photograph and the number in the list, and
+ * they are the same number on purpose: a reader who taps dot 3 is looking
+ * for row 3, and two numbering schemes over one set of products is a
+ * puzzle rather than a feature. Lines with no coordinate — the cement
+ * under the floor, the adhesive behind the tile — are numbered after the
+ * ones that have one, so the dots run 1..n with no gaps.
+ *
+ * `linePaise` is `qty × unitPricePaise`, rounded once per line for the
+ * reason `summariseItems` gives: rounding at the end produces a total
+ * that does not equal the sum of what is on screen.
+ */
+export interface RoomMaterial {
+  id: string;
+  number: number;
+  /** Percent of the photograph, 0–100. Null for a line with no dot. */
+  x: number | null;
+  y: number | null;
+  /**
+   * The whole catalogue row, not a copy of four of its fields.
+   *
+   * The "Add" on each line puts this in the cart, and the cart's line
+   * snapshot wants a dozen things — sku, MRP, fulfilment, lead time, the
+   * quantity grid. Carrying the product itself means Add is instant and
+   * there is exactly one description of a product in the app; carrying a
+   * hand-picked subset means a second one that drifts.
+   */
+  product: Product;
+  /** The variant this room used, or the cheapest active one when the one
+      it named has since been retired. */
+  variant: Variant;
+  /** How much of it the room used. */
+  qty: number;
+  /** The word the room wrote next to the number — "bags", "sq.ft.".
+      Display only; the priced unit is `product.pricingUnit`. */
+  unit: string;
+  /** `qty × variant.pricePaise`, rounded once. */
+  linePaise: Paise;
+}
+
+/**
+ * A space pin with everything the detail view draws.
+ *
+ * Composed rather than extending `IdeaView`, because `IdeaView.materials`
+ * is already the *tag* list — the words someone typed on the photograph,
+ * "oak", "brass" — and this `materials` is the priced bill of what is in
+ * the room. Two different things with one right name each; widening the
+ * tag field to hold both would make every existing reader of it wrong.
+ */
+export interface SpacePinView {
+  pin: IdeaView;
+  materials: RoomMaterial[];
+  /** The sum of the lines. Today's list price, and labelled as that. */
+  totalPaise: Paise;
 }
 
 /* ---- Image URLs ---------------------------------------------------------- */
