@@ -368,16 +368,23 @@ function MobileBar({
             type="button"
             onClick={open}
             aria-label="Search Quoin"
-            className="tap-target anim-fade relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
+            className="tap-target anim-fade relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink transition-colors hover:text-accent"
           >
-            <Search className="size-4.5" />
+            <Search className="size-5" />
           </button>
         )}
 
         {/* 36px of artwork, 44px of target — see `.tap-target`. Three
             circles this size sit in a row a thumb has to hit while
             walking a site, and the visual size is what the design fixes,
-            not the reach. */}
+            not the reach.
+
+            The glyphs are `text-ink`, not `text-muted`. A 20px line icon
+            is thin enough that muted against the cream ground lands near
+            3:1, which is under the 4.5:1 these have to clear — and a
+            header control that is hard to see is one that gets tapped by
+            accident. Hover goes to the accent rather than back to ink,
+            so there is still somewhere for the state to move. */}
         <ThemeToggle className="tap-target relative" />
         <CartTotalPill onClick={onOpenCart} />
         {signedIn && <NotificationBell buttonClassName="tap-target relative" />}
@@ -385,9 +392,9 @@ function MobileBar({
         <Link
           href="/account"
           aria-label="Account"
-          className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-muted transition-colors hover:text-ink"
+          className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink transition-colors hover:text-accent"
         >
-          <User className="size-4.5" />
+          <User className="size-5" />
         </Link>
       </div>
 
@@ -460,7 +467,7 @@ function MobileSearchField({ className }: { className?: string }) {
         aria-label="Search by photo — upload a parcha"
         className="tap-target relative grid size-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-hover hover:text-ink"
       >
-        <Camera className="size-4.5" />
+        <Camera className="size-5" />
       </Link>
 
       {/* Renders nothing where the Web Speech API is absent, so the
@@ -579,7 +586,7 @@ function CartButton({ onClick }: { onClick: () => void }) {
          reader announcing "Cart" alone loses the one thing the badge is
          there to say. */
       aria-label={ready && count > 0 ? `Cart, ${count} items` : "Cart"}
-      className="relative grid size-11 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-ink lg:size-10"
+      className="relative grid size-11 shrink-0 place-items-center rounded-lg text-ink transition-colors hover:bg-hover hover:text-accent"
     >
       <Cart className="size-5" />
       {ready && count > 0 && (
@@ -601,7 +608,7 @@ function WishlistButton() {
     <Link
       href="/account/wishlist"
       aria-label={ready && count > 0 ? `Saved products, ${count} items` : "Saved products"}
-      className="relative grid size-10 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-ink"
+      className="relative grid size-11 shrink-0 place-items-center rounded-lg text-ink transition-colors hover:bg-hover hover:text-accent"
     >
       <Heart className="size-5" />
       {ready && count > 0 && (

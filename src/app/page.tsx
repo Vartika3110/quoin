@@ -15,13 +15,14 @@ import { RecentlyViewed } from "@/components/storefront/home/RecentlyViewed";
 import { TrustBar, TrustStrip } from "@/components/storefront/home/TrustBar";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
+import { StudioRow } from "@/components/storefront/home/StudioRow";
 import {
   FinalCta,
   ParchaPromo,
   ProjectHubPromo,
   ProPromo,
 } from "@/components/storefront/home/Promos";
-import { Gutter, PageSections, SectionHead } from "@/components/ui/Section";
+import { Gutter, PageSections, SectionHead, hasEnough } from "@/components/ui/Section";
 import {
   getCategories,
   getCategoryPriceFloors,
@@ -29,6 +30,7 @@ import {
   listDiscountedProducts,
 } from "@/lib/data/catalog";
 import { listServices } from "@/lib/data/services";
+import { listTopRooms } from "@/lib/data/studio";
 import { formatPrice } from "@/lib/types/catalog";
 import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
 
@@ -63,7 +65,7 @@ export const dynamic = "force-dynamic";
  * the two products — Project Hub and Pro — that make it more than a shop.
  */
 export default async function HomePage() {
-  const [categories, picks, priceFloors, services, deals, chosen] =
+  const [categories, picks, priceFloors, services, deals, rooms, chosen] =
     await Promise.all([
       getCategories(),
       getTopPicks(),
@@ -73,12 +75,24 @@ export default async function HomePage() {
          set MRP equal to the sell price, so this is usually empty — and a
          "Deals for you" rail with nothing in it is worse than no rail. */
       listDiscountedProducts(1, 10),
+      /* Six: five for the row and one spare, so the hero's picture is
+         the best-saved room and the row beneath it still has five. */
+      listTopRooms(6),
       cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
     ]);
 
-  /* Six tiles: a full row of three at `lg` twice over, and three across on
-     a tablet. The rest are behind the section's own "See all". */
-  const featured = categories.slice(0, 6);
+  /* The hero's photograph is Studio's best-saved room — see the note in
+     `Hero`. Null until Studio has one, which the hero handles. */
+  const heroRoom = rooms[0]
+    ? { url: rooms[0].imageUrl, blurDataUrl: rooms[0].blurDataUrl }
+    : null;
+
+  /* Eight tiles: two full rows of four. Four across is what the brief
+     asks for and what the rest of this page is built on — the quick
+     actions, the services row and the entry cards are all fours, and a
+     three-across band in the middle of them reads as a different page.
+     The rest are behind the section's own "See all". */
+  const featured = categories.slice(0, 8);
 
   return (
     <AppShell fullBleed headerSlot={<EntryCards />}>
@@ -99,7 +113,7 @@ export default async function HomePage() {
           </div>
 
           <div className="hidden lg:block">
-            <Hero chosen={chosen} />
+            <Hero chosen={chosen} photo={heroRoom} />
           </div>
 
           {/* Reassurance immediately under the banner, where the design
@@ -150,7 +164,7 @@ export default async function HomePage() {
               categories={categories.slice(0, 4)}
               priceFloors={priceFloors}
             />
-            <div className="hidden grid-cols-3 gap-3 lg:grid">
+            <div className="hidden grid-cols-4 gap-3 lg:grid">
               {featured.map((category, i) => {
                 const floor = priceFloors.get(category.id);
                 return (
@@ -158,8 +172,13 @@ export default async function HomePage() {
                     key={category.id}
                     category={category}
                     fill
+                    /* Landscape, which at a quarter of the 1400px column
+                       is about 240px tall — deep enough for the scrim and
+                       two lines of type, shallow enough that two rows do
+                       not own the screen. */
+                    ratio="landscape"
                     /* The first row is above the fold on a desktop. */
-                    priority={i < 3}
+                    priority={i < 4}
                     descriptor={CATEGORY_DESCRIPTOR[category.slug]}
                     caption={
                       floor != null
@@ -172,25 +191,32 @@ export default async function HomePage() {
             </div>
           </section>
 
-          <section>
-            <SectionHead
-              title="Project Essentials"
-              subtitle="Photographed lines from across the catalogue."
-              href="/products"
-              linkLabel="View all"
-            />
-            {/* A rail on a phone, a grid from `lg`.
+          {/* Four or nothing — see `hasEnough`. This section renders one
+              product today, under a heading that says "Project
+              Essentials", which does not read as a small selection; it
+              reads as a query that failed, and it makes every other
+              number on the page look unreliable. */}
+          {hasEnough(picks) && (
+            <section>
+              <SectionHead
+                title="Project Essentials"
+                subtitle="Photographed lines from across the catalogue."
+                href="/products"
+                linkLabel="View all"
+              />
+              {/* A rail on a phone, a grid from `lg`.
 
-                `.rail` is flex and its children refuse to shrink, so the
-                cards carry their own width there; `lg:grid` overrides the
-                display and `fill` is not passed, which is why the card's
-                own `lg:w-auto` exists. */}
-            <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-6">
-              {picks.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          </section>
+                  `.rail` is flex and its children refuse to shrink, so
+                  the cards carry their own width there; `lg:grid`
+                  overrides the display and `fill` is not passed, which is
+                  why the card's own `lg:w-auto` exists. */}
+              <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-6">
+                {picks.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* The index. Phone only — see the note on Shop by Category. */}
           <section className="lg:hidden">
@@ -218,7 +244,22 @@ export default async function HomePage() {
             <Rooms />
           </section>
 
-          {deals.items.length > 0 && (
+          {/* Four or nothing again: five image cards is the shape, and a
+              Studio row of two rooms is an advertisement for how empty
+              Studio is. */}
+          {hasEnough(rooms) && (
+            <section>
+              <SectionHead
+                title="From the Studio"
+                subtitle="Finished rooms, and what each one is made of."
+                href="/studio"
+                linkLabel="Open Studio"
+              />
+              <StudioRow rooms={rooms} />
+            </section>
+          )}
+
+          {hasEnough(deals.items) && (
             <section>
               <SectionHead
                 title="Under List Price"

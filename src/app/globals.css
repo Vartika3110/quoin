@@ -779,6 +779,64 @@ body {
   animation: quoin-spin 700ms linear infinite;
 }
 
+/* ---- Marquee -------------------------------------------------------------
+ *
+ * One track, rendered twice, translated by exactly half its own width and
+ * looped. That is what makes the seam invisible: at -50% the second copy
+ * sits precisely where the first one started, so the reset is a frame the
+ * eye cannot find. A single copy scrolled to its end and snapped back
+ * would show the gap every time round.
+ *
+ * `width: max-content` rather than a fixed width, because the roster is
+ * hand-kept and its length changes; the animation is a percentage of
+ * whatever the two copies actually measure.
+ *
+ * Paused while a finger or a pointer is on it — a row that keeps moving
+ * under a thumb is a row you cannot tap — and stopped entirely under
+ * `prefers-reduced-motion`, where the block below leaves the two copies
+ * sitting still and horizontally scrollable by hand.
+ */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 4%,
+    #000 96%,
+    transparent
+  );
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent);
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: quoin-marquee 38s linear infinite;
+}
+
+.marquee:hover .marquee-track,
+.marquee:active .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes quoin-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+  }
+  .marquee-track {
+    animation: none;
+  }
+}
+
 /* Reduced motion is a request, not a hint. Everything animated above is
    decoration over a state change that has already happened, so removing
    the animation entirely loses nothing. */

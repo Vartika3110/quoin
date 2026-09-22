@@ -832,6 +832,27 @@ export async function listRoomMaterials(ideaId: string): Promise<RoomMaterial[]>
   return lines;
 }
 
+/**
+ * The best-saved rooms, for the home page.
+ *
+ * Used twice there — the hero's photograph and the "From the Studio" row
+ * — and it is one query for both, which is also what stops the hero
+ * picture being a room that does not appear in the row beneath it.
+ *
+ * Ordered by saves, then recency. `saveCount` is denormalised on the row
+ * (see the schema) precisely so a popularity sort is an index scan rather
+ * than a count per idea.
+ */
+export async function listTopRooms(limit = 6): Promise<IdeaView[]> {
+  const rows = await db.studioIdea.findMany({
+    where: { kind: "SPACE", visibility: "PUBLIC" },
+    orderBy: [{ saveCount: "desc" }, { createdAt: "desc" }],
+    select: IDEA_SELECT,
+    take: limit,
+  });
+  return rows.map((row) => toIdeaView(row, null));
+}
+
 /* ---- Designers ----------------------------------------------------------- */
 
 /**

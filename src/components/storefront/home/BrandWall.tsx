@@ -24,12 +24,28 @@ import { brandKey, getBrandLinkTargets } from "@/lib/data/catalog";
  * last row, while a centred wrap keeps a short final row balanced at any
  * count.
  *
- * On a phone the wall becomes a rail of pills — see `BrandRail` below.
+ * **Grey, at one height, until you point at one.** Fourteen logos in
+ * fourteen brand colours is fourteen things competing with the page —
+ * Dorset's purple, Ozone's blue, Berger's red — and a row of marks set at
+ * whatever height each one happens to want reads as a clip-art collage.
+ * Desaturating them makes the row one texture, which is how a logo wall
+ * is actually read, and colour returning on hover confirms the mark is a
+ * link without a second affordance. `grayscale` is a filter, not an
+ * edit: the artwork on disk is untouched and a brand that objects is one
+ * class away from being exempt.
+ *
+ * On a phone the wall becomes an auto-scrolling marquee — see
+ * `BrandRail` below.
  */
 export async function BrandWall() {
   const targets = await getBrandLinkTargets();
 
   return (
+    /* One content card behind the whole row, not a card per logo: the
+       marks are cut out on white, and after dark a fourteen-card grid put
+       a white rectangle behind every one of them — the row became boxes
+       with logos in them rather than logos. `bg-photo` exists for exactly
+       this and stays near-white in both palettes. */
     <div className="hidden rounded-card border border-photo-edge bg-photo px-4 py-6 lg:block lg:rounded-2xl lg:px-8 lg:py-8">
       {/* Seven across from `lg` puts the fourteen marks in two even rows. */}
       <div className="flex flex-wrap justify-center gap-3 lg:gap-4">
@@ -60,13 +76,13 @@ export async function BrandWall() {
                  front costs nothing and `object-contain` letterboxes the
                  artwork inside it exactly as the maximums would have.
 
-                 The box is taller than the wordmarks need because
-                 `object-contain` scales to whichever edge binds first:
-                 wide marks like Mars stop at the cell width long before
-                 they reach this height, while square ones — Ambuja,
-                 Häfele — are held by it, and at a shorter height they
-                 shrank to specks beside their neighbours. */
-              className="h-9 w-full object-contain lg:h-12"
+                 26px for every mark, which is the uniform height the
+                 brief asks for and the reason the row reads as one line
+                 rather than as logos of assorted importance.
+                 `object-contain` letterboxes inside it: wide marks stop
+                 at the cell width long before they reach the height,
+                 square ones are held by it. */
+              className="h-[26px] w-full object-contain grayscale transition-[filter,opacity] duration-200 group-hover/logo:grayscale-0"
             />
           );
 
@@ -75,7 +91,7 @@ export async function BrandWall() {
               key={slug}
               href={`/products?brand=${target}`}
               aria-label={name}
-              className={`${cell} opacity-90 transition-opacity duration-200 hover:opacity-100`}
+              className={`${cell} group/logo opacity-80 transition-opacity duration-200 hover:opacity-100`}
             >
               {plate}
             </Link>
@@ -91,42 +107,52 @@ export async function BrandWall() {
 }
 
 /**
- * The same roster, as a swipeable rail, on a phone.
+ * The same roster, moving, on a phone.
  *
  * Fourteen marks wrapped into a wall is four rows of tiny artwork at
  * 375px — the whole point of the wall, that it reads as one texture, is
- * lost when each row holds four specks. A rail gives every mark a pill
- * wide enough to read, and swiping past ten to reach Mars costs nothing
- * because nobody is looking for a particular one; they are checking that
- * the names they know are here.
+ * lost when each row holds four specks. A rail solved that and left the
+ * last four brands behind a swipe nobody performs, which for a roster
+ * whose job is "the names you know are here" is the same as not showing
+ * them.
  *
- * Each pill is the mark on the same near-white ground the wall uses,
- * for the same reason: half the roster is dark ink and would vanish
- * against the dark palette's card.
+ * So it scrolls itself. The track is rendered twice and translated by
+ * half its width — see `.marquee` in `globals.css` for why that is what
+ * makes the loop seamless — and the second copy is `aria-hidden`, so a
+ * screen reader is read fourteen brands and not twenty-eight. It pauses
+ * under a finger, and `prefers-reduced-motion` turns it back into the
+ * hand-scrolled rail it was.
+ *
+ * Each mark sits on the same near-white ground the wall uses, for the
+ * same reason: half the roster is dark ink and would vanish against the
+ * dark palette's card. Grey, like the wall, so the two agree.
  */
 export async function BrandRail() {
   const targets = await getBrandLinkTargets();
 
-  return (
-    <div className="rail gap-2.5 px-5 scroll-pl-5 lg:hidden">
+  const track = (hidden: boolean) => (
+    <div
+      className="flex shrink-0 items-center gap-2.5 pr-2.5"
+      aria-hidden={hidden || undefined}
+    >
       {BRAND_WALL.map(({ slug, name, logo }) => {
         const target = targets.get(brandKey(name)) ?? targets.get(slug);
 
         const pill =
-          "grid h-14 w-32 place-items-center rounded-full border border-photo-edge bg-photo px-4";
+          "grid h-14 w-32 shrink-0 place-items-center rounded-full border border-photo-edge bg-photo px-4";
 
         const plate = (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={logo}
-            alt={name}
+            alt={hidden ? "" : name}
             loading="lazy"
             decoding="async"
-            className="h-7 w-full object-contain"
+            className="h-[26px] w-full object-contain grayscale"
           />
         );
 
-        return target ? (
+        return target && !hidden ? (
           <Link
             key={slug}
             href={`/products?brand=${target}`}
@@ -136,11 +162,20 @@ export async function BrandRail() {
             {plate}
           </Link>
         ) : (
-          <div key={slug} className={pill}>
+          <div key={`${slug}${hidden ? "-copy" : ""}`} className={pill}>
             {plate}
           </div>
         );
       })}
+    </div>
+  );
+
+  return (
+    <div className="marquee px-5 lg:hidden">
+      <div className="marquee-track">
+        {track(false)}
+        {track(true)}
+      </div>
     </div>
   );
 }

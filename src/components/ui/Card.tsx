@@ -328,7 +328,15 @@ export function ContentCard({
           {rows.map((row) => (
             <div key={row.term} className="flex gap-2">
               <dt className="w-16 shrink-0 text-faint">{row.term}</dt>
-              <dd className="min-w-0 flex-1 text-muted">{row.detail}</dd>
+              {/* Clamped to two lines and held at two lines' height, so
+                  four of these side by side line up. Without the floor, a
+                  one-line "Pricing" under a two-line one puts the
+                  footers on different baselines even though every card is
+                  the same height; without the ceiling, a three-line
+                  detail does the same in the other direction. */}
+              <dd className="line-clamp-2 min-h-[2.75em] min-w-0 flex-1 leading-snug text-muted">
+                {row.detail}
+              </dd>
             </div>
           ))}
         </dl>

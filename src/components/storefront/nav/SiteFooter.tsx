@@ -15,6 +15,18 @@ import { Shield, Truck, Headset, CheckCircle } from "@/components/icons";
  * without hiding anything behind a disclosure, which is the other way
  * this gets solved and the one that makes a link unfindable.
  *
+ * **Installed, almost all of this goes.** A footer is how a web page
+ * ends; an app does not end, and nobody has ever scrolled to the bottom
+ * of a tab to navigate. Under `app:` the trust row, the wordmark and the
+ * three link columns are hidden and every destination in them is reached
+ * the way it already is on a phone — the four tabs, the header menu, and
+ * the home page's own entry cards and quick actions.
+ *
+ * The one thing that stays is the last line, and it stays because it is a
+ * disclosure rather than navigation: prices include GST, delivery times
+ * are scoped to the areas at checkout. That does not become optional
+ * because the customer installed the icon.
+ *
  * The trust row is four claims Quoin can actually stand behind — a
  * verified-supplier catalogue, a delivery promise scoped per item, staffed
  * support, and returns. Nothing here says "100% genuine" or "best price",
@@ -50,6 +62,21 @@ const COLUMNS = [
       { href: "/pro", label: "Quoin Pro" },
     ],
   },
+  /* Not optional decoration. An Indian e-commerce site takes payments
+     through a gateway, and Razorpay, PayU and Cashfree all require these
+     five pages — and a named grievance officer with a response time — to
+     be reachable from every page before they will activate an account.
+     The footer is where a reviewer looks for them. */
+  {
+    title: "Legal",
+    links: [
+      { href: "/privacy", label: "Privacy policy" },
+      { href: "/terms", label: "Terms of service" },
+      { href: "/refunds", label: "Refunds & cancellations" },
+      { href: "/grievance", label: "Grievance officer" },
+      { href: "/contact", label: "Contact us" },
+    ],
+  },
 ];
 
 const TRUST = [
@@ -61,7 +88,7 @@ const TRUST = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-line-soft bg-surface">
+    <footer className="mt-16 border-t border-line-soft bg-surface app:mt-6 app:border-t-0 app:bg-transparent">
       {/* The bottom padding on a phone clears the fixed bars, and there
           can still be two: the tab bar is about 60px and the floating
           cart bar adds roughly 76 above it. A page's own `StickyBar` is
@@ -72,8 +99,8 @@ export function SiteFooter() {
           alternative is making the footer a client component to ask
           whether a bar is mounted, and the cost of being wrong is 48px of
           blank paper. */}
-      <div className="mx-auto max-w-shell px-5 pb-36 pt-8 lg:px-6 lg:pb-14 lg:pt-14">
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-line-hair pb-6 lg:grid-cols-4 lg:gap-4 lg:pb-8">
+      <div className="mx-auto max-w-shell px-5 pb-36 pt-8 app:pt-6 lg:px-6 lg:pb-14 lg:pt-14">
+        <ul className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-line-hair pb-6 app:hidden lg:grid-cols-4 lg:gap-4 lg:pb-8">
           {TRUST.map(({ Icon, label }) => (
             <li key={label} className="flex items-start gap-2">
               <Icon className="mt-0.5 size-4 shrink-0 text-accent" />
@@ -84,7 +111,7 @@ export function SiteFooter() {
           ))}
         </ul>
 
-        <div className="pt-7 lg:grid lg:grid-cols-[1.5fr_repeat(3,1fr)] lg:gap-8 lg:pt-8">
+        <div className="pt-7 app:hidden lg:grid lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-8 lg:pt-8">
           <div>
             <p className="font-display text-title tracking-[0.18em] text-ink lg:text-title-lg">
               QUOIN
@@ -127,7 +154,10 @@ export function SiteFooter() {
             the bubble is pinned just above the tab bar, so without the
             inset they overlap every time — on a line that says what the
             prices include, which is the one line that has to be readable. */}
-        <p className="mt-8 border-t border-line-hair pt-5 pr-20 text-micro leading-relaxed text-faint lg:mt-10 lg:pr-0 lg:pt-6">
+        {/* The `app:` resets are because everything this line was sitting
+            under is gone in the app: a rule and 32px of margin above the
+            only remaining paragraph would be a divider dividing nothing. */}
+        <p className="mt-8 border-t border-line-hair pt-5 pr-20 text-micro leading-relaxed text-faint app:mt-0 app:border-t-0 app:pt-0 lg:mt-10 lg:pr-0 lg:pt-6">
           © {new Date().getFullYear()} Quoin. Prices include GST where
           applicable. Delivery times apply to the areas listed at checkout.
         </p>
