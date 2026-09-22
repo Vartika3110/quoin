@@ -34,6 +34,11 @@ import { brandKey, getBrandLinkTargets } from "@/lib/data/catalog";
  * edit: the artwork on disk is untouched and a brand that objects is one
  * class away from being exempt.
  *
+ * Desaturated but not dimmed. An earlier pass had `opacity-80` on top of
+ * the filter, and grey artwork at four fifths on a near-white plate is
+ * faint enough that the row reads as disabled rather than as restrained.
+ * One treatment, doing one job.
+ *
  * On a phone the wall becomes an auto-scrolling marquee — see
  * `BrandRail` below.
  */
@@ -91,7 +96,7 @@ export async function BrandWall() {
               key={slug}
               href={`/products?brand=${target}`}
               aria-label={name}
-              className={`${cell} group/logo opacity-80 transition-opacity duration-200 hover:opacity-100`}
+              className={`${cell} group/logo`}
             >
               {plate}
             </Link>

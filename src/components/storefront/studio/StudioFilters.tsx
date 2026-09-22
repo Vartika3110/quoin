@@ -34,6 +34,9 @@ import {
  * A dimension with nothing in it renders nothing. An empty filter row is
  * a control that cannot do anything, taking up the space where the first
  * photograph should be.
+ *
+ * On a phone the two chip rows stick under the top bar while the wall
+ * scrolls past them — see the note at the point they are rendered.
  */
 export function StudioFilters({
   facets,
@@ -49,30 +52,62 @@ export function StudioFilters({
 }) {
   const active = countFilters(filters);
 
+  /* A fragment, not a wrapper.
+     
+     `position: sticky` only sticks inside its own parent's box, and a
+     wrapper around the three filter rows is about 220px tall — so the
+     chip row below would travel 220px and then scroll away with it,
+     which looks exactly like sticky not working at all. Returning the
+     rows as siblings makes the page's own column their parent, and that
+     column spans the whole wall. The caller supplies the gap. */
   return (
-    <div className="flex flex-col gap-4">
+    <>
       {facets.rooms.length > 0 && (
         <RoomBubbles rooms={facets.rooms} filters={filters} />
       )}
 
-      {facets.styles.length > 0 && (
-        <ChipRow
-          label="Style"
-          tags={facets.styles}
-          chosen={filters.styles}
-          dimension="style"
-          filters={filters}
-        />
-      )}
+      {/* The chips follow you down the wall on a phone; the room bubbles
+          do not.
 
-      {facets.materials.length > 0 && (
-        <ChipRow
-          label="Material"
-          tags={facets.materials}
-          chosen={filters.materials}
-          dimension="material"
-          filters={filters}
-        />
+          A reader scrolling a wall of rooms is refining, and the two
+          compact rows are what they refine with — reaching them again
+          should not mean scrolling back past forty photographs. The
+          bubbles are 80px of photography each and stay where they are:
+          sticking those as well would spend a third of the screen on
+          filters, on the one surface whose entire proposition is the
+          pictures underneath them.
+
+          `top` clears `StudioTopBar` — 56px of bar plus whatever the
+          notch takes. Written with underscores because Tailwind forbids
+          literal spaces inside `[...]` and `calc()` requires whitespace
+          around `+`; without them the declaration is invalid, the
+          browser drops it silently, and the row sticks to the very top
+          *under* the bar. See the note in `docs/design-system.md`.
+
+          Static from `lg`, where the whole filter block is above a grid
+          that starts below the fold anyway. */}
+      {(facets.styles.length > 0 || facets.materials.length > 0) && (
+        <div className="sticky top-[calc(3.5rem_+_env(safe-area-inset-top))] z-30 flex flex-col gap-2 border-b border-line-hair bg-bg/95 py-2 backdrop-blur-xl lg:static lg:border-0 lg:bg-transparent lg:py-0 lg:backdrop-blur-none">
+          {facets.styles.length > 0 && (
+            <ChipRow
+              label="Style"
+              tags={facets.styles}
+              chosen={filters.styles}
+              dimension="style"
+              filters={filters}
+            />
+          )}
+
+          {facets.materials.length > 0 && (
+            <ChipRow
+              label="Material"
+              tags={facets.materials}
+              chosen={filters.materials}
+              dimension="material"
+              filters={filters}
+            />
+          )}
+        </div>
       )}
 
       {(resultCount !== null || active > 0) && (
@@ -94,7 +129,7 @@ export function StudioFilters({
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
 
