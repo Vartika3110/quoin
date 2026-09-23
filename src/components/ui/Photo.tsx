@@ -120,7 +120,13 @@ export function MissingPhoto({
           {label}
         </span>
       ) : null}
-      <span className="text-micro uppercase tracking-[0.08em] text-faint">
+      {/* `text-muted`, not `text-faint`. Faint measures 4.30:1 on the
+          sunk ground in dark mode, which was survivable while this tile
+          was the rare miss in a grid of photographs and is not now that
+          Studio draws it on every pin. The hierarchy against the label
+          above is carried by size, weight and case, which it was
+          already. */}
+      <span className="text-micro uppercase tracking-[0.08em] text-muted">
         Photo coming soon
       </span>
     </div>

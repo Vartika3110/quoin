@@ -139,6 +139,16 @@ export function CardHeader({
  *
  * The title is the display face — this is the one place a card gets it,
  * and it is what separates an image card from a photograph with a caption.
+ *
+ * **With no photograph there is no scrim.** The scrim exists to give
+ * white type something to sit on; over the stand-in tile's cream ground
+ * it is a dark band with nothing under it, and the type on top of it
+ * stops meeting contrast the moment the theme is light. So a card with
+ * no picture drops the scrim, sets its type in ink, and says "Photo
+ * coming soon" in its own words. It does not pass a label down to
+ * `Photo` for the tile to print: this card always writes the title
+ * underneath, and a stand-in that repeats it sets the same name twice,
+ * the second time under a gradient.
  */
 export function ImageCard({
   href,
@@ -148,7 +158,6 @@ export function ImageCard({
   caption,
   ratio = "4 / 5",
   sizes,
-  label,
   blurDataURL,
   priority = false,
   unoptimized = false,
@@ -164,8 +173,6 @@ export function ImageCard({
   caption?: ReactNode;
   ratio?: string;
   sizes: string;
-  /** What the missing-photo tile says. Falls back to nothing. */
-  label?: string;
   blurDataURL?: string | null;
   priority?: boolean;
   unoptimized?: boolean;
@@ -173,40 +180,76 @@ export function ImageCard({
   overlay?: ReactNode;
   className?: string;
 }) {
+  const missing = !src;
+
   return (
     <Link
       href={href}
       className={cn(
         "group relative flex flex-col justify-end overflow-hidden rounded-card",
+        /* The tile's own ground, rather than `Photo`'s, because a card
+           with no picture renders no `Photo` at all — see below. */
+        missing && "bg-sunk",
         className,
       )}
     >
-      <Photo
-        src={src}
-        /* Decorative: the title below is inside this same link and
-           already names the thing. */
-        alt=""
-        ratio={ratio}
-        sizes={sizes}
-        label={label}
-        blurDataURL={blurDataURL}
-        priority={priority}
-        unoptimized={unoptimized}
-        className="absolute inset-0 size-full"
-        imageClassName="transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
-      />
+      {missing ? (
+        /* The reserved box, and nothing in it. `MissingPhoto` would do
+           this and also print "Photo coming soon" inside the box, which
+           this card says for itself a few lines down in type that is
+           actually legible here. */
+        <div className="absolute inset-0 size-full" style={{ aspectRatio: ratio }} />
+      ) : (
+        <Photo
+          src={src}
+          /* Decorative: the title below is inside this same link and
+             already names the thing. */
+          alt=""
+          ratio={ratio}
+          sizes={sizes}
+          blurDataURL={blurDataURL}
+          priority={priority}
+          unoptimized={unoptimized}
+          className="absolute inset-0 size-full"
+          imageClassName="transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
+        />
+      )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-deep via-deep/65 to-transparent" />
+      {!missing && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-deep via-deep/65 to-transparent" />
+      )}
 
       <div className="relative p-4">
-        <h3 className="font-display text-title-sm font-semibold leading-snug text-on-deep">
+        <h3
+          className={cn(
+            "font-display text-title-sm font-semibold leading-snug",
+            missing ? "text-ink" : "text-on-deep",
+          )}
+        >
           {title}
         </h3>
         {subtitle && (
-          <p className="mt-0.5 line-clamp-1 text-micro text-on-deep/75">{subtitle}</p>
+          <p
+            className={cn(
+              "mt-0.5 line-clamp-1 text-micro",
+              missing ? "text-muted" : "text-on-deep/75",
+            )}
+          >
+            {subtitle}
+          </p>
+        )}
+        {missing && (
+          <span className="mt-1.5 block text-micro uppercase tracking-[0.08em] text-muted">
+            Photo coming soon
+          </span>
         )}
         {caption && (
-          <span className="mt-1.5 flex items-center gap-1 text-micro text-on-deep/85">
+          <span
+            className={cn(
+              "mt-1.5 flex items-center gap-1 text-micro",
+              missing ? "text-muted" : "text-on-deep/85",
+            )}
+          >
             {caption}
             <Chevron className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
           </span>

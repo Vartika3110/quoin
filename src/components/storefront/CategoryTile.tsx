@@ -60,7 +60,6 @@ export function CategoryTile({
       title={category.title}
       subtitle={descriptor}
       caption={caption}
-      label={category.title}
       ratio={RATIO[ratio]}
       priority={priority}
       sizes="(min-width: 1280px) 340px, (min-width: 1024px) 280px, (min-width: 640px) 45vw, 80vw"

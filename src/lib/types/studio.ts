@@ -118,8 +118,9 @@ export interface IdeaView {
   location: string | null;
   /** Null until a real professional is in the table. See `StudioDesigner`. */
   designer: DesignerRef | null;
-  /** Ready to put in `src`. See `imageUrlFor`. */
-  imageUrl: string;
+  /** Ready to put in `src`, or null when there is no photograph of this
+      room yet and the tile must stand in. See `imageUrlFor`. */
+  imageUrl: string | null;
   /** The real pixel dimensions. The masonry grid needs the ratio before
       the bytes arrive or every tile reflows as photographs land. */
   width: number;
@@ -155,8 +156,14 @@ export interface SpaceView {
   coverUrl: string | null;
   /** Up to three of the board's pins, for the cover collage — the cover
       first, then the next most recent. Fewer than three is normal and the
-      collage draws what it has rather than padding with grey boxes. */
-  coverUrls: string[];
+      collage draws what it has rather than padding with grey boxes.
+
+      One entry per pin, and an entry is null when that pin has no
+      photograph yet. The length is therefore how many pins the collage
+      has to draw, which is what "No pins yet" is allowed to test — an
+      array pruned of its nulls would make a board of three unphotographed
+      rooms claim to be empty. */
+  coverUrls: (string | null)[];
   ideaCount: number;
   productCount: number;
   budgetPaise: Paise;
@@ -306,13 +313,40 @@ export interface SpacePinView {
  *    `/studio/image/{id}`, which mints a short-lived signed URL per
  *    request and redirects to it. Baking the signed URL into this string
  *    instead would put a five-minute expiry inside cached feed HTML.
+ *
+ * **Null is a third case, and it is the one every shipped pin is in
+ * today.** Studio has no room photography. The fourteen pins the seed
+ * writes borrow the catalogue's *department* pictures — a hard hat for
+ * "Tools and site safety", a stack of cement bags for "Cement and steel"
+ * — because that is the only imagery in the repo. A feed that says
+ * "Bathroom fittings, laid out" over a photograph of taps in a box is
+ * not a room anybody is looking at; it is a category tile wearing a
+ * pin's clothes, and it teaches a first-time visitor that Studio is the
+ * catalogue again. The placeholder tile is the honest version: it says
+ * the name and says the photograph is coming.
+ *
+ * So the rule is **Studio shows Studio's own pictures and nothing
+ * else**: an upload, or a file under `public/studio/`, which is where
+ * `scripts/generate-studio-images.ts` writes and where real room
+ * photography will land. Anything else borrowed from elsewhere in
+ * `public/` returns null and the caller draws `MissingPhoto`.
+ *
+ * This undoes itself. Drop real room photographs into `public/studio/`,
+ * point the pins at them, and every surface starts rendering them again
+ * with no code change — which is why the test is on the path rather than
+ * a feature flag somebody has to remember to turn off.
  */
+const STUDIO_ASSET_PREFIX = "/studio/";
+
 export function imageUrlFor(row: {
   id: string;
   assetPath: string | null;
   fileId: string | null;
-}): string {
-  return row.assetPath ?? `/studio/image/${row.id}`;
+}): string | null {
+  if (row.assetPath) {
+    return row.assetPath.startsWith(STUDIO_ASSET_PREFIX) ? row.assetPath : null;
+  }
+  return row.fileId ? `/studio/image/${row.id}` : null;
 }
 
 /* ---- Money --------------------------------------------------------------- */

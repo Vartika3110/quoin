@@ -75,11 +75,28 @@ describe("SwatchSchema", () => {
 });
 
 describe("imageUrlFor", () => {
-  it("serves a shipped asset from its own path", () => {
+  it("serves a shipped Studio asset from its own path", () => {
     assert.equal(
-      imageUrlFor({ id: "abc", assetPath: "/catalogue/x.webp", fileId: null }),
-      "/catalogue/x.webp",
+      imageUrlFor({ id: "abc", assetPath: "/studio/kitchen-01.webp", fileId: null }),
+      "/studio/kitchen-01.webp",
     );
+  });
+
+  it("refuses an asset borrowed from elsewhere in public/", () => {
+    // The seeded pins point at the catalogue's *department* pictures,
+    // which is the only imagery in the repo. A pin titled "Bathroom
+    // fittings, laid out" over a photograph of taps in a box is a
+    // category tile wearing a pin's clothes. Null, and the caller draws
+    // the stand-in tile, until real room photography lands in
+    // `public/studio/`.
+    assert.equal(
+      imageUrlFor({ id: "abc", assetPath: "/categories/bathware-plumbing.webp", fileId: null }),
+      null,
+    );
+  });
+
+  it("has nothing to serve for a row with neither a file nor an asset", () => {
+    assert.equal(imageUrlFor({ id: "abc", assetPath: null, fileId: null }), null);
   });
 
   it("routes an upload through the signing route, never at a bucket URL", () => {

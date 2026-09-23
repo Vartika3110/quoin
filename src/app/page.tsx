@@ -81,9 +81,15 @@ export default async function HomePage() {
     ]);
 
   /* The hero's photograph is Studio's best-saved room — see the note in
-     `Hero`. Null until Studio has one, which the hero handles. */
-  const heroRoom = rooms[0]
-    ? { url: rooms[0].imageUrl, blurDataUrl: rooms[0].blurDataUrl }
+     `Hero`. Null until Studio has one, which the hero handles.
+
+     `imageUrl` is itself null for every pin nobody has photographed —
+     `imageUrlFor` will not dress one in a catalogue picture — so the
+     first room with an actual photograph is the one to use, not simply
+     the first room. */
+  const heroPin = rooms.find((room) => room.imageUrl !== null);
+  const heroRoom = heroPin?.imageUrl
+    ? { url: heroPin.imageUrl, blurDataUrl: heroPin.blurDataUrl }
     : null;
 
   /* Eight tiles: two full rows of four. Four across is what the brief

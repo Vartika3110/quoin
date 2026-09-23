@@ -232,7 +232,7 @@ function NewSpaceDialog({
  * collage out to three panes is how an empty board ends up looking
  * broken instead of new.
  */
-function CoverCollage({ urls }: { urls: string[] }) {
+function CoverCollage({ urls }: { urls: (string | null)[] }) {
   if (urls.length === 0) {
     return (
       <div className="flex aspect-[4/3] items-center justify-center bg-sunk text-caption text-faint">
@@ -248,8 +248,11 @@ function CoverCollage({ urls }: { urls: string[] }) {
       <Pane src={first} className="flex-[2]" />
       {rest.length > 0 && (
         <div className="flex flex-1 flex-col gap-0.5">
-          {rest.map((url) => (
-            <Pane key={url} src={url} className="min-h-0 flex-1" />
+          {/* Index keys. The url was the key until a pin without a
+              photograph became the normal case, and three nulls are not
+              three distinct keys. Nothing here reorders. */}
+          {rest.map((url, i) => (
+            <Pane key={i} src={url} className="min-h-0 flex-1" />
           ))}
         </div>
       )}
@@ -257,7 +260,18 @@ function CoverCollage({ urls }: { urls: string[] }) {
   );
 }
 
-function Pane({ src, className }: { src: string; className: string }) {
+function Pane({ src, className }: { src: string | null; className: string }) {
+  /* A pane with no photograph is left as bare ground rather than given
+     the "Photo coming soon" tile. A collage pane is a sliver — a third of
+     a 4:3 cover, so around 60px tall in the grid — and the tile's two
+     lines of type do not fit in it legibly. The card under the collage
+     already says the board's name and how many pins it holds, so a muted
+     pane reads as a photograph that has not been taken, which is what it
+     is, and the pin's own tile says so in words the moment it is opened. */
+  if (!src) {
+    return <div className={`bg-line-hair/40 ${className}`} />;
+  }
+
   return (
     <div className={`relative overflow-hidden ${className}`}>
       <IdeaImage

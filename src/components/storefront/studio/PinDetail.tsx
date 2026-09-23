@@ -249,6 +249,11 @@ function MoreLikeThis({ related }: { related: IdeaView[] }) {
               <IdeaImage
                 src={pin.imageUrl}
                 alt=""
+                /* `alt` is empty — the link around it carries the name —
+                   but the stand-in tile is a visible thing and a blank
+                   one in a row of five is indistinguishable from a
+                   rendering fault. */
+                label={pin.title}
                 width={pin.width}
                 height={pin.height}
                 blurDataUrl={pin.blurDataUrl}

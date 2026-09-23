@@ -553,9 +553,11 @@ async function affinityFor(
 export interface RoomFacet {
   room: StudioRoom;
   count: number;
-  /** A real room from behind this filter, for the bubble. Null only when
-      the rows behind it somehow have no image — never a stock photograph
-      of a kitchen standing in for the kitchens Quoin actually has. */
+  /** A real room from behind this filter, for the bubble — never a stock
+      photograph of a kitchen standing in for the kitchens Quoin actually
+      has. Null while no pin behind this filter has been photographed,
+      which is currently all of them (see `imageUrlFor`); the bubble
+      draws its ground and the label under it does the work. */
   imageUrl: string | null;
   blurDataUrl: string | null;
 }
@@ -600,7 +602,10 @@ export async function listFacets(): Promise<{
   const styles = new Map<string, number>();
   const materials = new Map<string, number>();
   /* First row wins, and the rows arrive most-saved first. */
-  const cover = new Map<DbRoom, { imageUrl: string; blurDataUrl: string | null }>();
+  const cover = new Map<
+    DbRoom,
+    { imageUrl: string | null; blurDataUrl: string | null }
+  >();
 
   for (const row of tagRows) {
     for (const s of row.styles) styles.set(s, (styles.get(s) ?? 0) + 1);
@@ -1200,15 +1205,28 @@ export async function listSpaces(userId: string): Promise<SpaceView[]> {
 
     /* The chosen cover first, then the most recent pins after it, with
        no repeats — a collage whose three panes are the same photograph
-       three times is worse than one pane. */
-    const covers: string[] = [];
-    const cover = row.coverIdea ? imageUrlFor(row.coverIdea) : null;
-    if (cover) covers.push(cover);
+       three times is worse than one pane.
+
+       Deduped by pin, not by URL. Most pins have no photograph yet and
+       `imageUrlFor` returns null for all of them, so a URL-keyed check
+       would treat three different rooms as one repeat and leave a board
+       of twelve pins with a single pane. It also fixes the same bug for
+       two pins that genuinely share a file. */
+    const covers: (string | null)[] = [];
+    const seen = new Set<string>();
+    const addCover = (idea: {
+      id: string;
+      assetPath: string | null;
+      fileId: string | null;
+    }) => {
+      if (covers.length >= 3 || seen.has(idea.id)) return;
+      seen.add(idea.id);
+      covers.push(imageUrlFor(idea));
+    };
+
+    if (row.coverIdea) addCover(row.coverIdea);
     for (const item of own) {
-      if (covers.length >= 3) break;
-      if (!item.idea) continue;
-      const url = imageUrlFor(item.idea);
-      if (!covers.includes(url)) covers.push(url);
+      if (item.idea) addCover(item.idea);
     }
 
     return {

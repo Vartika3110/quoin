@@ -45,8 +45,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           /* The photograph itself. `/studio/image/{id}` 307s to wherever
              the bytes are, which is what a scraper needs — a signed URL
              written in here would have expired before anyone shared the
-             link. */
-          images: [{ url: idea.imageUrl, width: idea.width, height: idea.height }],
+             link.
+
+             Omitted entirely when there is none, rather than falling back
+             to something generic: a share card is where a borrowed
+             picture does the most damage, because it is the only thing
+             most people will ever see of the page. */
+          ...(idea.imageUrl
+            ? {
+                images: [
+                  { url: idea.imageUrl, width: idea.width, height: idea.height },
+                ],
+              }
+            : {}),
         }
       : undefined,
   };

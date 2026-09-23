@@ -89,6 +89,19 @@ export function PinCard({
           blurDataUrl={idea.blurDataUrl}
           sizes={sizes}
           preload={preload}
+          /* This card parks a save button in one corner and a "shop this
+             look" pill along the bottom edge, and on a touch screen both
+             are permanently visible. Over a photograph they overlap
+             pixels. Over the stand-in tile they overlap the only words
+             the card has — on a 390px phone the pill sat exactly on the
+             second line and the tile read "PHOTO COMING". The inset
+             gives the words the part of the box the controls are not
+             using. */
+          className={
+            idea.imageUrl
+              ? undefined
+              : cn("pt-9", idea.materialCount > 0 && "pb-11")
+          }
         />
 
         {/* The hover darken. A scrim rather than a filter, so the

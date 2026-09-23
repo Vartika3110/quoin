@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { MissingPhoto } from "@/components/ui/Photo";
 import { cn } from "@/components/ui/cn";
 
 /**
@@ -23,6 +24,13 @@ import { cn } from "@/components/ui/cn";
  *    browser's own broken-image icon in the middle of a grid looks worse
  *    than anything. Same recovery `ProductImage` already does.
  *
+ * A null `src` is not a failure, it is the normal state of Studio right
+ * now: nobody has photographed these rooms, and `imageUrlFor` refuses to
+ * dress a pin in the catalogue's department picture. It draws the same
+ * `MissingPhoto` tile the storefront uses everywhere else, in the box the
+ * photograph would have taken, so a feed of unphotographed rooms still
+ * has a feed's shape. `label` is what it says — pass the pin's title.
+ *
  * What it does not do is optimise. `next/image`'s optimiser fetches the
  * `src` server-side, and for an upload that `src` is a 307 to a
  * short-lived signed URL — so the optimiser would cache a derivative
@@ -35,6 +43,7 @@ import { cn } from "@/components/ui/cn";
 export function IdeaImage({
   src,
   alt,
+  label,
   width,
   height,
   blurDataUrl,
@@ -42,8 +51,12 @@ export function IdeaImage({
   className,
   preload = false,
 }: {
-  src: string;
+  src: string | null;
   alt: string;
+  /** What the stand-in tile says when there is no photograph. The pin's
+      title, normally — `alt` is empty on the tiles whose heading already
+      names the room, and a blank placeholder helps nobody. */
+  label?: string;
   width: number;
   height: number;
   blurDataUrl?: string | null;
@@ -57,6 +70,25 @@ export function IdeaImage({
   preload?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
+
+  if (!src) {
+    /* The stored `width`/`height` describe the file we are declining to
+       show, so they are as borrowed as the picture was — the seeded pins
+       carry the dimensions of the catalogue's landscape department
+       shots, and a 4:3 box 121px tall on a phone cannot hold the two
+       lines the tile exists to say. A stand-in is therefore drawn no
+       shorter than 4:5, which is the shape a room photograph will be
+       when there is one. Taller boxes keep their own ratio: a portrait
+       upload's tile should not be cropped to a shorter one. */
+    const ratio = width / height > 4 / 5 ? "4 / 5" : `${width} / ${height}`;
+    return (
+      <MissingPhoto
+        label={label ?? (alt || undefined)}
+        ratio={ratio}
+        className={className}
+      />
+    );
+  }
 
   if (failed) {
     return (

@@ -34,7 +34,6 @@ export function StudioRow({ rooms }: { rooms: IdeaView[] }) {
               ? `${room.materialCount} ${room.materialCount === 1 ? "material" : "materials"}`
               : undefined
           }
-          label={room.title}
           blurDataURL={room.blurDataUrl}
           ratio="4 / 5"
           sizes="(min-width: 1024px) 18vw, 60vw"
