@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -9,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/components/ui/cn";
+import { useRenderLoopGuard } from "@/lib/dev/render-loop-guard";
 
 /**
  * A phone's sticky action bar.
@@ -45,16 +47,37 @@ export function StickyBarProvider({ children }: { children: ReactNode }) {
      flag the second had just set. */
   const [count, setCount] = useState(0);
 
-  const value = useMemo(
-    () => ({
-      taken: count > 0,
-      claim: () => {
-        setCount((n) => n + 1);
-        return () => setCount((n) => Math.max(0, n - 1));
-      },
-    }),
-    [count],
-  );
+  useRenderLoopGuard("StickyBarProvider");
+
+  /**
+   * `claim` never changes identity, and that is load-bearing.
+   *
+   * It used to be defined inside the `useMemo` below, which is keyed on
+   * `count` — so every claim and every release handed out a *new*
+   * `claim`. `StickyBar` takes that function as its effect's dependency
+   * and the effect's only job is to change `count`, so the effect was
+   * its own trigger: run, count moves, `claim` is new, dependency
+   * changed, React tears the effect down (releasing the slot) and sets
+   * it up again (claiming it), which moves `count` again.
+   *
+   * It survived because the `+1` and the `-1` are functional updates
+   * that land in one batch and cancel, leaving `count` where it was so
+   * React bails out. That is not a design, it is arithmetic luck: split
+   * those two updates across commits — a transition, a Suspense
+   * boundary, a future scheduler — and `taken` flips on every cycle
+   * forever, re-rendering the entire app, because this provider is the
+   * innermost wrapper around it (see `AppProviders`).
+   *
+   * A stable identity removes the feedback edge outright: the effect
+   * runs once when a bar mounts and once more when it unmounts, which is
+   * what its own comment always claimed.
+   */
+  const claim = useCallback(() => {
+    setCount((n) => n + 1);
+    return () => setCount((n) => Math.max(0, n - 1));
+  }, []);
+
+  const value = useMemo(() => ({ taken: count > 0, claim }), [count, claim]);
 
   return <StickyBarSlot.Provider value={value}>{children}</StickyBarSlot.Provider>;
 }
@@ -86,9 +109,13 @@ export function StickyBar({
   const slot = useContext(StickyBarSlot);
 
   const claim = slot?.claim;
-  /* Claims the strip on mount and releases it on unmount. `claim` is
-     memoised by the provider, so this runs once per mounted bar rather
-     than on every render of the page around it. */
+  /* Claims the strip on mount and releases it on unmount.
+
+     This reads as an ordinary effect and it is the sharp end of the
+     provider: the dependency is a function, the effect's only job is to
+     change the state that function closes over, and for a while that
+     function was rebuilt on every such change. Anything given to
+     `claim`'s identity has to stay stable — see the note on it. */
   useEffect(() => claim?.(), [claim]);
 
   return (

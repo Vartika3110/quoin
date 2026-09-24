@@ -37,6 +37,7 @@ import { GROUP_PROMISE, useCart } from "@/lib/store/cart";
 import { formatPrice, type FulfilmentType } from "@/lib/types/catalog";
 import type { Quote } from "@/lib/data/checkout";
 import { basketKey } from "@/components/storefront/checkout/idempotency";
+import { useRenderLoopGuard } from "@/lib/dev/render-loop-guard";
 import { track } from "@/lib/analytics";
 
 /**
@@ -300,6 +301,12 @@ export function CheckoutFlow({
   smsEnabled: boolean;
 }) {
   const { lines, groups, ready, subtotalPaise, clear } = useCart();
+
+  /* Phase 0's second report was this screen going unresponsive after
+     "Proceed to checkout". It does not reproduce, and the one thing
+     worse than a loop here is a loop here that nobody can name — this
+     screen re-prices a basket and opens a payment modal. */
+  useRenderLoopGuard("CheckoutFlow");
 
   const [step, setStep] = useState(0);
   const [address, setAddress] = useState<Address | null>(null);

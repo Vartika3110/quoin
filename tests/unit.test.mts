@@ -33,6 +33,9 @@ const { parseParcha, quantityIsComparable, pricedByPhrase } =
   await import("@/lib/parcha");
 const { categorySlugsForTerm } = await import("@/lib/data/search");
 const { BRAND_WALL } = await import("@/lib/brand-logos");
+const { recordCommit, newCommitWindow, LIMIT, WINDOW_MS } = await import(
+  "@/lib/dev/render-loop-guard"
+);
 
 const { taxForLine, canTransition, CALLBACK_RESERVATION_WINDOW_MS } =
   await import("@/lib/data/orders");
@@ -634,6 +637,68 @@ describe("quantity comparability (quantityIsComparable)", () => {
     assert.equal(pricedByPhrase("PER_PIECE"), "by the piece");
     assert.equal(pricedByPhrase("PER_KG"), null);
     assert.equal(pricedByPhrase(null), null);
+  });
+});
+
+/* ------------------------------------------------- render-loop guard */
+
+/**
+ * Phase 0's two reports were the browser going unresponsive, and the
+ * expensive part was that a render loop says nothing at all — no error,
+ * no component name, just a dead tab. `useRenderLoopGuard` makes the
+ * next one name itself, and these pin the two edges that decide whether
+ * it is worth having: a guard that never fires is no guard, and one that
+ * fires during ordinary use is worse than none, because the next person
+ * learns to ignore it.
+ */
+describe("render-loop guard (recordCommit)", () => {
+  /** Drives `n` commits `gapMs` apart and returns how many warned. */
+  function run(n: number, gapMs: number): number {
+    const state = newCommitWindow();
+    let warnings = 0;
+    /* From 1, not 0: a fresh window has `start: 0`, and starting the
+       clock at 0 would make the first commit look like it arrived inside
+       a window that never opened. */
+    for (let i = 1; i <= n; i++) {
+      if (recordCommit(state, i * gapMs)) warnings += 1;
+    }
+    return warnings;
+  }
+
+  it("says nothing about an ordinary cascade", () => {
+    // A click settles in two or three commits; a resolving fetch adds
+    // one. Nothing in this app commits twenty times before a paint.
+    assert.equal(run(LIMIT, 0), 0);
+  });
+
+  it("speaks up one commit past the limit", () => {
+    assert.equal(run(LIMIT + 1, 0), 1);
+  });
+
+  it("speaks once, not on every commit of the loop", () => {
+    // A loop that logged every commit would put a hundred thousand lines
+    // into the console and take the devtools down with the page.
+    assert.equal(run(5000, 0), 1);
+  });
+
+  it("forgets commits that were spread over real time", () => {
+    // The failure is "many commits before the browser could paint", not
+    // "many commits over a session". A component rendering once a frame
+    // forever is an animation, not a bug.
+    assert.equal(run(5000, WINDOW_MS + 1), 0);
+  });
+
+  it("does not warn on a burst that arrives after a quiet spell", () => {
+    const state = newCommitWindow();
+    // A long quiet period, then a normal cascade: the window reopens on
+    // the first commit after the gap rather than counting against a
+    // stale `start`.
+    assert.equal(recordCommit(state, 10_000), false);
+    let warnings = 0;
+    for (let i = 1; i <= LIMIT - 1; i++) {
+      if (recordCommit(state, 10_000 + i)) warnings += 1;
+    }
+    assert.equal(warnings, 0);
   });
 });
 

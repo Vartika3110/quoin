@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useRenderLoopGuard } from "@/lib/dev/render-loop-guard";
 import type { IdeaView, SpaceView, StudioRoom } from "@/lib/types/studio";
 
 /**
@@ -110,6 +111,11 @@ export function StudioProvider({
      the projects store. */
   signedIn: boolean;
 }) {
+  /* Phase 0's first report was the boards tab freezing the browser.
+     Every Studio page is inside this provider, so a loop in any of
+     them re-renders through here. */
+  useRenderLoopGuard("StudioProvider");
+
   const [spaces, setSpaces] = useState<SpaceView[]>([]);
   const [spacesError, setSpacesError] = useState<string | null>(null);
   const [ready, setReady] = useState(!signedIn);
