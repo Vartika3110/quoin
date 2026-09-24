@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Pin } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
+import { formatAreas } from "@/lib/areas";
 import type { FulfilmentType } from "@/lib/types/catalog";
 
 /**
@@ -48,9 +49,16 @@ type Result =
 export function DeliveryCheck({
   fulfilment,
   leadTimeDays,
+  areas,
 }: {
   fulfilment: FulfilmentType;
   leadTimeDays?: number;
+  /** Every live locality, named. A panel that only asks a question
+      leaves the answer entirely to somebody guessing whether their
+      pincode is worth typing — and the ones who guess wrong are the
+      ones who find out at the door. Empty renders nothing rather than
+      an empty sentence. */
+  areas: string[];
 }) {
   const [pincode, setPincode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -101,6 +109,15 @@ export function DeliveryCheck({
         <Pin className="size-4 text-accent" />
         Check delivery
       </p>
+
+      {/* Stated before anything is typed, and hidden once there is a
+          real answer on screen — at that point the list is a second,
+          vaguer reply competing with the specific one. */}
+      {areas.length > 0 && !result && (
+        <p className="mt-1.5 text-caption leading-snug text-muted">
+          Quoin delivers in {formatAreas(areas)}.
+        </p>
+      )}
 
       <div className="mt-2.5 flex gap-2">
         <input

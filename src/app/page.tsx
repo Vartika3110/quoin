@@ -31,7 +31,11 @@ import {
 import { listServices } from "@/lib/data/services";
 import { listTopRooms } from "@/lib/data/studio";
 import { formatPrice } from "@/lib/types/catalog";
-import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
+import {
+  AREA_COOKIE,
+  getAreaChoice,
+  listServiceAreas,
+} from "@/lib/data/service-areas";
 
 /**
  * Rendered per request.
@@ -64,7 +68,7 @@ export const dynamic = "force-dynamic";
  * the two products — Project Hub and Pro — that make it more than a shop.
  */
 export default async function HomePage() {
-  const [categories, picks, priceFloors, services, deals, rooms, chosen] =
+  const [categories, picks, priceFloors, services, deals, rooms, chosen, serviceAreas] =
     await Promise.all([
       getCategories(),
       getTopPicks(),
@@ -78,6 +82,9 @@ export default async function HomePage() {
          the best-saved room and the row beneath it still has five. */
       listTopRooms(6),
       cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
+      /* Named on the first screen rather than left to a pincode box on
+         a product page somebody may never reach — see `Hero`. */
+      listServiceAreas(),
     ]);
 
   /* The hero's photograph is Studio's best-saved room — see the note in
@@ -126,7 +133,11 @@ export default async function HomePage() {
             <div className="lg:hidden">
               <CatalogTabs />
             </div>
-            <Hero chosen={chosen} photo={heroRoom} />
+            <Hero
+              chosen={chosen}
+              photo={heroRoom}
+              areas={serviceAreas.map((a) => a.name)}
+            />
           </div>
 
           {/* Reassurance immediately under the banner, where the design

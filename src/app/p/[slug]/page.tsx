@@ -12,8 +12,8 @@ import { ProductStickyBar } from "@/components/storefront/product/ProductStickyB
 import { Accordion } from "@/components/ui/Accordion";
 import { Badge } from "@/components/ui/Badge";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHead } from "@/components/ui/Section";
+import { Button } from "@/components/ui/Button";
+import { SectionHead, hasEnough } from "@/components/ui/Section";
 import {
   Calendar,
   CheckCircle,
@@ -29,6 +29,7 @@ import {
   getProductBySlug,
   getRelatedProducts,
 } from "@/lib/data/catalog";
+import { listServiceAreas } from "@/lib/data/service-areas";
 import { BADGE_LABEL, type FulfilmentType } from "@/lib/types/catalog";
 
 /** Priced from the database on every request — see the note in page.tsx. */
@@ -110,9 +111,10 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const [related, categories] = await Promise.all([
+  const [related, categories, serviceAreas] = await Promise.all([
     getRelatedProducts(product),
     getCategories(),
+    listServiceAreas(),
   ]);
 
   const category = categories.find((c) => c.id === product.categoryId);
@@ -191,6 +193,7 @@ export default async function ProductPage({
                 <DeliveryCheck
                   fulfilment={product.fulfilment}
                   leadTimeDays={product.leadTimeDays}
+                  areas={serviceAreas.map((a) => a.name)}
                 />
               </div>
 
@@ -231,27 +234,47 @@ export default async function ProductPage({
               </div>
             </section>
 
+            {/* There is no Reviews block, and that is the point.
+
+                There is no review table — no product has one rating —
+                so a "Reviews" heading over "No reviews yet" was a
+                section whose only content was the announcement of its
+                own absence, on all 3,214 products. A heading that never
+                has anything under it teaches a reader to scroll past
+                that part of the page, and it makes the shop look
+                unused. (Inventing a 4.6 from 213 ratings would be far
+                worse: every other number here is real, and one
+                fabricated one makes the rest suspect.)
+
+                What the empty state was actually *for* — putting
+                somebody who wants a second opinion in touch with a
+                person — stands on its own below, offered as the thing
+                Quoin has rather than as consolation for the thing it
+                does not. When reviews exist, this is where they go and
+                the consult panel moves under them. */}
             <section>
               <SectionHead
                 level={2}
-                title="Reviews"
+                title="Not sure this is the right one?"
                 size="sm"
                 className="hidden lg:flex"
               />
               <div className="px-5 lg:px-0">
-                {/* No review table exists. An invented 4.6 from 213
-                    ratings would be the most damaging thing on the page:
-                    every other number here is real, and one fabricated
-                    one makes the rest suspect. */}
-                <EmptyState
-                  compact
-                  title="No reviews yet"
-                  action={{ href: "/consult", label: "Ask an expert instead" }}
-                >
-                  Reviews open once orders for this product have been
-                  delivered. Until then, a free consultation is the fastest
-                  way to hear from someone who has fitted one.
-                </EmptyState>
+                <div className="flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-body-sm font-semibold text-ink lg:hidden">
+                      Not sure this is the right one?
+                    </p>
+                    <p className="text-caption leading-relaxed text-muted lg:text-body-sm">
+                      Talk to someone who has fitted one. A consultation is
+                      free, and they will tell you if a cheaper line does the
+                      same job.
+                    </p>
+                  </div>
+                  <Button href="/consult" variant="outline" className="shrink-0">
+                    Ask an expert
+                  </Button>
+                </div>
               </div>
             </section>
           </div>
@@ -283,7 +306,10 @@ export default async function ProductPage({
 
         <ProductStickyBar product={product} />
 
-        {related.length > 0 && (
+        {/* Four or nothing — see `hasEnough`. A "Goes well with" row
+            holding one card is a shop that looks out of stock, and this
+            row sits at the bottom of every product page. */}
+        {hasEnough(related) && (
           <section className="mt-16">
             <SectionHead
               title="Goes well with"

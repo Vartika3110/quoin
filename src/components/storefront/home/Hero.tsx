@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Badge";
 import { Photo } from "@/components/ui/Photo";
 import { ArrowRight, Check, Clock, Pin } from "@/components/icons";
+import { formatAreas } from "@/lib/areas";
 import type { AreaChoice } from "@/lib/data/service-areas";
 
 /**
@@ -33,23 +35,27 @@ import type { AreaChoice } from "@/lib/data/service-areas";
  * never imply otherwise.
  */
 
-/** Three, and each one is a fact this app can stand behind. Every claim
-    here is checkable against something in the product: a brand roster, a
-    per-item fulfilment type, and a payment page. */
-const TICKS = [
-  "Brands bought direct",
-  "Delivery promised per item",
-  "Serviced across West Delhi",
-];
+/** Two, and each one is a fact this app can stand behind: a brand roster
+    and a per-item fulfilment type.
+
+    "Serviced across West Delhi" was a third, and it is gone. It was
+    vague where it could be exact — the four live localities are in the
+    database and two of them, Pitampura and Rajendra Nagar, are not in
+    West Delhi at all — so the claim was both less useful and less true
+    than simply naming them. `areas` does that, below. */
+const TICKS = ["Brands bought direct", "Delivery promised per item"];
 
 export function Hero({
   chosen,
   photo,
+  areas,
 }: {
   chosen: AreaChoice | null;
   /** Studio's best-saved room. Null falls back to the catalogue's own
       bathroom photography — still a finished space, never the site. */
   photo: { url: string; blurDataUrl: string | null } | null;
+  /** Every live locality, named. See `TICKS`. */
+  areas: string[];
 }) {
   return (
     <section className="grid overflow-hidden rounded-2xl border border-line-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
@@ -98,6 +104,26 @@ export function Hero({
             </li>
           ))}
         </ul>
+
+        {/* Where Quoin actually operates, named, on the first screen.
+            The question "do you come to me" was previously answerable
+            only by typing a pincode into a product page, and a visitor
+            who never reaches one leaves without an answer.
+
+            Stood down once the visitor has chosen their own area: the
+            line below is then the specific version of this one, and two
+            sentences about geography stacked reads as a disclaimer. */}
+        {areas.length > 0 && chosen == null && (
+          <p className="mt-4 flex items-start gap-1.5 text-caption leading-snug text-muted">
+            <Pin className="mt-0.5 size-3.5 shrink-0 text-accent" />
+            <span>
+              Delivering in {formatAreas(areas)}.{" "}
+              <Link href="/contact" className="text-accent">
+                Somewhere else?
+              </Link>
+            </span>
+          </p>
+        )}
 
         {/* Rendered only once an area is chosen — "18 minutes" with no
             locality attached is a slogan, and this has to read as a fact
