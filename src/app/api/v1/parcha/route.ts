@@ -31,8 +31,17 @@ export const POST = handler(async (request) => {
 
   /* The suggestion carries a slug and a photo but not a price — the
      palette does not need one. Here it is the whole point, so the matched
-     rows are priced in one further query rather than one per line. */
-  const slugs = matches.flatMap((m) => (m ? [m.href.replace("/p/", "")] : []));
+     rows are priced in one further query rather than one per line.
+
+     Products only. A line like "steel" now comes back as a *department*
+     (see `matchParchaDepartment`), which has a name and a link and no
+     price, and must not be sent through the product pricing query — its
+     href is `/c/…`, so stripping `/p/` left it whole and a `/c/…` string
+     went out of this route in a field every caller reads as a product
+     slug. */
+  const slugs = matches.flatMap((m) =>
+    m?.kind === "product" ? [m.href.replace("/p/", "")] : [],
+  );
   const priced = slugs.length
     ? await db.product.findMany({
         where: { slug: { in: slugs } },
@@ -53,11 +62,34 @@ export const POST = handler(async (request) => {
   return ok({
     matches: matches.map((match) => {
       if (!match) return null;
+
+      /* A department, not a product: we stock this kind of thing and
+         here is where it lives, but nobody has said which one, so there
+         is no price and no slug to add to a basket. `kind` is what the
+         caller reads to tell the two apart — a `href` alone would make
+         every caller re-derive it from the URL shape. */
+      if (match.kind !== "product") {
+        return {
+          kind: "department" as const,
+          slug: null,
+          href: match.href,
+          title: match.label,
+          brand: match.sublabel ?? null,
+          photo: null,
+          pricePaise: null,
+          minQty: 1,
+          stepQty: 1,
+          pricingUnit: null,
+        };
+      }
+
       const slug = match.href.replace("/p/", "");
       const row = bySlug.get(slug);
       const variant = row?.variants[0];
       return {
+        kind: "product" as const,
         slug,
+        href: match.href,
         title: match.label,
         brand: match.sublabel ?? null,
         photo: match.photo ?? null,

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { resolvePhoto } from "@/lib/data/catalog";
-import { matchParchaTerm } from "@/lib/data/parcha-match";
+import { WEAK_TOKENS, matchParchaTerm, tokenize } from "@/lib/data/parcha-match";
 
 /**
  * Search across everything Quoin holds.
@@ -377,16 +377,87 @@ export async function matchParchaLines(
     terms.map(async (term) => {
       const q = term.trim();
       if (q.length < 2) return null;
+
       const candidate = await matchParchaTerm(q);
-      if (!candidate) return null;
-      return {
-        kind: "product",
-        id: `p-${candidate.id}`,
-        label: candidate.name,
-        sublabel: candidate.brandName ?? candidate.sku,
-        href: `/p/${candidate.slug}`,
-        photo: resolvePhoto(candidate),
-      } satisfies Suggestion;
+      if (candidate) {
+        return {
+          kind: "product",
+          id: `p-${candidate.id}`,
+          label: candidate.name,
+          sublabel: candidate.brandName ?? candidate.sku,
+          href: `/p/${candidate.slug}`,
+          photo: resolvePhoto(candidate),
+        } satisfies Suggestion;
+      }
+
+      /* Nothing in the catalogue is that product — but the line may still
+         name a whole department. See `matchParchaDepartment`. */
+      return matchParchaDepartment(q);
     }),
   );
+}
+
+/**
+ * A parcha line that names a department rather than a product.
+ *
+ * "Steel" is the case this exists for. It is a real word for a real
+ * department, and `matchParchaTerm` is right to refuse it: the word
+ * appears in forty-odd stainless-steel fittings, so it is not
+ * *distinctive*, and picking one of them would bill a towel rack onto a
+ * structural materials list — the exact failure the whole matcher is
+ * arranged to prevent. But answering "not in the catalogue" to a word
+ * that names one of Quoin's own departments reads as a broken search.
+ *
+ * So the fallback is a department, and it is deliberately the weaker
+ * claim: *we sell this kind of thing, here is where it lives*, rather
+ * than *this is the product you meant*. `kind` is `"category"`, which is
+ * what tells `buildItemInputs` not to write it into a parcha item as
+ * though a product had been found.
+ *
+ * Only fires on a whole-word match against a department that actually
+ * has products in it. A department matched on a substring would send
+ * "cementitious" to Cement & Steel, and an empty one is a link to a page
+ * that says nothing is here.
+ */
+export async function matchParchaDepartment(term: string): Promise<Suggestion | null> {
+  const { strong } = tokenize(term);
+  if (strong.length === 0) return null;
+
+  const rows = await db.category.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      _count: { select: { products: { where: { isActive: true } } } },
+    },
+  });
+
+  for (const row of rows) {
+    if (row._count.products === 0) continue;
+
+    /* The department's own words, minus the ones that join them: "Cement
+       & Steel" is {cement, steel}, "Tiling & Adhesives" is {tiling,
+       adhesives}. A line matches when one of its strong tokens *is* one
+       of those words. */
+    const words = new Set(
+      row.name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((w) => w.length >= 3 && !WEAK_TOKENS.has(w)),
+    );
+
+    if (strong.some((token) => words.has(token))) {
+      return {
+        kind: "category",
+        id: `c-${row.id}`,
+        label: row.name,
+        sublabel: `Department · ${row._count.products} products`,
+        href: `/c/${row.slug}`,
+      } satisfies Suggestion;
+    }
+  }
+
+  return null;
 }

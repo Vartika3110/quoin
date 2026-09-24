@@ -25,7 +25,12 @@ import {
   Sparkle,
   Upload,
 } from "@/components/icons";
-import { parseParcha, type ParchaLine } from "@/lib/parcha";
+import {
+  parseParcha,
+  pricedByPhrase,
+  quantityIsComparable,
+  type ParchaLine,
+} from "@/lib/parcha";
 import {
   ImagePrepareError,
   MAX_PARCHA_FILE_BYTES,
@@ -67,8 +72,20 @@ import { useProjects } from "@/lib/store/projects";
  * there, which is what this page did before any of this existed.
  */
 
+/**
+ * What `/api/v1/parcha` answers a line with.
+ *
+ * Two shapes behind one `kind`. A `product` is a row somebody can price,
+ * add and buy. A `department` is the weaker, honest answer to a line like
+ * "steel": Quoin sells this *kind* of thing, here is where it lives, and
+ * nobody has said which one — so there is no price and nothing to add.
+ * Keeping them apart here is what stops a department rendering as a
+ * product with a blank price and a link to `/p/null`.
+ */
 interface Match {
-  slug: string;
+  kind: "product" | "department";
+  slug: string | null;
+  href: string;
   title: string;
   brand: string | null;
   photo: string | null;
@@ -79,9 +96,28 @@ interface Match {
 }
 
 interface Row extends ParchaLine {
+  /** Products only — see `Match`. A department lands in `department`. */
   match: Match | null;
+  department: Match | null;
   /** Dropped from the order without losing the customer's own line. */
   removed: boolean;
+}
+
+/**
+ * Whether this line can be turned into a number.
+ *
+ * Matched and priced is not enough. *"saria 500 kg"* matches "TMT bars
+ * (1 bundle)", which is priced per bundle, and 500 × the bundle price is
+ * **₹26,39,500** against a line asking for half a tonne of rebar — see
+ * `quantityIsComparable`. A line like that is shown with its unit price
+ * and a sentence, and is kept out of the estimate and out of "add all":
+ * a wrong total in a basket is worse than a wrong total on screen.
+ */
+function priceable(row: Row): boolean {
+  return (
+    row.match?.pricePaise != null &&
+    quantityIsComparable(row.unit, row.match.pricingUnit)
+  );
 }
 
 /**
@@ -164,11 +200,15 @@ export function ParchaWorkbench() {
       const body = (await res.json()) as { data: { matches: (Match | null)[] } };
 
       setRows(
-        lines.slice(0, 40).map((line, i) => ({
-          ...line,
-          match: body.data.matches[i] ?? null,
-          removed: false,
-        })),
+        lines.slice(0, 40).map((line, i) => {
+          const answer = body.data.matches[i] ?? null;
+          return {
+            ...line,
+            match: answer?.kind === "product" ? answer : null,
+            department: answer?.kind === "department" ? answer : null,
+            removed: false,
+          };
+        }),
       );
     } catch {
       setError("We could not price the list just now. Try again in a moment.");
@@ -380,7 +420,7 @@ export function ParchaWorkbench() {
     if (!rows) return;
     setAdding(true);
 
-    const wanted = rows.filter((r) => !r.removed && r.match?.pricePaise != null);
+    const wanted = rows.filter((r) => !r.removed && priceable(r));
     const results = await Promise.all(
       wanted.map(async (row) => {
         try {
@@ -413,11 +453,16 @@ export function ParchaWorkbench() {
   }
 
   const live = rows?.filter((r) => !r.removed) ?? [];
-  const matched = live.filter((r) => r.match?.pricePaise != null);
+  const matched = live.filter(priceable);
   const total = matched.reduce(
     (sum, r) => sum + (r.match?.pricePaise ?? 0) * r.qty,
     0,
   );
+  /* Matched to a real product, priced, and still not multiplied out —
+     the customer wrote a weight and the row is sold by the package. The
+     summary says so rather than letting the count quietly disagree with
+     the number of green "Matched" badges above it. */
+  const unpriceable = live.filter((r) => r.match?.pricePaise != null && !priceable(r));
   const needsPerson = files.some((f) => f.status === "manual");
 
   return (
@@ -716,7 +761,7 @@ export function ParchaWorkbench() {
               <div className="mt-4 flex flex-col gap-4 rounded-card border border-line-soft bg-raised p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-caption text-muted">
-                    Estimated for the {matched.length} matched{" "}
+                    Estimated for the {matched.length} priced{" "}
                     {matched.length === 1 ? "line" : "lines"}
                   </p>
                   <p className="nums mt-0.5 text-headline font-semibold text-ink">
@@ -725,6 +770,18 @@ export function ParchaWorkbench() {
                   <p className="mt-1 text-micro text-faint">
                     Taxes included; delivery calculated at checkout.
                   </p>
+                  {/* Said here as well as on the row, because this is the
+                      number somebody screenshots. A total that silently
+                      leaves lines out is the same defect as a total that
+                      multiplies them wrongly. */}
+                  {unpriceable.length > 0 && (
+                    <p className="mt-1.5 text-micro leading-snug text-warning">
+                      {unpriceable.length}{" "}
+                      {unpriceable.length === 1 ? "line is" : "lines are"} not in
+                      this total — {unpriceable.length === 1 ? "it is" : "they are"}{" "}
+                      written in a measure the catalogue row is not sold by.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -765,6 +822,12 @@ function ParchaRow({
   const match = row.match;
   const step = match?.stepQty ?? 1;
   const min = match?.minQty ?? 1;
+  /* Only ever set on a row that matched and has a price — an unmatched
+     line has nothing to be incomparable with. */
+  const soldBy =
+    match?.pricePaise != null && !quantityIsComparable(row.unit, match.pricingUnit)
+      ? pricedByPhrase(match.pricingUnit)
+      : null;
 
   return (
     <li className="flex items-center gap-3 px-4 py-3">
@@ -784,6 +847,18 @@ function ParchaRow({
             <Badge tone="success" size="sm" icon={<Check className="size-3" />}>
               Matched
             </Badge>
+          ) : row.department ? (
+            /* Not a product, and not nothing either. "Steel" names a
+               department Quoin really has; saying "not in the catalogue"
+               to a word that is one of our own department names reads as
+               a broken search. This says what is true — we sell this kind
+               of thing, go and pick one — and offers the link. */
+            <Link
+              href={row.department.href}
+              className="inline-flex items-center rounded-full border border-accent-edge bg-accent-wash px-2 py-0.5 text-micro font-medium text-accent transition-colors hover:bg-accent-wash-strong"
+            >
+              Browse {row.department.title}
+            </Link>
           ) : (
             <Badge tone="warning" size="sm">
               Not in the catalogue
@@ -799,6 +874,16 @@ function ParchaRow({
         {match && (
           <span className="mt-0.5 block truncate text-micro text-faint">
             You wrote: {row.raw}
+          </span>
+        )}
+        {/* Said in full rather than truncated, and in the warning
+            colour: this is the one line on the row that explains why the
+            number to the right is not what the customer expected. */}
+        {soldBy && (
+          <span className="mt-1 block text-micro leading-snug text-warning">
+            Sold {soldBy}, so we have not turned {row.qty}{" "}
+            {row.unit ?? "of these"} into a price. Set the quantity you need, or
+            ask an expert to work it out.
           </span>
         )}
       </span>
@@ -827,7 +912,19 @@ function ParchaRow({
       </span>
 
       <span className="nums w-24 shrink-0 text-right text-body-sm font-semibold text-ink">
-        {match?.pricePaise != null ? formatPrice(match.pricePaise * row.qty) : "—"}
+        {match?.pricePaise == null ? (
+          "—"
+        ) : soldBy ? (
+          /* The unit price, and nothing multiplied. It is the one true
+             number available for this row, and showing it beats a dash:
+             the customer can see what one costs and decide how many. */
+          <>
+            {formatPrice(match.pricePaise)}
+            <span className="block text-micro font-normal text-faint">each</span>
+          </>
+        ) : (
+          formatPrice(match.pricePaise * row.qty)
+        )}
       </span>
 
       <button

@@ -1843,7 +1843,11 @@ export async function shopTheLook(idea: IdeaView): Promise<ShopTheLook> {
 
   for (let i = 0; i < terms.length; i++) {
     const found = results[i];
-    if (!found) {
+    /* Products only. A tag like "steel" can now come back as a
+       *department* rather than a product, which is the right answer for a
+       parcha line and the wrong one for "shop this look" — a room's
+       materials are things with a price, not a link to a department. */
+    if (!found || found.kind !== "product") {
       unmatched.push(terms[i]);
       continue;
     }

@@ -201,11 +201,21 @@ async function buildItemInputs(
   lines: ParchaLine[],
   matches: (Suggestion | null)[],
 ): Promise<ItemCreateInput[]> {
-  const slugs = matches.flatMap((m) => (m ? [m.href.replace("/p/", "")] : []));
+  /* Products only. `matchParchaLines` can also answer with a *department*
+     for a line like "steel" — a real answer, and not one that belongs in
+     `matchedProductSlug`, which is a product slug or nothing. Writing a
+     category href into it would put `/c/cement-steel` in a column every
+     downstream query reads as a product. */
+  const productMatch = (m: Suggestion | null) => (m?.kind === "product" ? m : null);
+
+  const slugs = matches.flatMap((m) => {
+    const hit = productMatch(m);
+    return hit ? [hit.href.replace("/p/", "")] : [];
+  });
   const variantBySlug = await cheapestVariantBySlug(slugs);
 
   return lines.map((line, index) => {
-    const match = matches[index];
+    const match = productMatch(matches[index]);
     const slug = match ? match.href.replace("/p/", "") : null;
     return {
       position: index,

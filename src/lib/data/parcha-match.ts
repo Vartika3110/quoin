@@ -102,7 +102,46 @@ export const TRADE_VOCABULARY: Record<string, string> = {
   jeena: "ladder", // regional slang for a ladder/stairway fixture
   putte: "putty", // common misspelling of "putty"
   plastic: "emulsion", // see the paragraph above — not in the original brief
+
+  /* ---- Site words for structural materials.
+   *
+   * What a contractor writes on a parcha for the heavy end of a build,
+   * mapped to the words a catalogue uses. `saria` reaches the one real
+   * row today ("TMT bars (1 bundle)"); the rest reach nothing *yet*, and
+   * that is deliberate — see the note under this table on why a synonym
+   * for stock Quoin does not carry is still worth having. */
+  saria: "tmt bars", // Hindi for steel reinforcement bar; the catalogue says "TMT bars"
+  sariya: "tmt bars", // the same word, the other common spelling
+  sariha: "tmt bars",
+  badarpur: "coarse sand", // Delhi's name for the coarse sand quarried at Badarpur
+  baadarpur: "coarse sand",
+  rodi: "stone aggregate", // crushed stone; "rodi-badarpur" is one breath on a site
+  roda: "stone aggregate",
+  morang: "coarse sand", // river sand, also written moorang/moorum
+  moorang: "coarse sand",
+  moorum: "coarse sand",
+  bajri: "stone aggregate", // fine gravel
+  reta: "sand", // plain Hindi for sand
+  gitti: "stone aggregate", // broken stone
+  sariya_bundle: "tmt bars",
 };
+
+/**
+ * A word here that matches nothing is not a mistake.
+ *
+ * `badarpur`, `rodi` and `morang` translate to sand and aggregate, and
+ * this catalogue carries neither — the "Cement & Steel" department holds
+ * cement, plaster, putty and primer, and the only structural steel in
+ * three thousand rows is a single "TMT bars (1 bundle)". So those three
+ * lines still come back unpriced.
+ *
+ * They are here anyway for two reasons. The translation is a fact about
+ * the language and not about the stock, so it is correct whether or not
+ * anything matches today; and the day sand is carried, every parcha that
+ * ever said "morang" starts pricing without anybody remembering this
+ * file exists. The alternative — adding them when the stock arrives — is
+ * a change nobody will think to make.
+ */
 
 const STRONG_MIN_LENGTH = 3;
 

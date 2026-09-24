@@ -157,3 +157,66 @@ function normalizeUnit(word: string | undefined): string | null {
   if (!word) return null;
   return UNITS[word.toLowerCase().replace(/\.$/, "")] ?? null;
 }
+
+/* ---- Pricing a line against a product it may not be measured like ------- */
+
+/**
+ * Units a customer writes when they are measuring *material*, by weight
+ * or by volume, rather than counting packages.
+ */
+const BULK_UNITS = new Set(["kg", "tonnes", "litres", "sq.ft.", "sq.m.", "running ft.", "ft", "m"]);
+
+/**
+ * Units a catalogue row uses when it is priced by the *package* — one
+ * piece, one bag, one bundle, one visit.
+ *
+ * The value is how to say it in a sentence, so the set that decides the
+ * guard and the words that explain it to the customer cannot drift
+ * apart: adding a packaged unit here is what makes it both guarded and
+ * sayable.
+ */
+const PACKAGED_PRICING: Record<string, string> = {
+  PER_PIECE: "by the piece",
+  PER_VISIT: "by the visit",
+  PER_BAG: "by the bag",
+};
+
+/**
+ * "by the piece", for a sentence explaining why a line was not
+ * multiplied out. Null for a row priced by weight, area or volume —
+ * which is a row the guard never fires on.
+ */
+export function pricedByPhrase(pricingUnit: string | null): string | null {
+  return pricingUnit ? (PACKAGED_PRICING[pricingUnit] ?? null) : null;
+}
+
+/**
+ * Whether multiplying a line's quantity by a product's price would be
+ * arithmetic on two different things.
+ *
+ * The case this exists for, found on a real list: *"saria 500 kg"*
+ * matches "TMT bars (1 bundle)", which is priced per bundle, and
+ * 500 × the bundle price put **₹26,39,500** on screen next to a line the
+ * customer wrote asking for half a tonne of rebar. A number that wrong,
+ * shown with confidence, is worse than no number — it is the kind of
+ * thing somebody forwards to a client.
+ *
+ * Deliberately narrow, and only in one direction: the customer measured
+ * in weight, volume or area, and the row is sold by the package. That
+ * catches the disaster without touching the cases that work.
+ *
+ * It specifically does **not** fire on "cement 20 bags" against a row
+ * marked `PER_KG`. That row is mis-united — a 50kg bag priced per kg is
+ * one of the 78 findings `scripts/audit-catalogue.ts` reports — but the
+ * price on it really is the price of a bag, so multiplying is right and
+ * hedging would replace a correct total with a warning on hundreds of
+ * lines. Fixing the data is what fixes those; this guards the ones no
+ * amount of correct data would make safe.
+ */
+export function quantityIsComparable(
+  lineUnit: string | null,
+  pricingUnit: string | null,
+): boolean {
+  if (!lineUnit || !pricingUnit) return true;
+  return !(BULK_UNITS.has(lineUnit) && pricingUnit in PACKAGED_PRICING);
+}

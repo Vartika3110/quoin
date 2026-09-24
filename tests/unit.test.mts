@@ -29,7 +29,8 @@ const { normalizeQty, areaFromDimensions, applyWastage, lineTotal } =
 const { resolvePrice, resolveVariantPrice, proSaving, formatPrice } =
   await import("@/lib/types/catalog");
 const { istDay, addDays, formatConsultDay } = await import("@/lib/types/consult");
-const { parseParcha } = await import("@/lib/parcha");
+const { parseParcha, quantityIsComparable, pricedByPhrase } =
+  await import("@/lib/parcha");
 const { categorySlugsForTerm } = await import("@/lib/data/search");
 const { BRAND_WALL } = await import("@/lib/brand-logos");
 
@@ -585,6 +586,54 @@ describe("parcha parsing", () => {
     const [line] = parseParcha("Jaquar shower head");
     assert.equal(line.qty, 1);
     assert.equal(line.unit, null);
+  });
+});
+
+/* --------------------------------------------- parcha × catalogue units */
+
+describe("quantity comparability (quantityIsComparable)", () => {
+  it("refuses to multiply a weight by a per-package price", () => {
+    /* The bug this exists for, off a real list: "saria 500 kg" matches
+       "TMT bars (1 bundle)", priced PER_PIECE, and 500 × the bundle
+       price put ₹26,39,500 on screen. A number that wrong, shown with
+       confidence, is worse than no number. */
+    assert.equal(quantityIsComparable("kg", "PER_PIECE"), false);
+    assert.equal(quantityIsComparable("tonnes", "PER_PIECE"), false);
+  });
+
+  it("refuses the same for an area or a length against a package", () => {
+    assert.equal(quantityIsComparable("sq.ft.", "PER_PIECE"), false);
+    assert.equal(quantityIsComparable("m", "PER_VISIT"), false);
+  });
+
+  it("leaves a mis-united but correct line alone", () => {
+    /* A 50kg bag of cement filed as PER_KG is one of the audit's
+       findings, but the price on the row really is the price of a bag,
+       so "cement 20 bags" × that price is right. Hedging here would
+       replace a correct total with a warning on hundreds of lines. */
+    assert.equal(quantityIsComparable("bags", "PER_KG"), true);
+    assert.equal(quantityIsComparable("bags", "PER_PIECE"), true);
+  });
+
+  it("leaves a weight against a weight-priced row alone", () => {
+    assert.equal(quantityIsComparable("kg", "PER_KG"), true);
+    assert.equal(quantityIsComparable("litres", "PER_LITRE"), true);
+    assert.equal(quantityIsComparable("sq.ft.", "PER_SQFT"), true);
+  });
+
+  it("says nothing when either side did not say", () => {
+    // A line with no unit is a count, and an unpriced row has no unit to
+    // disagree with. Neither is a reason to hedge.
+    assert.equal(quantityIsComparable(null, "PER_PIECE"), true);
+    assert.equal(quantityIsComparable("kg", null), true);
+  });
+
+  it("can say out loud what it guarded on", () => {
+    // The wording and the guard read the same table, so a packaged unit
+    // cannot be guarded without being sayable.
+    assert.equal(pricedByPhrase("PER_PIECE"), "by the piece");
+    assert.equal(pricedByPhrase("PER_KG"), null);
+    assert.equal(pricedByPhrase(null), null);
   });
 });
 
