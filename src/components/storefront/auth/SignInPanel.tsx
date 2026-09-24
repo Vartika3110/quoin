@@ -8,6 +8,7 @@ import { InlineError } from "@/components/ui/ErrorState";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/components/ui/cn";
 import { ArrowRight, Back, GoogleG, Phone, Shield } from "@/components/icons";
+import { InvalidPhoneError, normalizePhone } from "@/lib/auth/phone";
 
 /**
  * Sign in with a code.
@@ -54,6 +55,7 @@ export function SignInPanel({
   const [resendIn, setResendIn] = useState(0);
 
   const codeRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
 
   /* The resend cooldown the server told us about, counted down here so the
      button says how long rather than failing when pressed. */
@@ -82,6 +84,24 @@ export function SignInPanel({
   }
 
   async function requestCode() {
+    /* Checked here before the network, because the button that runs this
+       is no longer disabled while the field is empty. A disabled button
+       is how a form tells somebody nothing at all: they press it, the
+       page does not move, and there is no text on screen saying why.
+       The same normaliser the server uses, so the two cannot disagree
+       about what a valid Indian mobile number is. */
+    try {
+      normalizePhone(phone);
+    } catch (e) {
+      setError(
+        e instanceof InvalidPhoneError
+          ? e.message
+          : "Enter a valid 10-digit Indian mobile number",
+      );
+      phoneRef.current?.focus();
+      return;
+    }
+
     setBusy(true);
     setError(null);
     try {
@@ -179,6 +199,7 @@ export function SignInPanel({
               >
                 <Input
                   id="phone"
+                  ref={phoneRef}
                   name="phone"
                   type="tel"
                   inputMode="tel"
@@ -186,7 +207,13 @@ export function SignInPanel({
                   autoFocus
                   placeholder="98765 43210"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    /* Cleared on the first keystroke after a rejection.
+                       An error that outlives the thing it described
+                       reads as a second, new failure. */
+                    if (error) setError(null);
+                  }}
                   leading={<Phone className="size-4" />}
                   aria-invalid={error ? true : undefined}
                 />
@@ -194,7 +221,10 @@ export function SignInPanel({
 
               {error && <InlineError>{error}</InlineError>}
 
-              <Button type="submit" block size="lg" loading={busy} disabled={!phone.trim()}>
+              {/* Not disabled on an empty field. The check moved into
+                  `requestCode`, so pressing this says what is wrong
+                  instead of doing nothing at all. */}
+              <Button type="submit" block size="lg" loading={busy}>
                 Send me a code
                 <ArrowRight className="size-4" />
               </Button>

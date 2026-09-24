@@ -305,6 +305,11 @@ export function CheckoutFlow({
   const [address, setAddress] = useState<Address | null>(null);
   const [contactPhone, setContactPhone] = useState("");
   const [contactPhoneError, setContactPhoneError] = useState<string | null>(null);
+  /* Set only by pressing Continue with something outstanding. See
+     `blocker` and `advance` below for why this is not a disabled
+     button. */
+  const [advanceAttempted, setAdvanceAttempted] = useState(false);
+  const stepZeroRef = useRef<HTMLDivElement>(null);
   /* Checked by default: a customer who is typing this in specifically so
      Quoin can reach them almost always wants it remembered, and unchecking
      one box is a lighter ask than checking one — see the order route for
@@ -617,14 +622,51 @@ export function CheckoutFlow({
   const total = quote?.subtotalPaise ?? subtotalPaise;
   const savings = quote?.savingsPaise ?? 0;
 
-  const canAdvance =
-    step === 0
-      ? isSignedIn &&
-        Boolean(address) &&
-        (!needsContactPhone || contactPhone.trim().length > 0)
-      : step === 3
-        ? false
-        : true;
+  /**
+   * What is stopping this step, in the customer's words.
+   *
+   * Continue used to be `disabled` whenever this was non-null, which is
+   * how a form tells somebody nothing at all: they press the only button
+   * on the screen, the page does not move, and there is no text anywhere
+   * saying why. On a phone the button is in a sticky bar at the bottom
+   * and the missing field is off-screen above it, so there is not even a
+   * greyed-out box to look at and infer from.
+   *
+   * So the button stays live and pressing it *answers the question*. The
+   * message is derived rather than stored, which means it disappears by
+   * itself the moment the customer fixes the thing — an error that
+   * outlives its cause is read as a second, new failure.
+   */
+  const blocker: { message: string; focus?: "address" | "phone" } | null =
+    step !== 0
+      ? null
+      : !isSignedIn
+        ? { message: "Sign in above to continue — your delivery addresses live on your account." }
+        : !address
+          ? { message: "Choose where this is going.", focus: "address" }
+          : needsContactPhone && contactPhone.trim().length === 0
+            ? {
+                message: "Add a mobile number so the driver or store can reach you.",
+                focus: "phone",
+              }
+            : null;
+
+  function advance() {
+    if (blocker) {
+      setAdvanceAttempted(true);
+      if (blocker.focus === "phone") {
+        setContactPhoneError(blocker.message);
+        document.getElementById("contact-phone")?.focus();
+      } else if (blocker.focus === "address") {
+        /* Scrolled to rather than focused: the picker is a list of
+           cards, and there is no one control to put a cursor in. */
+        stepZeroRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+      return;
+    }
+    setAdvanceAttempted(false);
+    setStep((s) => s + 1);
+  }
 
   /* Truthful for whichever sign-in methods are actually live — mirrors
      `/signin`'s own subtitle logic (`src/app/signin/page.tsx`) so the two
@@ -662,10 +704,12 @@ export function CheckoutFlow({
           >
             {isSignedIn ? (
               <div className="space-y-5">
-                <AddressPicker
-                  selectedId={address?.id ?? null}
-                  onSelect={setAddress}
-                />
+                <div ref={stepZeroRef}>
+                  <AddressPicker
+                    selectedId={address?.id ?? null}
+                    onSelect={setAddress}
+                  />
+                </div>
                 {needsContactPhone ? (
                   <div>
                     <Field
@@ -843,6 +887,15 @@ export function CheckoutFlow({
           </StepPanel>
         )}
 
+        {/* Rendered only while the reason is still true, so fixing the
+            field clears the message without anything having to remember
+            to clear it. */}
+        {advanceAttempted && blocker && (
+          <div className="mt-4">
+            <InlineError>{blocker.message}</InlineError>
+          </div>
+        )}
+
         <div className="mt-6 flex items-center gap-3">
           {step > 0 && (
             <Button variant="ghost" onClick={() => setStep((s) => s - 1)}>
@@ -859,7 +912,7 @@ export function CheckoutFlow({
               later in the stylesheet. */}
           {step < 3 && (
             <div className="ml-auto hidden lg:block">
-              <Button disabled={!canAdvance} onClick={() => setStep((s) => s + 1)}>
+              <Button onClick={advance}>
                 Continue
                 <ArrowRight className="size-4" />
               </Button>
@@ -886,12 +939,7 @@ export function CheckoutFlow({
           </p>
         </div>
         {step < 3 ? (
-          <Button
-            size="lg"
-            className="shrink-0"
-            disabled={!canAdvance}
-            onClick={() => setStep((s) => s + 1)}
-          >
+          <Button size="lg" className="shrink-0" onClick={advance}>
             Continue
           </Button>
         ) : (
