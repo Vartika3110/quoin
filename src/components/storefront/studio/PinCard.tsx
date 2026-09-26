@@ -5,10 +5,10 @@ import { useState } from "react";
 import { IdeaImage } from "@/components/storefront/studio/IdeaImage";
 import { SaveSheet } from "@/components/storefront/studio/SaveSheet";
 import { useToast } from "@/components/ui/Toast";
-import { Cart, Heart, HeartFilled } from "@/components/icons";
+import { Cart, Heart, HeartFilled, Play } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import { isSaved, useStudio } from "@/lib/store/studio";
-import type { IdeaView } from "@/lib/types/studio";
+import { formatClock, type IdeaView } from "@/lib/types/studio";
 
 /**
  * One room in the wall.
@@ -37,6 +37,15 @@ import type { IdeaView } from "@/lib/types/studio";
  * The save button is a sibling of the link, not nested inside it: a
  * button inside an anchor is invalid HTML and every browser recovers
  * from it differently.
+ *
+ * **A clip's tile is its poster, and it does not play here.** Forty
+ * autoplaying videos in a masonry wall is forty connections, forty
+ * decoders and a data pack spent before the reader has chosen anything —
+ * and on the phone this feed is mostly read on, it is also a wall that
+ * stutters. The tile says it is a clip, in two ways that survive a
+ * greyscale screenshot: a play mark in the middle and the running time
+ * in the corner. Playing is what tapping it does, at `/studio/watch` or
+ * on the pin's own page.
  */
 export function PinCard({
   idea,
@@ -132,9 +141,39 @@ export function PinCard({
         {saved ? <HeartFilled className="size-5" /> : <Heart className="size-5" />}
       </button>
 
-      {idea.saveCount > 0 && (
-        <span className="nums pointer-events-none absolute left-2 top-2 rounded-full bg-photo-cta/85 px-2 py-1 text-micro font-medium text-on-photo-cta backdrop-blur-sm">
-          {idea.saveCount}
+      {/* Top left, in one row, because both of these are facts about the
+          tile and two independently positioned badges would collide the
+          moment a clip got its first save. */}
+      {(idea.saveCount > 0 || idea.video) && (
+        <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1.5">
+          {idea.video && (
+            <span className="nums flex items-center gap-1 rounded-full bg-photo-cta/85 px-2 py-1 text-micro font-medium text-on-photo-cta backdrop-blur-sm">
+              <Play className="size-3" />
+              {/* The running time, or just the mark when nobody recorded
+                  one. `0:00` on a clip that plays for fifty seconds is
+                  worse than no number at all. */}
+              {idea.video.durationSeconds !== null &&
+                formatClock(idea.video.durationSeconds)}
+            </span>
+          )}
+          {idea.saveCount > 0 && (
+            <span className="nums rounded-full bg-photo-cta/85 px-2 py-1 text-micro font-medium text-on-photo-cta backdrop-blur-sm">
+              {idea.saveCount}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* The affordance, dead centre, and only where there is a poster to
+          put it on: over the `MissingPhoto` stand-in it would be a play
+          control on a tile that says the photograph is coming, which
+          promises something that will not happen when it is tapped. */}
+      {idea.video && idea.imageUrl && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 grid size-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-photo-cta/80 text-on-photo-cta shadow-lg backdrop-blur-sm"
+        >
+          <Play className="size-5" />
         </span>
       )}
 

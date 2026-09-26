@@ -281,6 +281,44 @@ export const Video = (p: IconProps) => (
   </Svg>
 );
 
+/* ---- Playback ------------------------------------------------------------ */
+
+/** Solid triangle. Filled rather than stroked, unlike everything else in
+    this file: a 1.5px outlined triangle at 16px reads as a chevron, and
+    play is the one glyph a viewer must not have to think about. */
+export const Play = (p: IconProps) => (
+  <Svg fill="currentColor" stroke="none" {...p}>
+    <path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.3-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z" />
+  </Svg>
+);
+
+/** Two bars. Filled, to weigh the same as `Play` — the two swap in place
+    in the same button, and an outlined pause beside a solid play makes
+    the control look like it dims when a clip starts. */
+export const Pause = (p: IconProps) => (
+  <Svg fill="currentColor" stroke="none" {...p}>
+    <rect x="6.5" y="4.5" width="4" height="15" rx="1.25" />
+    <rect x="13.5" y="4.5" width="4" height="15" rx="1.25" />
+  </Svg>
+);
+
+/** Speaker with waves — audio is on. */
+export const SoundOn = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z" />
+    <path d="M15.5 9.2a4 4 0 0 1 0 5.6" />
+    <path d="M18 6.5a7.5 7.5 0 0 1 0 11" />
+  </Svg>
+);
+
+/** Speaker, struck through — muted, which is how every clip starts. */
+export const SoundOff = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1z" />
+    <path d="m16 10 4 4M20 10l-4 4" />
+  </Svg>
+);
+
 /** Two figures — industry partners. */
 export const Partners = (p: IconProps) => (
   <Svg {...p}>

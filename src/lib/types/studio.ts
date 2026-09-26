@@ -67,6 +67,32 @@ export const ROOMS: StudioRoom[] = Object.keys(ROOM_LABEL) as StudioRoom[];
  */
 export type IdeaKind = "space" | "product";
 
+/* ---- What a pin is made of ----------------------------------------------- */
+
+/**
+ * A pin's clip, resolved to something a `<video>` element can take.
+ *
+ * Built server-side by `videoFor` in `src/lib/video/index.ts`, which is
+ * the only place that knows a Cloudflare customer code exists. By the
+ * time a component sees one of these, the question "is this configured,
+ * is this ours, is this playable" has already been answered — null means
+ * no, and the poster is what gets drawn.
+ */
+export interface PinVideo {
+  /** An HLS manifest or an MP4. Ready for `src`. */
+  src: string;
+  /**
+   * `hls` needs a player that speaks it. Safari and every iOS browser do
+   * natively; Chrome — including Chrome on Android, which is most of
+   * India — does not, and `StudioVideo` lazy-loads `hls.js` for it. `mp4`
+   * needs nothing and is what a clip shipped under `public/studio/` is.
+   */
+  format: "hls" | "mp4";
+  /** Whole seconds. Null when nobody has said, and the pill is then not
+      drawn rather than drawn as `0:00`. */
+  durationSeconds: number | null;
+}
+
 /* ---- Visibility ---------------------------------------------------------- */
 
 export type Visibility = "private" | "public";
@@ -119,8 +145,17 @@ export interface IdeaView {
   /** Null until a real professional is in the table. See `StudioDesigner`. */
   designer: DesignerRef | null;
   /** Ready to put in `src`, or null when there is no photograph of this
-      room yet and the tile must stand in. See `imageUrlFor`. */
+      room yet and the tile must stand in. See `imageUrlFor`.
+
+      On a clip this is the poster — the still every surface that is not a
+      player wants. A board's cover collage, "More like this", the home
+      row and the save sheet therefore need to know nothing about video:
+      they read `imageUrl` and get a frame. */
   imageUrl: string | null;
+  /** The clip, when this pin is one and it can actually be played. Null
+      on a photograph — and null on a clip whose provider is unconfigured,
+      which renders as the poster with no play control. See `videoFor`. */
+  video: PinVideo | null;
   /** The real pixel dimensions. The masonry grid needs the ratio before
       the bytes arrive or every tile reflows as photographs land. */
   width: number;
@@ -258,6 +293,9 @@ export interface RoomMaterial {
   /** Percent of the photograph, 0–100. Null for a line with no dot. */
   x: number | null;
   y: number | null;
+  /** Whole seconds into the clip, or null. On a photograph every line is
+      null and `activeAt` is never called. See `StudioHotspot.atSeconds`. */
+  atSeconds: number | null;
   /**
    * The whole catalogue row, not a copy of four of its fields.
    *
@@ -294,6 +332,63 @@ export interface SpacePinView {
   materials: RoomMaterial[];
   /** The sum of the lines. Today's list price, and labelled as that. */
   totalPaise: Paise;
+}
+
+/* ---- The clip's clock ---------------------------------------------------- */
+
+/**
+ * Which line the clip is on at `seconds`, or null.
+ *
+ * One rule, written once, because three things read it and they must
+ * agree: the dot drawn over the frame, the row highlighted in the list,
+ * and the "showing now" label under the player. Two implementations of
+ * this would be two answers to "what am I looking at", which is the one
+ * question a shoppable clip exists to answer.
+ *
+ * **A cue owns the time from itself until the next one.** Not a fixed
+ * window around it: a tap held on screen for eighteen seconds and a
+ * skirting board glimpsed for two both get exactly the time the person
+ * who authored the list gave them, and there is no gap in between where
+ * the player has nothing to say. Before the first cue there is genuinely
+ * nothing to say, and that is null rather than the first line — a viewer
+ * three seconds into an establishing shot is not being shown a tap.
+ *
+ * Lines with no `atSeconds` are not in this at all. They are the cement
+ * under the floor: real, priced, listed, and never on screen.
+ */
+export function activeAt(
+  materials: { number: number; atSeconds: number | null }[],
+  seconds: number,
+): number | null {
+  let best: { number: number; atSeconds: number } | null = null;
+
+  for (const line of materials) {
+    if (line.atSeconds === null) continue;
+    if (line.atSeconds > seconds) continue;
+    /* `>=` rather than `>`: two lines cued to the same second are a real
+       thing — a tap and its spout — and the later one in the list wins,
+       which is the order the list itself reads in. */
+    if (!best || line.atSeconds >= best.atSeconds) {
+      best = { number: line.number, atSeconds: line.atSeconds };
+    }
+  }
+
+  return best?.number ?? null;
+}
+
+/**
+ * `94` → `"1:34"`. The duration pill and the player's clock.
+ *
+ * No hours branch. `MAX_CLIP_SECONDS` is ten minutes and a Studio clip
+ * that runs past an hour is a data fault, not a formatting case — it
+ * would render as `61:12`, which is wrong in a way somebody notices,
+ * rather than `1:01:12`, which is wrong in a way nobody does.
+ */
+export function formatClock(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds));
+  const mins = Math.floor(whole / 60);
+  const secs = whole % 60;
+  return `${mins}:${String(secs).padStart(2, "0")}`;
 }
 
 /* ---- Image URLs ---------------------------------------------------------- */

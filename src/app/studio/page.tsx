@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { StudioShell } from "@/components/storefront/studio/StudioShell";
 import { StudioChrome } from "@/components/storefront/studio/StudioChrome";
 import { StudioFilters } from "@/components/storefront/studio/StudioFilters";
 import { PinGrid } from "@/components/storefront/studio/PinGrid";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { Camera, Sparkle } from "@/components/icons";
+import { Camera, Play, Sparkle } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
-import { countFeed, listFacets, listFeed } from "@/lib/data/studio";
+import { countFeed, countWatchFeed, listFacets, listFeed } from "@/lib/data/studio";
 import { countFilters, readFilters, toQueryString } from "@/lib/studio/query";
 
 export const metadata: Metadata = {
@@ -51,10 +52,11 @@ export default async function StudioPage({
     q: filters.q ?? undefined,
   };
 
-  const [feed, facets, total] = await Promise.all([
+  const [feed, facets, total, clips] = await Promise.all([
     listFeed(session?.userId ?? null, query),
     listFacets(),
     countFeed(query),
+    countWatchFeed(),
   ]);
 
   return (
@@ -70,6 +72,33 @@ export default async function StudioPage({
         <div className="lg:hidden">
           <StudioChrome title="Studio" />
         </div>
+
+        {/* The way into the watch feed, and it is here rather than a
+            permanent tab on the masthead for the reason the delivery
+            copy already settled: a navigation item that always leads to
+            "nothing yet" is an announcement of something Quoin does not
+            have. With no footage this line is simply absent, and the
+            route stays reachable by URL for whoever is loading the first
+            clip. */}
+        {clips > 0 && (
+          <Link
+            href="/studio/watch"
+            className="mx-5 flex min-h-14 items-center gap-3 rounded-card border border-line-soft bg-surface px-4 transition-colors hover:bg-hover lg:mx-0"
+          >
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-wash text-accent">
+              <Play className="size-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-body-sm font-medium text-ink">
+                Watch the rooms
+              </span>
+              <span className="block truncate text-caption text-muted">
+                {clips} {clips === 1 ? "room" : "rooms"} on film, priced as they
+                play
+              </span>
+            </span>
+          </Link>
+        )}
 
         <StudioFilters facets={facets} filters={filters} resultCount={total} />
 

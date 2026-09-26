@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { matchParchaLines } from "@/lib/data/search";
 import { listProductsBySlugs } from "@/lib/data/catalog";
 import { ApiError } from "@/lib/http";
+import { posterFor, videoFor } from "@/lib/video";
 import type { Paise } from "@/lib/types/catalog";
 import type {
   FeedTab,
@@ -246,6 +247,10 @@ const IDEA_SELECT = {
   description: true,
   assetPath: true,
   fileId: true,
+  media: true,
+  videoUid: true,
+  videoPath: true,
+  durationSeconds: true,
   width: true,
   height: true,
   blurDataUrl: true,
@@ -274,7 +279,14 @@ function toIdeaView(row: IdeaRow, savedIds: Set<string> | null): IdeaView {
     kind: IDEA_KIND_FROM_DB[row.kind],
     location: row.location,
     designer: row.designer,
-    imageUrl: imageUrlFor(row),
+    /* The poster first, then the photograph. A clip on Stream has no
+       `assetPath` at all and its still comes off the footage; a
+       photograph has no `videoUid` and `posterFor` returns null for it.
+       One expression covers both, and every surface that is not a player
+       — the board covers, "More like this", the home row — goes on
+       reading `imageUrl` and getting a frame. */
+    imageUrl: posterFor(row) ?? imageUrlFor(row),
+    video: videoFor(row),
     width: row.width,
     height: row.height,
     blurDataUrl: row.blurDataUrl,
@@ -416,6 +428,103 @@ export async function listFeed(
   });
 
   return page(rows, limit, viewerId);
+}
+
+/* ---- The watch feed ------------------------------------------------------ */
+
+export interface WatchPage {
+  pins: SpacePinView[];
+  /** Null when there is no next page. Pass back as `cursor`. */
+  nextCursor: string | null;
+}
+
+/** Eight clips, not forty. Each one arrives with its whole priced list,
+    and a viewer who swipes past six has already been fetched the next
+    page — which is the number that matters, because the alternative on
+    this surface is a black screen with a spinner in it. */
+export const WATCH_PAGE_SIZE = 8;
+const WATCH_PAGE_MAX = 16;
+
+/**
+ * Clips, newest first, each with what the room is made of.
+ *
+ * This is the feed behind `/studio/watch` — one room per screen, swiped
+ * rather than scrolled, which is the shape the format has settled on
+ * everywhere it works. The materials come *with* the pin rather than one
+ * tap later for the reason the whole surface exists: a viewer watching an
+ * architect point at a tap has about two seconds in which "what is that"
+ * is a live question, and answering it after a round trip answers it
+ * after the moment has gone.
+ *
+ * `media: "VIDEO"` in the `where` clause, not a filter over a page of
+ * mixed pins, so the keyset pagination counts the rows it returns — the
+ * discipline `listFeed` records at length.
+ *
+ * **A pin whose clip will not play does not appear here.** Not filtered
+ * for tidiness: this surface is a player and nothing else, and a poster
+ * with no play control, swiped into the middle of a feed of moving rooms,
+ * is indistinguishable from a video that failed. It stays in the wall at
+ * `/studio`, where a still is exactly what a tile is.
+ */
+export async function listWatchFeed(
+  viewerId: string | null,
+  query: { cursor?: string; limit?: number } = {},
+): Promise<WatchPage> {
+  const limit = Math.min(Math.max(query.limit ?? WATCH_PAGE_SIZE, 1), WATCH_PAGE_MAX);
+
+  const rows = await db.studioIdea.findMany({
+    where: { media: "VIDEO", kind: "SPACE", visibility: "PUBLIC" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: IDEA_SELECT,
+    take: limit + 1,
+    ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+  });
+
+  const hasMore = rows.length > limit;
+  const window = hasMore ? rows.slice(0, limit) : rows;
+
+  const [saved, materialsByIdea] = await Promise.all([
+    savedIdSet(viewerId, window.map((r) => r.id)),
+    listRoomMaterialsMany(window.map((r) => r.id)),
+  ]);
+
+  const pins: SpacePinView[] = [];
+  for (const row of window) {
+    const pin = toIdeaView(row, saved);
+    /* Unplayable is dropped here rather than in the `where` clause,
+       because whether a uid resolves depends on `CF_STREAM_CUSTOMER_CODE`
+       and Postgres has never heard of it. The cursor is still the last
+       row of the *queried* window, so dropping one shortens a page
+       without skipping anything on the next. */
+    if (!pin.video) continue;
+
+    const materials = materialsByIdea.get(row.id) ?? [];
+    pins.push({
+      pin,
+      materials,
+      totalPaise: materials.reduce((sum, line) => sum + line.linePaise, 0),
+    });
+  }
+
+  return { pins, nextCursor: hasMore ? (window.at(-1)?.id ?? null) : null };
+}
+
+/**
+ * How many clips there are to watch.
+ *
+ * Read before the watch route renders anything, so that a Studio with no
+ * footage says so on its own page rather than opening a black player and
+ * leaving the viewer to work out that the silence is the product.
+ *
+ * Counts rows, not playable ones — `CF_STREAM_CUSTOMER_CODE` is not a
+ * column. A deploy with clips and no customer code therefore counts some
+ * and shows none, which `listWatchFeed` renders as the empty state
+ * anyway; the alternative is fetching every row to find out.
+ */
+export async function countWatchFeed(): Promise<number> {
+  return db.studioIdea.count({
+    where: { media: "VIDEO", kind: "SPACE", visibility: "PUBLIC" },
+  });
 }
 
 /**
@@ -789,23 +898,106 @@ export async function getSpacePin(
  * line in the middle had no coordinate.
  */
 export async function listRoomMaterials(ideaId: string): Promise<RoomMaterial[]> {
+  const byIdea = await listRoomMaterialsMany([ideaId]);
+  return byIdea.get(ideaId) ?? [];
+}
+
+/**
+ * The same thing, for a page of rooms, in two queries rather than 2n.
+ *
+ * `listWatchFeed` hands a viewer ten clips and every one of them arrives
+ * with its priced list, because on that surface the list *is* the pin —
+ * there is no second tap to a detail page that could fetch it later. Ten
+ * clips through the singular version above is twenty round trips to build
+ * one screen, and on a Mumbai-to-Vercel hop that is most of a second
+ * spent on nothing.
+ *
+ * Returns a map keyed by idea id, with no entry for a room that has no
+ * lines — callers already treat a missing list and an empty one the same
+ * way, and an entry per empty room is a map of empty arrays.
+ */
+export async function listRoomMaterialsMany(
+  ideaIds: string[],
+): Promise<Map<string, RoomMaterial[]>> {
+  const out = new Map<string, RoomMaterial[]>();
+  if (ideaIds.length === 0) return out;
+
   const hotspots = await db.studioHotspot.findMany({
-    where: { ideaId },
+    where: { ideaId: { in: ideaIds } },
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
   });
-  if (hotspots.length === 0) return [];
+  if (hotspots.length === 0) return out;
 
+  /* One `findMany` over every slug in every room on the page. The same
+     tap appearing in four kitchens is fetched once. */
   const products = await listProductsBySlugs(hotspots.map((h) => h.productSlug));
   const bySlug = new Map(products.map((p) => [p.slug, p]));
 
-  /* Pinned lines first, then the rest — see the note above on numbering. */
-  const ordered = [
-    ...hotspots.filter((h) => h.x !== null && h.y !== null),
-    ...hotspots.filter((h) => h.x === null || h.y === null),
-  ];
+  const grouped = new Map<string, typeof hotspots>();
+  for (const hotspot of hotspots) {
+    const list = grouped.get(hotspot.ideaId);
+    if (list) list.push(hotspot);
+    else grouped.set(hotspot.ideaId, [hotspot]);
+  }
+
+  for (const [ideaId, rows] of grouped) {
+    const lines = assembleRoom(rows, bySlug);
+    if (lines.length > 0) out.set(ideaId, lines);
+  }
+
+  return out;
+}
+
+/**
+ * One room's hotspot rows, numbered and priced.
+ *
+ * Split out of the query so that the numbering rule — which is the part
+ * with the reasoning in it — is one function with no database in it, and
+ * so the batched and singular readers above cannot drift apart on it.
+ */
+function assembleRoom(
+  hotspots: {
+    id: string;
+    x: number | null;
+    y: number | null;
+    atSeconds: number | null;
+    productSlug: string;
+    variantId: string | null;
+    qty: number;
+    unit: string;
+  }[],
+  bySlug: Map<string, Awaited<ReturnType<typeof listProductsBySlugs>>[number]>,
+): RoomMaterial[] {
+  /* Placed lines first, then the rest — see the note above on numbering.
+     A line is *placed* if it has a coordinate on the frame or a second on
+     the clock; on a photograph only the first can be true and this
+     reduces to exactly what it used to do.
+
+     Cued lines are then sorted by their second rather than left in
+     authoring order, because on a clip the numbering has one more
+     promise to keep than it does on a still: dot 1 has to be the first
+     thing the viewer sees. A list numbered in storage order would count
+     4, 1, 7 as the clip played, and the reader would have no way to know
+     the list was not simply wrong. */
+  const isPlaced = (h: { x: number | null; y: number | null; atSeconds: number | null }) =>
+    (h.x !== null && h.y !== null) || h.atSeconds !== null;
+
+  const placed = hotspots.filter(isPlaced);
+  const unplaced = hotspots.filter((h) => !isPlaced(h));
+
+  placed.sort((one, two) => {
+    /* A line with a dot but no cue sorts after every cued one, keeping
+       its authored order among its own kind. It is still a real dot and
+       still numbered; it just has no claim on any moment, and putting it
+       ahead of second zero would give it one. */
+    if (one.atSeconds === null && two.atSeconds === null) return 0;
+    if (one.atSeconds === null) return 1;
+    if (two.atSeconds === null) return -1;
+    return one.atSeconds - two.atSeconds;
+  });
 
   const lines: RoomMaterial[] = [];
-  for (const hotspot of ordered) {
+  for (const hotspot of [...placed, ...unplaced]) {
     const product = bySlug.get(hotspot.productSlug);
     if (!product) continue;
 
@@ -822,6 +1014,7 @@ export async function listRoomMaterials(ideaId: string): Promise<RoomMaterial[]>
       number: lines.length + 1,
       x: hotspot.x,
       y: hotspot.y,
+      atSeconds: hotspot.atSeconds,
       product,
       variant,
       qty: hotspot.qty,
@@ -1022,6 +1215,164 @@ export async function createIdea(
   });
 
   return toIdeaView(row, new Set());
+}
+
+/* ---- Attaching a clip ---------------------------------------------------- */
+
+const STUDIO_ASSET_PREFIX = "/studio/";
+
+export interface ClipInput {
+  /** Cloudflare Stream's id. Exactly one of this and `path`. */
+  uid?: string;
+  /** A progressive MP4 under `public/studio/`. */
+  path?: string;
+  /** Whole seconds. Null is allowed and means the pill is not drawn. */
+  durationSeconds?: number | null;
+  /** The clip's own frame, which the masonry box is measured from. A
+      portrait clip in a box shaped like the photograph it replaced is a
+      tile that letterboxes on every column width. */
+  width?: number;
+  height?: number;
+  /** A chosen still under `public/studio/`. Optional for a Stream clip —
+      Stream makes one from the footage — and the reason to set it anyway
+      is that the frame at 00:00 is very often a doorway. */
+  posterPath?: string | null;
+}
+
+/**
+ * Makes a pin a clip.
+ *
+ * The "exactly one source" rule that `createIdea` enforces for images is
+ * enforced here for footage, in the same place and for the same reason:
+ * Prisma cannot express it as a constraint, so the one function that
+ * writes these columns is the only thing standing between the schema's
+ * comment and a row that contradicts it.
+ *
+ * There is no route behind this, deliberately. A customer uploading a
+ * video of their kitchen is a moderation problem and a transcoding bill
+ * before it is a feature, and neither has an answer yet. Today a clip is
+ * attached by `scripts/attach-studio-clip.ts`, by somebody who has the
+ * footage and has watched it — which is also the only way the
+ * `atSeconds` on the materials list can be right.
+ */
+export async function setIdeaVideo(
+  ideaId: string,
+  input: ClipInput,
+): Promise<IdeaView> {
+  const hasUid = Boolean(input.uid);
+  const hasPath = Boolean(input.path);
+  if (hasUid === hasPath) {
+    throw new StudioError("bad_request", "A clip needs exactly one source");
+  }
+
+  if (input.path && !input.path.startsWith(STUDIO_ASSET_PREFIX)) {
+    throw new StudioError(
+      "bad_request",
+      `A shipped clip must live under ${STUDIO_ASSET_PREFIX}`,
+    );
+  }
+
+  if (input.posterPath && !input.posterPath.startsWith(STUDIO_ASSET_PREFIX)) {
+    throw new StudioError(
+      "bad_request",
+      `A poster must live under ${STUDIO_ASSET_PREFIX}`,
+    );
+  }
+
+  if (
+    input.durationSeconds !== null &&
+    input.durationSeconds !== undefined &&
+    input.durationSeconds <= 0
+  ) {
+    throw new StudioError("bad_request", "A clip's duration must be positive");
+  }
+
+  const row = await db.studioIdea.update({
+    where: { id: ideaId },
+    data: {
+      media: "VIDEO",
+      videoUid: input.uid ?? null,
+      videoPath: input.path ?? null,
+      durationSeconds: input.durationSeconds ?? null,
+      ...(input.width && input.height
+        ? { width: input.width, height: input.height }
+        : {}),
+      ...(input.posterPath !== undefined ? { assetPath: input.posterPath } : {}),
+    },
+    select: IDEA_SELECT,
+  });
+
+  return toIdeaView(row, new Set());
+}
+
+/**
+ * Puts a pin back to being a photograph.
+ *
+ * `assetPath` is left alone — on a Stream clip it was the chosen poster
+ * and on a shipped one it is the still that was always there, and either
+ * way it is a picture of this room. Nulling it here would turn "this is
+ * no longer a video" into "this no longer has an image", which is a
+ * second, unasked-for change.
+ */
+export async function clearIdeaVideo(ideaId: string): Promise<void> {
+  await db.studioIdea.update({
+    where: { id: ideaId },
+    data: {
+      media: "PHOTO",
+      videoUid: null,
+      videoPath: null,
+      durationSeconds: null,
+    },
+  });
+}
+
+/**
+ * When each line of a room's list is on screen.
+ *
+ * Written as a whole list rather than a line at a time: cues are authored
+ * by watching the clip once with the materials list beside it, and a
+ * partial write would leave a room half-cued, which `activeAt` renders as
+ * a clip that stops naming things halfway through.
+ *
+ * A second past the clip's own duration is refused rather than clamped. A
+ * cue at 0:90 on a 0:60 clip is a typo in an authoring script, and
+ * silently moving it to 0:60 would hide the typo behind a line that never
+ * shows.
+ */
+export async function setHotspotCues(
+  ideaId: string,
+  cues: { hotspotId: string; atSeconds: number | null }[],
+): Promise<void> {
+  const idea = await db.studioIdea.findUnique({
+    where: { id: ideaId },
+    select: { durationSeconds: true },
+  });
+  if (!idea) throw new StudioError("not_found", "No such room");
+
+  for (const cue of cues) {
+    if (cue.atSeconds === null) continue;
+    if (cue.atSeconds < 0) {
+      throw new StudioError("bad_request", "A cue cannot be before the start");
+    }
+    if (idea.durationSeconds !== null && cue.atSeconds > idea.durationSeconds) {
+      throw new StudioError(
+        "bad_request",
+        `A cue at ${cue.atSeconds}s is past the end of a ${idea.durationSeconds}s clip`,
+      );
+    }
+  }
+
+  /* One transaction: a half-written cue list is a clip that names things
+     for twenty seconds and then stops, which reads as a bug in the player
+     rather than as an interrupted write. */
+  await db.$transaction(
+    cues.map((cue) =>
+      db.studioHotspot.update({
+        where: { id: cue.hotspotId, ideaId },
+        data: { atSeconds: cue.atSeconds },
+      }),
+    ),
+  );
 }
 
 /** Only the owner's own idea, and that is the `where` clause rather than

@@ -25,10 +25,12 @@
     "db:retire-scraped": "tsx scripts/retire-scraped.ts",
     "images:localise": "tsx scripts/localise-source-images.ts",
     "db:clean-names": "tsx scripts/clean-product-names.ts",
-    "db:copy": "tsx scripts/copy-database.ts"
+    "db:copy": "tsx scripts/copy-database.ts",
+    "studio:clip": "tsx scripts/attach-studio-clip.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "hls.js": "^1.7.3",
     "jose": "^6.2.6",
     "next": "16.2.12",
     "openai": "^7.10.0",

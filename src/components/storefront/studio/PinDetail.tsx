@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { HotspotPhoto } from "@/components/storefront/studio/HotspotPhoto";
+import { HotspotVideo } from "@/components/storefront/studio/HotspotVideo";
+import type { StudioVideoHandle } from "@/components/storefront/studio/StudioVideo";
 import { MaterialsList } from "@/components/storefront/studio/MaterialsList";
 import { AddAllToProject } from "@/components/storefront/studio/AddAllToProject";
 import { SaveSheet } from "@/components/storefront/studio/SaveSheet";
@@ -52,6 +54,33 @@ export function PinDetail({
   const [selected, setSelected] = useState<number | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [projectOpen, setProjectOpen] = useState(false);
+  const clip = useRef<StudioVideoHandle | null>(null);
+
+  /**
+   * A tap on a row in the list, which is not the same act as a tap on a
+   * dot and is the one place that difference is written down.
+   *
+   * On a photograph it toggles: the highlight is the only thing a
+   * selection does, so tapping the lit row again clears it.
+   *
+   * On a clip it seeks and stays. There is nothing to clear to — the clip
+   * is still running and still on a line — and a second tap on the same
+   * row means what the first one did: take me back to that moment. A
+   * line the clip never frames has no moment, so it highlights and the
+   * picture keeps playing.
+   */
+  function pickLine(n: number) {
+    if (!pin.video) {
+      setSelected((current) => (current === n ? null : n));
+      return;
+    }
+
+    const line = materials.find((m) => m.number === n);
+    if (line?.atSeconds !== null && line?.atSeconds !== undefined) {
+      clip.current?.seek(line.atSeconds);
+    }
+    setSelected(n);
+  }
 
   const saved = isSaved(pin, savedOverride(pin.id));
 
@@ -77,12 +106,28 @@ export function PinDetail({
   return (
     <article className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-8">
       <div className="lg:sticky lg:top-6 lg:self-start">
-        <HotspotPhoto
-          pin={pin}
-          materials={materials}
-          selected={selected}
-          onSelect={setSelected}
-        />
+        {/* One pin, two kinds of media, and the branch is here rather
+            than inside a component that tries to be both. A still and a
+            clip disagree about what a dot is for — see `HotspotVideo` —
+            and a single component holding both rules would be the place
+            those rules quietly merged into a third, wrong one. */}
+        {pin.video ? (
+          <HotspotVideo
+            pin={pin}
+            video={pin.video}
+            materials={materials}
+            selected={selected}
+            onSelect={setSelected}
+            handleRef={clip}
+          />
+        ) : (
+          <HotspotPhoto
+            pin={pin}
+            materials={materials}
+            selected={selected}
+            onSelect={setSelected}
+          />
+        )}
       </div>
 
       <div className="flex min-w-0 flex-col gap-6">
@@ -160,7 +205,7 @@ export function PinDetail({
             <MaterialsList
               materials={materials}
               selected={selected}
-              onSelect={setSelected}
+              onSelect={pickLine}
             />
 
             {/* Pinned to the viewport on a phone, static under the list on

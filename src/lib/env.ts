@@ -170,6 +170,32 @@ const schema = z.object({
    */
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   SUPABASE_STORAGE_BUCKET: z.string().optional(),
+
+  /**
+   * Cloudflare Stream — where Studio's clips are played from.
+   *
+   * All optional, and there is deliberately no production guard: with
+   * these unset, `src/lib/video/index.ts` reports itself unconfigured and
+   * a pin whose clip is a Stream id renders as its poster with no player,
+   * which is the same honest degradation an unphotographed pin already
+   * has. A clip shipped under `public/studio/` needs none of this.
+   *
+   * `CF_STREAM_CUSTOMER_CODE` is the subdomain in
+   * `customer-<code>.cloudflarestream.com`, taken from any embed URL in
+   * the dashboard. It is *not* a secret — it appears in every manifest
+   * URL the browser fetches — and it is the only one of the three the
+   * player needs.
+   *
+   * `CF_ACCOUNT_ID` and `CF_STREAM_API_TOKEN` are for the upload side
+   * only: minting a direct-upload URL so an architect's clip goes from
+   * their browser to Stream without passing through Vercel, the same
+   * reasoning `StorageProvider.createUploadUrl` records. The token is a
+   * write credential for the whole Stream account — treat it like
+   * `SUPABASE_SERVICE_ROLE_KEY` and never let it reach a response body.
+   */
+  CF_STREAM_CUSTOMER_CODE: z.string().optional(),
+  CF_ACCOUNT_ID: z.string().optional(),
+  CF_STREAM_API_TOKEN: z.string().optional(),
 });
 
 type Env = z.infer<typeof schema>;
@@ -210,6 +236,9 @@ function load(): Env {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
         SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET,
+        CF_STREAM_CUSTOMER_CODE: process.env.CF_STREAM_CUSTOMER_CODE,
+        CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
+        CF_STREAM_API_TOKEN: process.env.CF_STREAM_API_TOKEN,
       };
     }
 

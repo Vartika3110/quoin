@@ -1763,6 +1763,23 @@ enum StudioIdeaKind {
   PRODUCT
 }
 
+/// Whether a pin is a still or a clip.
+///
+/// Separate from `StudioIdeaKind`, which answers a different question —
+/// *what* was photographed, a room or a bag of cement. This answers what
+/// the bytes are. A clip of a kitchen is `SPACE` + `VIDEO`; a photograph
+/// of one is `SPACE` + `PHOTO`, and both belong in the same wall.
+///
+/// The default is `PHOTO` because every row that exists today is one, and
+/// because the failure mode of getting it wrong that way round is a
+/// poster frame with no play control on it — visibly a still. Defaulting
+/// to `VIDEO` would put a play triangle over every photograph in the
+/// feed and a player over a JPEG on every detail page.
+enum StudioMedia {
+  PHOTO
+  VIDEO
+}
+
 /// Someone who designed a room in Studio.
 ///
 /// Deliberately its own table and deliberately empty until a real person
@@ -1827,6 +1844,35 @@ model StudioIdea {
   file   StoredFile? @relation(fields: [fileId], references: [id], onDelete: Restrict)
 
   assetPath String?
+
+  /// Whether the three columns above describe the whole pin, or only its
+  /// poster frame. See `StudioMedia`.
+  media StudioMedia @default(PHOTO)
+
+  /// Where the clip is, when `media` is `VIDEO`. Exactly one of these is
+  /// set, on the same terms as `fileId` / `assetPath` above and enforced
+  /// in the same place — `setIdeaVideo`, not a constraint Prisma cannot
+  /// express.
+  ///
+  /// `videoUid` is Cloudflare Stream's id for the clip. Adaptive bitrate,
+  /// which is the whole reason this is not just an MP4 in the bucket: a
+  /// sixty-second walkthrough of a kitchen is tens of megabytes at the
+  /// quality that makes the tiling worth looking at, and a customer on a
+  /// train outside Jaipur has to get the 360p rendition without anybody
+  /// deciding that in advance. `src/lib/video/index.ts` turns this into a
+  /// manifest URL and a poster URL.
+  ///
+  /// `videoPath` is a file this repo ships under `public/studio/` — a
+  /// progressive MP4, no ladder, no provider account. It exists so the
+  /// player can be built, reviewed and tested before anybody signs up to
+  /// Stream, and so a local clip works with `CF_STREAM_*` unset.
+  videoUid  String?
+  videoPath String?
+
+  /// Whole seconds, rounded. The duration pill on the card and the bound
+  /// every `StudioHotspot.atSeconds` is checked against. Null when nobody
+  /// has said — the pill is then not drawn, rather than drawn as `0:00`.
+  durationSeconds Int?
 
   title       String
   description String @default("")
@@ -1901,6 +1947,9 @@ model StudioIdea {
   @@index([kind, visibility, createdAt])
   /// The feed, ordered by popularity.
   @@index([kind, visibility, saveCount])
+  /// The watch feed: clips only, newest first. Same reasoning as the
+  /// index above it — the column the query filters on first leads.
+  @@index([media, kind, visibility, createdAt])
   /// "Kitchens", filtered.
   @@index([kind, visibility, room, createdAt])
   /// Someone's own uploads, including the private ones.
@@ -1957,6 +2006,19 @@ model StudioHotspot {
   /// The word next to the number — "bags", "sq.ft.", "nos". Display only;
   /// the priced unit comes from the catalogue with the price.
   unit String @default("")
+
+  /// When this line is on screen, in whole seconds from the start of the
+  /// clip. Null on a photograph's dot — a still has no time — and null on
+  /// a clip's line that is never framed, which is the same cement and
+  /// adhesive case `x`/`y` already has.
+  ///
+  /// Seconds, not milliseconds: this is the moment a person pointed at a
+  /// tap and said "that one", and nobody authoring a materials list is
+  /// working to a finer grain than that. A line is treated as current
+  /// from its own second until the next line's — see `activeAt` in
+  /// `src/lib/types/studio.ts`, which is the only place that window is
+  /// computed.
+  atSeconds Int?
 
   /// The number in the dot, and the order of the list under it.
   position Int @default(0)

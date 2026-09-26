@@ -8,7 +8,7 @@ import { Check, Plus } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import { useCart } from "@/lib/store/cart";
 import { formatPrice, PRICING_UNIT_LABEL } from "@/lib/types/catalog";
-import type { RoomMaterial } from "@/lib/types/studio";
+import { formatClock, type RoomMaterial } from "@/lib/types/studio";
 
 /** Six is a screenful on a phone and about half the panel on a desktop.
     Past that the list stops being "what this room is made of" and starts
@@ -26,6 +26,15 @@ const VISIBLE = 6;
  * The number on the left is the dot on the photograph. Selecting a row
  * and selecting a dot are the same act, and the highlight is drawn on
  * whichever one the reader did not touch.
+ *
+ * `onSelect` is handed the row's number and never null. It used to
+ * toggle here, which was right while a pin was only ever a photograph
+ * and wrong the moment one could be a clip: on a clip a tap means "take
+ * me to that moment", and a second tap on the same row means it again —
+ * there is nothing to deselect *to*, because the clip is still playing
+ * and still on that line. Whether a repeat tap clears the highlight is
+ * now the caller's decision, made once in `PinDetail` where both kinds
+ * of pin are in view.
  */
 export function MaterialsList({
   materials,
@@ -34,7 +43,8 @@ export function MaterialsList({
 }: {
   materials: RoomMaterial[];
   selected: number | null;
-  onSelect: (n: number | null) => void;
+  /** The row's number, always — never null. See the note above. */
+  onSelect: (n: number) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const shown = expanded ? materials : materials.slice(0, VISIBLE);
@@ -52,7 +62,7 @@ export function MaterialsList({
             key={line.id}
             line={line}
             on={selected === line.number}
-            onSelect={() => onSelect(selected === line.number ? null : line.number)}
+            onSelect={() => onSelect(line.number)}
           />
         ))}
       </ul>
@@ -98,7 +108,11 @@ function MaterialRow({
         type="button"
         onClick={onSelect}
         aria-pressed={on}
-        aria-label={`Highlight ${line.product.title} on the photograph`}
+        aria-label={
+          line.atSeconds === null
+            ? `Highlight ${line.product.title}`
+            : `Play from ${formatClock(line.atSeconds)} — ${line.product.title}`
+        }
         className={cn(
           "nums mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-micro font-semibold transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
@@ -107,6 +121,17 @@ function MaterialRow({
       >
         {line.number}
       </button>
+
+      {/* The second this line is on screen, on a clip. Not a separate
+          control — the number beside it already seeks there — but the
+          reader has no other way to know that tapping 7 will move the
+          clip, or that line 7 comes before line 9. Absent on a
+          photograph and on a line the clip never frames. */}
+      {line.atSeconds !== null && (
+        <span className="nums mt-0.5 shrink-0 self-start text-micro tabular-nums text-faint">
+          {formatClock(line.atSeconds)}
+        </span>
+      )}
 
       <Link
         href={`/p/${line.product.slug}`}
