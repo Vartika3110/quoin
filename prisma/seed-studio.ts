@@ -2,6 +2,7 @@
 import "../src/lib/load-env-file";
 
 import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { PrismaClient, type StudioRoom } from "@prisma/client";
 import sharp from "sharp";
@@ -29,7 +30,32 @@ const db = new PrismaClient();
  * making a fourteenth copy of the same laminate. Keyed on `assetPath`,
  * which is the one thing about a seeded idea that never changes.
  *
- * Run with:  npx tsx prisma/seed-studio.ts
+ * ## Two tiers, and which one is the wall
+ *
+ * There are now two sources of seeded pins and they are not equals.
+ *
+ * `public/studio/manifest.json`, written by
+ * `scripts/generate-studio-images.ts`, holds **rooms** — a bedroom with a
+ * jaali headboard, a kitchen in white and oak, a balcony at seven in the
+ * evening. That is what Studio is for, and when the manifest has entries
+ * they are the wall.
+ *
+ * The fourteen seeds below are **departments** — "Waterproofing", "Tools
+ * and site safety". They were only ever in the wall because the wall
+ * would otherwise be empty, which the note on `kind` further down said in
+ * as many words. The moment there are real rooms, that reason is gone.
+ *
+ * So `kind` is decided by whether the manifest has anything in it: with
+ * rooms present the departments become `PRODUCT` and leave the discovery
+ * feed, keeping their URLs, their tags and their priced lines — which are
+ * genuinely useful on a category page and were never inspiration. With no
+ * rooms they stay `SPACE` and the wall is what it was. Nothing is
+ * deleted, no flag has to be remembered, and generating the images is the
+ * whole of the switch.
+ *
+ * Run with:
+ *   npx tsx scripts/generate-studio-images.ts   # once, costs money
+ *   npx tsx prisma/seed-studio.ts
  */
 
 interface Seed {
@@ -337,7 +363,119 @@ async function seedHotspots(): Promise<number> {
   return written;
 }
 
+/* ---- Rooms, from the generator's manifest -------------------------------- */
+
+/** Exactly what `scripts/generate-studio-images.ts` writes per image. */
+interface ManifestEntry {
+  assetPath: string;
+  title: string;
+  description: string;
+  room: StudioRoom;
+  styles: string[];
+  materials: string[];
+  colors: { hex: string; name: string }[];
+  width: number;
+  height: number;
+  blurDataUrl: string;
+}
+
+const MANIFEST = path.join("public", "studio", "manifest.json");
+
+/**
+ * The generated rooms, or none.
+ *
+ * A missing manifest is the ordinary state of a fresh clone, not an
+ * error — generating the images costs money and is a deliberate, separate
+ * step. An entry whose image is not actually on disk is dropped rather
+ * than seeded: `imageUrlFor` would hand the tile a path that 404s, which
+ * renders worse than the stand-in it was meant to replace.
+ */
+async function readRooms(): Promise<ManifestEntry[]> {
+  let parsed: Record<string, ManifestEntry>;
+  try {
+    parsed = JSON.parse(await readFile(MANIFEST, "utf8")) as Record<string, ManifestEntry>;
+  } catch {
+    return [];
+  }
+
+  const rooms: ManifestEntry[] = [];
+  for (const entry of Object.values(parsed)) {
+    const file = path.join("public", entry.assetPath.replace(/^\//, ""));
+    if (existsSync(file)) rooms.push(entry);
+  }
+  return rooms;
+}
+
+/**
+ * One pin per generated room.
+ *
+ * The manifest already carries the dimensions and the blur placeholder —
+ * `describe` is not called here, because the generator read them off the
+ * bytes it had just encoded and re-opening every file to learn the same
+ * numbers is work for nothing.
+ *
+ * **No hotspots, deliberately.** A `StudioHotspot` says "this room used
+ * three bags of this, and it is at these coordinates", and neither half
+ * of that is knowable about an illustration nobody built. Inventing a
+ * bill of materials would put a total under the picture that no one
+ * agreed to — the exact thing `LookMatch` refuses a confidence score
+ * over. What these rooms have instead is their tags, and "Shop this
+ * look" matches those against the catalogue and says which word each
+ * product came from. Real lines, real dots and real quantities arrive
+ * with a real room, from `scripts/attach-studio-clip.ts`'s sibling or
+ * from a customer's own upload.
+ */
+async function seedRooms(rooms: ManifestEntry[]): Promise<{ created: number; updated: number }> {
+  let created = 0;
+  let updated = 0;
+
+  for (const entry of rooms) {
+    const existing = await db.studioIdea.findFirst({
+      where: { assetPath: entry.assetPath, userId: null },
+      select: { id: true },
+    });
+
+    const data = {
+      title: entry.title,
+      description: entry.description,
+      width: entry.width,
+      height: entry.height,
+      blurDataUrl: entry.blurDataUrl,
+      room: entry.room,
+      styles: entry.styles,
+      materials: entry.materials,
+      colors: entry.colors,
+      visibility: "PUBLIC" as const,
+      kind: "SPACE" as const,
+      /* Null, and it stays null. These are illustrations of the kind of
+         room Quoin's catalogue builds, not photographs of a flat in
+         Dwarka, and a `location` would be the one line on the card that
+         claimed otherwise. The storefront's rule on generated imagery,
+         held here. */
+      location: null,
+    };
+
+    if (existing) {
+      await db.studioIdea.update({ where: { id: existing.id }, data });
+      updated += 1;
+    } else {
+      await db.studioIdea.create({
+        data: { ...data, slug: slugFor(entry.title), assetPath: entry.assetPath },
+      });
+      created += 1;
+    }
+  }
+
+  return { created, updated };
+}
+
 async function main() {
+  const rooms = await readRooms();
+  /* The one decision this file makes. See the note at the top: with real
+     rooms the departments are not inspiration and leave the wall; with
+     none they are all the wall has. */
+  const departmentKind = rooms.length > 0 ? ("PRODUCT" as const) : ("SPACE" as const);
+
   let created = 0;
   let updated = 0;
 
@@ -364,17 +502,19 @@ async function main() {
       materials: seed.materials,
       colors: seed.colors,
       visibility: "PUBLIC" as const,
-      /* Reclassified from the database default, which is `PRODUCT`. See
-         `StudioIdeaKind` in the schema: everything stays out of the
-         discovery wall until something says it is a room, and this seed
-         is that something for the fourteen shipped photographs.
+      /* `SPACE` only while there is nothing better. See `StudioIdeaKind`
+         in the schema for what the two values mean, and the note at the
+         top of this file for why this one is computed rather than fixed.
 
          Said plainly: these are department photographs, not finished
-         rooms, and they are in the wall because the wall would otherwise
-         be empty. They are placeholders for real interiors and the
-         `location` column is left null rather than filled with a
-         plausible "3BHK · Dwarka" nobody has been to. */
-      kind: "SPACE" as const,
+         rooms. They were in the wall because the wall would otherwise be
+         empty, and the day `public/studio/` has rooms in it that stops
+         being true — so this flips to `PRODUCT`, they leave the discovery
+         feed, and they keep their URLs, their tags and their priced
+         lines, which were always more useful on a category page than as
+         inspiration. `location` stays null either way rather than being
+         filled with a plausible "3BHK · Dwarka" nobody has been to. */
+      kind: departmentKind,
     };
 
     if (existing) {
@@ -389,13 +529,28 @@ async function main() {
   }
 
   const hotspots = await seedHotspots();
+  const seeded = await seedRooms(rooms);
 
-  console.log(`[studio] ${created} ideas created, ${updated} updated.`);
+  console.log(`[studio] departments: ${created} created, ${updated} updated, kind=${departmentKind}.`);
   console.log(`[studio] ${hotspots} material lines written.`);
-  console.log(
-    "[studio] These are Quoin's own commissioned category photographs. " +
-      "The feed grows from customer uploads at /studio/upload.",
-  );
+
+  if (rooms.length === 0) {
+    console.log(
+      `[studio] rooms: none. public/studio/ has no manifest, so the wall is ` +
+        `the fourteen department photographs and every tile renders as the ` +
+        `stand-in — see imageUrlFor. Run scripts/generate-studio-images.ts ` +
+        `to change that.`,
+    );
+  } else {
+    console.log(
+      `[studio] rooms: ${seeded.created} created, ${seeded.updated} updated ` +
+        `from ${MANIFEST}.`,
+    );
+    console.log(
+      `[studio] the departments have left the wall. They keep their URLs ` +
+        `and their priced lines; the wall is now ${rooms.length} rooms.`,
+    );
+  }
 }
 
 main()

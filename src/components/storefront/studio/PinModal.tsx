@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { PinDetail } from "@/components/storefront/studio/PinDetail";
@@ -32,9 +32,13 @@ import type { IdeaView, SpacePinView } from "@/lib/types/studio";
 export function PinModal({
   view,
   related,
+  look,
 }: {
   view: SpacePinView;
   related: IdeaView[];
+  /** See `PinDetail`. Passed straight through — the modal and the page
+      must not disagree about what a room offers. */
+  look?: ReactNode;
 }) {
   const router = useRouter();
   const panel = useRef<HTMLDivElement>(null);
@@ -117,7 +121,7 @@ export function PinModal({
         </button>
 
         <div className="p-0 sm:p-5 lg:p-6">
-          <PinDetail view={view} related={related} onClose={close} />
+          <PinDetail view={view} related={related} look={look} onClose={close} />
         </div>
       </div>
     </div>,

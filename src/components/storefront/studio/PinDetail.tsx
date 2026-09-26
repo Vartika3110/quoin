@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { HotspotPhoto } from "@/components/storefront/studio/HotspotPhoto";
 import { HotspotVideo } from "@/components/storefront/studio/HotspotVideo";
 import type { StudioVideoHandle } from "@/components/storefront/studio/StudioVideo";
@@ -39,12 +39,20 @@ import { ROOM_LABEL, type IdeaView, type SpacePinView } from "@/lib/types/studio
 export function PinDetail({
   view,
   related,
+  /** `<ShopThisLook>`, already rendered, for a room nobody has itemised.
+      A slot rather than an import: that component is a server component
+      and this one is not, so the page composes it and hands it down —
+      which also keeps the catalogue matcher off the client bundle. Null
+      when the room has a real materials list, which is the better answer
+      and takes precedence. */
+  look,
   /** Rendered in the modal, where a close control is the only way out
       that does not involve the browser's own back button. */
   onClose,
 }: {
   view: SpacePinView;
   related: IdeaView[];
+  look?: ReactNode;
   onClose?: () => void;
 }) {
   const { pin, materials, totalPaise } = view;
@@ -236,13 +244,23 @@ export function PinDetail({
             </footer>
           </>
         ) : (
-          /* No invented list. A room nobody has itemised says so, rather
-             than showing an empty "Materials in this room" heading with a
-             ₹0 total under it. */
-          <p className="px-5 text-body-sm text-faint lg:px-0">
-            Nobody has itemised this room yet. The tags above are what it is
-            made of — each one searches the catalogue.
-          </p>
+          /* No invented list. A room nobody has itemised says so — and
+             then says what it *can*: the tags, matched against the
+             catalogue, each product labelled with the word it came from.
+             That is a real thing to buy without a single fabricated
+             quantity or coordinate, which is exactly what a generated
+             room can honestly offer and an itemised one does better.
+
+             The sentence stays above it. Without it, a reader has no way
+             to tell a matched list from a measured one, and those are
+             very different claims. */
+          <div className="flex flex-col gap-6 px-5 lg:px-0">
+            <p className="text-body-sm text-faint">
+              Nobody has itemised this room yet. The tags above are what it is
+              made of — each one searches the catalogue.
+            </p>
+            {look}
+          </div>
         )}
 
         {related.length > 0 && <MoreLikeThis related={related} />}

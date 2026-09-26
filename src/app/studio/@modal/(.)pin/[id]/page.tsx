@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { PinModal } from "@/components/storefront/studio/PinModal";
+import { ShopThisLook } from "@/components/storefront/studio/ShopThisLook";
 import { getSession } from "@/lib/auth/session";
-import { getSpacePin, listRelatedIdeas } from "@/lib/data/studio";
+import { getSpacePin, listRelatedIdeas, shopTheLook } from "@/lib/data/studio";
 
 /**
  * A pin opened from inside Studio.
@@ -29,5 +30,14 @@ export default async function PinModalRoute({
 
   const related = await listRelatedIdeas(view.pin, viewerId, 5);
 
-  return <PinModal view={view} related={related} />;
+  const look =
+    view.materials.length === 0 ? await shopTheLook(view.pin) : null;
+
+  return (
+    <PinModal
+      view={view}
+      related={related}
+      look={look ? <ShopThisLook look={look} /> : null}
+    />
+  );
 }

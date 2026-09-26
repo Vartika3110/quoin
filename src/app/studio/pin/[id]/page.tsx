@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { StudioShell } from "@/components/storefront/studio/StudioShell";
 import { StudioChrome } from "@/components/storefront/studio/StudioChrome";
 import { PinDetail } from "@/components/storefront/studio/PinDetail";
+import { ShopThisLook } from "@/components/storefront/studio/ShopThisLook";
 import { getSession } from "@/lib/auth/session";
-import { getSpacePin, listRelatedIdeas } from "@/lib/data/studio";
+import { getSpacePin, listRelatedIdeas, shopTheLook } from "@/lib/data/studio";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -49,9 +50,16 @@ export default async function PinPage({ params }: Params) {
 
   const related = await listRelatedIdeas(view.pin, viewerId, 5);
 
+  const look =
+    view.materials.length === 0 ? await shopTheLook(view.pin) : null;
+
   return (
     <StudioShell header={<StudioChrome />} barTitle={view.pin.title}>
-      <PinDetail view={view} related={related} />
+      <PinDetail
+        view={view}
+        related={related}
+        look={look ? <ShopThisLook look={look} /> : null}
+      />
     </StudioShell>
   );
 }
