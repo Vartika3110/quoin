@@ -39,8 +39,7 @@ import sharp from "sharp";
 
 import {
   DryRunGenerator,
-  GeminiImageGenerator,
-  OpenAiImageGenerator,
+  liveGenerator,
   type ImageGenerator,
 } from "../src/lib/images/generator";
 
@@ -496,35 +495,6 @@ function arg(name: string): string | undefined {
   return i === -1 ? undefined : process.argv[i + 1];
 }
 
-/**
- * Whichever provider this machine is actually funded for.
- *
- * Gemini first, and not on merit: it asks for a portrait aspect ratio
- * directly and bills about a third of OpenAI's rate per image. Either key
- * alone is enough, and `--provider` overrides the choice when both exist.
- * Neither set is a configuration error, not a silent no-op — the message
- * says which variable to add rather than leaving someone to read this file
- * to find out.
- */
-function liveGenerator(): ImageGenerator {
-  const preferred = arg("provider");
-  const gemini = process.env.GEMINI_API_KEY?.trim();
-  const openai = process.env.OPENAI_API_KEY?.trim();
-
-  if (preferred === "openai" || (!gemini && openai)) {
-    if (!openai) throw new Error("OPENAI_API_KEY is not set in .env.local");
-    return new OpenAiImageGenerator(openai, "gpt-image-1", "medium", SIZE);
-  }
-
-  if (!gemini) {
-    throw new Error(
-      "No image provider key found. Add GEMINI_API_KEY (or OPENAI_API_KEY) to .env.local.",
-    );
-  }
-
-  return new GeminiImageGenerator(gemini);
-}
-
 async function readManifest(): Promise<Record<string, ManifestEntry>> {
   try {
     return JSON.parse(await readFile(MANIFEST, "utf8")) as Record<string, ManifestEntry>;
@@ -549,7 +519,19 @@ async function main() {
     return;
   }
 
-  const generator: ImageGenerator = dryRun ? new DryRunGenerator() : liveGenerator();
+  const generator: ImageGenerator = dryRun
+    ? new DryRunGenerator()
+    : liveGenerator({
+        size: SIZE,
+        /* The same portrait shape as SIZE, in Gemini's vocabulary. */
+        aspectRatio: "3:4",
+        quality: "medium",
+        /* Portrait at `medium` is where OpenAI's price climbs and
+           Gemini's does not. See the cost note in `liveGenerator`. */
+        cheapest: "gemini",
+        preferred: arg("provider"),
+        geminiModel: arg("gemini-model"),
+      });
 
   console.log(
     `${dryRun ? "Dry run" : "Generating"}: ${queue.length} of ${SPECS.length} images → ${OUT_DIR}`,

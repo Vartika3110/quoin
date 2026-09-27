@@ -4,7 +4,14 @@
  *   npx tsx scripts/generate-product-images.ts --dry-run
  *   npx tsx scripts/generate-product-images.ts --limit 20
  *   npx tsx scripts/generate-product-images.ts --category paints-finishes
+ *   npx tsx scripts/generate-product-images.ts --provider gemini
+ *   npx tsx scripts/generate-product-images.ts --openai-model gpt-image-1-mini
  *   npx tsx scripts/generate-product-images.ts
+ *
+ * Provider is chosen by `liveGenerator` from whichever key is funded,
+ * preferring OpenAI because a square tile at `low` is its cheapest tier
+ * and Gemini has no equivalent discount — see the cost note there before
+ * assuming the opposite, which the Studio job would tell you.
  *
  * Resumable by construction: it only selects products whose `image` is
  * still empty, so an interrupted run is continued by running it again.
@@ -19,38 +26,58 @@ import "../src/lib/load-env-file";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import sharp from "sharp";
 import { PrismaClient } from "@prisma/client";
 
 import {
   DryRunGenerator,
-  OpenAiImageGenerator,
   buildPrompt,
+  liveGenerator,
   type ImageGenerator,
 } from "../src/lib/images/generator";
 
 const db = new PrismaClient();
-
-/** Served straight from `public/`, so the path is also the public URL. */
-const OUT_DIR = path.join("public", "generated");
-
-/* Providers rate-limit aggressively on image endpoints, and a 429 storm
-   costs more wall-clock than pacing does. */
-const DELAY_MS = 1200;
-const MAX_FAILURES = 10;
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
   return i === -1 ? undefined : process.argv[i + 1];
 }
 
+/** Served straight from `public/`, so the path is also the public URL. */
+const OUT_DIR = path.join("public", "generated");
+
+/* Providers rate-limit aggressively on image endpoints, and a 429 storm
+   costs more wall-clock than pacing does. A new OpenAI organisation is
+   capped at five images a minute, so 1.2s — the figure this started with
+   — is an order of magnitude too fast and aborted a full run after 63
+   products. `fetchRetryingRateLimits` now absorbs the overshoot, but
+   pacing under the ceiling is cheaper than being told off and waiting.
+   `--delay` raises or lowers it as the account's tier changes. */
+const DELAY_MS = Number(arg("delay")) || 12_500;
+const MAX_FAILURES = 10;
+
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
   const limit = Number(arg("limit")) || undefined;
   const category = arg("category");
 
+  /* Square, because a catalogue tile is square — `ProductCard` and the PDP
+     gallery both reserve 1/1. `low` is what this job has always asked
+     OpenAI for; these are 400px tiles. */
   const generator: ImageGenerator = dryRun
     ? new DryRunGenerator()
-    : new OpenAiImageGenerator(process.env.OPENAI_API_KEY ?? "");
+    : liveGenerator({
+        size: "1024x1024",
+        aspectRatio: "1:1",
+        quality: "low",
+        /* Square at `low` is OpenAI's cheapest tier and Gemini's ordinary
+           one: $0.011 against $0.067 an image, which over this catalogue
+           is the difference between a $15 run and a $92 one. */
+        cheapest: "openai",
+        openaiModel: arg("openai-model") ?? "gpt-image-1",
+        preferred: arg("provider"),
+        geminiModel: arg("gemini-model"),
+      });
 
   const products = await db.product.findMany({
     where: {
@@ -96,8 +123,16 @@ async function main() {
       if (!dryRun) {
         /* Named by SKU rather than by slug: a slug can be regenerated,
            and an orphaned image file is harder to spot than a stale one. */
-        const file = `${product.sku}.${image.extension}`;
-        await writeFile(path.join(OUT_DIR, file), image.data);
+        const file = `${product.sku}.webp`;
+        /* Re-encoded rather than stored as returned. Every provider hands
+           back PNG, and 1,300 of those is 1.2GB — more than a deploy will
+           carry, and more than a phone should download for one tile. The
+           same picture as WebP is a fiftieth of that on a plain studio
+           background. `generate-studio-images.ts` has always done this;
+           this job did not, and the backfill is
+           `scripts/webp-generated-images.ts`. */
+        const encoded = await sharp(image.data).webp({ quality: 82 }).toBuffer();
+        await writeFile(path.join(OUT_DIR, file), encoded);
 
         await db.product.update({
           where: { id: product.id },

@@ -73,3 +73,7 @@ next-env.d.ts
 /quoin-main.zip
 /ChatGPT Image *.png
 /Quoin _ DATA SEMI FINAL.docx
+
+# The second working spreadsheet of the catalogue, same as the one above:
+# a snapshot someone exported, not an input to a build.
+/Quoin_Database_Final_I.docx
