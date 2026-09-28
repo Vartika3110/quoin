@@ -54,6 +54,10 @@ export function Gallery({ product }: { product: Product }) {
           photo={active}
           swatchKey={product.image}
           label={product.title}
+          /* Asks for nearly double the box, because clicking scales the
+             picture 1.8x in place and a source cut to the box exactly
+             would go soft the moment anyone zooms. */
+          sizes="(min-width: 1024px) 1100px, 180vw"
           className={cn(
             "size-full transition-transform duration-500 ease-out-quart",
             zoomed && "scale-[1.8]",

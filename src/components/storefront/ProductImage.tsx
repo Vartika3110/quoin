@@ -1,5 +1,6 @@
 "use client";
 
+import NextImage from "next/image";
 import { useState } from "react";
 import { Swatch } from "@/components/Swatch";
 import { cn } from "@/components/ui/cn";
@@ -19,6 +20,7 @@ export function ProductImage({
   swatchKey,
   label,
   brand,
+  sizes = "(min-width: 1024px) 220px, 45vw",
   className = "",
 }: {
   photo?: string;
@@ -26,6 +28,11 @@ export function ProductImage({
   label: string;
   /** Named on the stand-in, when there is one. See below for why. */
   brand?: string | null;
+  /** The rendered width, so the browser fetches one tile rather than the
+      original. Defaults to a thumbnail: most call sites here are cart
+      rows, order lines and wishlist tiles. A grid or a gallery is bigger
+      and says so. */
+  sizes?: string;
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
@@ -41,10 +48,40 @@ export function ProductImage({
     );
   }
 
+  /* Quoin's own picture: a path under `public/`, or an object in the
+     public catalogue bucket. Everything else reaching here is the
+     captured source photography behind `SHOW_SOURCE_IMAGES`, which lives
+     on someone else's CDN. */
+  const ours = photo.startsWith("/") || photo.includes("/storage/v1/object/public/");
+
+  if (ours) {
+    return (
+      /* `next/image` for these, and the comment that used to sit here
+         said the opposite — that optimising would copy someone else's
+         files onto Quoin's infrastructure. True while every picture was
+         scraped from a competitor's CDN; false now that the catalogue is
+         Quoin's own art in Quoin's own bucket. The cost of the plain tag
+         was a 1024px original downloaded for a 200px tile and upscaled
+         on any screen denser than 1x, which is what "the pixels are
+         breaking" looks like. */
+      <NextImage
+        src={photo}
+        alt={label}
+        fill
+        sizes={sizes}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailed(true)}
+        className={`object-contain ${className}`}
+      />
+    );
+  }
+
   return (
-    /* Deliberately not next/image: optimisation would copy these onto
-       Quoin's own infrastructure and cache them there. A plain tag leaves
-       them where they are, which is both cheaper and easier to undo. */
+    /* Left where it is, deliberately: optimising a third party's
+       photograph would copy it onto Quoin's infrastructure and cache it
+       there, which is the one thing the `source*` quarantine exists to
+       prevent. */
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={photo}

@@ -60,14 +60,51 @@ const CATEGORY_HINT: Record<string, string> = {
   Services: "professional tradesperson at work on a building site",
 };
 
+/**
+ * How a unit of the thing is presented.
+ *
+ * Each entry describes a *form* only — the category says what the thing
+ * is. Two rules learned from looking at what came back:
+ *
+ *  - Nothing here may mention a label, a printed volume or a marking.
+ *    The prompt ends by forbidding text and packaging labels, and a hint
+ *    that asks for one anyway leaves the model to pick a winner. It
+ *    picks text, and invented text on a product shot is the defect this
+ *    pipeline can least afford.
+ *  - "A sealed sack" is not enough to get a builder's sack; it gets a
+ *    cushion. Naming the material and the stance costs nothing and is
+ *    the difference between cement and a pillow.
+ */
 const UNIT_HINT: Record<string, string> = {
-  per_litre: "shown as a sealed container with its volume on the label",
-  per_bag: "shown as a sealed sack",
-  per_kg: "shown as a packaged quantity",
+  per_litre: "shown as a sealed metal tin with a wire handle, unprinted",
+  per_bag:
+    "shown as one full sack standing upright, woven polypropylene or heavy paper, unprinted",
+  per_kg: "shown as one sealed tub or sack of the material, unprinted",
   per_sqft: "shown as a flat sheet or slab, seen at a slight angle",
   per_running_ft: "shown as a length of material",
   per_visit: "shown as a person at work, no packaging",
 };
+
+/**
+ * The product name with its pack size taken off the end.
+ *
+ * `Adani ACC Suraksha Power PPC Cement, 50 kg` handed to the model whole
+ * comes back as a sack with "50 kg" lettered across it, because the
+ * subject line asked for a quantity and the model can only draw one by
+ * writing it. The size belongs on the product page, not painted on the
+ * bag — and the prompt already forbids text, so this is the same
+ * instruction enforced where it can actually be obeyed.
+ *
+ * Only a trailing fragment is removed, and only one that is entirely a
+ * measurement: `Ball Valve 25mm` keeps its bore, because that is the
+ * product rather than the packing.
+ */
+const PACK_SIZE =
+  /,\s*(?:[\d.,]+\s*(?:kg|kgs|gm|gms|g|ltr|litres?|liters?|l|ml|pcs?|nos?|sets?|pairs?)|[\d.']+\s*[x×]\s*[\d.']+\s*(?:ft|feet|mm|cm|m|in|inch)?)\s*(?:bags?|packs?|packets?|tins?|cans?|boxes|box|jars?|rolls?|bottles?|pouches?|sacks?|drums?|buckets?|pails?)?\s*\.?$/i;
+
+export function subjectOf(name: string): string {
+  return name.replace(PACK_SIZE, "").trim().replace(/[,\s]+$/, "");
+}
 
 /**
  * A prompt describing the *kind* of thing, never a specific model number.
@@ -85,8 +122,13 @@ function article(noun: string): string {
 
 export function buildPrompt(product: ProductBrief): string {
   const category = product.category ? CATEGORY_HINT[product.category] : undefined;
-  const unit = UNIT_HINT[product.pricingUnit];
-  const subject = product.name.toLowerCase();
+  /* Lower-cased because Prisma hands back the enum as written in the
+     schema — `PER_KG`, not `per_kg`. Keyed directly, this lookup missed
+     on every product ever generated and the unit hint silently never
+     reached a prompt. A miss looks exactly like "this unit has no hint",
+     which is why it went unnoticed. */
+  const unit = UNIT_HINT[product.pricingUnit.toLowerCase()];
+  const subject = subjectOf(product.name).toLowerCase();
 
   return [
     `Product photograph of ${article(subject)} ${subject}`,
@@ -101,6 +143,65 @@ export function buildPrompt(product: ProductBrief): string {
     .join("")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * A request, retried while the failure is one that says "try again".
+ *
+ * Two kinds of setback are not failed generations, and the difference
+ * matters because the batch job counts failures and gives up at ten:
+ *
+ *  - **429.** The provider is saying "slower" and usually says for how
+ *    long. A new organisation's ceiling is low — five images a minute at
+ *    the time of writing. Nothing was produced and nothing was charged.
+ *  - **A thrown fetch.** DNS, a dropped socket, a proxy hiccup. Over a
+ *    run of several hours across thousands of requests these are certain
+ *    rather than unlikely, and eight of them in a row ended a run that
+ *    had 1,128 products still to go.
+ *
+ * Both are transport, not rejection. A refusal, a bad key or a malformed
+ * prompt still comes straight back to the caller — retrying those would
+ * just be slower failure.
+ *
+ * The wait comes from the provider when it offers one — `Retry-After`,
+ * or the "try again in 12s" in the message — because a guess is either
+ * wasteful or too eager. Otherwise it backs off exponentially.
+ */
+async function fetchRetryingRateLimits(
+  url: string,
+  init: RequestInit,
+  attempts = 6,
+): Promise<Response> {
+  const pause = (seconds: number) =>
+    new Promise((r) => setTimeout(r, (seconds + 1) * 1000));
+  let lastNetworkError: unknown;
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const last = attempt === attempts - 1;
+    let res: Response;
+
+    try {
+      res = await fetch(url, init);
+    } catch (e) {
+      lastNetworkError = e;
+      if (last) break;
+      const seconds = Math.min(60, 2 ** attempt * 3);
+      console.info(`  network error, retrying in ${seconds}s (${attempt + 1}/${attempts})`);
+      await pause(seconds);
+      continue;
+    }
+
+    if (res.status !== 429 || last) return res;
+
+    const body = await res.clone().text();
+    const hinted = Number(/try again in ([\d.]+)\s*s/i.exec(body)?.[1]);
+    const header = Number(res.headers.get("retry-after"));
+    const seconds = hinted || header || Math.min(60, 2 ** attempt * 5);
+    console.info(`  rate-limited, waiting ${seconds}s (${attempt + 1}/${attempts})`);
+    await pause(seconds);
+  }
+
+  throw lastNetworkError ?? new Error("Image provider unreachable after retries");
 }
 
 /**
@@ -134,7 +235,7 @@ export class GeminiImageGenerator implements ImageGenerator {
   }
 
   async generate(prompt: string): Promise<GeneratedImage> {
-    const res = await fetch(
+    const res = await fetchRetryingRateLimits(
       "https://generativelanguage.googleapis.com/v1beta/interactions",
       {
         method: "POST",
@@ -242,7 +343,7 @@ export class OpenAiImageGenerator implements ImageGenerator {
   }
 
   async generate(prompt: string): Promise<GeneratedImage> {
-    const res = await fetch("https://api.openai.com/v1/images/generations", {
+    const res = await fetchRetryingRateLimits("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -277,4 +378,88 @@ export class OpenAiImageGenerator implements ImageGenerator {
 
     throw new Error("Image provider returned no image");
   }
+}
+
+/**
+ * Whichever provider this machine is actually funded for, cheapest first.
+ *
+ * Lifted here out of `scripts/generate-studio-images.ts` so the catalogue
+ * job gets the same choice. It used to construct `OpenAiImageGenerator`
+ * directly, which meant a four-figure run billed whichever provider the
+ * script happened to name — a default nobody chose and nothing announced.
+ *
+ * **Which provider is cheaper depends on the shape, and the two jobs
+ * disagree.** Measured September 2026, per image:
+ *
+ *   - catalogue tile, square 1024 at `low` — OpenAI $0.011
+ *     (`gpt-image-1-mini` $0.005) against Gemini 1K $0.067. OpenAI wins,
+ *     by roughly six times.
+ *   - Studio room, portrait 1024x1536 at `medium` — OpenAI's price climbs
+ *     steeply with quality and pixels, where Gemini's 1K rate does not.
+ *     Gemini wins, by roughly three.
+ *
+ * So `cheapest` is the caller's to state: there is no provider that is
+ * simply dearer, and hardcoding one costs real money in one direction or
+ * the other. `preferred` — `--provider` at the command line — overrides
+ * it. A key that is missing for the provider the caller asked for falls
+ * back to the other, because one funded account is the common case; a
+ * `--provider` the human typed does not fall back, because silently
+ * billing the other account is not a kindness. Neither key set is a
+ * configuration error, not a silent no-op, and a misspelt `--provider`
+ * says so too — that typo is otherwise discovered on the invoice.
+ */
+export function liveGenerator({
+  size,
+  aspectRatio,
+  cheapest,
+  quality = "low",
+  preferred,
+  openaiModel = "gpt-image-1",
+  geminiModel,
+}: {
+  /** OpenAI's fixed sizes. */
+  size: "1024x1024" | "1024x1536" | "1536x1024";
+  /** The same shape as Gemini names it: `1:1`, `3:4`, `4:3`. */
+  aspectRatio: string;
+  /** Which provider is cheaper at this shape and quality. See above. */
+  cheapest: "openai" | "gemini";
+  /** OpenAI only — Gemini has no equivalent knob, and it drives the price. */
+  quality?: "low" | "medium" | "high";
+  /** `openai` or `gemini`, to force one when both are funded. */
+  preferred?: string;
+  /** `gpt-image-1-mini` is about half the price at `low`. */
+  openaiModel?: string;
+  /** `gemini-3.1-flash-lite-image` is about half the price of the default. */
+  geminiModel?: string;
+}): ImageGenerator {
+  if (preferred && preferred !== "openai" && preferred !== "gemini") {
+    throw new Error(`--provider must be "openai" or "gemini", not "${preferred}"`);
+  }
+
+  const gemini = process.env.GEMINI_API_KEY?.trim();
+  const openai = process.env.OPENAI_API_KEY?.trim();
+
+  const makeOpenAi = () => new OpenAiImageGenerator(openai!, openaiModel, quality, size);
+  const makeGemini = () => new GeminiImageGenerator(gemini!, geminiModel, aspectRatio);
+
+  /* An explicit --provider is obeyed or refused, never quietly redirected
+     to the other account. */
+  if (preferred === "openai") {
+    if (!openai) throw new Error("--provider openai, but OPENAI_API_KEY is not set in .env.local");
+    return makeOpenAi();
+  }
+  if (preferred === "gemini") {
+    if (!gemini) throw new Error("--provider gemini, but GEMINI_API_KEY is not set in .env.local");
+    return makeGemini();
+  }
+
+  if (cheapest === "openai" && openai) return makeOpenAi();
+  if (cheapest === "gemini" && gemini) return makeGemini();
+
+  if (openai) return makeOpenAi();
+  if (gemini) return makeGemini();
+
+  throw new Error(
+    "No image provider key found. Add OPENAI_API_KEY (or GEMINI_API_KEY) to .env.local.",
+  );
 }

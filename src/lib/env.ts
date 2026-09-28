@@ -172,6 +172,23 @@ const schema = z.object({
   SUPABASE_STORAGE_BUCKET: z.string().optional(),
 
   /**
+   * The *public* bucket, and the deliberate exception to the rule above.
+   *
+   * `SUPABASE_STORAGE_BUCKET` is private because it holds what customers
+   * upload — a photograph of a parcha, a project document — and every
+   * read of those is a signed URL minted for one person. Catalogue
+   * imagery is the opposite kind of object: the same picture served to
+   * everyone, on a grid of forty tiles, cached at the edge. Signed URLs
+   * cannot do that — they expire, they defeat the CDN, and they would
+   * put a server round-trip in front of every thumbnail.
+   *
+   * So it is a second bucket rather than a public corner of the first.
+   * Nothing a customer uploads can ever be written to it by accident,
+   * which is the whole point of keeping them apart.
+   */
+  SUPABASE_PUBLIC_BUCKET: z.string().optional(),
+
+  /**
    * Cloudflare Stream — where Studio's clips are played from.
    *
    * All optional, and there is deliberately no production guard: with
@@ -236,6 +253,7 @@ function load(): Env {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
         SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET,
+        SUPABASE_PUBLIC_BUCKET: process.env.SUPABASE_PUBLIC_BUCKET,
         CF_STREAM_CUSTOMER_CODE: process.env.CF_STREAM_CUSTOMER_CODE,
         CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
         CF_STREAM_API_TOKEN: process.env.CF_STREAM_API_TOKEN,

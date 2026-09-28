@@ -147,6 +147,7 @@ export function ProductCard({
             swatchKey={product.image}
             label={product.title}
             brand={product.brand}
+            sizes="(min-width: 1280px) 300px, (min-width: 1024px) 25vw, 45vw"
             className="size-full transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
           />
           {product.photoIsIllustration && (
