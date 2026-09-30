@@ -98,7 +98,17 @@ async function main() {
   const products = await db.product.findMany({
     where: {
       isActive: true,
-      ...(regenerate ? { imageIsGenerated: true, NOT: { image: "" } } : { image: "" }),
+      /* Regeneration selects rows whose picture is still the one in the
+         bucket, because a regenerated row is rewritten to the local path
+         below and so drops out of this set. That makes a second run
+         continue rather than start again — the same property the normal
+         run gets from `image: ""`, and without it an interrupted pass
+         would re-buy every image it had already paid for. Upload the
+         whole set only once the regeneration is finished, since that is
+         what puts the rows back to a URL. */
+      ...(regenerate
+        ? { imageIsGenerated: true, image: { startsWith: "http" } }
+        : { image: "" }),
       ...(category ? { category: { slug: category } } : {}),
     },
     select: {
