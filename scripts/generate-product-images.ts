@@ -4,6 +4,7 @@
  *   npx tsx scripts/generate-product-images.ts --dry-run
  *   npx tsx scripts/generate-product-images.ts --limit 20
  *   npx tsx scripts/generate-product-images.ts --category paints-finishes
+ *   npx tsx scripts/generate-product-images.ts --regenerate --quality medium
  *   npx tsx scripts/generate-product-images.ts --provider gemini
  *   npx tsx scripts/generate-product-images.ts --openai-model gpt-image-1-mini
  *   npx tsx scripts/generate-product-images.ts
@@ -16,6 +17,15 @@
  * Resumable by construction: it only selects products whose `image` is
  * still empty, so an interrupted run is continued by running it again.
  * Nothing is ever regenerated, because every regeneration is money.
+ *
+ * `--regenerate` is the deliberate exception, and it selects the opposite
+ * set: rows that already carry generated art. The first pass ran at
+ * `low`, which is 1024px of very little detail — mushy edges and no
+ * texture, whatever the pixel count says. `--quality medium` is about
+ * eight times the price and looks like a photograph rather than a
+ * smudge. It rewrites `image` back to the local path so
+ * `upload-catalogue-images.ts` picks the new file up and replaces the
+ * object in the bucket.
  *
  * Everything written here is flagged `imageIsGenerated`, and the
  * storefront labels those as illustrations. See src/lib/images/generator.ts.
@@ -58,8 +68,14 @@ const MAX_FAILURES = 10;
 
 async function main() {
   const dryRun = process.argv.includes("--dry-run");
+  const regenerate = process.argv.includes("--regenerate");
   const limit = Number(arg("limit")) || undefined;
   const category = arg("category");
+
+  const quality = (arg("quality") ?? "low") as "low" | "medium" | "high";
+  if (!["low", "medium", "high"].includes(quality)) {
+    throw new Error(`--quality must be low, medium or high, not "${quality}"`);
+  }
 
   /* Square, because a catalogue tile is square — `ProductCard` and the PDP
      gallery both reserve 1/1. `low` is what this job has always asked
@@ -69,7 +85,7 @@ async function main() {
     : liveGenerator({
         size: "1024x1024",
         aspectRatio: "1:1",
-        quality: "low",
+        quality,
         /* Square at `low` is OpenAI's cheapest tier and Gemini's ordinary
            one: $0.011 against $0.067 an image, which over this catalogue
            is the difference between a $15 run and a $92 one. */
@@ -82,7 +98,7 @@ async function main() {
   const products = await db.product.findMany({
     where: {
       isActive: true,
-      image: "",
+      ...(regenerate ? { imageIsGenerated: true, NOT: { image: "" } } : { image: "" }),
       ...(category ? { category: { slug: category } } : {}),
     },
     select: {
@@ -98,7 +114,8 @@ async function main() {
   });
 
   console.info(
-    `${products.length} product(s) without an image · provider: ${generator.name}`,
+    `${products.length} product(s) ${regenerate ? "to REGENERATE" : "without an image"}` +
+      ` · provider: ${generator.name} · quality: ${quality}`,
   );
   if (products.length === 0) return;
 
