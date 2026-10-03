@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { revalidateProduct } from "@/lib/data/cache";
 import { ApiError, handler, ok, parseBody, requireStaff } from "@/lib/http";
 
 type Ctx = { params: Promise<{ sku: string }> };
@@ -72,6 +73,12 @@ export const POST = handler(async (request, { params }: Ctx) => {
       isDefault: true,
     },
   });
+
+  /* This is the write that makes a product sellable at all, so it changes
+     more than one page: the product's own, the department index it now
+     appears in, and that department's "from Rs x" floor. `revalidateProduct`
+     sweeps both tags for exactly that reason. */
+  revalidateProduct(product.slug);
 
   return ok({ sku, variantId: variant.id, pricePaise: variant.pricePaise });
 });

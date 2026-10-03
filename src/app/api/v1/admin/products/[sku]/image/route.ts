@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { revalidateProduct } from "@/lib/data/cache";
 import { ApiError, handler, ok, parseBody, requireStaff } from "@/lib/http";
 import { harvestImagePath } from "@/lib/data/harvest";
 
@@ -54,6 +55,13 @@ export const POST = handler(async (request, { params }: Ctx) => {
     where: { id: product.id },
     data: { image, imageIsGenerated: false },
   });
+
+  /* Product reads are cached for five minutes (src/lib/data/cache.ts).
+     Somebody who has just attached a photograph is about to go and look
+     at it, so the entry is expired outright rather than left to age out —
+     a pairing screen that appears not to have saved is how this feature
+     gets reported as broken. */
+  revalidateProduct(product.slug);
 
   return ok({ sku, image });
 });

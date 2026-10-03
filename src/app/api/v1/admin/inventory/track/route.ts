@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { revalidateProduct } from "@/lib/data/cache";
 import { ApiError, handler, ok, parseBody, requireStaff } from "@/lib/http";
 import { receiveStock } from "@/lib/data/inventory";
 
@@ -76,6 +77,16 @@ export const POST = handler(async (request) => {
     where: { id: variant.productId },
     data: { stockTracked: true },
   });
+
+  /* Switching tracking on changes whether the product can report itself
+     out of stock, which the cached product row carries. Looked up rather
+     than threaded through, because this route addresses a variant and the
+     cache is keyed by product slug. */
+  const tracked = await db.product.findUnique({
+    where: { id: variant.productId },
+    select: { slug: true },
+  });
+  if (tracked) revalidateProduct(tracked.slug);
 
   const item = await db.inventoryItem.findUniqueOrThrow({
     where: { variantId_storeId: { variantId: input.variantId, storeId: input.storeId } },

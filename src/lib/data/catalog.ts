@@ -9,6 +9,13 @@ import type {
 } from "@/lib/types/catalog";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
+import {
+  CATALOGUE_TAG,
+  PRODUCT_TTL_SECONDS,
+  TAXONOMY_TTL_SECONDS,
+  cachedRead,
+  productTag,
+} from "@/lib/data/cache";
 import { env } from "@/lib/env";
 import type {
   BadgeKind as DbBadge,
@@ -208,7 +215,7 @@ export async function getTabs(): Promise<CatalogTab[]> {
 }
 
 /** Top-level categories only; children render inside a category page. */
-export async function getCategories(): Promise<Category[]> {
+async function readCategories(): Promise<Category[]> {
   const rows = await db.category.findMany({
     where: { isActive: true, parentId: null },
     orderBy: [{ position: "asc" }, { name: "asc" }],
@@ -244,7 +251,7 @@ const TOP_PICKS = 12;
    else to offer instead of dropping off it. */
 const TOP_PICK_POOL = 4;
 
-export async function getTopPicks(): Promise<Product[]> {
+async function readTopPicks(): Promise<Product[]> {
   /* Photographed products only — not illustrated ones, and not the swatch
      fallback. A featured row is a recommendation, the picture is what does
      the recommending, so it has to be the actual goods.
@@ -322,7 +329,7 @@ export async function getTopPicks(): Promise<Product[]> {
 }
 
 /** Null rather than throwing — the route turns a miss into a 404. */
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+async function readProductBySlug(slug: string): Promise<Product | null> {
   const row = await db.product.findFirst({
     ...PRODUCT_QUERY,
     where: { ...PRODUCT_QUERY.where, slug },
@@ -657,7 +664,7 @@ export async function getProductFacets(
 }
 
 /** Brands that have something to sell, for the filter rail. */
-export async function listBrands(): Promise<{ id: string; slug: string; name: string }[]> {
+async function readBrands(): Promise<{ id: string; slug: string; name: string }[]> {
   const rows = await db.brand.findMany({
     where: { isActive: true, products: { some: PRODUCT_QUERY.where } },
     orderBy: { name: "asc" },
@@ -705,7 +712,7 @@ function brandKey(name: string): string {
  * the counts are deliberately not summed, since the link can only lead to
  * one of them.
  */
-export async function getBrandLinkTargets(): Promise<Map<string, string>> {
+async function readBrandLinkTargets(): Promise<[string, string][]> {
   const rows = await db.brand.findMany({
     where: { isActive: true, products: { some: PRODUCT_QUERY.where } },
     select: {
@@ -723,14 +730,14 @@ export async function getBrandLinkTargets(): Promise<Map<string, string>> {
     if (!held || held._count.products < row._count.products) best.set(key, row);
   }
 
-  return new Map([...best].map(([key, row]) => [key, row.slug]));
+  return [...best].map(([key, row]) => [key, row.slug]);
 }
 
 /** Shared with the brand wall, which normalises its roster the same way. */
 export { brandKey };
 
 /** One category by slug, for the category browse page. Null becomes a 404. */
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+async function readCategoryBySlug(slug: string): Promise<Category | null> {
   const row = await db.category.findFirst({
     where: { slug, isActive: true },
     include: { _count: { select: { children: true, products: true } } },
@@ -755,15 +762,16 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
  * home page renders every top-level category, so the per-tile version is
  * fourteen round trips to Singapore before the page can paint.
  */
-export async function getCategoryPriceFloors(): Promise<Map<string, number>> {
-  const rows = await db.$queryRaw<{ categoryId: string; floor: number }[]>`
+async function readCategoryPriceFloors(): Promise<
+  { categoryId: string; floor: number }[]
+> {
+  return db.$queryRaw<{ categoryId: string; floor: number }[]>`
     SELECT p."categoryId" AS "categoryId", MIN(v."pricePaise")::int AS floor
     FROM products p
     JOIN product_variants v ON v."productId" = p.id AND v."isActive"
     WHERE p."isActive" AND p."categoryId" IS NOT NULL
     GROUP BY p."categoryId"
   `;
-  return new Map(rows.map((r) => [r.categoryId, r.floor]));
 }
 
 /** ---- Merchandising -------------------------------------------------------
@@ -927,4 +935,82 @@ export async function listDiscountedProducts(
   });
 
   return { items: products.map(toProduct), page, pageSize, total, totalPages };
+}
+
+/** ---- Cached accessors ----------------------------------------------------
+ *
+ * The public names above are the cached wrappers; the `read*` functions
+ * they wrap are the live queries, kept module-private so nothing can
+ * reach past the cache by accident.
+ *
+ * Only reads whose key space is bounded and whose result survives
+ * serialisation are here — see `src/lib/data/cache.ts` for the policy and
+ * for what is deliberately left live. Two of these return a `Map` to
+ * their callers and are cached as rows instead: the data cache
+ * round-trips values through serialisation, and a `Map` comes back as an
+ * empty object. That failure is silent — a price floor that is merely
+ * absent renders as no pill at all rather than as an error — so the Map
+ * is built here, outside the cache, from an array that does survive.
+ */
+
+export const getCategories = cachedRead(readCategories, ["catalogue:categories"], {
+  revalidate: TAXONOMY_TTL_SECONDS,
+  tags: [CATALOGUE_TAG],
+});
+
+export const listBrands = cachedRead(readBrands, ["catalogue:brands"], {
+  revalidate: TAXONOMY_TTL_SECONDS,
+  tags: [CATALOGUE_TAG],
+});
+
+export const getCategoryBySlug = cachedRead(
+  readCategoryBySlug,
+  ["catalogue:category-by-slug"],
+  { revalidate: TAXONOMY_TTL_SECONDS, tags: [CATALOGUE_TAG] },
+);
+
+/**
+ * Five minutes rather than an hour: this one carries prices, and the home
+ * page is where most people meet them first. See `PRODUCT_TTL_SECONDS`.
+ */
+export const getTopPicks = cachedRead(readTopPicks, ["catalogue:top-picks"], {
+  revalidate: PRODUCT_TTL_SECONDS,
+  tags: [CATALOGUE_TAG],
+});
+
+/**
+ * Tagged per product as well as catalogue-wide, so pricing or
+ * photographing one row in the admin clears that row immediately instead
+ * of waiting out its window.
+ */
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  /* The per-product tag has to name the slug, which means the tag list
+     cannot be fixed at definition time the way the others are. A second
+     wrapper per slug is how `unstable_cache` takes a dynamic tag. */
+  return cachedRead(readProductBySlug, ["catalogue:product-by-slug", slug], {
+    revalidate: PRODUCT_TTL_SECONDS,
+    tags: [CATALOGUE_TAG, productTag(slug)],
+  })(slug);
+}
+
+/* Cached as rows; the Map is built per call — see the note above. */
+const cachedCategoryPriceFloors = cachedRead(
+  readCategoryPriceFloors,
+  ["catalogue:category-price-floors"],
+  { revalidate: PRODUCT_TTL_SECONDS, tags: [CATALOGUE_TAG] },
+);
+
+export async function getCategoryPriceFloors(): Promise<Map<string, number>> {
+  const rows = await cachedCategoryPriceFloors();
+  return new Map(rows.map((r) => [r.categoryId, r.floor]));
+}
+
+const cachedBrandLinkTargets = cachedRead(
+  readBrandLinkTargets,
+  ["catalogue:brand-link-targets"],
+  { revalidate: TAXONOMY_TTL_SECONDS, tags: [CATALOGUE_TAG] },
+);
+
+export async function getBrandLinkTargets(): Promise<Map<string, string>> {
+  return new Map(await cachedBrandLinkTargets());
 }
