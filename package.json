@@ -18,6 +18,7 @@
     "db:studio": "prisma studio",
     "db:import": "tsx prisma/import-catalogue.ts",
     "audit:catalogue": "tsx scripts/audit-catalogue.ts",
+    "check:legal": "tsx scripts/check-legal.ts",
     "images:generate": "tsx scripts/generate-product-images.ts",
     "db:import-brand": "tsx prisma/import-brand-catalogue.ts",
     "admin:grant": "tsx scripts/grant-staff.ts",
