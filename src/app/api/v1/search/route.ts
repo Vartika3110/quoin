@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { handler, ok } from "@/lib/http";
+import { enforce } from "@/lib/rate-limit";
 import { suggest } from "@/lib/data/search";
 
 const Query = z.object({
@@ -19,6 +20,10 @@ const Query = z.object({
  * a single character.
  */
 export const GET = handler(async (request) => {
+  /* Generous, because the palette fires on every keystroke — see the
+     note on the `search` bucket. What it stops is a loop, not a user. */
+  enforce("search", request);
+
   const url = new URL(request.url);
   const parsed = Query.safeParse(Object.fromEntries(url.searchParams));
 
