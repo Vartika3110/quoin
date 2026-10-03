@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import { AppShell } from "@/components/storefront/AppShell";
+import { JsonLd } from "@/components/analytics/JsonLd";
+import { organizationSchema, webSiteSchema } from "@/lib/seo";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Hero } from "@/components/storefront/home/Hero";
@@ -108,6 +110,12 @@ export default async function HomePage() {
 
   return (
     <AppShell fullBleed headerSlot={<EntryCards />}>
+      {/* Site-wide identity, emitted once and only here. Repeating
+          Organization on every page is noise a crawler has to de-
+          duplicate; the home page is the canonical place for it. */}
+      <JsonLd data={organizationSchema()} />
+      <JsonLd data={webSiteSchema()} />
+
       <div className="mx-auto w-full max-w-shell lg:px-6">
         <PageSections>
           {/* One first screen at every width.
