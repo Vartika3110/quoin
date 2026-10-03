@@ -7,13 +7,18 @@ import { releaseExpiredReservations } from "@/lib/data/inventory";
  * Releases every `PENDING_PAYMENT` order whose stock reservation has
  * expired, giving the stock back for someone else to buy.
  *
- * There is no cron infrastructure in this app — see
- * `docs/production-audit.md` and `AGENTS.md` — so nothing calls this on a
- * timer. This endpoint is the thing that has to be pointed at from
- * wherever a periodic call actually gets made: a deploy platform's own
- * scheduled-job feature, an external uptime pinger, or a person running
- * it by hand. It is deliberately idempotent-safe to call as often or as
- * rarely as that turns out to be — see `releaseExpiredReservations`.
+ * This used to say there was no cron infrastructure in this app and that
+ * something would eventually have to be pointed at this endpoint. There
+ * is now: `GET /api/v1/cron/release-reservations`, on a Vercel schedule
+ * in `vercel.json`, calling the same `releaseExpiredReservations`.
+ *
+ * This route stays, and is not a duplicate of it. A staff member needs to
+ * be able to force a release without waiting up to ten minutes for the
+ * next tick — most obviously while they are on the phone to a customer
+ * about stock. The two cannot conflict: each order is claimed by a
+ * guarded `UPDATE` asserting the reservation is still both present and
+ * expired, so whichever caller arrives second releases nothing and says
+ * so. See `releaseExpiredReservations`.
  */
 export const POST = handler(async () => {
   await requireStaff();

@@ -122,7 +122,21 @@ export function StickyBar({
     <div
       className={cn(
         "fixed inset-x-0 bottom-0 z-30",
-        "flex items-center border-t border-line-soft bg-bg/95 backdrop-blur-xl",
+        /* Opaque by default, glass only where the browser can actually
+           blur. This used to be `bg-bg/95 backdrop-blur-xl` unconditionally,
+           and the 5% was not free: wherever `backdrop-filter` does not
+           take effect — it is disabled by a `filter`, `transform` or
+           `contain` on any ancestor, and by the compositing some mobile
+           browsers fall back to — those five percent are a flat window
+           onto whatever is behind the bar. On the cart at 430px that was
+           the footer paragraph, legible straight through the total and
+           the Checkout button.
+           `supports-[backdrop-filter]` keeps the intended look on every
+           browser that honours it and guarantees a readable price on the
+           ones that do not, which is the right way round for a bar whose
+           whole job is to state an amount. */
+        "flex items-center border-t border-line-soft bg-bg",
+        "supports-[backdrop-filter]:bg-bg/95 supports-[backdrop-filter]:backdrop-blur-xl",
         /* The home indicator is added to whatever bottom padding the bar
            already has, rather than applied by a `.safe-bottom-0` class
            alongside it: two rules setting `padding-bottom` resolve by

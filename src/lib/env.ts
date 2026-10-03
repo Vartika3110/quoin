@@ -213,6 +213,22 @@ const schema = z.object({
   CF_STREAM_CUSTOMER_CODE: z.string().optional(),
   CF_ACCOUNT_ID: z.string().optional(),
   CF_STREAM_API_TOKEN: z.string().optional(),
+
+  /**
+   * Authenticates the scheduled jobs under `/api/v1/cron/*`.
+   *
+   * Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on every
+   * invocation when this variable is set on the project. The routes
+   * compare against it in constant time and **refuse outright when it is
+   * unset** — fail closed, exactly like `verifyWebhookSignature`. One of
+   * those jobs settles payments; an unauthenticated caller must never be
+   * able to make this server go asking Razorpay about arbitrary orders,
+   * and "no secret configured" cannot be allowed to mean "let everyone
+   * in". Optional here only so that a deploy without it boots and serves
+   * the storefront, with the jobs reporting themselves unavailable —
+   * the same shape as Razorpay and Supabase above.
+   */
+  CRON_SECRET: z.string().optional(),
 });
 
 type Env = z.infer<typeof schema>;
@@ -257,6 +273,7 @@ function load(): Env {
         CF_STREAM_CUSTOMER_CODE: process.env.CF_STREAM_CUSTOMER_CODE,
         CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
         CF_STREAM_API_TOKEN: process.env.CF_STREAM_API_TOKEN,
+        CRON_SECRET: process.env.CRON_SECRET,
       };
     }
 

@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "All products — Quoin",
   description:
     "Every priced line in the Quoin catalogue — materials, fittings and finishes, filterable by brand, price and delivery.",
+  /* The listing is reachable with any combination of filter, sort and
+     page in the query string, and every one of those renders the same
+     department index. One canonical, so they do not compete. */
+  alternates: { canonical: "/products" },
 };
 
 export default async function ProductsPage({

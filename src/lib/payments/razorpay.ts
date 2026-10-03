@@ -199,3 +199,92 @@ export function verifyCheckoutSignature(input: {
     .digest("hex");
   return hexEquals(expected, input.signature);
 }
+
+/** ---- Reading back what the gateway thinks happened ---------------------- */
+
+/** One payment attempt against a gateway order, as Razorpay reports it. */
+export interface GatewayPayment {
+  id: string;
+  /** `created` | `authorized` | `captured` | `refunded` | `failed`. */
+  status: string;
+  amountPaise: number;
+  method?: string;
+}
+
+/**
+ * Every payment attempt Razorpay has recorded against one gateway order.
+ *
+ * This exists for exactly one caller: the reconciler
+ * (`/api/v1/cron/reconcile-payments`), which asks the gateway directly
+ * about orders whose webhook never arrived.
+ *
+ * It is a *second* authority on payment, and that is a deliberate and
+ * narrow exception to the rule the webhook handler states — "only
+ * `payment.captured` moves an order to PAID". The rule's real content is
+ * that a customer's browser is never authority, because it is a channel
+ * the customer controls. This is not that channel: it is this server
+ * asking Razorpay's own API, authenticated with the account's secret,
+ * and the answer cannot be forged by anyone who is not Razorpay. The
+ * webhook stays the fast path; this is the one that notices when the
+ * fast path has been silently failing.
+ *
+ * Returns the raw list rather than "is it paid": deciding which attempt
+ * counts is the caller's business, and a gateway order can carry a failed
+ * attempt and a captured one at the same time.
+ */
+export async function fetchGatewayPayments(
+  providerOrderId: string,
+): Promise<GatewayPayment[]> {
+  if (!isRazorpayConfigured()) {
+    throw new RazorpayError("Razorpay is not configured");
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(
+      `${API}/orders/${encodeURIComponent(providerOrderId)}/payments`,
+      {
+        headers: { Authorization: authHeader() },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      },
+    );
+  } catch (error) {
+    throw new RazorpayError(
+      `Could not reach Razorpay: ${error instanceof Error ? error.message : "unknown"}`,
+    );
+  }
+
+  const body: unknown = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const description =
+      (body as { error?: { description?: string } } | null)?.error?.description ??
+      "unknown error";
+    throw new RazorpayError(
+      `Razorpay rejected the payments lookup: ${description}`,
+      res.status,
+    );
+  }
+
+  const items = (body as { items?: unknown } | null)?.items;
+  if (!Array.isArray(items)) {
+    throw new RazorpayError("Razorpay returned payments in an unexpected shape");
+  }
+
+  /* Anything that is not a well-formed payment entity is dropped rather
+     than throwing the whole lookup away: one malformed row must not stop
+     a genuine capture sitting next to it from being settled. */
+  const out: GatewayPayment[] = [];
+  for (const item of items) {
+    const p = item as { id?: unknown; status?: unknown; amount?: unknown; method?: unknown };
+    if (typeof p.id !== "string" || typeof p.status !== "string") continue;
+    if (typeof p.amount !== "number") continue;
+    out.push({
+      id: p.id,
+      status: p.status,
+      amountPaise: p.amount,
+      method: typeof p.method === "string" ? p.method : undefined,
+    });
+  }
+  return out;
+}

@@ -4,8 +4,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { recordFailedPayment, settleCapturedPayment } from "@/lib/data/orders";
 import { verifyWebhookSignature } from "@/lib/payments/razorpay";
-import { notify } from "@/lib/data/notifications";
-import { formatPrice } from "@/lib/types/catalog";
+import { notifyPaymentSettled } from "@/lib/data/order-notifications";
 
 /**
  * POST /api/v1/webhooks/razorpay
@@ -283,32 +282,13 @@ export async function POST(request: Request) {
         } else if (outcome === "recorded") {
           /* Best-effort, and deliberately outside the settlement itself:
              `settleCapturedPayment` already committed — this only tells
-             the customer it did. Its own try/catch swallows everything,
-             because a bell-icon write that fails must never turn a
-             genuinely settled payment into a 500 Razorpay retries for
-             hours; see the module comment. */
-          try {
-            const settled = await db.payment.findUnique({
-              where: { providerOrderId },
-              select: { order: { select: { userId: true, reference: true, totalPaise: true } } },
-            });
-            if (settled) {
-              await notify({
-                userId: settled.order.userId,
-                kind: "PAYMENT_SUCCESSFUL",
-                title: "Payment successful",
-                body: `We've received ${formatPrice(settled.order.totalPaise)} for order ${settled.order.reference}.`,
-                href: `/account/orders/${settled.order.reference}`,
-                /* Keyed on the gateway payment id, not the order — a
-                   redelivered `payment.captured` for the same payment
-                   must not bell twice, but two payments could not both
-                   share this key regardless. */
-                dedupeKey: `payment:${providerPaymentId}`,
-              });
-            }
-          } catch (error) {
-            console.error("[payments] failed to notify after settlement", error);
-          }
+             the customer it did. `notifyPaymentSettled` swallows
+             everything, because a bell-icon write that fails must never
+             turn a genuinely settled payment into a 500 Razorpay retries
+             for hours; see the module comment. Shared with the
+             reconciler, which settles the same way when a delivery here
+             never arrives. */
+          await notifyPaymentSettled({ providerOrderId, providerPaymentId });
         }
         break;
       }
