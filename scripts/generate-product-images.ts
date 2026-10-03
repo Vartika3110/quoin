@@ -37,7 +37,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import sharp from "sharp";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type ImageQuality } from "@prisma/client";
 
 import {
   DryRunGenerator,
@@ -47,6 +47,28 @@ import {
 } from "../src/lib/images/generator";
 
 const db = new PrismaClient();
+
+/** What a given target is an upgrade *from*. */
+const BELOW: Record<string, ImageQuality[]> = {
+  low: [],
+  medium: ["LOW"],
+  high: ["LOW", "MEDIUM"],
+};
+
+/**
+ * Rows this target would actually improve.
+ *
+ * A null `imageQuality` is a row generated before the column existed,
+ * which means the first pass, which means `LOW` — so it is swept up
+ * wherever `LOW` is. Prisma will not take null inside `in`, hence the
+ * explicit OR rather than a list with a hole in it.
+ */
+function worseThan(target: string) {
+  const below = BELOW[target] ?? [];
+  return below.includes("LOW")
+    ? { OR: [{ imageQuality: { in: below } }, { imageQuality: null }] }
+    : { imageQuality: { in: below } };
+}
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -98,16 +120,14 @@ async function main() {
   const products = await db.product.findMany({
     where: {
       isActive: true,
-      /* Regeneration selects rows whose picture is still the one in the
-         bucket, because a regenerated row is rewritten to the local path
-         below and so drops out of this set. That makes a second run
-         continue rather than start again — the same property the normal
-         run gets from `image: ""`, and without it an interrupted pass
-         would re-buy every image it had already paid for. Upload the
-         whole set only once the regeneration is finished, since that is
-         what puts the rows back to a URL. */
+      /* Regeneration selects rows generated at a quality below the one
+         asked for, so a pass skips what it has already upgraded and a
+         second run continues rather than starting again. This used to key
+         off the stored path, which worked within a run and broke across
+         an upload — uploading rewrites rows back to a bucket URL, putting
+         every finished product back in scope to be bought again. */
       ...(regenerate
-        ? { imageIsGenerated: true, image: { startsWith: "http" } }
+        ? { imageIsGenerated: true, NOT: { image: "" }, ...worseThan(quality) }
         : { image: "" }),
       ...(category ? { category: { slug: category } } : {}),
     },
@@ -163,7 +183,14 @@ async function main() {
 
         await db.product.update({
           where: { id: product.id },
-          data: { image: `/generated/${file}`, imageIsGenerated: true },
+          data: {
+            image: `/generated/${file}`,
+            imageIsGenerated: true,
+            /* Recorded as it is written, so the next pass can tell an
+               upgraded row from an original one. Nothing downstream has
+               to infer it from a file timestamp. */
+            imageQuality: quality.toUpperCase() as ImageQuality,
+          },
         });
       }
       written++;

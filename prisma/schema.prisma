@@ -258,6 +258,24 @@ enum PricingUnit {
   PER_KG
 }
 
+/// What an image model was asked to spend on a picture.
+///
+/// Not cosmetic bookkeeping: the first catalogue pass ran at `LOW`, which
+/// buys 1024 pixels of very little — mushy edges and no surface texture,
+/// whatever the dimensions say — and a later pass upgrades products a
+/// category at a time. Without this column there is nothing to tell an
+/// upgraded row from an original one, because both end up as the same
+/// kind of URL in the same bucket, and a regeneration run would happily
+/// buy the same image twice.
+///
+/// Null means nobody recorded it: a photograph rather than a rendering,
+/// or a row generated before this column existed.
+enum ImageQuality {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 /// Trust markers rendered as chips on product cards.
 enum BadgeKind {
   EXPERTS_VERIFIED
@@ -347,6 +365,11 @@ model Product {
   /// storefront is telling a customer they will receive something nobody
   /// has photographed. The storefront reads this to render that label.
   imageIsGenerated Boolean @default(false)
+
+  /// What `image` was generated at, when it was generated here. Lets a
+  /// regeneration pass skip what it has already upgraded — see
+  /// `ImageQuality` for why that cannot be inferred from the URL.
+  imageQuality ImageQuality?
 
   /// Meaningful only for `SCHEDULED` and `MADE_TO_ORDER`.
   leadTimeDays Int?
