@@ -21,12 +21,12 @@ import type { AreaChoice } from "@/lib/data/service-areas";
  * and it needed a second gradient on top to survive the dark palette.
  * Two gradients to hide an edge is more machinery than the edge costs.
  *
- * **The photograph is a room, not a building site.** Scaffolding and rebar
- * say "construction"; this business sells the finished thing, and the
- * first picture on the page is the one claim it makes about what a
- * customer ends up with. `photo` comes from Studio's best-saved room, so
- * the day real interiors are uploaded the home page improves without
- * anybody editing this file.
+ * **The default photograph is Quoin's own construction shot**, restored
+ * at the owner's instruction — see `FALLBACK` at the foot of this file
+ * for the argument it overrode. `photo` still comes from Studio's
+ * best-saved room and still wins when there is one, so the day real
+ * interiors are uploaded the home page improves without anybody editing
+ * this file.
  *
  * The delivery promise is here rather than in the header because it is a
  * *claim*, and a claim belongs next to the proposition it qualifies. It
@@ -47,13 +47,9 @@ const TICKS = ["Brands bought direct", "Delivery promised per item"];
 
 export function Hero({
   chosen,
-  photo,
   areas,
 }: {
   chosen: AreaChoice | null;
-  /** Studio's best-saved room. Null falls back to the catalogue's own
-      bathroom photography — still a finished space, never the site. */
-  photo: { url: string; blurDataUrl: string | null } | null;
   /** Every live locality, named. See `TICKS`. */
   areas: string[];
 }) {
@@ -147,10 +143,10 @@ export function Hero({
           stacked order — picture, then words — still shows a room rather
           than a letterbox strip of one. */}
       <Photo
-        src={photo?.url ?? FALLBACK.url}
+        src={HERO_PHOTO.url}
         alt=""
         ratio="4 / 3"
-        blurDataURL={photo?.blurDataUrl ?? null}
+        blurDataURL={null}
         sizes="(min-width: 1024px) 45vw, 100vw"
         priority
         className="order-first h-full min-h-56 w-full lg:order-none lg:aspect-auto"
@@ -160,12 +156,21 @@ export function Hero({
 }
 
 /**
- * Where the hero's picture comes from when Studio has none.
+ * The hero's picture: Quoin's own construction photograph.
  *
- * The catalogue's own commissioned bathroom photography: a finished
- * space, shot for this business, and the closest thing in the repo to the
- * interior this hero is supposed to show. It is a stand-in and it is
- * meant to be replaced — the moment one real room is uploaded and saved,
- * `photo` wins and this is never rendered again.
+ * Fixed, and deliberately not sourced from anywhere else. Two earlier
+ * revisions each took it away by a different route — one swapped it for
+ * catalogue bathroom photography on the argument that the hero should
+ * show the finished room a customer ends up with rather than the site it
+ * came out of; the other left it as a fallback behind "Studio's
+ * best-saved room", which quietly replaced it again the moment Studio
+ * had any rooms at all.
+ *
+ * That second arrangement is the worse of the two, because the home
+ * page's main image then changes on its own whenever somebody uploads an
+ * interior — a surprise nobody asked for and nobody would think to look
+ * for. The owner has asked for this photograph, twice. It is Quoin's
+ * own, it is of a real building, and it says what the company is for, so
+ * it is a constant and changing it is an edit to this line.
  */
-const FALLBACK = { url: "/categories/bathware-plumbing.webp" };
+const HERO_PHOTO = { url: "/hero/under-construction.webp" };

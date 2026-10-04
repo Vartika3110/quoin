@@ -161,13 +161,6 @@ function DesktopBar({
         scrolled ? "py-2.5" : "py-4",
       )}
     >
-      <Link
-        href="/"
-        className="font-display text-title-lg tracking-[0.18em] text-ink transition-colors hover:text-accent"
-      >
-        QUOIN
-      </Link>
-
       <nav aria-label="Primary" className="flex items-center gap-0.5">
         {NAV.map((item) =>
           item.hasMenu ? (
@@ -367,13 +360,6 @@ function MobileBar({
           scrolled ? "py-2" : "pb-1 pt-3",
         )}
       >
-        <Link
-          href="/"
-          className="font-display shrink-0 text-body-lg tracking-[0.1em] text-ink transition-colors hover:text-accent"
-        >
-          QUOIN
-        </Link>
-
         <LocationPicker
           areas={areas}
           selected={chosen}

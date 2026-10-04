@@ -89,18 +89,6 @@ export default async function HomePage() {
       listServiceAreas(),
     ]);
 
-  /* The hero's photograph is Studio's best-saved room — see the note in
-     `Hero`. Null until Studio has one, which the hero handles.
-
-     `imageUrl` is itself null for every pin nobody has photographed —
-     `imageUrlFor` will not dress one in a catalogue picture — so the
-     first room with an actual photograph is the one to use, not simply
-     the first room. */
-  const heroPin = rooms.find((room) => room.imageUrl !== null);
-  const heroRoom = heroPin?.imageUrl
-    ? { url: heroPin.imageUrl, blurDataUrl: heroPin.blurDataUrl }
-    : null;
-
   /* Eight tiles: two full rows of four. Four across is what the brief
      asks for and what the rest of this page is built on — the quick
      actions, the services row and the entry cards are all fours, and a
@@ -141,11 +129,7 @@ export default async function HomePage() {
             <div className="lg:hidden">
               <CatalogTabs />
             </div>
-            <Hero
-              chosen={chosen}
-              photo={heroRoom}
-              areas={serviceAreas.map((a) => a.name)}
-            />
+            <Hero chosen={chosen} areas={serviceAreas.map((a) => a.name)} />
           </div>
 
           {/* Reassurance immediately under the banner, where the design

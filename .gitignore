@@ -77,3 +77,6 @@ next-env.d.ts
 # The second working spreadsheet of the catalogue, same as the one above:
 # a snapshot someone exported, not an input to a build.
 /Quoin_Database_Final_I.docx
+
+# Local Python virtualenv — not part of the app.
+.venv/
