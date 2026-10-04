@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { IdeaImage } from "@/components/storefront/studio/IdeaImage";
-import { Close } from "@/components/icons";
+import { ChevronDown, Close } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import type { RoomFacet } from "@/lib/data/studio";
 import { ROOM_LABEL } from "@/lib/types/studio";
@@ -99,13 +99,41 @@ export function StudioFilters({
           )}
 
           {facets.materials.length > 0 && (
-            <ChipRow
-              label="Material"
-              tags={facets.materials}
-              chosen={filters.materials}
-              dimension="material"
-              filters={filters}
-            />
+            /* Folded away by default.
+ 
+               Style is nine words and reads as a mood; material is
+               thirteen and reads as a warehouse. Open, the two rows put
+               twenty-two pills above the wall — on the one page whose
+               whole proposition is the photographs underneath them, that
+               is a lot of chrome to scroll past before seeing a room.
+ 
+               A `<details>` rather than state, because this file is a
+               server component and a disclosure is the one interaction
+               HTML already has. It also means a reader who opens it, taps
+               a material and lands on a filtered URL gets the panel shut
+               again — which is right: by then the chosen material is a
+               chip in the active row, and the list has done its job.
+ 
+               Kept open when a material is already chosen, so nobody has
+               to hunt for the filter they are looking at. */
+            <details className="group/mat" open={filters.materials.length > 0}>
+              <summary className="mx-5 flex w-fit cursor-pointer list-none items-center gap-1.5 text-eyebrow uppercase text-faint outline-none hover:text-muted focus-visible:ring-2 focus-visible:ring-accent lg:mx-0">
+                Material
+                <span className="nums rounded-full bg-sunk px-1.5 py-0.5 text-micro normal-case text-muted">
+                  {facets.materials.length}
+                </span>
+                <ChevronDown className="size-3 transition-transform duration-200 group-open/mat:rotate-180" />
+              </summary>
+
+              <div className="mt-2">
+                <ChipRow
+                  tags={facets.materials}
+                  chosen={filters.materials}
+                  dimension="material"
+                  filters={filters}
+                />
+              </div>
+            </details>
           )}
         </div>
       )}
@@ -152,11 +180,11 @@ function RoomBubbles({ rooms, filters }: { rooms: RoomFacet[]; filters: Filters 
             key={facet.room}
             href={studioHref(toggle(filters, "room", facet.room))}
             aria-current={on ? "true" : undefined}
-            className="group flex w-16 shrink-0 flex-col items-center gap-1.5 outline-none lg:w-20"
+            className="group flex w-20 shrink-0 flex-col items-center gap-2 outline-none lg:w-24"
           >
             <span
               className={cn(
-                "grid size-16 place-items-center overflow-hidden rounded-full transition-[box-shadow,transform] duration-200 ease-out-quart lg:size-20",
+                "grid size-20 place-items-center overflow-hidden rounded-full transition-[box-shadow,transform] duration-200 ease-out-quart lg:size-24",
                 "group-hover:-translate-y-0.5 group-focus-visible:ring-2 group-focus-visible:ring-accent",
                 on
                   ? "ring-2 ring-accent ring-offset-2 ring-offset-bg"
@@ -173,7 +201,7 @@ function RoomBubbles({ rooms, filters }: { rooms: RoomFacet[]; filters: Filters 
                   width={160}
                   height={160}
                   blurDataUrl={facet.blurDataUrl}
-                  sizes="80px"
+                  sizes="96px"
                   className="size-full object-cover"
                 />
               ) : (
@@ -182,7 +210,7 @@ function RoomBubbles({ rooms, filters }: { rooms: RoomFacet[]; filters: Filters 
             </span>
             <span
               className={cn(
-                "line-clamp-2 text-center text-micro font-medium leading-tight",
+                "line-clamp-2 text-center text-caption font-medium leading-tight",
                 on ? "text-accent" : "text-muted group-hover:text-ink",
               )}
             >
@@ -202,7 +230,8 @@ function ChipRow({
   dimension,
   filters,
 }: {
-  label: string;
+  /** Omitted when a disclosure above already names the row. */
+  label?: string;
   tags: string[];
   chosen: string[];
   dimension: "style" | "material";
@@ -210,7 +239,9 @@ function ChipRow({
 }) {
   return (
     <div className="no-scrollbar flex items-center gap-2 overflow-x-auto scroll-pl-5 px-5 lg:px-0 lg:scroll-pl-0">
-      <span className="shrink-0 text-eyebrow uppercase text-faint">{label}</span>
+      {label ? (
+        <span className="shrink-0 text-eyebrow uppercase text-faint">{label}</span>
+      ) : null}
       {tags.map((tag) => {
         const on = chosen.includes(tag);
         return (
