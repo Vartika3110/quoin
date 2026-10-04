@@ -141,11 +141,26 @@ export function PinCard({
         {saved ? <HeartFilled className="size-5" /> : <Heart className="size-5" />}
       </button>
 
-      {/* Top left, in one row, because both of these are facts about the
-          tile and two independently positioned badges would collide the
-          moment a clip got its first save. */}
-      {(idea.saveCount > 0 || idea.video) && (
+      {/* Top left, in one row, because these are all facts about the tile
+          and independently positioned badges would collide the moment a
+          clip got its first save.
+
+          The visualisation mark rides here rather than in a band along
+          the bottom edge, which is where `ProductCard` and `IdeaCard` put
+          the same claim: this card already parks the "shop this look"
+          pill at `inset-x-2 bottom-2`, and a second full-width strip
+          under it would cover the picture twice over. */}
+      {(idea.saveCount > 0 || idea.video || idea.imageIsGenerated) && (
         <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-1.5">
+          {idea.imageIsGenerated && idea.imageUrl && (
+            /* Says what the picture is. Studio's proposition is rooms
+               somebody finished, so a render shown unmarked reads as a
+               photograph of a build that does not exist. One word at tile
+               size; the detail page spells it out. */
+            <span className="rounded-full bg-photo-cta/85 px-2 py-1 text-micro font-medium text-on-photo-cta backdrop-blur-sm">
+              Visualisation
+            </span>
+          )}
           {idea.video && (
             <span className="nums flex items-center gap-1 rounded-full bg-photo-cta/85 px-2 py-1 text-micro font-medium text-on-photo-cta backdrop-blur-sm">
               <Play className="size-3" />

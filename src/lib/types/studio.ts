@@ -178,6 +178,11 @@ export interface IdeaView {
   saved: boolean | null;
   /** Who uploaded it. Null for the imagery Quoin ships. */
   creator: { name: string } | null;
+  /** True when the picture came out of an image model rather than a
+      camera, and the surface must say so. Studio sells "rooms somebody
+      finished", so this is the difference between showing a reference and
+      claiming a build. Mirrors `photoIsIllustration` on a product. */
+  imageIsGenerated: boolean;
   createdAt: string;
 }
 

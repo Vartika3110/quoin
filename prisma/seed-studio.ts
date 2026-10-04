@@ -377,6 +377,10 @@ interface ManifestEntry {
   width: number;
   height: number;
   blurDataUrl: string;
+  /** Absent on manifests written before the column existed; those rooms
+      were generated too, so a missing value reads as true rather than
+      quietly labelling a render a photograph. */
+  imageIsGenerated?: boolean;
 }
 
 const MANIFEST = path.join("public", "studio", "manifest.json");
@@ -447,6 +451,11 @@ async function seedRooms(rooms: ManifestEntry[]): Promise<{ created: number; upd
       colors: entry.colors,
       visibility: "PUBLIC" as const,
       kind: "SPACE" as const,
+      /* Said out loud rather than left to the reader. These rooms came
+         out of an image model, the storefront draws a label from this
+         column, and a manifest written before the column existed was
+         generated too — so a missing value reads as true. */
+      imageIsGenerated: entry.imageIsGenerated ?? true,
       /* Null, and it stays null. These are illustrations of the kind of
          room Quoin's catalogue builds, not photographs of a flat in
          Dwarka, and a `location` would be the one line on the card that

@@ -1,0 +1,1037 @@
+{
+  "marble-headboard-wall-bedroom": {
+    "assetPath": "/studio/marble-headboard-wall-bedroom.webp",
+    "title": "Book-matched marble behind the bed",
+    "description": "A single slab of veined marble run the full width of the wall, lit from below by slim brass pendants.",
+    "room": "BEDROOM",
+    "styles": [
+      "luxe",
+      "contemporary"
+    ],
+    "materials": [
+      "marble",
+      "brass",
+      "laminate"
+    ],
+    "colors": [
+      {
+        "hex": "#e7ded0",
+        "name": "Cream marble"
+      },
+      {
+        "hex": "#b08b45",
+        "name": "Antique brass"
+      }
+    ],
+    "width": 1537,
+    "height": 1023,
+    "blurDataUrl": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAAAQAgCdASoQAAsAA4BaJQBOgB9rB53P1DOAAP5mxHQZjbyeQGCL7fubwouS1gBY2FKihofx4hrChAZwoYIIXZmoVAL4wmknQ14pjAAA"
+  },
+  "terracotta-carved-teak-bedroom": {
+    "assetPath": "/studio/terracotta-carved-teak-bedroom.webp",
+    "title": "Carved teak bed in a terracotta room",
+    "description": "Deep terracotta walls with a carved teak bed and matching wardrobe shutters — traditional joinery, modern lighting.",
+    "room": "BEDROOM",
+    "styles": [
+      "traditional",
+      "warm"
+    ],
+    "materials": [
+      "teak",
+      "plywood",
+      "emulsion"
+    ],
+    "colors": [
+      {
+        "hex": "#b5643c",
+        "name": "Terracotta"
+      },
+      {
+        "hex": "#5a3821",
+        "name": "Teak"
+      }
+    ],
+    "width": 1586,
+    "height": 992,
+    "blurDataUrl": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAACwAQCdASoQAAoAA4BaJagCdADpearAAP2wxwuG26mbh22d5eHo5CuMeW7T/7qizFKaCzrsHnCHdB8p+szjem2HczPUwAdfnVii7Yd4iJT21AAA"
+  },
+  "statuario-bath-floating-vanity": {
+    "assetPath": "/studio/statuario-bath-floating-vanity.webp",
+    "title": "Statuario bath with a floating stone vanity",
+    "description": "Large-format marble on every surface, with a dark stone counter floating clear of the floor and a wall-hung WC.",
+    "room": "BATHROOM",
+    "styles": [
+      "modern",
+      "luxe"
+    ],
+    "materials": [
+      "marble",
+      "ceramic",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#efece6",
+        "name": "Statuario"
+      },
+      {
+        "hex": "#4a4541",
+        "name": "Dark stone"
+      }
+    ],
+    "width": 1086,
+    "height": 1448,
+    "blurDataUrl": "data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAAAQBACdASoQABUAPu1iqU2ppaOiMAgBMB2JZQCw7CB/hqKu5hhU8qq0AAD+ZLZBK/F2YALGjwvsVTl7D9QYCwrwCGnEjVYkHEQq6Uyf7O0Kxxxs4wOSNROvkrbt32uF6v4+79rTusV06Y29PPRLtAAIAOpFjsAA"
+  },
+  "terracotta-gloss-patterned-floor-bath": {
+    "assetPath": "/studio/terracotta-gloss-patterned-floor-bath.webp",
+    "title": "Gloss terracotta tile over a patterned floor",
+    "description": "Glazed terracotta run floor to ceiling, set against an encaustic-pattern floor and a timber vanity.",
+    "room": "BATHROOM",
+    "styles": [
+      "eclectic",
+      "warm"
+    ],
+    "materials": [
+      "ceramic",
+      "vitrified tile",
+      "plywood"
+    ],
+    "colors": [
+      {
+        "hex": "#c0623a",
+        "name": "Glazed terracotta"
+      },
+      {
+        "hex": "#2f4858",
+        "name": "Slate blue"
+      }
+    ],
+    "width": 1095,
+    "height": 1437,
+    "blurDataUrl": "data:image/webp;base64,UklGRpIAAABXRUJQVlA4IIYAAAAQBACdASoQABUAPu1iqU2ppaOiMAgBMB2JaACdMoRwACld8Laq0X42mAD+L3G/4xIPf83NJjLSIGfd9JPgQrDSaW9tNFa7F79ydaFL6WE68S+DoI+Etjyj//Bfd3TEZ+qwoURUtg2QP904iFC0aPEmB+ktPBx1thy0Ur0PQSiEUrE5Z+qAAA=="
+  },
+  "rajasthani-jewel-panelling-bedroom": {
+    "assetPath": "/studio/rajasthani-jewel-panelling-bedroom.webp",
+    "title": "Jewel-toned Rajasthani panelling",
+    "description": "Painted and mirrored wall panels in emerald, saffron and vermilion, framing a carved headboard.",
+    "room": "BEDROOM",
+    "styles": [
+      "traditional",
+      "eclectic"
+    ],
+    "materials": [
+      "plywood",
+      "emulsion",
+      "teak"
+    ],
+    "colors": [
+      {
+        "hex": "#1f6b4f",
+        "name": "Emerald"
+      },
+      {
+        "hex": "#c3392c",
+        "name": "Vermilion"
+      }
+    ],
+    "width": 1586,
+    "height": 992,
+    "blurDataUrl": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAADQAQCdASoQAAoAA4BaJZgCdADDAysMnAD+6QFuccevMW1RE0eW40SrSRwafQkgf3ljknY5askR1yhfQPfUWT69iLhDwc+XACnXJeOW177DCgo4nZK4aAtQVu0QAAAA"
+  },
+  "teal-wave-headboard-bedroom": {
+    "assetPath": "/studio/teal-wave-headboard-bedroom.webp",
+    "title": "Sculptural wave headboard in teal and brass",
+    "description": "A moulded headboard in teal velvet and brass, set against slate panelling and a figured marble floor.",
+    "room": "BEDROOM",
+    "styles": [
+      "luxe",
+      "contemporary"
+    ],
+    "materials": [
+      "marble",
+      "brass",
+      "laminate"
+    ],
+    "colors": [
+      {
+        "hex": "#155e6b",
+        "name": "Deep teal"
+      },
+      {
+        "hex": "#c9a227",
+        "name": "Brass"
+      }
+    ],
+    "width": 1024,
+    "height": 1536,
+    "blurDataUrl": "data:image/webp;base64,UklGRrQAAABXRUJQVlA4IKgAAADwAwCdASoQABgAPu1iqU2ppaOiMAgBMB2JYwDCgCFQA1Bdruh/H92AAP6zvDufA7qITS1KANtQlOk3xPSEjF7l7gf7jmmy20hAKeamNgm/h0VnbSlFVLQaUG7xyJnFN/eJHzImKceD1WWAE1ad3UmGfiSv5vjy+7CBw88pdlIazpfuqHuO98B3/ryPE+F7zWYrd/z0BtYnYobbHfBcZ6sQ/ypW/lFggAA="
+  },
+  "tapestry-wall-classical-living": {
+    "assetPath": "/studio/tapestry-wall-classical-living.webp",
+    "title": "Tapestry wall over a classical seating group",
+    "description": "A hung tapestry centred on a plaster wall, with a pair of carved sofas and a marble-topped low table.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "classical",
+      "traditional"
+    ],
+    "materials": [
+      "marble",
+      "teak",
+      "emulsion"
+    ],
+    "colors": [
+      {
+        "hex": "#7d2235",
+        "name": "Claret"
+      },
+      {
+        "hex": "#d8cbb4",
+        "name": "Warm plaster"
+      }
+    ],
+    "width": 1600,
+    "height": 1293,
+    "blurDataUrl": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAQAgCdASoQAA0AA4BaJQBOgMXcowk26UAAAP5ONXcooi7ewTbHVhqv3xiApoMGcYZZ+FONxPqRueXdUi0OXg1mgSj7/FJS5P5VBKXKfoPbwofusFQ9MNe65cY/AMPMSogAAA=="
+  },
+  "brass-disc-chandelier-bedroom": {
+    "assetPath": "/studio/brass-disc-chandelier-bedroom.webp",
+    "title": "Brass disc chandelier over a gold-panelled headboard",
+    "description": "A scattered-disc brass fitting above a padded headboard, with antiqued gold leaf panels behind.",
+    "room": "BEDROOM",
+    "styles": [
+      "luxe",
+      "contemporary"
+    ],
+    "materials": [
+      "brass",
+      "plywood",
+      "laminate"
+    ],
+    "colors": [
+      {
+        "hex": "#b08b45",
+        "name": "Antique gold"
+      },
+      {
+        "hex": "#7d1f36",
+        "name": "Oxblood"
+      }
+    ],
+    "width": 1281,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRogAAABXRUJQVlA4IHwAAAAQBACdASoQABQAPu1iqU2ppaOiMAgBMB2JQBOmUABeRDurISZ1NImZoAD+52vu8NyS1/zFU/F+J+VEzxKYb7F+MDshlq5pOlmpDwAB8hCXE4nIMbxW9rMwLPv9EPrIT2+Pe9aOCleru7SnmcR00E4IR1tHBkpXe8FcAAAA"
+  },
+  "perforated-copper-open-office": {
+    "assetPath": "/studio/perforated-copper-open-office.webp",
+    "title": "Open-plan office behind a perforated copper wall",
+    "description": "A floor of desks broken by a single perforated copper screen, keeping the plan bright without losing definition.",
+    "room": "HOME_OFFICE",
+    "styles": [
+      "industrial",
+      "contemporary"
+    ],
+    "materials": [
+      "copper",
+      "steel",
+      "vitrified tile"
+    ],
+    "colors": [
+      {
+        "hex": "#9c5a33",
+        "name": "Copper"
+      },
+      {
+        "hex": "#b8b3ab",
+        "name": "Raw brick"
+      }
+    ],
+    "width": 1600,
+    "height": 960,
+    "blurDataUrl": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAAAQAgCdASoQAAoAA4BaJYwCsAEWDJqcOawAAP6o1KRkvxYsTaOWzD2tm3tNlhdG9UP4KCbbfU5unMwrzkoI4r6VuYTJ+mLXDa2a+3y/z/YMaWXF0VdKAAAA"
+  },
+  "arched-niches-carved-daybed": {
+    "assetPath": "/studio/arched-niches-carved-daybed.webp",
+    "title": "Arched niches and a carved daybed",
+    "description": "Shallow arched niches in soft plaster, with a carved timber daybed and brass collectibles on open shelves.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "traditional",
+      "minimal"
+    ],
+    "materials": [
+      "teak",
+      "brass",
+      "emulsion"
+    ],
+    "colors": [
+      {
+        "hex": "#e4ddd0",
+        "name": "Chalk plaster"
+      },
+      {
+        "hex": "#6b4524",
+        "name": "Rosewood"
+      }
+    ],
+    "width": 1600,
+    "height": 900,
+    "blurDataUrl": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAADwAQCdASoQAAkAA4BaJZgCdAC6F4+kowAAzixZVTxPIjlVUwFgN5LVCleo7/F48iW6uvpBymo7jfAZzrhfbmV/QTFE0NuQ1X6D40k1GluMIoAA"
+  },
+  "double-height-dark-stone-living": {
+    "assetPath": "/studio/double-height-dark-stone-living.webp",
+    "title": "Double-height living room in dark stone",
+    "description": "A floating stair against a dark stone wall, with a sunken seating well and concealed cove lighting throughout.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "modern",
+      "luxe"
+    ],
+    "materials": [
+      "granite",
+      "marble",
+      "steel"
+    ],
+    "colors": [
+      {
+        "hex": "#2b2724",
+        "name": "Charcoal stone"
+      },
+      {
+        "hex": "#c9a227",
+        "name": "Warm gold"
+      }
+    ],
+    "width": 1067,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRqAAAABXRUJQVlA4IJQAAAAwBACdASoQABgAPu1iqU2ppaOiMAgBMB2JQBOgA9ZNI55BsPdYcwEoaAgA/uzfKy/ixiLy6vsPOihLFYBqWAq6cTyq8yOY/s8NnS6e941jhVzRUM8unrT4Uzzk39BuY5tClyqvxMY2/fYXsmxeEB2E00x2qqHsNuQizu6kOqnrtM8ZeqAolDZDIMYlTBnP9KKTiAAA"
+  },
+  "backlit-round-mirror-travertine-bath": {
+    "assetPath": "/studio/backlit-round-mirror-travertine-bath.webp",
+    "title": "Backlit round mirror over a travertine vanity",
+    "description": "A lit circular mirror on a travertine wall, with an oak vanity, a freestanding tub and a walk-in shower beyond.",
+    "room": "BATHROOM",
+    "styles": [
+      "warm",
+      "minimal"
+    ],
+    "materials": [
+      "travertine",
+      "ceramic",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#e3d6c0",
+        "name": "Travertine"
+      },
+      {
+        "hex": "#b5853f",
+        "name": "Warm brass"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmwAAABXRUJQVlA4IGAAAAAwAgCdASoQABAAA4BaJZgCdADQ7z48R046AAD0VaSL1k1d/qELQVfotnkNX6D+qRGcI7ez6HImfSp4dK+gA9JCuo1arFzfz7nzUsy5eqOJB2yfZd63LKBEgYZ0rwkSAAA="
+  },
+  "scalloped-arch-headboard-navy": {
+    "assetPath": "/studio/scalloped-arch-headboard-navy.webp",
+    "title": "Scalloped arch headboard in navy",
+    "description": "A Moroccan-arch headboard quilted in navy, under a moulded ceiling and a pair of glass pendants.",
+    "room": "BEDROOM",
+    "styles": [
+      "classical",
+      "eclectic"
+    ],
+    "materials": [
+      "plywood",
+      "emulsion",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#1e3a5f",
+        "name": "Navy"
+      },
+      {
+        "hex": "#efe9dd",
+        "name": "Ivory moulding"
+      }
+    ],
+    "width": 1600,
+    "height": 960,
+    "blurDataUrl": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAABQAgCdASoQAAoAA4BaJZQCdAYvhymIExP6xAAAzj8gTRS4KnEcvFm2XhB4vlOcYBQ3GEFo5X0bCP1G+HX83GoWWVXO5lh4YMKe36gxHj8m4+9xzFigjYAA"
+  },
+  "pendant-lit-open-desks-office": {
+    "assetPath": "/studio/pendant-lit-open-desks-office.webp",
+    "title": "An open floor of desks under pendant lighting",
+    "description": "Curved workstations and task chairs under exposed services, with a garden visible the length of one wall.",
+    "room": "HOME_OFFICE",
+    "styles": [
+      "industrial",
+      "contemporary"
+    ],
+    "materials": [
+      "steel",
+      "laminate",
+      "vitrified tile"
+    ],
+    "colors": [
+      {
+        "hex": "#c2724a",
+        "name": "Burnt orange"
+      },
+      {
+        "hex": "#8e9a92",
+        "name": "Sage grey"
+      }
+    ],
+    "width": 1600,
+    "height": 1066,
+    "blurDataUrl": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAAAQAgCdASoQAAsAA4BaJYgCdAEecxJyJWsgAP7AW+xOjwfLgrFpXmqZ/Xx7ZIzcnsvbO6+lUN+hLw/j2jGil3q0s/rH5huoUOATQFaNFmypUox4WlRaYRG4CppSYwjsowKPQAAA"
+  },
+  "gloss-grey-marble-splashback-kitchen": {
+    "assetPath": "/studio/gloss-grey-marble-splashback-kitchen.webp",
+    "title": "High-gloss grey kitchen with a marble splashback",
+    "description": "Handleless gloss shutters either side of a galley, with the marble splashback carried to the ceiling.",
+    "room": "KITCHEN",
+    "styles": [
+      "modern",
+      "minimal"
+    ],
+    "materials": [
+      "marble",
+      "laminate",
+      "steel"
+    ],
+    "colors": [
+      {
+        "hex": "#b9bcc0",
+        "name": "Gloss grey"
+      },
+      {
+        "hex": "#efece6",
+        "name": "White marble"
+      }
+    ],
+    "width": 1112,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAADQAwCdASoQABcAPu1iqU2ppaQiMAgBMB2JZwAAUol1tGyG7kMMj2AA4R127Ee0EA2lgQKkUhMeU8m7yi7KHmmW9wLZG2SKojLWsSdP82CEM16IY3HexKEonLU52F0qdq2Cf8ff8e0ZBsfj0oOQWyyzyieZJgQA"
+  },
+  "carved-arches-terracotta-bedroom": {
+    "assetPath": "/studio/carved-arches-terracotta-bedroom.webp",
+    "title": "Carved arches and terracotta walls",
+    "description": "A jharokha-style arched window wall in carved timber, with terracotta plaster and a brass lantern.",
+    "room": "BEDROOM",
+    "styles": [
+      "traditional",
+      "warm"
+    ],
+    "materials": [
+      "teak",
+      "brass",
+      "emulsion"
+    ],
+    "colors": [
+      {
+        "hex": "#c06a3a",
+        "name": "Terracotta"
+      },
+      {
+        "hex": "#8a5a2b",
+        "name": "Carved teak"
+      }
+    ],
+    "width": 1600,
+    "height": 1067,
+    "blurDataUrl": "data:image/webp;base64,UklGRnAAAABXRUJQVlA4IGQAAAAwAgCdASoQAAsAA4BaJbACdAEVR4tdLgnOAAD+0UMGthgVvFv0sYYnh/kMmOcWqZzvvSYHi3od58t3KKolmg7TLW7dtpRMNTnL6FYTycn1LyI+vWwoTwD0D8XbRU4pgBDiAAAA"
+  },
+  "bronze-cranes-plaster-wall": {
+    "assetPath": "/studio/bronze-cranes-plaster-wall.webp",
+    "title": "Bronze cranes on a plaster wall",
+    "description": "A flight of bronze cranes across raw plaster, with a travertine console and fluted timber beyond.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "minimal",
+      "warm"
+    ],
+    "materials": [
+      "travertine",
+      "brass",
+      "plywood"
+    ],
+    "colors": [
+      {
+        "hex": "#ded5c6",
+        "name": "Raw plaster"
+      },
+      {
+        "hex": "#8c6239",
+        "name": "Bronze"
+      }
+    ],
+    "width": 1435,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRoQAAABXRUJQVlA4IHgAAACQAwCdASoQABIAPu1iqU2ppaOiMAgBMB2JZQC7ABxASSHDYFEAAOJtMk+Q6Tvm6uj2w9315lKOykm3t4WkKxi0mtKi2e++lpl/wSBEClo77drSqP3DYQEElSP4kFCeZcb+yrb4rN22F9DGsfVcl+WwhKH9NHWAAAA="
+  },
+  "two-tone-walnut-graphite-kitchen": {
+    "assetPath": "/studio/two-tone-walnut-graphite-kitchen.webp",
+    "title": "Two-tone kitchen in walnut and graphite",
+    "description": "Walnut bases under graphite uppers, with a dark stone counter and a lit open shelf for glassware.",
+    "room": "KITCHEN",
+    "styles": [
+      "contemporary",
+      "warm"
+    ],
+    "materials": [
+      "granite",
+      "laminate",
+      "steel"
+    ],
+    "colors": [
+      {
+        "hex": "#6b4a2f",
+        "name": "Walnut"
+      },
+      {
+        "hex": "#3c3f42",
+        "name": "Graphite"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQAgCdASoQABAAA4BaJQBOgBh7dzIdKd+AAP6rlluEC/SvrHtCJxnoX5ggml2+JtC0RidgN/eUmeTBbaDtExH0/+9ZKZNaxjYT/GZpzk9rRf3ucXpN79mMCrAAAA=="
+  },
+  "double-height-evening-living": {
+    "assetPath": "/studio/double-height-evening-living.webp",
+    "title": "Double-height living room, lit for the evening",
+    "description": "A timber-lined ceiling raking up over a low seating group, with stone cladding and the garden lit beyond the glass.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "modern",
+      "luxe"
+    ],
+    "materials": [
+      "granite",
+      "teak",
+      "vitrified tile"
+    ],
+    "colors": [
+      {
+        "hex": "#2f2a26",
+        "name": "Night charcoal"
+      },
+      {
+        "hex": "#a8814e",
+        "name": "Lit timber"
+      }
+    ],
+    "width": 1559,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQAgCdASoQABAAA4BaJQBOgB6SFd+ZNX8AAP7zMFLfDMTnOYGAtczEFGNNOem7hkHZvWyEE9Hk0R+Gq8PfcNkO3sjtDcUIr6J28u2Q8doiAXIXP1BwYYy9DqwAAA=="
+  },
+  "peacock-mural-bedroom": {
+    "assetPath": "/studio/peacock-mural-bedroom.webp",
+    "title": "Hand-painted peacock mural behind the bed",
+    "description": "A full-wall mural of peacocks and palace architecture, kept calm by grey bedding and a plain rug.",
+    "room": "BEDROOM",
+    "styles": [
+      "eclectic",
+      "traditional"
+    ],
+    "materials": [
+      "emulsion",
+      "plywood"
+    ],
+    "colors": [
+      {
+        "hex": "#2e7d6b",
+        "name": "Peacock green"
+      },
+      {
+        "hex": "#e9e4da",
+        "name": "Chalk"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAAAwAgCdASoQABAAA4BaJQBWAB6WS800TN0gAADyXeptUiwxjaTVY10g8anLqop8WE8uDrdRN/ux711LcwGy6KeVQkqk/ntq84BQHTjn5GAkq/QgYEblwAAA"
+  },
+  "sage-and-pink-tile-bath": {
+    "assetPath": "/studio/sage-and-pink-tile-bath.webp",
+    "title": "Sage and dusty pink tile with brass fittings",
+    "description": "Two tile colours divided down the room, with a cane vanity, a round mirror and unlacquered brass.",
+    "room": "BATHROOM",
+    "styles": [
+      "warm",
+      "eclectic"
+    ],
+    "materials": [
+      "ceramic",
+      "brass",
+      "plywood"
+    ],
+    "colors": [
+      {
+        "hex": "#8ea894",
+        "name": "Sage"
+      },
+      {
+        "hex": "#e0b4ae",
+        "name": "Dusty pink"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAAAQAgCdASoQABAAA4BaJYgCsAEJ7WcnomjgAP4vhHmSNZfFqvNubkuBN4d6r3OExDWbRaM0xA/oHsCa+4DF7rEFI/kNDMRfINWjq84o+SEjR/fVOyOTCWya1VWrOV9Ma1KFCI8AAAA="
+  },
+  "arc-lamp-pale-blue-living": {
+    "assetPath": "/studio/arc-lamp-pale-blue-living.webp",
+    "title": "Arc lamp over a pale blue seating group",
+    "description": "A steel arc lamp swung over pale blue upholstery, against warm lime-plaster walls and a dark tiled floor.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "contemporary",
+      "minimal"
+    ],
+    "materials": [
+      "vitrified tile",
+      "steel",
+      "emulsion"
+    ],
+    "colors": [
+      {
+        "hex": "#a8bdd1",
+        "name": "Powder blue"
+      },
+      {
+        "hex": "#c9b58d",
+        "name": "Lime plaster"
+      }
+    ],
+    "width": 1600,
+    "height": 1066,
+    "blurDataUrl": "data:image/webp;base64,UklGRnIAAABXRUJQVlA4IGYAAABQAgCdASoQAAsAA4BaJaACdAYvruJxEUJHpIAA/r3K5VEMDqrRQBZKssbtDtqODFCUa6D27YHLToLU3hXu1SjhLZnQi7HUdic4MIhG4BeE/ytTG5L5icZFX5T9XIMzljy3xhq9AAA="
+  },
+  "oxblood-lacquer-galley-kitchen": {
+    "assetPath": "/studio/oxblood-lacquer-galley-kitchen.webp",
+    "title": "Oxblood lacquer galley kitchen",
+    "description": "High-lacquer red shutters against book-matched marble, with a brass rail and a vintage radio in the niche.",
+    "room": "KITCHEN",
+    "styles": [
+      "eclectic",
+      "luxe"
+    ],
+    "materials": [
+      "marble",
+      "laminate",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#8e2b23",
+        "name": "Oxblood lacquer"
+      },
+      {
+        "hex": "#e8e4dd",
+        "name": "Book-matched marble"
+      }
+    ],
+    "width": 1062,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRroAAABXRUJQVlA4IK4AAABQBACdASoQABgAPu1iqU2ppaOiMAgBMB2JYwCdMoAB9CYPLnzDB7D8V6KgAP7CNZ3S7tN6WbUFW+ngcWuabcuq64EBQRdonESXh92WAkmHUhk3LDbXkPcBHPrG0WfkFmwhaVWan6Hn7B9tu6+Z++DVvme/eKw8sGcPW3cgXyONaPZ/NXkqWeXihto1aDZgllwHs8fSDLk0EQ6frKi5R4BTzBlW1IT8rJIKROJcAAA="
+  },
+  "carved-swing-painted-panels-living": {
+    "assetPath": "/studio/carved-swing-painted-panels-living.webp",
+    "title": "A carved swing and painted wall panels",
+    "description": "A traditional jhoola in carved timber, with painted panels, a tiled low table and brass accents.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "traditional",
+      "eclectic"
+    ],
+    "materials": [
+      "teak",
+      "ceramic",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#9b2c3f",
+        "name": "Maroon"
+      },
+      {
+        "hex": "#7a4b28",
+        "name": "Carved teak"
+      }
+    ],
+    "width": 1600,
+    "height": 1200,
+    "blurDataUrl": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAAAwAgCdASoQAAwAA4BaJZACdAD/SX2vMpPTgAD+iA2Ok+WAOz1HqdiJ4iRBL9AOyaFdW8oH2B6M3sUlschxfbk7ywFuJdHTCY0afA5tLYnhibPYfQ0XJj0Mxq5dJXfOoXgAAA=="
+  },
+  "platform-bed-glass-dressing-room": {
+    "assetPath": "/studio/platform-bed-glass-dressing-room.webp",
+    "title": "Platform bed beside a glass-walled dressing room",
+    "description": "A stepped platform bed with a lit glass wardrobe alongside, under a fluted charcoal ceiling.",
+    "room": "BEDROOM",
+    "styles": [
+      "modern",
+      "luxe"
+    ],
+    "materials": [
+      "plywood",
+      "steel",
+      "laminate"
+    ],
+    "colors": [
+      {
+        "hex": "#3a3732",
+        "name": "Fluted charcoal"
+      },
+      {
+        "hex": "#a97f4f",
+        "name": "Oak"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAADwAQCdASoQABAAA4BaJQBOgB6MpLiHpgAA/vEhopqLqg2p6P2jCYUmFzYto7L1sFXOFQg7h56uMLVcHo1IWcNueeb9utj5U3fXfIi6QAA="
+  },
+  "timber-panelled-garden-bedroom": {
+    "assetPath": "/studio/timber-panelled-garden-bedroom.webp",
+    "title": "Timber-panelled bedroom opening to the garden",
+    "description": "Full-height timber panelling and a sliding glass wall, with a woven rug and a low upholstered bed.",
+    "room": "BEDROOM",
+    "styles": [
+      "warm",
+      "contemporary"
+    ],
+    "materials": [
+      "teak",
+      "plywood",
+      "vitrified tile"
+    ],
+    "colors": [
+      {
+        "hex": "#7a5533",
+        "name": "Warm timber"
+      },
+      {
+        "hex": "#cfc3ad",
+        "name": "Woven jute"
+      }
+    ],
+    "width": 1600,
+    "height": 1108,
+    "blurDataUrl": "data:image/webp;base64,UklGRmoAAABXRUJQVlA4IF4AAAAwAgCdASoQAAsAA4BaJZACdAEfnvVwHj/ZAAD+z3e+lnl3cewWXDN+8hkpOqOQ4E1MyqfppmI299gNhurTAoDTD1Oac8pxwkZi3PEfen94Eretbb3LIQrueI5iIAAA"
+  },
+  "coffered-ceiling-skyline-living": {
+    "assetPath": "/studio/coffered-ceiling-skyline-living.webp",
+    "title": "Coffered ceiling over a skyline living room",
+    "description": "A coffered timber ceiling framing a wall of glass, with a long sectional on polished marble.",
+    "room": "LIVING_ROOM",
+    "styles": [
+      "luxe",
+      "classical"
+    ],
+    "materials": [
+      "marble",
+      "teak",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#efece6",
+        "name": "Polished marble"
+      },
+      {
+        "hex": "#6b4a2f",
+        "name": "Coffered timber"
+      }
+    ],
+    "width": 1600,
+    "height": 840,
+    "blurDataUrl": "data:image/webp;base64,UklGRlIAAABXRUJQVlA4IEYAAAAQAgCdASoQAAgAA4BaJYwCdAYpvgFD/04AAPlAqe2xs1/s2RdD7qSX9HO8sxp3UZ3ijbyMjMOGs0PjuOGy3UT2hDtG/yAA"
+  },
+  "black-gold-marble-sunburst-bath": {
+    "assetPath": "/studio/black-gold-marble-sunburst-bath.webp",
+    "title": "Black and gold marble with sunburst mirrors",
+    "description": "Gold-veined black marble on every surface, with a pair of sunburst mirrors over a dark vanity.",
+    "room": "BATHROOM",
+    "styles": [
+      "luxe",
+      "classical"
+    ],
+    "materials": [
+      "marble",
+      "brass",
+      "ceramic"
+    ],
+    "colors": [
+      {
+        "hex": "#171716",
+        "name": "Nero marble"
+      },
+      {
+        "hex": "#c9a227",
+        "name": "Gold vein"
+      }
+    ],
+    "width": 1202,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRoIAAABXRUJQVlA4IHYAAABQBACdASoQABUAPu1iqU2ppaOiMAgBMB2JZwCdACK3ndvOY9AaVr4hcQmAAP7prKU0RGmu5v2phdwIrgf4pYJLY8grjUta9AsVqUBkthLfsvau3ToumtMBoJ2uFvCVt7cP8X71lN6LLS6+Cx9aeM9xfaZXAAAA"
+  },
+  "fluted-headboard-neutral-bedroom": {
+    "assetPath": "/studio/fluted-headboard-neutral-bedroom.webp",
+    "title": "Fluted headboard in a soft neutral bedroom",
+    "description": "A tall fluted headboard in oatmeal linen, with slim brass pendants and a patterned rug underfoot.",
+    "room": "BEDROOM",
+    "styles": [
+      "minimal",
+      "warm"
+    ],
+    "materials": [
+      "plywood",
+      "brass",
+      "emulsion"
+    ],
+    "colors": [
+      {
+        "hex": "#d9cbb4",
+        "name": "Oatmeal"
+      },
+      {
+        "hex": "#b08b45",
+        "name": "Brass"
+      }
+    ],
+    "width": 1600,
+    "height": 1199,
+    "blurDataUrl": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAAAQAgCdASoQAAwAA4BaJQBOgB6TPkLqNAAAAPlLHPDg1Kt7hm+z3YO8kjNC17RfR1DhybbTOg/txHzBUwyHZ3pZ9m1S39n8F+U8ysZ+2ckx28CLUE5AAA=="
+  },
+  "olive-tufted-bed-timber-panelling": {
+    "assetPath": "/studio/olive-tufted-bed-timber-panelling.webp",
+    "title": "Olive channel-tufted bed against timber panelling",
+    "description": "Channel-tufted olive velvet on a slatted timber wall, with a drum pendant and a patterned wool rug.",
+    "room": "BEDROOM",
+    "styles": [
+      "contemporary",
+      "warm"
+    ],
+    "materials": [
+      "plywood",
+      "brass",
+      "laminate"
+    ],
+    "colors": [
+      {
+        "hex": "#6b7042",
+        "name": "Olive"
+      },
+      {
+        "hex": "#8a6240",
+        "name": "Slatted timber"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmIAAABXRUJQVlA4IFYAAADQAQCdASoQABAAA4BaJQBOgCHcQFXiygD9472sCW9KG8nFCQuH4ALvdI/K+ykdsWJxvs/6nl45ViO+2ip6OK2sLj4moP/YJ+SiucugdtWkQghMsoAAAA=="
+  },
+  "sage-tile-terrazzo-compact-bath": {
+    "assetPath": "/studio/sage-tile-terrazzo-compact-bath.webp",
+    "title": "Sage tile and terrazzo in a compact bath",
+    "description": "Sage tile to the ceiling over a terrazzo floor, with aged brass fittings and a trailing plant.",
+    "room": "BATHROOM",
+    "styles": [
+      "warm",
+      "minimal"
+    ],
+    "materials": [
+      "ceramic",
+      "terrazzo",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#9aad96",
+        "name": "Sage"
+      },
+      {
+        "hex": "#e6e3d8",
+        "name": "Terrazzo"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADQAQCdASoQABAAA4BaJQBdgBbCzJfPQAD89LzwP83w4MYbCfM5Rh5BOqNv8FK/6/AaZAv5J5O7mioNAdiVpNTgnGdActP4PKFLdkXVkh+yJCO5P1bbgAAA"
+  },
+  "fluted-oak-travertine-study": {
+    "assetPath": "/studio/fluted-oak-travertine-study.webp",
+    "title": "Fluted oak study with a travertine desk",
+    "description": "A fluted oak wall of shelving behind a travertine-legged desk, lit from a full-height window.",
+    "room": "HOME_OFFICE",
+    "styles": [
+      "minimal",
+      "warm"
+    ],
+    "materials": [
+      "travertine",
+      "plywood",
+      "vitrified tile"
+    ],
+    "colors": [
+      {
+        "hex": "#d7c9ae",
+        "name": "Oak"
+      },
+      {
+        "hex": "#e8e3d6",
+        "name": "Travertine"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAADwAQCdASoQABAAA4BaJQBOgMYY39bRwAAA/t7RU9nkCjg58qutomPfQMiwm/N2kYRJJElWs9aMywQODLSDfaRyDG5PoNjGqYqoMTlm7GSeHbMRhn7AoAAA"
+  },
+  "terracotta-herringbone-shower": {
+    "assetPath": "/studio/terracotta-herringbone-shower.webp",
+    "title": "Terracotta herringbone shower",
+    "description": "Glazed terracotta laid in herringbone around a glass shower, with an oak vanity and a stone basin.",
+    "room": "BATHROOM",
+    "styles": [
+      "warm",
+      "contemporary"
+    ],
+    "materials": [
+      "ceramic",
+      "plywood",
+      "brass"
+    ],
+    "colors": [
+      {
+        "hex": "#a9492c",
+        "name": "Glazed terracotta"
+      },
+      {
+        "hex": "#cdb89a",
+        "name": "Oak"
+      }
+    ],
+    "width": 1600,
+    "height": 1600,
+    "blurDataUrl": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAwAgCdASoQABAAA4BaJZgCdAELhqYvPTxTgAD+tgrFcaQ+mSoBzJukDb5k2pY7jIa5sGe8cL+m5ZOLMZuyl0PSBp+dbRIXfzT63trdGm3J23jc3hhtSVKvGI+gAA=="
+  },
+  "twin-chandeliers-tufted-bed": {
+    "assetPath": "/studio/twin-chandeliers-tufted-bed.webp",
+    "title": "Twin chandeliers over a tufted bed",
+    "description": "A pair of crystal rings above a buttoned bed, with patterned stone panels running the height of the wall.",
+    "room": "BEDROOM",
+    "styles": [
+      "luxe",
+      "classical"
+    ],
+    "materials": [
+      "marble",
+      "brass",
+      "laminate"
+    ],
+    "colors": [
+      {
+        "hex": "#cfc6b8",
+        "name": "Pale stone"
+      },
+      {
+        "hex": "#7d2235",
+        "name": "Claret"
+      }
+    ],
+    "width": 1600,
+    "height": 1074,
+    "blurDataUrl": "data:image/webp;base64,UklGRmAAAABXRUJQVlA4IFQAAAAwAgCdASoQAAsAA4BaJYwCdAD1fTHg20CDUAD+wHUruzIUfV7Bq8r1alWPCy9XVXKOgYjtUfw5cDL5QJHAUU5SzlsCCOnJYBz9VgcIZrRuJkPYAAA="
+  },
+  "haveli-bedroom-carved-headboard": {
+    "assetPath": "/studio/haveli-bedroom-carved-headboard.webp",
+    "title": "Carved headboard in a haveli bedroom",
+    "description": "An antique carved headboard against deep red walls, with fretworked balcony doors throwing late light across the floor.",
+    "room": "BEDROOM",
+    "styles": [
+      "traditional",
+      "warm"
+    ],
+    "materials": [
+      "teak",
+      "marble",
+      "emulsion"
+    ],
+    "colors": [
+      {
+        "hex": "#9c3326",
+        "name": "Haveli red"
+      },
+      {
+        "hex": "#c8a46a",
+        "name": "Aged gold"
+      }
+    ],
+    "width": 1600,
+    "height": 696,
+    "blurDataUrl": "data:image/webp;base64,UklGRl4AAABXRUJQVlA4IFIAAAAQAgCdASoQAAcAA4BaJZgCdAEC3mM2A3AAAP6+cBv41oleU/VDxTSpZvWEM+c9vavPoFBzt6IffydWKqUQIXGFzD+Xwqm1IlyvsLUeURy0FeAA"
+  },
+  "living-wall-warehouse-office": {
+    "assetPath": "/studio/living-wall-warehouse-office.webp",
+    "title": "A living wall in a warehouse office",
+    "description": "A planted wall splitting a long open floor, under a slatted timber ceiling and full-height factory glazing.",
+    "room": "HOME_OFFICE",
+    "styles": [
+      "industrial",
+      "contemporary"
+    ],
+    "materials": [
+      "steel",
+      "plywood",
+      "vitrified tile"
+    ],
+    "colors": [
+      {
+        "hex": "#4a663a",
+        "name": "Planted green"
+      },
+      {
+        "hex": "#8c8781",
+        "name": "Concrete"
+      }
+    ],
+    "width": 1600,
+    "height": 756,
+    "blurDataUrl": "data:image/webp;base64,UklGRlgAAABXRUJQVlA4IEwAAADQAQCdASoQAAgAA4BaJZQC7ADp3LnwAAD+MtaslO3wPGmPPC0SKVUzvS7TU+Sg3ZMU+PokJuWHaqT1ePJKPtAa+AeRUskq1z7CgAAA"
+  },
+  "gilded-panel-bedroom-wardrobe": {
+    "assetPath": "/studio/gilded-panel-bedroom-wardrobe.webp",
+    "title": "Gilded panel bedroom with a walk-in wardrobe",
+    "description": "A gold-leaf tree panel behind the bed, with a lit walk-in wardrobe open along one wall and a fluted drum pendant above.",
+    "room": "BEDROOM",
+    "styles": [
+      "luxe",
+      "contemporary"
+    ],
+    "materials": [
+      "plywood",
+      "brass",
+      "marble"
+    ],
+    "colors": [
+      {
+        "hex": "#c9a227",
+        "name": "Gold leaf"
+      },
+      {
+        "hex": "#6b4a2f",
+        "name": "Walnut"
+      }
+    ],
+    "width": 1600,
+    "height": 1312,
+    "blurDataUrl": "data:image/webp;base64,UklGRm4AAABXRUJQVlA4IGIAAADQAQCdASoQAA0AA4BaJQBOgCE4JoKHAADgLhxL08fPCnRYNdEzCmZbKcPxap2h6Y0F15Rw2XZwnPObW2IOtENtqMIjEVejD60vWJEvctLbOI9gtIuPs8Qk4mPRpkWok24AAA=="
+  }
+}

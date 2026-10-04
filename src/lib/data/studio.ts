@@ -263,6 +263,7 @@ const IDEA_SELECT = {
   createdAt: true,
   kind: true,
   location: true,
+  imageIsGenerated: true,
   user: { select: { name: true } },
   designer: { select: { slug: true, name: true, headline: true } },
   _count: { select: { hotspots: true } },
@@ -297,6 +298,7 @@ function toIdeaView(row: IdeaRow, savedIds: Set<string> | null): IdeaView {
     visibility: VISIBILITY_FROM_DB[row.visibility],
     saveCount: row.saveCount,
     materialCount: row._count.hotspots,
+    imageIsGenerated: row.imageIsGenerated,
     saved: savedIds ? savedIds.has(row.id) : null,
     /* A creator with no name on their account is shown as no creator
        rather than as an empty byline — `name` is optional on `User`. */

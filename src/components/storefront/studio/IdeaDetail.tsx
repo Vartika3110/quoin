@@ -52,7 +52,7 @@ export function IdeaDetail({ idea }: { idea: IdeaView }) {
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
       <div className="lg:min-w-0 lg:flex-[3]">
-        <div className="overflow-hidden rounded-xl bg-sunk">
+        <div className="relative overflow-hidden rounded-xl bg-sunk">
           <IdeaImage
             src={idea.imageUrl}
             alt={idea.title}
@@ -66,6 +66,15 @@ export function IdeaDetail({ idea }: { idea: IdeaView }) {
             sizes="(min-width: 1024px) 60vw, 100vw"
             className="max-h-[78vh] w-full object-contain"
           />
+          {idea.imageIsGenerated && idea.imageUrl && (
+            /* The page where someone studies the picture, so the claim is
+               spelled out rather than abbreviated to the tile's one word.
+               `Gallery` says the same thing about a generated product
+               photograph in the same position. */
+            <p className="absolute inset-x-0 bottom-0 bg-deep/75 px-4 py-2 text-center text-micro text-on-deep backdrop-blur-sm">
+              A visualisation, not a photograph — this room has not been built.
+            </p>
+          )}
         </div>
       </div>
 
@@ -150,7 +159,9 @@ export function IdeaDetail({ idea }: { idea: IdeaView }) {
               ))}
             </ul>
             <p className="mt-2 text-caption text-faint">
-              Chosen by whoever added this photograph.
+              {idea.imageIsGenerated
+                ? "Read off the image, not specified by a designer."
+                : "Chosen by whoever added this photograph."}
             </p>
           </div>
         ) : null}

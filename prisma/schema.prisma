@@ -1926,6 +1926,21 @@ model StudioIdea {
   /// bundled assets, which are small enough not to need one.
   blurDataUrl String?
 
+  /// True when the picture came out of an image model rather than a
+  /// camera.
+  ///
+  /// The same claim `Product.imageIsGenerated` makes, for the same
+  /// reason, and it is load-bearing in both places: Studio's whole
+  /// proposition is "rooms somebody finished", so a wall of renders
+  /// passed off as photographs tells a first-time visitor something
+  /// untrue about what Quoin has built. The storefront reads this and
+  /// labels the tile and the detail page.
+  ///
+  /// Default false because a customer's own upload is a photograph of
+  /// their own room, and that is the common case this column must not
+  /// mislabel. The seeded visualisations set it explicitly.
+  imageIsGenerated Boolean @default(false)
+
   /// The room this is a photograph of. Null when the uploader did not
   /// say, which is common and is not an error.
   room StudioRoom?

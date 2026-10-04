@@ -72,16 +72,28 @@ export function IdeaCard({
         href={`/studio/idea/${idea.slug}`}
         className="block overflow-hidden rounded-xl bg-sunk outline-none ring-accent/40 transition-[transform,box-shadow] duration-200 ease-out-quart focus-visible:ring-2 hover:-translate-y-0.5 hover:shadow-md"
       >
-        <IdeaImage
-          src={idea.imageUrl}
-          alt={idea.title}
-          width={idea.width}
-          height={idea.height}
-          blurDataUrl={idea.blurDataUrl}
-          sizes={sizes}
-          preload={preload}
-          className="transition-transform duration-500 ease-out-quart group-hover/tile:scale-[1.03]"
-        />
+        <div className="relative">
+          <IdeaImage
+            src={idea.imageUrl}
+            alt={idea.title}
+            width={idea.width}
+            height={idea.height}
+            blurDataUrl={idea.blurDataUrl}
+            sizes={sizes}
+            preload={preload}
+            className="transition-transform duration-500 ease-out-quart group-hover/tile:scale-[1.03]"
+          />
+          {idea.imageIsGenerated && idea.imageUrl && (
+            /* Says what the picture is. Studio's proposition is rooms
+               somebody finished, so a render shown without this reads as
+               a photograph of a build that does not exist. The same
+               claim `ProductCard` makes about a generated SKU image, in
+               the same place and the same words' worth of space. */
+            <span className="absolute inset-x-0 bottom-0 bg-deep/75 px-2 py-1 text-center text-micro leading-tight text-on-deep backdrop-blur-sm">
+              Visualisation
+            </span>
+          )}
+        </div>
       </Link>
 
       <button
