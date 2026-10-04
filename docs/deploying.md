@@ -120,6 +120,8 @@ Environment variables, for Production and Preview:
 | `RAZORPAY_WEBHOOK_SECRET` | set when you create the webhook, not the same value |
 | `GOOGLE_CLIENT_ID` | from Google Cloud Console — see *Google sign-in* below |
 | `GOOGLE_CLIENT_SECRET` | the other half of that pair |
+| `CRON_SECRET` | `openssl rand -base64 32` — without it every scheduled job refuses |
+| `SITE_URL` | the site's own origin, once it is on a custom domain |
 
 The three Razorpay variables are genuinely optional and there is no boot
 guard on them, unlike MSG91. Unset, the storefront runs normally and
@@ -132,6 +134,48 @@ Before any of this, apply the migration this feature shipped with —
 `prisma migrate deploy` against the target database (see step 2 above).
 Deploying the app code without it means every route that reads or writes
 `User.googleSub` fails against a column that does not exist yet.
+
+## Scheduled jobs and the Hobby cron ceiling
+
+`vercel.json` declares the two jobs under `/api/v1/cron/*`. **On the Hobby
+plan a cron may only fire once per day**; anything more frequent is
+rejected when the configuration is validated, which happens *before* the
+build. The deploy fails with no build log and a link to Vercel's cron
+pricing page, identically on every commit — so it reads like a broken Git
+integration rather than a plan limit, and the repo wears two
+`chore: trigger a build` commits from working that out the slow way.
+
+The schedules were `*/15` and `*/10` minutes, which is what those jobs
+actually want. They are now daily, and that is a **known degradation held
+on purpose**, not the intended configuration:
+
+| job | at | what the delay costs |
+| --- | --- | --- |
+| `reconcile-payments` | 01:00 UTC (06:30 IST) | a payment whose webhook was lost stays unreconciled up to 24h — the customer's money has moved and their order still reads `PENDING_PAYMENT` |
+| `release-reservations` | 02:00 UTC (07:30 IST) | stock an abandoned checkout is holding stays held up to 24h |
+
+Early-morning IST so an overnight problem is already settled when someone
+starts the day, and an hour apart because the Hobby scheduler fires within
+an hour of the stated time rather than on it.
+
+Neither job is safe to leave on a daily tick in a storefront taking real
+money — `reconcile-payments` is the *only* recovery path for a dropped
+webhook, and the note on that route records 15 `payment.captured` events
+lost for three weeks with nothing to catch them. Two ways out, and both
+want doing before launch rather than after:
+
+- **Vercel Pro.** The frequency cap goes away and `vercel.json` goes back
+  to `*/15` and `*/10` unchanged. Also the honest plan for this app —
+  Hobby is non-commercial, as *Sharing the link* already notes.
+- **An external scheduler.** `isAuthorizedCron` checks a plain
+  `Authorization: Bearer $CRON_SECRET`, and `src/lib/cron.ts` says the
+  curl-compatibility is deliberate. So GitHub Actions, cron-job.org or
+  Supabase `pg_cron` can drive both endpoints on any schedule with no
+  change to the routes — delete the `crons` block and point the scheduler
+  at them.
+
+Both jobs are idempotent and claim their rows with guarded updates, so an
+external caller overlapping a Vercel tick is safe.
 
 ## The MSG91 catch
 
@@ -267,6 +311,57 @@ for a Vercel login, that is Deployment Protection — turn it off under
 Note that Vercel's Hobby tier is for non-commercial use. A demo link is
 fine; running the real storefront on it is not.
 
+## The custom domain
+
+`quoin.co.in`, registered at GoDaddy, DNS served by GoDaddy's own
+nameservers (`ns27`/`ns28.domaincontrol.com`). Vercel holds both names:
+`www.quoin.co.in` serves Production and the apex 308s to it.
+
+Two records, and the apex **must** be an `A` — GoDaddy has no ALIAS/ANAME,
+so the bare domain cannot be a CNAME:
+
+| Type | Name | Value | TTL |
+| --- | --- | --- | --- |
+| A | `@` | `216.198.79.1` | 600 |
+| CNAME | `www` | `quoin.co.in.` | 3600 |
+
+`www` pointing at the apex rather than at Vercel's CNAME target is
+deliberate and works — the chain ends at Vercel's anycast address and
+Vercel routes on the `Host` header — with the small advantage that an
+apex IP change carries `www` with it instead of needing two edits.
+
+Three things that cost time the first time:
+
+- A new registration arrives with GoDaddy's parking records in place:
+  **two** `A` records on `@` and a `www` CNAME. Edit one `A` and delete
+  the other. Leaving both means the apex round-robins and serves the
+  parking page about half the time, which is intermittent and horrible to
+  diagnose.
+- **Forwarding must be off** (DNS → Forwarding). It silently reinstates
+  GoDaddy's own `A` record over yours.
+- A `.in` registration sits on registry `clientHold` until the registrant
+  email is verified — a separate thing from any KYC, with its own
+  *Validate* link in the yellow WHOIS banner. On hold the registry
+  publishes no delegation at all, so `dig quoin.co.in NS` returns nothing
+  and every record you write is invisible, Vercel included. `whois` is
+  what tells you; the DNS editor looks perfectly healthy.
+
+```
+whois quoin.co.in | grep -i clientHold   # empty once released
+dig +short quoin.co.in NS                # the two domaincontrol entries
+dig +short quoin.co.in A                 # exactly one address
+```
+
+Delegation reappeared about nine minutes after the hold lifted.
+
+Then set `SITE_URL` (above) to the canonical origin and redeploy. It is
+optional only on `.vercel.app`: `siteOrigin()` otherwise falls back to
+`VERCEL_PROJECT_PRODUCTION_URL`, which names the deployment rather than
+the site, and `robots.ts`, `sitemap.ts` and every canonical are built from
+it. Update the Google redirect URI and the Razorpay webhook to the new
+host at the same time — both are fixed lists and neither follows a
+redirect.
+
 ## What works on a fresh deploy
 
 **Public, and fully working without an account:** the home storefront,
@@ -301,8 +396,10 @@ would be a promise nothing updates.
 Razorpay, and it needs a live site before it will let you take money — so
 this comes after the domain, not before it. Activation is reviewed by a
 person who opens the URL and looks for terms, privacy, refund, shipping
-and contact pages reachable from the footer. The storefront does not have
-them yet; that is the gating work, not the integration.
+and contact pages reachable from the footer. Those exist — `src/app/(legal)`
+carries terms, privacy, refunds, contact and grievance, all linked from the
+footer — so what gates activation now is the live domain and whatever the
+reviewer asks for, not missing pages.
 
 Until the account is activated, everything below works on the
 `rzp_test_` key pair, so the code path can be finished and exercised end
