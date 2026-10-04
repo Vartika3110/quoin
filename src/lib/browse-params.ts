@@ -78,12 +78,13 @@ export function withParams(
  *
  * `scope` carries the filters a page applies that are *not* in its query
  * string — the department in the path on `/c/[slug]`, the permanent
- * `discountedOnly` on Deals. Without them the second page of a department
- * listing is the second page of the whole catalogue.
+ * `discountedOnly` on Deals, the price floor on Premium. Without them the
+ * second page of a department listing is the second page of the whole
+ * catalogue.
  */
 export function toFetchQuery(
   params: BrowseParams,
-  scope: { category?: string; discountedOnly?: boolean } = {},
+  scope: BrowseScope = {},
 ): string {
   const next = new URLSearchParams();
 
@@ -97,7 +98,39 @@ export function toFetchQuery(
      route parses this string with exactly that function. */
   if (scope.discountedOnly) next.set("offers", "1");
 
+  const floored = floorPrice(params.min, scope.minRupees);
+  if (floored !== undefined) next.set("min", String(floored));
+
   return next.toString();
+}
+
+/**
+ * Filters a listing is permanently under, which are not in its URL.
+ */
+export interface BrowseScope {
+  category?: string;
+  discountedOnly?: boolean;
+  /**
+   * A price floor in rupees, as Premium applies. Clamps rather than
+   * replaces: a customer narrowing to "Above ₹10,000" inside Premium
+   * keeps their own filter, and one picking a band that starts below the
+   * floor gets the floor. Replacing outright would silently discard the
+   * filter they just set; ignoring the scope would let the second page
+   * fall out of the listing they are looking at.
+   */
+  minRupees?: number;
+}
+
+/** The higher of the customer's own minimum and the page's floor. */
+export function floorPrice(
+  userMin: string | undefined,
+  scopeMin: number | undefined,
+): number | undefined {
+  const typed = userMin ? Number(userMin) : undefined;
+  const valid = typed !== undefined && Number.isFinite(typed) ? typed : undefined;
+  if (valid === undefined) return scopeMin;
+  if (scopeMin === undefined) return valid;
+  return Math.max(valid, scopeMin);
 }
 
 /** Toggles a single-select filter: picking the active value clears it. */

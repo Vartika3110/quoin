@@ -42,11 +42,15 @@ const ENTRIES = [
     Icon: Box,
   },
   {
-    /* The premium door is Quoin Pro. There is no separate bespoke-
-       products storefront to point at, and inventing a link to one is
-       worse than sending the same intent — trade pricing, a project
-       manager, the crown — where it is actually served. */
-    href: "/pro",
+    /* `/premium`, not `/pro`. This tile used to open Quoin Pro on the
+       argument that there was no bespoke-products storefront to point at
+       and that sending the intent somewhere real beat inventing a link.
+       The first half was true and the second does not follow: a tile
+       reading "Premium Studio · Bespoke products" that opens a trade
+       *membership* pitch answers a question the customer did not ask, and
+       one they cannot act on either, since nobody has set a membership
+       fee. The storefront now exists. */
+    href: "/premium",
     /* "Premium Studio", not "Architectural Premium Studio". The longer
        name is wider than a 78px card at any size worth setting, so it had
        to be hyphenated to fit — and a label broken mid-word reads worse

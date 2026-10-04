@@ -14,6 +14,7 @@ import {
   SORTS,
   activeFilterCount,
   toFetchQuery,
+  type BrowseScope,
   withParams,
   type BrowseParams,
 } from "@/lib/browse-params";
@@ -73,7 +74,7 @@ export function Browse({
    * read its filters off a prop about chip styling is a fetch that breaks
    * the first time someone wants the chip without the filter.
    */
-  scope?: { category?: string; discountedOnly?: boolean };
+  scope?: BrowseScope;
 }) {
   const { items, page, total, totalPages } = result;
   const activeSort = (params.sort as ProductSort | undefined) ?? "name";
