@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { handler, ok, parseBody } from "@/lib/http";
+import { enforce } from "@/lib/rate-limit";
 import { matchParchaLines } from "@/lib/data/search";
 import { db } from "@/lib/db";
 
@@ -25,6 +26,10 @@ const Body = z.object({
  * someone does before deciding whether to make an account.
  */
 export const POST = handler(async (request) => {
+  /* Forty terms a request, each a catalogue lookup — the `terms` cap
+     above bounds one call, and this bounds how many calls. */
+  enforce("parcha", request);
+
   const { terms } = await parseBody(request, Body);
 
   const matches = await matchParchaLines(terms);

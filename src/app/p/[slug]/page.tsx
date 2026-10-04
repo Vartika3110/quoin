@@ -8,6 +8,9 @@ import { DeliveryCheck } from "@/components/storefront/product/DeliveryCheck";
 import { Gallery } from "@/components/storefront/product/Gallery";
 import { Specs } from "@/components/storefront/product/Specs";
 import { RecordView } from "@/components/storefront/product/RecordView";
+import { JsonLd } from "@/components/analytics/JsonLd";
+import { absolute, breadcrumbSchema, productSchema } from "@/lib/seo";
+import { getProductStock } from "@/lib/data/product-stock";
 import { ProductStickyBar } from "@/components/storefront/product/ProductStickyBar";
 import { Accordion } from "@/components/ui/Accordion";
 import { Badge } from "@/components/ui/Badge";
@@ -96,9 +99,41 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Not found — Quoin" };
+
+  const title = `${product.title} — Quoin`;
+  const description = `${product.title}${product.brand ? ` by ${product.brand}` : ""} on Quoin.`;
+  const path = `/p/${product.slug}`;
+
+  /* A photograph only, and only a real one. A generated illustration is
+     captioned "actual product may vary" everywhere it appears on the
+     site; a social card has no room for that caption, so sharing one as
+     if it were the product would strip the one thing that keeps it
+     honest. Those links fall back to the site-wide card instead. */
+  const image =
+    product.photo && !product.photoIsIllustration ? absolute(product.photo) : undefined;
+
   return {
-    title: `${product.title} — Quoin`,
-    description: `${product.title}${product.brand ? ` by ${product.brand}` : ""} on Quoin.`,
+    title,
+    description,
+    /* Relative, resolved against `metadataBase` in the root layout. This
+       page had no canonical at all, which on a catalogue reachable with
+       filter and tracking query strings is how one product becomes a
+       dozen competing URLs. */
+    alternates: { canonical: path },
+    openGraph: {
+      title,
+      description,
+      url: path,
+      type: "website",
+      siteName: "Quoin",
+      ...(image ? { images: [{ url: image, alt: product.title }] } : {}),
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title,
+      description,
+      ...(image ? { images: [image] } : {}),
+    },
   };
 }
 
@@ -111,14 +146,35 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const [related, categories, serviceAreas] = await Promise.all([
+  const [related, categories, serviceAreas, stock] = await Promise.all([
     getRelatedProducts(product),
     getCategories(),
     listServiceAreas(),
+    /* The same lookup the buy box does, pulled up here so the Product
+       schema's `availability` reports what this page actually shows
+       rather than assuming anything is in stock. */
+    getProductStock([product.slug]),
   ]);
 
   const category = categories.find((c) => c.id === product.categoryId);
   const promise = PROMISE[product.fulfilment];
+
+  /**
+   * The breadcrumb trail, once.
+   *
+   * Rendered visually below *and* emitted as `BreadcrumbList` structured
+   * data from this same array — a second hand-written copy for the schema
+   * is how the two start disagreeing about where a product sits. Every
+   * entry carries an href here, including the product itself, because
+   * schema.org wants a URL per position; the visible trail drops the href
+   * on the last one, since nobody links to the page they are on.
+   */
+  const trail = [
+    { label: "Home", href: "/" },
+    { label: "Categories", href: "/categories" },
+    ...(category ? [{ label: category.title, href: `/c/${category.slug}` }] : []),
+    { label: product.title, href: `/p/${product.slug}` },
+  ];
 
   return (
     <AppShell>
@@ -126,17 +182,25 @@ export default async function ProductPage({
           rail on the home page. */}
       <RecordView product={product} />
 
+      {/* Structured data, from the same rows this page renders. The
+          breadcrumb trail below is the *same array*, so the two can never
+          drift apart — see `breadcrumbSchema`. */}
+      <JsonLd
+        data={productSchema({
+          product,
+          category,
+          /* Not assumed. `getProductStock` is the same lookup the buy box
+             uses, so the schema cannot claim InStock for something this
+             page is showing as out of stock. */
+          inStock: stock[product.slug]?.state === "available",
+        })}
+      />
+      <JsonLd data={breadcrumbSchema(trail)} />
+
       <div className="pt-4 lg:pt-6">
         <div className="mb-4 px-5 lg:px-0">
           <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Categories", href: "/categories" },
-              ...(category
-                ? [{ label: category.title, href: `/c/${category.slug}` }]
-                : []),
-              { label: product.title },
-            ]}
+            items={[...trail.slice(0, -1), { label: product.title }]}
           />
         </div>
 

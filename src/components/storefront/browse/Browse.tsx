@@ -143,6 +143,7 @@ export function Browse({
           <QuickFilters
             basePath={basePath}
             params={params}
+            facets={facets}
             className="mb-4 mt-2"
             hideOffers={hideOffersFilter}
           />

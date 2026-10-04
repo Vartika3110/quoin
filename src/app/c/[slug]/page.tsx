@@ -24,11 +24,29 @@ export async function generateMetadata({ params }: Ctx): Promise<Metadata> {
   const { slug } = await params;
   const category = await getCategoryBySlug(slug);
   if (!category) return { title: "Not found — Quoin" };
+
+  const title = `${category.title} — Quoin`;
+  const description =
+    CATEGORY_DESCRIPTOR[slug] ??
+    `${category.productCount} products in ${category.title} on Quoin.`;
+
   return {
-    title: `${category.title} — Quoin`,
-    description:
-      CATEGORY_DESCRIPTOR[slug] ??
-      `${category.productCount} products in ${category.title} on Quoin.`,
+    title,
+    description,
+    /* Bare `/c/{slug}`, with no query string. A department is reachable
+       with any combination of brand, size, price and sort applied, and
+       every one of those is the same set of products in a different
+       order — without this, each filter combination is a separate URL
+       competing with the others for the same department. */
+    alternates: { canonical: `/c/${slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `/c/${slug}`,
+      type: "website",
+      siteName: "Quoin",
+    },
+    twitter: { card: "summary", title, description },
   };
 }
 

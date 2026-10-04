@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { cartLinesSchema } from "@/lib/cart/line-schema";
 import { handler, ok, parseBody } from "@/lib/http";
+import { enforce } from "@/lib/rate-limit";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { quoteCart } from "@/lib/data/checkout";
@@ -19,6 +20,10 @@ const Body = z.object({ lines: cartLinesSchema });
  * trade pricing.
  */
 export const POST = handler(async (request) => {
+  /* Open to guests, so the only thing bounding it is this. Re-pricing a
+     basket is several catalogue queries per call. */
+  enforce("quote", request);
+
   const { lines } = await parseBody(request, Body);
 
   const session = await getSession();
