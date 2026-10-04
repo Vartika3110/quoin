@@ -97,7 +97,7 @@ export function OrderCard({ order }: { order: OrderSummary }) {
           {order.thumbnails.map((thumb) => (
             <span
               key={thumb.productSlug}
-              className="block size-11 shrink-0 overflow-hidden rounded-lg border border-line-soft bg-photo"
+              className="relative block size-11 shrink-0 overflow-hidden rounded-lg border border-line-soft bg-photo"
             >
               <ProductImage photo={thumb.photo} swatchKey={thumb.swatchKey} label={thumb.title} className="size-full" />
             </span>

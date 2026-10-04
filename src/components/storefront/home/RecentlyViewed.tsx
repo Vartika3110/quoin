@@ -35,7 +35,7 @@ export function RecentlyViewed() {
             href={`/p/${item.slug}`}
             className="group w-32 shrink-0"
           >
-            <span className="block aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
+            <span className="relative block aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
               <ProductImage
                 photo={item.photo}
                 swatchKey={item.image}

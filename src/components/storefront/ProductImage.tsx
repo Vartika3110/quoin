@@ -64,6 +64,20 @@ export function ProductImage({
          was a 1024px original downloaded for a 200px tile and upscaled
          on any screen denser than 1x, which is what "the pixels are
          breaking" looks like. */
+      /* `fill` makes this `position: absolute; inset: 0`, so **the caller's
+         container must be positioned** — `relative` on the element this is
+         placed inside. Without it the image is laid out against whatever
+         positioned ancestor it finds, which is usually the page: the tile
+         then renders at the photograph's own size in the top-left corner,
+         and the container's `overflow-hidden` cannot clip it because the
+         containing block is somewhere else entirely.
+ 
+         This is not hypothetical. Eight call sites shipped without it —
+         the home page's "Where you left off" rail among them, which put a
+         720px cement bag across the top of the home page. The failure is
+         silent in review because a product whose photograph is a third
+         party's takes the plain `<img>` branch below, which is statically
+         positioned and looks correct. */
       <NextImage
         src={photo}
         alt={label}

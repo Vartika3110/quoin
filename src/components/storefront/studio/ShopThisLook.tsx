@@ -47,7 +47,7 @@ export function ShopThisLook({ look }: { look: ShopTheLook }) {
                   href={`/p/${match.slug}`}
                   className="flex items-center gap-3 rounded-card border border-line-soft bg-surface p-2.5 outline-none transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-accent"
                 >
-                  <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-md border border-photo-edge bg-photo">
+                  <span className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-md border border-photo-edge bg-photo">
                     <ProductImage
                       photo={match.photo}
                       swatchKey={match.image}

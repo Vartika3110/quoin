@@ -313,7 +313,7 @@ function ShopRail({ idea }: { idea: IdeaView }) {
                   href={`/p/${match.slug}`}
                   className="group/p flex items-center gap-3 rounded-xl border border-line-soft bg-surface p-2 transition-colors hover:border-line"
                 >
-                  <div className="size-14 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo">
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo">
                     <ProductImage
                       photo={match.photo}
                       swatchKey={match.image}

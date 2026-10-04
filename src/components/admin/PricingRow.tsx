@@ -75,7 +75,7 @@ export function PricingRow({ product }: { product: UnpricedProduct }) {
         done ? "border-success/40 bg-success/5" : "border-line-soft bg-surface"
       }`}
     >
-      <div className="size-20 shrink-0 overflow-hidden rounded-tile bg-raised">
+      <div className="relative size-20 shrink-0 overflow-hidden rounded-tile bg-raised">
         <ProductImage
           photo={product.photo}
           swatchKey={product.image}

@@ -52,7 +52,7 @@ export function ProductRow({
         href={`/p/${product.slug}`}
         className="group flex items-center gap-4 px-5 py-3 transition-colors hover:bg-hover lg:px-3"
       >
-        <span className="size-14 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo">
+        <span className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo">
           <ProductImage
             photo={product.photo}
             swatchKey={product.image}

@@ -135,7 +135,7 @@ function MaterialRow({
 
       <Link
         href={`/p/${line.product.slug}`}
-        className="size-12 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo"
+        className="relative size-12 shrink-0 overflow-hidden rounded-lg border border-photo-edge bg-photo"
       >
         <ProductImage
           photo={line.product.photo}

@@ -85,7 +85,7 @@ export function Gallery({ product }: { product: Product }) {
               aria-label={`Show image ${i + 1}`}
               aria-current={i === index}
               className={cn(
-                "size-16 shrink-0 overflow-hidden rounded-lg border bg-photo transition-colors",
+                "relative size-16 shrink-0 overflow-hidden rounded-lg border bg-photo transition-colors",
                 i === index ? "border-accent" : "border-photo-edge hover:border-line",
               )}
             >
