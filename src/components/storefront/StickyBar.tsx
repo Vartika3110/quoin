@@ -135,7 +135,7 @@ export function StickyBar({
     <div
       className={cn(
         "fixed bottom-0 z-30",
-        floating ? "inset-x-3" : "inset-x-0",
+        floating ? "inset-x-6" : "inset-x-0",
         /* Opaque by default, glass only where the browser can actually
            blur. This used to be `bg-bg/95 backdrop-blur-xl` unconditionally,
            and the 5% was not free: wherever `backdrop-filter` does not

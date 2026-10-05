@@ -147,11 +147,11 @@ function Chip({
         /* Matches `Cell` in BrowseActionBar exactly — same height, same
            stack, same weight, same active colour — because they are the
            same row. */
-        "flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-micro font-medium transition-colors active:bg-hover disabled:opacity-40",
+        "flex h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-micro font-medium transition-colors active:bg-hover disabled:opacity-40",
         active ? "text-accent" : "text-ink",
       )}
     >
-      <Icon className="size-5 shrink-0" />
+      <Icon className="size-4.5 shrink-0" />
       <span className="w-full truncate px-0.5 text-center">{label}</span>
     </button>
   );

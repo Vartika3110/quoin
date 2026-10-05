@@ -65,7 +65,7 @@ export function BrowseActionBar({
         activeSort={activeSort}
         trigger={(open) => (
           <Cell onClick={open}>
-            <Sort className="size-5" />
+            <Sort className="size-4.5" />
             Sort
           </Cell>
         )}
@@ -85,7 +85,7 @@ export function BrowseActionBar({
             activeCount={activeCount}
             trigger={(open) => (
               <Cell onClick={open} active={activeCount > 0}>
-                <Sliders className="size-5" />
+                <Sliders className="size-4.5" />
                 Filters
                 {activeCount > 0 && <Counter value={activeCount} />}
               </Cell>
@@ -125,7 +125,7 @@ function Cell({
            phone leaves about 70px each; inline, the words truncate.
            Stacked, each one gets its full label and the row reads as a
            toolbar rather than a sentence. */
-        "flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl text-micro font-medium transition-colors active:bg-hover",
+        "flex h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-micro font-medium transition-colors active:bg-hover",
         active ? "text-accent" : "text-ink",
       )}
     >
