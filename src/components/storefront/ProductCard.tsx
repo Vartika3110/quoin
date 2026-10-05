@@ -151,10 +151,22 @@ export function ProductCard({
       <div className="relative aspect-4/5 overflow-hidden rounded-card border border-photo-edge bg-photo">
         <Link href={`/p/${product.slug}`} className="block size-full">
           <ProductImage
-            /* Fills the 4:5 tile. Catalogue art is square and carries its
-               own pale backdrop, so `contain` drew a lighter rectangle
-               inside the card with a visible seam top and bottom. */
-            fit="cover"
+            /* Cover the generated art, contain the photographs.
+ 
+               The two kinds of picture in this catalogue want opposite
+               treatment in a 4:5 tile. Generated art is square, composed
+               with the product centred and a wide pale-grey backdrop
+               around it — `contain` left a white strip top and bottom
+               that read as a second, lighter rectangle inside the card,
+               which is the seam this fixes, and the tenth of the height
+               `cover` takes off each edge is backdrop.
+ 
+               A manufacturer's photograph is none of those things. They
+               arrive at whatever shape the catalogue page they were
+               cropped from happened to be, often landscape, and filling
+               a portrait tile with one cuts a bathtub off at both ends.
+               Those keep `contain` and keep their bands. */
+            fit={product.photoIsIllustration ? "cover" : "contain"}
             photo={product.photo}
             swatchKey={product.image}
             label={product.title}
