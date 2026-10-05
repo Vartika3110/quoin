@@ -26,41 +26,47 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    remotePatterns: supabaseHost
-      ? [
-          {
-            protocol: "https",
-            hostname: supabaseHost,
-            pathname: "/storage/v1/object/public/**",
-          },
-        ]
-      : [
-          /* The fallback, and the reason it exists.
+    /* Two patterns, and the second is not a fallback.
  
-             With `SUPABASE_URL` absent at build time this list was empty,
-             which makes the optimiser reject every catalogue image with a
-             400 — about 1,286 products, 41% of the shelf, blank in
-             production while the bucket served them perfectly. It is the
-             failure the note above predicted, and it happened anyway:
-             the variable was present in the project's environment and
-             still did not reach the build, which is a thing that cannot
-             be diagnosed from the symptom.
+       The first pins the project named by `SUPABASE_URL`, which is what a
+       correctly configured deployment should be serving. The second
+       admits the public read path of any Supabase project, and it is
+       unconditional on purpose.
  
-             So the empty list is no longer a state this config can be in.
-             Narrowed the same way the exact-host pattern is — to the
-             public object path, never the signed URLs the private uploads
-             bucket mints — so the widening is from "one Supabase project"
-             to "the public read path of any Supabase project", on a URL
-             that only this application's own data can produce.
+       It was a fallback for one deploy, reachable only when
+       `SUPABASE_URL` was absent, and that did not fix anything — because
+       the variable is *present* in production and the optimiser still
+       rejected every catalogue image with a 400. Present but not
+       matching: the host it names is not the host the catalogue rows
+       actually point at. A conditional fallback is never reached in that
+       state, which is the state production is in.
  
-             A correctly configured deployment never reaches this branch
-             and stays pinned to its own host. */
-          {
-            protocol: "https",
-            hostname: "*.supabase.co",
-            pathname: "/storage/v1/object/public/**",
-          },
-        ],
+       The cost of getting this wrong is the whole shelf. About 1,286
+       products — 41% of the catalogue — rendered as "Photo coming soon"
+       in production while the bucket served the identical files to
+       anyone who asked it directly, and nothing anywhere logged an
+       error. The cost of the wider pattern is that the optimiser will
+       fetch a public object from a Supabase project that is not ours, on
+       a URL only this application's own catalogue rows can produce.
+ 
+       Narrowed in the way that matters either way: `/object/public/**`
+       only, never the signed URLs the private uploads bucket mints. */
+    remotePatterns: [
+      ...(supabaseHost
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseHost,
+              pathname: "/storage/v1/object/public/**",
+            },
+          ]
+        : []),
+      {
+        protocol: "https" as const,
+        hostname: "*.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 };
 
