@@ -71,6 +71,20 @@ const KNOWN_MAKERS = [
   "Prestige", "Usha", "Luminous", "Syska", "Wipro", "Hafele", "Cera",
   "Hindware", "Nerolac", "Berger", "Dulux", "Karcher", "Taparia", "Kajaria",
   "Bharat", "Elica", "Faber", "V-Guard", "Anchor", "Sujata", "Symphony",
+  /* Added after reading the house-brand bucket rather than guessing at
+     it. The first pass sent 128 rows to the house brand, and most of them
+     were not generic stock at all — they were CP Plus cameras, Dongcheng
+     hammers, Loctite adhesive and Futura fittings, which the list simply
+     did not know. Putting the house name on those asserts the house made
+     somebody else's NVR, which is the precise failure the note above this
+     list warns about. Each of these was read off the plan and is
+     unambiguous at the front of a product name. */
+  "CP Plus", "D-Link", "Dongcheng", "Loctite", "Futura", "VIP", "Dowells",
+  "Fosroc", "Freemans", "Zebronics", "Nirali", "Evion", "Jascom", "Dowsil",
+  "Powerbilt", "Crown", "Hikvision", "Legrand", "Havells", "Polycab",
+  "Finolex", "Philips", "Orient", "Crompton", "Bajaj", "Godrej", "Kohler",
+  "Parryware", "Jaquar", "Astral", "Supreme", "Ashirvad", "Pidilite",
+  "Araldite", "Fevicol", "3M", "Asian Paints",
 ];
 
 /**
