@@ -34,7 +34,33 @@ const nextConfig: NextConfig = {
             pathname: "/storage/v1/object/public/**",
           },
         ]
-      : [],
+      : [
+          /* The fallback, and the reason it exists.
+ 
+             With `SUPABASE_URL` absent at build time this list was empty,
+             which makes the optimiser reject every catalogue image with a
+             400 — about 1,286 products, 41% of the shelf, blank in
+             production while the bucket served them perfectly. It is the
+             failure the note above predicted, and it happened anyway:
+             the variable was present in the project's environment and
+             still did not reach the build, which is a thing that cannot
+             be diagnosed from the symptom.
+ 
+             So the empty list is no longer a state this config can be in.
+             Narrowed the same way the exact-host pattern is — to the
+             public object path, never the signed URLs the private uploads
+             bucket mints — so the widening is from "one Supabase project"
+             to "the public read path of any Supabase project", on a URL
+             that only this application's own data can produce.
+ 
+             A correctly configured deployment never reaches this branch
+             and stays pinned to its own host. */
+          {
+            protocol: "https",
+            hostname: "*.supabase.co",
+            pathname: "/storage/v1/object/public/**",
+          },
+        ],
   },
 };
 
