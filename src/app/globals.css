@@ -392,9 +392,9 @@
      Three families, each with one job. `sans` carries everything a
      customer reads; `display` is the wordmark and editorial headings;
      `script` is the one handwritten line on a banner and nothing else. */
-  --font-sans: var(--font-jakarta);
-  --font-display: var(--font-fraunces);
-  --font-script: var(--font-caveat);
+  /* Declared by `next/font` in src/app/layout.tsx. One superfamily:
+     Plex Sans for everything a customer reads, Plex Serif for the
+     wordmark and page titles. */
 
   /* 11px. Legal lines, unit suffixes, the count on a tab. Never a
      sentence — this size exists to be adjacent to something, not read. */
@@ -534,7 +534,7 @@ body {
   overflow-x: clip;
   background: var(--quoin-bg);
   color: var(--quoin-text);
-  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Proportional figures read better in prose, but prices, quantities and
@@ -575,19 +575,8 @@ body {
    interpolated from the font size by the browser only in some engines,
    so the headline sizes set it explicitly where it matters. */
 .font-display {
-  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-family: var(--font-display), ui-serif, Georgia, serif;
   font-feature-settings: "liga" 1, "dlig" 1;
-}
-
-/* One line per banner, and nothing else. A handwritten face is a voice,
-   not a weight — the moment a second thing on a screen uses it, neither
-   is special and the page reads as a greetings card. */
-.font-script {
-  font-family: var(--font-caveat), ui-rounded, cursive;
-  font-weight: 600;
-  /* Caveat sits small on its em box beside a sans of the same size, so
-     it is set one step up wherever it is paired with one. */
-  line-height: 1.15;
 }
 
 /* Numbers that must align down a column: prices, quantities, budgets. */
