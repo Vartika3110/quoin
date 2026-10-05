@@ -22,6 +22,7 @@ export function ProductImage({
   brand,
   sizes = "(min-width: 1024px) 220px, 45vw",
   className = "",
+  fit = "contain",
 }: {
   photo?: string;
   swatchKey: string;
@@ -34,6 +35,24 @@ export function ProductImage({
       and says so. */
   sizes?: string;
   className?: string;
+  /**
+   * How the photograph sits in its box.
+   *
+   * `contain` is the default and the right one wherever the whole product
+   * must be visible — the gallery on a product page, a cart line, a
+   * materials list. Nothing is cropped and the box shows letterbox bands
+   * where the source's shape differs from the frame's.
+   *
+   * `cover` is for the grid, where those bands are the defect. Catalogue
+   * art is square and the tile is 4:5, so `contain` draws a white strip
+   * above and below every photograph — and because the generated images
+   * carry their own pale-grey studio backdrop, the strip reads as a
+   * second, lighter rectangle inside the card rather than as empty space.
+   * Filling the box removes the seam. It costs a tenth of the image's
+   * height at the top and bottom, which is backdrop on a catalogue shot
+   * composed with the product centred.
+   */
+  fit?: "contain" | "cover";
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -86,7 +105,7 @@ export function ProductImage({
         loading="lazy"
         decoding="async"
         onError={() => setFailed(true)}
-        className={`object-contain ${className}`}
+        className={`${fit === "cover" ? "object-cover" : "object-contain"} ${className}`}
       />
     );
   }
@@ -104,7 +123,7 @@ export function ProductImage({
       decoding="async"
       referrerPolicy="no-referrer"
       onError={() => setFailed(true)}
-      className={`object-contain ${className}`}
+      className={`${fit === "cover" ? "object-cover" : "object-contain"} ${className}`}
     />
   );
 }

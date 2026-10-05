@@ -151,6 +151,10 @@ export function ProductCard({
       <div className="relative aspect-4/5 overflow-hidden rounded-card border border-photo-edge bg-photo">
         <Link href={`/p/${product.slug}`} className="block size-full">
           <ProductImage
+            /* Fills the 4:5 tile. Catalogue art is square and carries its
+               own pale backdrop, so `contain` drew a lighter rectangle
+               inside the card with a visible seam top and bottom. */
+            fit="cover"
             photo={product.photo}
             swatchKey={product.image}
             label={product.title}
