@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Drawer } from "@/components/ui/Drawer";
-import { Check, ChevronDown } from "@/components/icons";
+import { Check, Ruler, Rupee, Tag } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import { PRICING_UNIT_LABEL, type PricingUnit } from "@/lib/types/catalog";
 import type { ProductFacets } from "@/lib/data/catalog";
@@ -62,17 +62,20 @@ export function FilterChipRow({
           bar reads as one strip of five controls rather than a bar with
           something bolted on. */}
       <Chip
-          label={brandLabel ?? "Brands"}
-          active={Boolean(params.brand)}
-          onClick={() => setOpen("brand")}
-        />
+        Icon={Tag}
+        label={brandLabel ?? "Brands"}
+        active={Boolean(params.brand)}
+        onClick={() => setOpen("brand")}
+      />
       <Chip
+        Icon={Ruler}
         label={unitLabel ?? "Size"}
         active={Boolean(params.unit)}
         onClick={() => setOpen("unit")}
         disabled={facets.pricingUnits.length <= 1}
       />
       <Chip
+        Icon={Rupee}
         label={activeBucket?.label ?? "Price"}
         active={priceActive}
         onClick={() => setOpen("price")}
@@ -123,11 +126,13 @@ export function FilterChipRow({
 }
 
 function Chip({
+  Icon,
   label,
   active,
   disabled = false,
   onClick,
 }: {
+  Icon: (props: { className?: string }) => ReactNode;
   label: string;
   active: boolean;
   disabled?: boolean;
@@ -139,14 +144,15 @@ function Chip({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        /* Matches `Cell` in BrowseActionBar — same height, same weight,
-           same active colour — because they are now the same row. */
-        "flex h-13 flex-1 items-center justify-center gap-1 px-1 text-caption font-medium transition-colors active:bg-hover disabled:opacity-40",
+        /* Matches `Cell` in BrowseActionBar exactly — same height, same
+           stack, same weight, same active colour — because they are the
+           same row. */
+        "flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 text-micro font-medium transition-colors active:bg-hover disabled:opacity-40",
         active ? "text-accent" : "text-ink",
       )}
     >
-      <span className="truncate">{label}</span>
-      <ChevronDown className="size-3.5 shrink-0" />
+      <Icon className="size-5 shrink-0" />
+      <span className="w-full truncate px-0.5 text-center">{label}</span>
     </button>
   );
 }

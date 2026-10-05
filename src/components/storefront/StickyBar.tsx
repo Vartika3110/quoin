@@ -90,10 +90,23 @@ export function useStickyBarTaken(): boolean {
 export function StickyBar({
   children,
   className,
+  floating = false,
   padded = true,
 }: {
   children: ReactNode;
   className?: string;
+  /**
+   * Lifts the bar off the screen edge as a rounded card with a shadow,
+   * instead of a full-bleed strip ruled off by a top border.
+   *
+   * For the browse bar only, where the strip is a *toolbar* — five
+   * controls that act on the grid behind it — rather than a statement
+   * about the page, which is what the cart's total and the product
+   * page's price are. A toolbar that floats reads as sitting on top of
+   * the content it filters; a ruled strip reads as the bottom of the
+   * document. The others keep the strip.
+   */
+  floating?: boolean;
   /**
    * `false` for a bar whose children are the full-bleed targets — the
    * browse bar's two 52px halves, which meet at a divider and run to both
@@ -121,7 +134,8 @@ export function StickyBar({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 z-30",
+        "fixed bottom-0 z-30",
+        floating ? "inset-x-3" : "inset-x-0",
         /* Opaque by default, glass only where the browser can actually
            blur. This used to be `bg-bg/95 backdrop-blur-xl` unconditionally,
            and the 5% was not free: wherever `backdrop-filter` does not
@@ -135,7 +149,10 @@ export function StickyBar({
            browser that honours it and guarantees a readable price on the
            ones that do not, which is the right way round for a bar whose
            whole job is to state an amount. */
-        "flex items-center border-t border-line-soft bg-bg",
+        "flex items-center bg-bg",
+        floating
+          ? "rounded-2xl border border-line-soft shadow-lg"
+          : "border-t border-line-soft",
         "supports-[backdrop-filter]:bg-bg/95 supports-[backdrop-filter]:backdrop-blur-xl",
         /* The home indicator is added to whatever bottom padding the bar
            already has, rather than applied by a `.safe-bottom-0` class
@@ -147,7 +164,12 @@ export function StickyBar({
            `[...]`, and `_` is how it writes one. */
         padded
           ? "gap-3 px-4 pt-3 pb-[calc(0.75rem_+_env(safe-area-inset-bottom))]"
-          : "pb-[env(safe-area-inset-bottom)]",
+          : floating
+            /* The card clears the home indicator rather than padding
+               itself into it — a floating bar with the inset inside it
+               has a dead strip along its bottom edge. */
+            ? "mb-[calc(0.5rem_+_env(safe-area-inset-bottom))] px-1"
+            : "pb-[env(safe-area-inset-bottom)]",
         "lg:hidden",
         className,
       )}

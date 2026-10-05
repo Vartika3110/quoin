@@ -58,14 +58,14 @@ export function BrowseActionBar({
   facets: ProductFacets;
 }) {
   return (
-    <StickyBar padded={false}>
+    <StickyBar padded={false} floating>
       <SortSheet
         basePath={basePath}
         params={params}
         activeSort={activeSort}
         trigger={(open) => (
           <Cell onClick={open}>
-            <Sort className="size-4.5" />
+            <Sort className="size-5" />
             Sort
           </Cell>
         )}
@@ -73,8 +73,6 @@ export function BrowseActionBar({
 
       {showFilters && (
         <>
-          <span aria-hidden className="h-6 w-px shrink-0 bg-line-soft" />
-
           {/* Brand, Size and Price, in the bar rather than above the
               grid. They each open a sheet that rises from this edge of
               the screen, so this is where the control that opens it
@@ -87,7 +85,7 @@ export function BrowseActionBar({
             activeCount={activeCount}
             trigger={(open) => (
               <Cell onClick={open} active={activeCount > 0}>
-                <Sliders className="size-4.5" />
+                <Sliders className="size-5" />
                 Filters
                 {activeCount > 0 && <Counter value={activeCount} />}
               </Cell>
@@ -123,7 +121,11 @@ function Cell({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex h-13 flex-1 items-center justify-center gap-2 text-caption font-medium transition-colors active:bg-hover",
+        /* Icon over label, not beside it. Five controls across a 390px
+           phone leaves about 70px each; inline, the words truncate.
+           Stacked, each one gets its full label and the row reads as a
+           toolbar rather than a sentence. */
+        "flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-xl text-micro font-medium transition-colors active:bg-hover",
         active ? "text-accent" : "text-ink",
       )}
     >
