@@ -8,27 +8,17 @@ import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CatalogTabs } from "@/components/storefront/home/CatalogTabs";
 import { QuickActions } from "@/components/storefront/home/QuickActions";
-import { Rooms } from "@/components/storefront/home/Rooms";
-import { CategoryRail } from "@/components/storefront/home/CategoryRail";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
-import { ProAndCart } from "@/components/storefront/home/ProAndCart";
 import { RecentlyViewed } from "@/components/storefront/home/RecentlyViewed";
-import { TrustBar, TrustStrip } from "@/components/storefront/home/TrustBar";
+import { TrustBar } from "@/components/storefront/home/TrustBar";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
-import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
+import { BrandRail } from "@/components/storefront/home/BrandWall";
 import { StudioRow } from "@/components/storefront/home/StudioRow";
-import {
-  FinalCta,
-  ParchaPromo,
-  ProjectHubPromo,
-  ProPromo,
-} from "@/components/storefront/home/Promos";
 import { Gutter, PageSections, SectionHead, hasEnough } from "@/components/ui/Section";
 import {
   getCategories,
   getCategoryPriceFloors,
   getTopPicks,
-  listDiscountedProducts,
 } from "@/lib/data/catalog";
 import { listServices } from "@/lib/data/services";
 import { listTopRooms } from "@/lib/data/studio";
@@ -70,16 +60,12 @@ export const dynamic = "force-dynamic";
  * the two products — Project Hub and Pro — that make it more than a shop.
  */
 export default async function HomePage() {
-  const [categories, picks, priceFloors, services, deals, rooms, chosen, serviceAreas] =
+  const [categories, picks, priceFloors, services, rooms, chosen, serviceAreas] =
     await Promise.all([
       getCategories(),
       getTopPicks(),
       getCategoryPriceFloors(),
       listServices(),
-      /* Only rendered if there is anything in it. Both catalogue imports
-         set MRP equal to the sell price, so this is usually empty — and a
-         "Deals for you" rail with nothing in it is worse than no rail. */
-      listDiscountedProducts(1, 10),
       /* Six: five for the row and one spare, so the hero's picture is
          the best-saved room and the row beneath it still has five. */
       listTopRooms(6),
@@ -132,47 +118,25 @@ export default async function HomePage() {
             <Hero chosen={chosen} areas={serviceAreas.map((a) => a.name)} />
           </div>
 
-          {/* Reassurance immediately under the banner, where the design
-              puts it, then the brands. Both were at the foot of the page
-              and were doing nothing for anyone who never got there. */}
-          <TrustStrip />
-
-          <section>
-            <SectionHead
-              title="Top Brands"
-              subtitle="Bought direct, priced from the manufacturer's own list."
-              href="/products"
-              linkLabel="View all"
-            />
-            <BrandRail />
-            <Gutter>
-              <BrandWall />
-            </Gutter>
-          </section>
-
-          {/* The four *verbs*, below the fold. The entry cards above are
-              the four places; this is the four things to do in them, and
-              on a phone it is the row you scroll back to rather than the
-              one you land on. */}
+          {/* The four verbs. The entry cards in the header slot are the
+              four *places*; this is the four things to do in them, and it
+              is the first thing under the hero because it is the answer
+              to "what can I do here". */}
           <QuickActions />
 
-          {/* Shop by Category and Shop by Department are the same data
-              asked two different questions, which is why they are two
-              sections and not one with a "see all".
+          {/* One categories block, not three.
 
-              **Category** is four cards with a price floor on them —
-              "can I start here for ₹380". **Department** is all fourteen
-              as thumbnails — "do you stock this at all". The first is a
-              decision, the second is an index, and a reader uses exactly
-              one of them.
-
-              From `lg` the first becomes six photographic tiles, where
-              there is room for the picture to do the selling, and the
-              second is dropped: the header's own category menu already
-              lists all fourteen at that width. */}
+              This page carried Shop by Category (four priced cards), Shop
+              by Department (all fourteen as a rail) and Plan by Room
+              (eight rooms) — the same catalogue asked three ways, in three
+              different shapes, within one scroll. A reader used one of
+              them and paid attention past the other two. The header's
+              category menu already holds the full index at every width,
+              so the index is where it belongs and this is the decision:
+              a few departments, with what it costs to start in each. */}
           <section>
             <SectionHead
-              title="Shop by Category"
+              title="Shop by category"
               subtitle="Priced from the manufacturer's own list."
               href="/categories"
             />
@@ -188,12 +152,7 @@ export default async function HomePage() {
                     key={category.id}
                     category={category}
                     fill
-                    /* Landscape, which at a quarter of the 1400px column
-                       is about 240px tall — deep enough for the scrim and
-                       two lines of type, shallow enough that two rows do
-                       not own the screen. */
                     ratio="landscape"
-                    /* The first row is above the fold on a desktop. */
                     priority={i < 4}
                     descriptor={CATEGORY_DESCRIPTOR[category.slug]}
                     caption={
@@ -207,25 +166,31 @@ export default async function HomePage() {
             </div>
           </section>
 
-          {/* Four or nothing — see `hasEnough`. This section renders one
-              product today, under a heading that says "Project
-              Essentials", which does not read as a small selection; it
-              reads as a query that failed, and it makes every other
-              number on the page look unreliable. */}
+          {/* Brands are navigation in this trade, not decoration — people
+              arrive wanting Jaquar or UltraTech by name. The rail stays
+              and the logo wall under it does not: two components for one
+              row of marks, the second of which was a grid of logos with
+              nothing to click through to that the rail does not already
+              reach. */}
+          <section>
+            <SectionHead title="Shop by brand" href="/products" linkLabel="All brands" />
+            <BrandRail />
+          </section>
+
+          {/* Where you were. Client-rendered and renders nothing at all on
+              a first visit, which is why it sits this high: on a return
+              visit it is the most useful thing on the page, and on a
+              first visit it costs nothing. */}
+          <RecentlyViewed />
+
           {hasEnough(picks) && (
             <section>
               <SectionHead
-                title="Project Essentials"
+                title="Project essentials"
                 subtitle="Photographed lines from across the catalogue."
                 href="/products"
                 linkLabel="View all"
               />
-              {/* A rail on a phone, a grid from `lg`.
-
-                  `.rail` is flex and its children refuse to shrink, so
-                  the cards carry their own width there; `lg:grid`
-                  overrides the display and `fill` is not passed, which is
-                  why the card's own `lg:w-auto` exists. */}
               <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-6">
                 {picks.map((product) => (
                   <ProductCard key={product.id} product={product} />
@@ -234,35 +199,15 @@ export default async function HomePage() {
             </section>
           )}
 
-          {/* The index. Phone only — see the note on Shop by Category. */}
-          <section className="lg:hidden">
-            <SectionHead
-              title="Shop by Department"
-              subtitle={`All ${categories.length} departments.`}
-              href="/categories"
-              linkLabel="View all"
-            />
-            <CategoryRail categories={categories} />
-          </section>
-
-          {/* Pro and the basket share a row on a phone; from `lg` the Pro
-              pitch gets the full-width band below and the basket is
-              permanently in the header, so neither belongs here. */}
-          <ProAndCart />
-
           <section>
             <SectionHead
-              title="Plan by Room"
-              subtitle="Start from the space you are working on."
-              href="/categories"
-              linkLabel="All departments"
+              title="Expert services"
+              subtitle="Verified professionals, booked against a real slot."
+              href="/services"
             />
-            <Rooms />
+            <ServicesRow services={services.slice(0, 4)} />
           </section>
 
-          {/* Four or nothing again: five image cards is the shape, and a
-              Studio row of two rooms is an advertisement for how empty
-              Studio is. */}
           {hasEnough(rooms) && (
             <section>
               <SectionHead
@@ -275,54 +220,25 @@ export default async function HomePage() {
             </section>
           )}
 
-          {hasEnough(deals.items) && (
-            <section>
-              <SectionHead
-                title="Under List Price"
-                subtitle="Everything currently selling below its manufacturer list."
-                href="/deals"
-              />
-              <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-6">
-                {deals.items.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </section>
-          )}
+          {/* One trust block, at the end.
 
-          {/* Client-rendered, and renders nothing on a first visit. */}
-          <RecentlyViewed />
+              There were two — a strip under the hero and this bar at the
+              foot — saying the same four things twice on one scroll. The
+              strip went: reassurance belongs where a reader has seen
+              enough to want it, not between the headline and the first
+              thing to do.
 
-          <Gutter>
-            <ProjectHubPromo />
-          </Gutter>
-
-          <section>
-            <SectionHead
-              title="Expert Services"
-              subtitle="Verified professionals, booked against a real slot."
-              href="/services"
-            />
-            <ServicesRow services={services.slice(0, 4)} />
-          </section>
-
-          <Gutter>
-            <ParchaPromo />
-          </Gutter>
-
-          {/* Phone gets the compact pair above instead — two Pro pitches
-              on one page is one of them being ignored. */}
-          <Gutter className="hidden lg:block">
-            <ProPromo />
-          </Gutter>
-
+              Everything else that stood here was a promotion. Project Hub,
+              Parcha and Pro each had a full-width pitch, Pro had two, and
+              a "final CTA" closed the page — five blocks selling four
+              destinations that `QuickActions` and the header already link
+              to. A product's home page is not a landing page, and a
+              reader who has scrolled this far has been given somewhere to
+              go six times already. */}
           <Gutter>
             <TrustBar />
           </Gutter>
 
-          <Gutter>
-            <FinalCta />
-          </Gutter>
         </PageSections>
       </div>
     </AppShell>
