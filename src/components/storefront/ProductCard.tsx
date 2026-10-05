@@ -140,33 +140,24 @@ export function ProductCard({
         fill ? "w-full" : "w-[40vw] max-w-52 lg:w-auto lg:max-w-none",
       )}
     >
-      {/* Portrait, not square.
+      {/* Square, and square for a reason rather than by default.
  
-          Almost everything in this catalogue is taller than it is wide —
-          a 50kg cement sack, a pillar cock, a shower panel, a tin of
-          primer — and `object-contain` in a square box letterboxes all of
-          them, so the product is drawn small with white down both sides.
-          4:5 gives the shape back its height and the tile stops looking
-          like a stamp in the middle of a card. */}
-      <div className="relative aspect-4/5 overflow-hidden rounded-card border border-photo-edge bg-photo">
+          A 4:5 tile was the obvious answer to "the bags look small" and
+          it cost more than it bought. The catalogue holds two kinds of
+          picture: generated art, which is square, and manufacturer
+          photographs cropped off catalogue pages, which are usually
+          landscape. A portrait tile letterboxes a landscape photograph to
+          about sixty percent of its own height — the bathtub sat in the
+          middle of the card with a band of empty paper above and below it
+          — and it does not fit the square art either.
+ 
+          Square fits the generated art exactly: same shape in, same shape
+          out, nothing cropped and no band at all. A landscape photograph
+          still bands, but by a quarter rather than two fifths. It is the
+          ratio that is wrong for the fewest pictures. */}
+      <div className="relative aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
         <Link href={`/p/${product.slug}`} className="block size-full">
           <ProductImage
-            /* Cover the generated art, contain the photographs.
- 
-               The two kinds of picture in this catalogue want opposite
-               treatment in a 4:5 tile. Generated art is square, composed
-               with the product centred and a wide pale-grey backdrop
-               around it — `contain` left a white strip top and bottom
-               that read as a second, lighter rectangle inside the card,
-               which is the seam this fixes, and the tenth of the height
-               `cover` takes off each edge is backdrop.
- 
-               A manufacturer's photograph is none of those things. They
-               arrive at whatever shape the catalogue page they were
-               cropped from happened to be, often landscape, and filling
-               a portrait tile with one cuts a bathtub off at both ends.
-               Those keep `contain` and keep their bands. */
-            fit={product.photoIsIllustration ? "cover" : "contain"}
             photo={product.photo}
             swatchKey={product.image}
             label={product.title}
