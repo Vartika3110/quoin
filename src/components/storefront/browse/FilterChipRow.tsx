@@ -57,24 +57,26 @@ export function FilterChipRow({
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-2 px-5 lg:hidden">
-        <Chip
+      {/* No wrapper and no padding: these are mounted straight into
+          `BrowseActionBar`'s flex row, between Sort and Filters, so the
+          bar reads as one strip of five controls rather than a bar with
+          something bolted on. */}
+      <Chip
           label={brandLabel ?? "Brands"}
           active={Boolean(params.brand)}
           onClick={() => setOpen("brand")}
         />
-        <Chip
-          label={unitLabel ?? "Size"}
-          active={Boolean(params.unit)}
-          onClick={() => setOpen("unit")}
-          disabled={facets.pricingUnits.length <= 1}
-        />
-        <Chip
-          label={activeBucket?.label ?? "Price"}
-          active={priceActive}
-          onClick={() => setOpen("price")}
-        />
-      </div>
+      <Chip
+        label={unitLabel ?? "Size"}
+        active={Boolean(params.unit)}
+        onClick={() => setOpen("unit")}
+        disabled={facets.pricingUnits.length <= 1}
+      />
+      <Chip
+        label={activeBucket?.label ?? "Price"}
+        active={priceActive}
+        onClick={() => setOpen("price")}
+      />
 
       <FacetSheet
         title="Filter by brand"
@@ -137,10 +139,10 @@ function Chip({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "flex min-h-11 items-center justify-center gap-1 rounded-xl border px-2 text-caption font-semibold transition-colors disabled:opacity-40",
-        active
-          ? "border-accent bg-accent-wash text-accent"
-          : "border-line bg-surface text-ink",
+        /* Matches `Cell` in BrowseActionBar — same height, same weight,
+           same active colour — because they are now the same row. */
+        "flex h-13 flex-1 items-center justify-center gap-1 px-1 text-caption font-medium transition-colors active:bg-hover disabled:opacity-40",
+        active ? "text-accent" : "text-ink",
       )}
     >
       <span className="truncate">{label}</span>

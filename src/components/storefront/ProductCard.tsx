@@ -140,7 +140,15 @@ export function ProductCard({
         fill ? "w-full" : "w-[40vw] max-w-52 lg:w-auto lg:max-w-none",
       )}
     >
-      <div className="relative aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
+      {/* Portrait, not square.
+ 
+          Almost everything in this catalogue is taller than it is wide —
+          a 50kg cement sack, a pillar cock, a shower panel, a tin of
+          primer — and `object-contain` in a square box letterboxes all of
+          them, so the product is drawn small with white down both sides.
+          4:5 gives the shape back its height and the tile stops looking
+          like a stamp in the middle of a card. */}
+      <div className="relative aspect-4/5 overflow-hidden rounded-card border border-photo-edge bg-photo">
         <Link href={`/p/${product.slug}`} className="block size-full">
           <ProductImage
             photo={product.photo}
@@ -192,7 +200,19 @@ export function ProductCard({
           )}
         </button>
 
-        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-sm border border-line-soft bg-surface/90 px-1.5 py-1 text-micro text-ink backdrop-blur-sm">
+        {/* Lifted clear of the illustration label, which is a full-width
+            band pinned to `bottom-0` of the same box. Both sat on the
+            bottom edge and the chip was drawn straight through the middle
+            of the words on every generated tile — which is most of the
+            catalogue. `bottom-2` on a card with no label, `bottom-9` on
+            one with, so neither has to know about the other beyond this
+            line. */}
+        <span
+          className={cn(
+            "absolute left-2 inline-flex items-center gap-1 rounded-sm border border-line-soft bg-surface/90 px-1.5 py-1 text-micro text-ink backdrop-blur-sm",
+            product.photoIsIllustration ? "bottom-9" : "bottom-2",
+          )}
+        >
           <fulfil.Icon className="size-3 text-accent" />
           {fulfil.label(product.leadTimeDays)}
         </span>

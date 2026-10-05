@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { InfiniteGrid } from "@/components/storefront/browse/InfiniteGrid";
 import { FilterPanel } from "@/components/storefront/browse/FilterPanel";
-import { FilterChipRow } from "@/components/storefront/browse/FilterChipRow";
-import { QuickFilters } from "@/components/storefront/browse/QuickFilters";
 import { DepartmentRail } from "@/components/storefront/browse/DepartmentRail";
 import { BrowseActionBar } from "@/components/storefront/browse/BrowseActionBar";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -124,32 +122,26 @@ export function Browse({
           />
         )}
 
-        {/* Phone only. The design prototype's chip row — Brands, Size,
-            Price — each opening a single-select sheet over this same
-            query. QuickFilters below stays for the one-tap toggles the
-            chip row doesn't cover (delivery speed, discount, sort); see
-            the note in QuickFilters.tsx on why price isn't duplicated
-            between the two rows. */}
-        {showFilters && (
-          <FilterChipRow
-            basePath={basePath}
-            params={params}
-            facets={facets}
-          />
-        )}
+        {/* No filter controls at the top of a phone screen.
 
-        {/* Phone only. The full panel stays behind the Filters button;
-            these are the three or four people actually reach for. */}
-        {showFilters && (
-          <QuickFilters
-            basePath={basePath}
-            params={params}
-            facets={facets}
-            className="mb-4 mt-2"
-            hideOffers={hideOffersFilter}
-          />
-        )}
+            There were two rows here — Brands / Size / Price, and a strip
+            of one-tap toggles — and both opened a sheet that slides up
+            from the bottom of the screen. `BrowseActionBar` is already
+            pinned down there with Sort and Filters, opening the same kind
+            of sheet, reachable by the thumb that is already holding the
+            phone, and still reachable after the grid has scrolled.
 
+            So the controls sat at the top, the interaction happened at
+            the bottom, and the first product started a third of a screen
+            down. Everything the two rows offered — brand, size, price,
+            delivery speed, discount, sort — is in the panel behind the
+            Filters button, which is where a reader goes when they have
+            seen enough of the grid to want to narrow it. That is the
+            order the task actually happens in.
+
+            Desktop is untouched: the filter panel is a column beside the
+            grid there, costing nothing, and `BrowseActionBar` is phone
+            only. */}
         <Toolbar
           basePath={basePath}
           params={params}
@@ -164,6 +156,7 @@ export function Browse({
         <BrowseActionBar
           basePath={basePath}
           params={params}
+          facets={facets}
           activeSort={activeSort}
           activeCount={active}
           showFilters={showFilters}

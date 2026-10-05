@@ -4,7 +4,6 @@ import { AppShell } from "@/components/storefront/AppShell";
 import { Browse } from "@/components/storefront/browse/Browse";
 import { CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { SectionHead } from "@/components/ui/Section";
 import {
   getCategoryBySlug,
   getProductFacets,
@@ -76,12 +75,24 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
           />
         </div>
 
-        <SectionHead
-          level={1}
-          size="lg"
-          title={category.title}
-          subtitle={CATEGORY_DESCRIPTOR[slug]}
-        />
+        {/* The department's name is in the breadcrumb directly above, in
+            the browser tab, and in the chip the filter bar lights when a
+            filter is on. A second copy of it set in display serif, with a
+            description under it, was most of a phone screen spent saying
+            a thing the line above it had already said — and it stood
+            between the reader and the first product.
+
+            The heading itself stays, because a page owes assistive
+            technology and a crawler one, and a category page with no `h1`
+            has no name as far as either is concerned. It is read, not
+            drawn: `sr-only` keeps it in the document outline and out of
+            the layout.
+
+            The descriptor goes with it. "Sanitaryware, taps, showers and
+            pipes" is useful the first time somebody wonders what the
+            department covers, and it is still the page's meta description
+            and still on the category tile they tapped to get here. */}
+        <h1 className="sr-only">{category.title}</h1>
 
         <Browse
           page={result}

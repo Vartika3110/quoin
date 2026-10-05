@@ -4,11 +4,12 @@ import type { ReactNode } from "react";
 import { StickyBar } from "@/components/storefront/StickyBar";
 import { FilterDrawer } from "@/components/storefront/browse/FilterDrawer";
 import { SortSheet } from "@/components/storefront/browse/SortSheet";
+import { FilterChipRow } from "@/components/storefront/browse/FilterChipRow";
 import { Sliders, Sort } from "@/components/icons";
 import { Counter } from "@/components/ui/Badge";
 import { cn } from "@/components/ui/cn";
 import type { BrowseParams } from "@/lib/browse-params";
-import type { ProductSort } from "@/lib/data/catalog";
+import type { ProductFacets, ProductSort } from "@/lib/data/catalog";
 
 /**
  * Sort and Filter, pinned under the thumb.
@@ -38,6 +39,7 @@ export function BrowseActionBar({
   activeSort,
   activeCount,
   showFilters,
+  facets,
   panel,
 }: {
   basePath: string;
@@ -53,6 +55,7 @@ export function BrowseActionBar({
   showFilters: boolean;
   /** The same server-rendered `FilterPanel` the desktop sidebar shows. */
   panel: ReactNode;
+  facets: ProductFacets;
 }) {
   return (
     <StickyBar padded={false}>
@@ -70,6 +73,14 @@ export function BrowseActionBar({
 
       {showFilters && (
         <>
+          <span aria-hidden className="h-6 w-px shrink-0 bg-line-soft" />
+
+          {/* Brand, Size and Price, in the bar rather than above the
+              grid. They each open a sheet that rises from this edge of
+              the screen, so this is where the control that opens it
+              belongs — and it leaves the top of the page for products. */}
+          <FilterChipRow basePath={basePath} params={params} facets={facets} />
+
           <span aria-hidden className="h-6 w-px shrink-0 bg-line-soft" />
 
           <FilterDrawer
