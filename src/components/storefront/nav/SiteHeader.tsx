@@ -22,11 +22,9 @@ import {
   Heart,
   Search,
   User,
-  Wallet,
 } from "@/components/icons";
 import { useCart } from "@/lib/store/cart";
 import { useWishlist } from "@/lib/store/wishlist";
-import { formatPrice } from "@/lib/types/catalog";
 import type { AreaChoice } from "@/lib/data/service-areas";
 import type { Category } from "@/lib/types/catalog";
 
@@ -393,7 +391,20 @@ function MobileBar({
             accident. Hover goes to the accent rather than back to ink,
             so there is still somewhere for the state to move. */}
         <ThemeToggle className="tap-target relative" />
-        <CartTotalPill onClick={onOpenCart} />
+
+        {/* Saved, then basket. Two halves of the same habit — the things
+            you are considering and the things you have chosen — so they
+            sit together rather than one being in the header and the other
+            three taps into the account menu. */}
+        <Link
+          href="/account/wishlist"
+          aria-label="Saved products"
+          className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full text-ink transition-colors hover:text-accent"
+        >
+          <Heart className="size-5" />
+        </Link>
+
+        <CartPill onClick={onOpenCart} />
         {signedIn && <NotificationBell buttonClassName="tap-target relative" />}
 
         <Link
@@ -516,35 +527,40 @@ function ConsultCard() {
 }
 
 /**
- * The basket, as its total.
+ * The basket, as a count.
  *
- * A count tells you how many lines you added; a total tells you whether
- * you can afford the next one, which on a materials order is the question
- * people actually have. It reads ₹0 when the basket is empty rather than
- * hiding — an affordance that appears only once you have used it is one
- * nobody discovers.
+ * It used to read as a running total, on the argument that a total tells
+ * you whether you can afford the next thing. On a catalogue where a
+ * single line can be ₹2,90,000 that number gets long, and a six-figure
+ * sum sitting in the header of every page reads as a bill being totted up
+ * rather than a place to go. A count answers the question the header is
+ * actually asked — is there anything in there — and the total is on the
+ * cart itself, one tap away, where it is the point rather than an
+ * interruption.
+ *
+ * The badge is absent at zero rather than reading "0": an empty basket
+ * has nothing to report, and the icon alone is still the affordance.
  */
-function CartTotalPill({ onClick }: { onClick: () => void }) {
-  const { count, subtotalPaise, ready } = useCart();
+function CartPill({ onClick }: { onClick: () => void }) {
+  const { count, ready } = useCart();
+  /* `ready` is false until the cart has been read out of storage.
+     Rendering the count before then flashes a badge onto an empty
+     basket, or none onto a full one. */
+  const showCount = ready && count > 0;
 
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={
-        ready && count > 0
-          ? `Cart, ${count} items, ${formatPrice(subtotalPaise)}`
-          : "Cart, empty"
-      }
-      className="tap-target relative flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface pl-2.5 pr-3 text-muted transition-colors hover:text-ink"
+      aria-label={showCount ? `Cart, ${count} items` : "Cart, empty"}
+      className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full text-ink transition-colors hover:text-accent"
     >
-      <Wallet className="size-4.5" />
-      <span className="nums text-caption font-semibold text-ink">
-        {/* `ready` is false until the cart has been read out of storage.
-            Rendering the real total before then flashes ₹0 over a basket
-            that is not empty. */}
-        {ready ? formatPrice(subtotalPaise) : formatPrice(0)}
-      </span>
+      <Cart className="size-5" />
+      {showCount && (
+        <span className="nums absolute -right-0.5 -top-0.5 grid min-w-4.5 place-items-center rounded-full bg-accent px-1 text-[0.625rem] font-bold leading-4 text-on-accent">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
     </button>
   );
 }
