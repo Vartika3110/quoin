@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Shield, Truck, Headset, CheckCircle } from "@/components/icons";
+import { COMPANY, COMPANY_DETAILS_ARE_SAMPLE } from "@/lib/company";
 
 /**
  * The footer.
@@ -33,51 +34,57 @@ import { Shield, Truck, Headset, CheckCircle } from "@/components/icons";
  * because neither is a commitment anyone in the business has made.
  */
 
+/**
+ * Three columns, not four, and none of them called "Legal".
+ *
+ * The owner asked for this shape: somewhere to find the company,
+ * somewhere to find the goods, and the places Quoin delivers to. The
+ * previous footer carried thirteen links across Shop / Build / Account /
+ * Legal, which is a site map rather than an ending.
+ *
+ * **The legal pages did not go away**, they moved to the strip at the
+ * bottom. Razorpay, PayU and Cashfree all require a reachable Terms,
+ * Privacy, Refunds and named grievance officer before they will activate
+ * an account, and a reviewer looks in the footer for them. Deleting the
+ * links would have traded a tidier footer for a stalled payment
+ * onboarding — so they are still one click from every page, just quiet.
+ */
 const COLUMNS = [
   {
-    title: "Shop",
+    title: "Company",
     links: [
-      { href: "/categories", label: "All categories" },
-      { href: "/products", label: "All products" },
-      { href: "/deals", label: "Deals" },
-      { href: "/products?sort=newest", label: "New arrivals" },
-    ],
-  },
-  {
-    title: "Build",
-    links: [
-      { href: "/studio", label: "Project Studio" },
-      { href: "/projects", label: "Project Hub" },
-      { href: "/upload", label: "Upload Parcha" },
-      { href: "/services", label: "Expert services" },
+      { href: "/contact", label: "Contact us" },
       { href: "/consult", label: "Talk to an expert" },
-    ],
-  },
-  {
-    title: "Account",
-    links: [
-      { href: "/account", label: "Your account" },
-      { href: "/account/orders", label: "Orders" },
-      { href: "/account/wishlist", label: "Saved products" },
+      { href: "/services", label: "Expert services" },
       { href: "/pro", label: "Quoin Pro" },
     ],
   },
-  /* Not optional decoration. An Indian e-commerce site takes payments
-     through a gateway, and Razorpay, PayU and Cashfree all require these
-     five pages — and a named grievance officer with a response time — to
-     be reachable from every page before they will activate an account.
-     The footer is where a reviewer looks for them. */
   {
-    title: "Legal",
+    title: "Categories",
+    /* Six of the fourteen, chosen because they are the departments with
+       the most stock behind them. Every one is a real category page — a
+       footer that links to a 404 is worse than a shorter footer. */
     links: [
-      { href: "/privacy", label: "Privacy policy" },
-      { href: "/terms", label: "Terms of service" },
-      { href: "/refunds", label: "Refunds & cancellations" },
-      { href: "/grievance", label: "Grievance officer" },
-      { href: "/contact", label: "Contact us" },
+      { href: "/c/bathware-plumbing", label: "Bathware & plumbing" },
+      { href: "/c/electricals-lighting", label: "Electricals & lighting" },
+      { href: "/c/cement-steel", label: "Cement & steel" },
+      { href: "/c/paints-finishes", label: "Paints & finishes" },
+      { href: "/c/kitchen-wardrobe-fittings", label: "Kitchen & wardrobe fittings" },
+      { href: "/c/plywood-laminates", label: "Plywood & laminates" },
     ],
   },
 ];
+
+/**
+ * Where Quoin actually delivers.
+ *
+ * Text, not links: there are no locality landing pages, and inventing
+ * four of them to make a footer column look like somebody else's would
+ * be four empty pages. These four are the `ServiceArea` rows the
+ * storefront already checks at checkout, so the footer and the delivery
+ * promise cannot drift apart.
+ */
+const LOCATIONS = ["Janakpuri", "Paschim Vihar", "Pitampura", "Rajendra Nagar"];
 
 const TRUST = [
   { Icon: CheckCircle, label: "Verified brands and suppliers" },
@@ -111,7 +118,7 @@ export function SiteFooter() {
           ))}
         </ul>
 
-        <div className="pt-7 app:hidden lg:grid lg:grid-cols-[1.4fr_repeat(4,1fr)] lg:gap-8 lg:pt-8">
+        <div className="pt-7 app:hidden lg:grid lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-8 lg:pt-8">
           <div>
             <p className="font-display text-title tracking-[0.18em] text-ink lg:text-title-lg">
               QUOIN
@@ -121,6 +128,35 @@ export function SiteFooter() {
               brought together so a build is one project rather than forty
               separate purchases.
             </p>
+
+            {/* The one thing a customer with a problem is looking for,
+                above the fold of the footer rather than three clicks into
+                a policy page. */}
+            <dl className="mt-4 space-y-1 text-body-sm lg:mt-5">
+              <div className="flex gap-2">
+                <dt className="text-faint">Email</dt>
+                <dd>
+                  <a
+                    href={`mailto:${COMPANY.supportEmail}`}
+                    className="text-muted transition-colors hover:text-accent"
+                  >
+                    {COMPANY.supportEmail}
+                  </a>
+                </dd>
+              </div>
+              <div className="flex gap-2">
+                <dt className="text-faint">Phone</dt>
+                <dd>
+                  <a
+                    href={`tel:${COMPANY.supportPhone.replace(/\s/g, "")}`}
+                    className="text-muted transition-colors hover:text-accent"
+                  >
+                    {COMPANY.supportPhone}
+                  </a>
+                  <span className="text-faint"> · {COMPANY.supportHours}</span>
+                </dd>
+              </div>
+            </dl>
           </div>
 
           {/* `lg:contents` dissolves this wrapper from `lg`, so the three
@@ -146,6 +182,17 @@ export function SiteFooter() {
                 </ul>
               </nav>
             ))}
+
+            <div>
+              <h2 className="text-micro font-semibold uppercase tracking-wide text-ink">
+                Locations
+              </h2>
+              <ul className="mt-2.5 space-y-1.5 text-body-sm text-muted lg:mt-3 lg:space-y-2">
+                {LOCATIONS.map((area) => (
+                  <li key={area}>{area}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -157,10 +204,51 @@ export function SiteFooter() {
         {/* The `app:` resets are because everything this line was sitting
             under is gone in the app: a rule and 32px of margin above the
             only remaining paragraph would be a divider dividing nothing. */}
-        <p className="mt-8 border-t border-line-hair pt-5 pr-20 text-micro leading-relaxed text-faint app:mt-0 app:border-t-0 app:pt-0 lg:mt-10 lg:pr-0 lg:pt-6">
-          © {new Date().getFullYear()} Quoin. Prices include GST where
-          applicable. Delivery times apply to the areas listed at checkout.
-        </p>
+        <div className="mt-8 border-t border-line-hair pt-5 pr-20 app:mt-0 app:border-t-0 app:pt-0 lg:mt-10 lg:pr-0 lg:pt-6">
+          {/* Still reachable, still one click, just no longer a column of
+              its own. A payment gateway's reviewer and a customer with a
+              complaint both look at the foot of the page. */}
+          <ul className="flex flex-wrap gap-x-4 gap-y-1.5 app:hidden">
+            {[
+              { href: "/privacy", label: "Privacy" },
+              { href: "/terms", label: "Terms" },
+              { href: "/refunds", label: "Refunds & cancellations" },
+              { href: "/grievance", label: "Grievance officer" },
+            ].map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-micro text-faint transition-colors hover:text-accent"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-4 text-micro leading-relaxed text-faint app:mt-0 lg:text-center">
+            © {new Date().getFullYear()} {COMPANY.legalName}. All rights
+            reserved. GSTIN {COMPANY.gstin}.
+          </p>
+
+          <p className="mt-1.5 text-micro leading-relaxed text-faint lg:text-center">
+            Prices include GST where applicable. Delivery times apply to the
+            areas listed at checkout.
+          </p>
+
+          {COMPANY_DETAILS_ARE_SAMPLE ? (
+            /* Loud on purpose, and only while the details are
+               placeholders. A sample GSTIN printed as though it were real
+               is a worse failure than an obviously unfinished footer —
+               the same argument `ToConfirm` makes on the legal pages.
+               Deleting this line is `COMPANY_DETAILS_ARE_SAMPLE = false`,
+               which is the same edit that makes it untrue. */
+            <p className="mt-3 text-micro font-semibold text-accent lg:text-center">
+              Company name, GSTIN, email and phone above are placeholders —
+              replace them in src/lib/company.ts before launch.
+            </p>
+          ) : null}
+        </div>
       </div>
     </footer>
   );
