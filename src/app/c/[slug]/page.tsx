@@ -6,7 +6,6 @@ import { CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { SectionHead } from "@/components/ui/Section";
 import {
-  getCategories,
   getCategoryBySlug,
   getProductFacets,
   listProducts,
@@ -59,10 +58,9 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
   const browseParams = readBrowseParams(await searchParams);
   const query = { ...toProductQuery(browseParams), categorySlug: slug };
 
-  const [result, facets, departments] = await Promise.all([
+  const [result, facets] = await Promise.all([
     listProducts(query),
     getProductFacets(query),
-    getCategories(),
   ]);
 
   return (
@@ -90,8 +88,23 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
           facets={facets}
           basePath={`/c/${slug}`}
           params={browseParams}
-          departments={departments}
-          activeDepartment={slug}
+          /* No department rail here, deliberately.
+ 
+             It is a phone-only row of every *other* department, and this
+             page opens with the department's name in display type and its
+             description underneath. A reader who has just arrived at
+             Bathware & plumbing does not need thirteen chips offering to
+             take them somewhere else before they have seen a tap — it
+             answers "where am I" a second time, in a worse voice, and
+             pushes the first product further down the screen.
+ 
+             Switching department is still one tap: the header's Categories
+             menu carries all fourteen at every width, which is where
+             somebody goes when they want a different one. The rail stays
+             on /products, where it is doing the opposite job — there is no
+             department in the path there and the filter panel has no
+             category facet, so it is the only way to narrow from inside
+             the page. */
           /* The department is in the path, not the query string, so the
              grid has to be told about it to fetch its own next page. */
           scope={{ category: slug }}
