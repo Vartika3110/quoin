@@ -18,7 +18,7 @@ looking like a template.
 
 | Family | Token prefix | What it means |
 | --- | --- | --- |
-| Orange | `accent` `#e1600c` | "Act on this." Prices, primary CTAs, active states |
+| Burnt sienna | `accent` `#a85a2a` (light) · `#d18a5c` (dark) | "Act on this." Prices, primary CTAs, active states |
 | Ink | `deep` `#2a160a` | Dark bands, scrims, secondary CTAs |
 | Gold | `pro` | Quoin Pro, and nothing else, ever |
 
