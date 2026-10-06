@@ -71,7 +71,7 @@ function deliveryLine(order: OrderSummary): string | null {
   if (!(IN_FLIGHT_STATUSES as readonly string[]).includes(order.status)) return null;
   return order.expectedDeliveryOn
     ? `Expected ${formatDateOnly(order.expectedDeliveryOn)}`
-    : "Date confirmed on call";
+    : order.deliveryEstimate;
 }
 
 export function OrderCard({ order }: { order: OrderSummary }) {

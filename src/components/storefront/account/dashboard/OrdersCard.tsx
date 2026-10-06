@@ -29,11 +29,13 @@ function formatDateOnly(day: string): string {
     that no longer applies. Mirrors `deliveryLine` in `OrderCard.tsx`,
     widened to cover every status that function leaves blank, since this
     card has no second line to fall back to silence on. */
-function deliveryLine(order: Pick<AccountOverviewOrder, "status" | "expectedDeliveryOn">): string {
+function deliveryLine(
+  order: Pick<AccountOverviewOrder, "status" | "expectedDeliveryOn" | "deliveryEstimate">,
+): string {
   if ((IN_FLIGHT_STATUSES as readonly string[]).includes(order.status)) {
     return order.expectedDeliveryOn
       ? `Expected ${formatDateOnly(order.expectedDeliveryOn)}`
-      : "Date confirmed on call";
+      : order.deliveryEstimate;
   }
   return ORDER_STATUS_LABEL[order.status];
 }

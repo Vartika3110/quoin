@@ -3,6 +3,7 @@ import type { OrderStatus, PaymentStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { resolvePhoto } from "@/lib/data/catalog";
 import { ORDER_TAB_STATUSES, type OrderTab } from "@/lib/orders/status-groups";
+import { estimateFor } from "@/lib/orders/delivery-estimate";
 import type { Paise } from "@/lib/types/catalog";
 
 /**
@@ -237,6 +238,11 @@ export interface OrderSummary {
       that already happened rather than one still expected. Null for
       every order that has not reached it. */
   deliveredAt: Date | null;
+  /** What to say while `expectedDeliveryOn` is still null — "Within about
+      3 hours" for a bulk basket. Computed from every line's fulfilment,
+      never stored, and never a date: see `estimateFor`
+      (`src/lib/orders/delivery-estimate.ts`). */
+  deliveryEstimate: string;
   /** First four lines, enough to recognise the order at a glance without
       shipping every line to a list view — see `itemCount` for the true
       total. */
@@ -294,10 +300,15 @@ export async function listOrdersForUser(
            `cuid()` embeds a creation timestamp, so ascending id recovers
            the basket order `createPendingOrder` wrote the lines in
            closely enough to show "the first few things bought". */
+        /* Every line, not `take: MAX_SUMMARY_THUMBNAILS`. The thumbnails
+           still show only the first few — sliced below — but the delivery
+           estimate has to see the whole basket: read from four lines of
+           six, it would quote three hours for an order whose fifth line
+           is cut to order. A line count is small enough that this is
+           cheaper than a second query for one column. */
         lines: {
           orderBy: { id: "asc" },
-          take: MAX_SUMMARY_THUMBNAILS,
-          select: { productSlug: true, title: true },
+          select: { productSlug: true, title: true, fulfilment: true },
         },
         /* Grain is a checkout attempt, not the order — see `Payment`'s
            model comment — so the most recent row is where this order's
@@ -336,7 +347,8 @@ export async function listOrdersForUser(
       paymentStatus: row.payments[0]?.status ?? null,
       expectedDeliveryOn: row.expectedDeliveryOn ? dateOnly(row.expectedDeliveryOn) : null,
       deliveredAt: deliveredAtByOrderId.get(row.id) ?? null,
-      thumbnails: row.lines.map((line) => ({
+      deliveryEstimate: estimateFor(row.lines.map((line) => line.fulfilment)),
+      thumbnails: row.lines.slice(0, MAX_SUMMARY_THUMBNAILS).map((line) => ({
         productSlug: line.productSlug,
         title: line.title,
         ...imageFor(images, line.productSlug),
@@ -402,6 +414,12 @@ export interface OrderLineDetail {
   taxPaise: Paise;
   photo?: string;
   swatchKey: string;
+  /** How this line reaches the customer, frozen at checkout. Drives the
+      delivery estimate while `Order.expectedDeliveryOn` is still null —
+      see `estimateFor`, `src/lib/orders/delivery-estimate.ts`. Not
+      rendered on its own: a customer has no use for the word
+      "MADE_TO_ORDER", only for what it implies about when things come. */
+  fulfilment: string;
 }
 
 export interface OrderShippingSnapshot {
@@ -509,6 +527,8 @@ export async function getOrderForUser(
           linePaise: true,
           gstRatePct: true,
           taxPaise: true,
+          /* Read only by `estimateFor` — see `OrderLineDetail.fulfilment`. */
+          fulfilment: true,
         },
       },
       payments: {

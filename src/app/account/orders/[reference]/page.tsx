@@ -16,6 +16,7 @@ import { getSession } from "@/lib/auth/session";
 import { formatPrice } from "@/lib/types/catalog";
 import { IN_FLIGHT_STATUSES, moneyMoved } from "@/lib/orders/status-groups";
 import { orderTimeline } from "@/lib/orders/timeline";
+import { estimateFor } from "@/lib/orders/delivery-estimate";
 import {
   getOrderForUser,
   getOrderProjectLinks,
@@ -72,9 +73,13 @@ function deliverySummaryLabel(order: OrderDetail): string {
     return delivered ? `Delivered ${DATE_FORMAT.format(new Date(delivered.at))}` : "Delivered";
   }
   if (!(IN_FLIGHT_STATUSES as readonly string[]).includes(order.status)) return "—";
+  /* A day somebody in operations committed to beats any estimate. Only
+     when nobody has yet does this fall back to the basket's own promise
+     — three hours for bulk goods, the slowest line's figure when the
+     basket is mixed. */
   return order.expectedDeliveryOn
     ? `Expected ${formatDateOnly(order.expectedDeliveryOn)}`
-    : "Date confirmed on call";
+    : estimateFor(order.lines.map((line) => line.fulfilment));
 }
 
 /**

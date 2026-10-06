@@ -169,7 +169,7 @@ function OrderCard({
         <Truck className="size-3.5 shrink-0" />
         {order.expectedDeliveryOn
           ? `Expected ${formatCalendarDay(order.expectedDeliveryOn)}`
-          : "Date confirmed on call"}
+          : order.deliveryEstimate}
       </p>
 
       <div className="mt-4 flex items-center justify-between gap-3 border-t border-line-hair pt-3">
