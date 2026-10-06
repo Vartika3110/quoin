@@ -49,7 +49,11 @@ import { COMPANY, COMPANY_DETAILS_ARE_SAMPLE } from "@/lib/company";
  * links would have traded a tidier footer for a stalled payment
  * onboarding — so they are still one click from every page, just quiet.
  */
-const COLUMNS = [
+const COLUMNS: {
+  title: string;
+  links: { href: string; label: string }[];
+  hideOnPhone?: boolean;
+}[] = [
   {
     title: "Company",
     links: [
@@ -62,6 +66,14 @@ const COLUMNS = [
   },
   {
     title: "Categories",
+    /* Desktop only. On a phone these six were the widest labels in the
+       footer — "Kitchen & wardrobe fittings" wrapped to two lines in a
+       half-width column — and every one of them is already reached from
+       the tab bar's Shop and the header's category menu, both of which
+       carry all fourteen rather than a chosen six. A footer column that
+       repeats the primary navigation in a worse typographic setting is
+       the first thing that should go when the width runs out. */
+    hideOnPhone: true,
     /* Six of the fourteen, chosen because they are the departments with
        the most stock behind them. Every one is a real category page — a
        footer that links to a 404 is worse than a shorter footer. */
@@ -165,7 +177,11 @@ export function SiteFooter() {
               rather than one cell inside it. Two layouts, one tree. */}
           <div className="mt-7 grid grid-cols-2 gap-x-5 gap-y-7 lg:mt-0 lg:contents">
             {COLUMNS.map((column) => (
-              <nav key={column.title} aria-label={column.title}>
+              <nav
+                key={column.title}
+                aria-label={column.title}
+                className={column.hideOnPhone ? "hidden lg:block" : undefined}
+              >
                 <h2 className="text-micro font-semibold uppercase tracking-wide text-ink">
                   {column.title}
                 </h2>
