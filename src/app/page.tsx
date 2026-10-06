@@ -15,11 +15,7 @@ import {
 } from "@/lib/data/catalog";
 import { listServices } from "@/lib/data/services";
 import { formatPrice } from "@/lib/types/catalog";
-import {
-  AREA_COOKIE,
-  getAreaChoice,
-  listServiceAreas,
-} from "@/lib/data/service-areas";
+import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
 
 /**
  * Rendered per request.
@@ -52,16 +48,12 @@ export const dynamic = "force-dynamic";
  * the two products — Project Hub and Pro — that make it more than a shop.
  */
 export default async function HomePage() {
-  const [categories, priceFloors, services, chosen, serviceAreas] =
-    await Promise.all([
-      getCategories(),
-      getCategoryPriceFloors(),
-      listServices(),
-      cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
-      /* Named on the first screen rather than left to a pincode box on
-         a product page somebody may never reach — see `Hero`. */
-      listServiceAreas(),
-    ]);
+  const [categories, priceFloors, services, chosen] = await Promise.all([
+    getCategories(),
+    getCategoryPriceFloors(),
+    listServices(),
+    cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
+  ]);
 
   /* Eight tiles: two full rows of four. Four across is what the brief
      asks for and what the rest of this page is built on — the quick
@@ -99,7 +91,7 @@ export default async function HomePage() {
               The hero stacks on a phone and the photograph is on top, so
               a reader sees a finished building before they read a word
               about it. */}
-          <Hero chosen={chosen} areas={serviceAreas.map((a) => a.name)} />
+          <Hero chosen={chosen} />
 
           {/* One categories block, not three.
 
