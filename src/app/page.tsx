@@ -56,13 +56,6 @@ export default async function HomePage() {
     cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
   ]);
 
-  /* Eight tiles: two full rows of four. Four across is what the brief
-     asks for and what the rest of this page is built on — the quick
-     actions, the services row and the entry cards are all fours, and a
-     three-across band in the middle of them reads as a different page.
-     The rest are behind the section's own "See all". */
-  const featured = categories.slice(0, 8);
-
   return (
     <AppShell fullBleed headerSlot={<EntryCards />}>
       {/* Site-wide identity, emitted once and only here. Repeating
@@ -104,17 +97,21 @@ export default async function HomePage() {
               index is where it belongs and this is the decision: a few
               departments, with what it costs to start in each. */}
           <section>
+            {/* No "See all". Every department is on this page now, so a
+                link to the page that lists them would lead somewhere the
+                reader is already standing. `/categories` is unchanged and
+                still reachable from the header's category menu. */}
             <SectionHead
               title="Shop by category"
               subtitle="Priced from the manufacturer's own list."
-              href="/categories"
             />
-            <CategoryCards
-              categories={categories.slice(0, 4)}
-              priceFloors={priceFloors}
-            />
+            <CategoryCards categories={categories} priceFloors={priceFloors} />
+            {/* All fourteen, four across. Three full rows and a last row
+                of two: a ragged final row is what showing everything costs
+                when the count is not a multiple of four, and padding it
+                with departments that do not exist is not an option. */}
             <div className="hidden grid-cols-4 gap-3 lg:grid">
-              {featured.map((category, i) => {
+              {categories.map((category, i) => {
                 const floor = priceFloors.get(category.id);
                 return (
                   <CategoryTile

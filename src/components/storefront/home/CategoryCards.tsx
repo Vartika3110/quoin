@@ -6,14 +6,15 @@ import { formatPrice } from "@/lib/types/catalog";
 import type { Category } from "@/lib/types/catalog";
 
 /**
- * Four departments, as cards with a price on them.
+ * Every department, as cards with a price on them.
  *
- * The difference between this and the department rail below it is the
- * number. A rail of fourteen thumbnails answers "what do you sell"; a
- * card that says *From ₹380* answers "can I afford to start", which is
- * the question someone opens a materials app with. Four is as many as
- * that question can be asked before it stops being an answer and becomes
- * a price list.
+ * It showed four for a while, on the argument that "can I afford to
+ * start" stops being an answer and becomes a price list once it is asked
+ * too many times. The owner wants the full set, and the shape holds it:
+ * these are two-up rows 56px tall, so fourteen of them is a block a
+ * reader scans rather than a page they have to scroll past, and it
+ * removes the question of why four particular departments were the ones
+ * on the home page.
  *
  * The floor is the cheapest active variant in the department, computed in
  * one grouped query rather than per card — see `getCategoryPriceFloors`.
@@ -21,7 +22,7 @@ import type { Category } from "@/lib/types/catalog";
  * product count, because "From ₹0" on a catalogue that is still being
  * priced is worse than saying nothing about price at all.
  *
- * Phone only. From `lg` the same four departments are already in the
+ * Phone only. From `lg` the same departments are already in the
  * photographic tile grid, at a size where the picture does the selling.
  */
 export function CategoryCards({
