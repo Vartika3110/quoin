@@ -18,7 +18,7 @@ const TABS = [
   { href: "/categories", label: "All", icon: "grid", current: true },
   { href: "/services", label: "Services", icon: "helmet" },
   { href: "/products", label: "Materials", icon: "bricks" },
-  { href: "/premium", label: "Premium Products", icon: "crown" },
+  { href: "/premium", label: "Architectural Selects", icon: "crown" },
   { href: "/studio", label: "Interiors", icon: "sofa" },
   { href: "/c/electricals-lighting", label: "Lighting", icon: "lamp" },
 ] as const;
@@ -47,7 +47,7 @@ export function CatalogTabs() {
             className="flex w-[3.75rem] flex-col items-center gap-1.5"
           >
             <Icon className={cn("size-7", on ? "text-accent" : "text-ink")} />
-            {/* Two lines of headroom for "Premium Products"; the rest sit
+            {/* Two lines of headroom for "Architectural Selects"; the rest sit
                 on one and the rail stays a single height either way. */}
             <span
               className={cn(

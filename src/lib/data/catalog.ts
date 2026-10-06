@@ -32,7 +32,7 @@ export const TABS: CatalogTab[] = [
   { id: "all", label: "All", icon: "grid" },
   { id: "services", label: "Services", icon: "helmet" },
   { id: "materials", label: "Materials", icon: "bricks" },
-  { id: "premium", label: "Premium Products", icon: "crown" },
+  { id: "premium", label: "Architectural Selects", icon: "crown" },
   { id: "interiors", label: "Interiors", icon: "sofa" },
   { id: "lighting", label: "Lighting", icon: "lamp" },
 ];
