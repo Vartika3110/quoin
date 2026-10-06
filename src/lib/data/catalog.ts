@@ -10,6 +10,7 @@ import type {
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { MONEY_MOVED_STATUSES } from "@/lib/orders/status-groups";
 import type {
   BadgeKind as DbBadge,
   Fulfilment as DbFulfilment,
@@ -319,6 +320,67 @@ export async function getTopPicks(): Promise<Product[]> {
      section comes back short, or empty, rather than padded with pictures
      that are not of the product. */
   return picks.map(toProduct);
+}
+
+/**
+ * What customers have actually ordered, most first.
+ *
+ * Ranked by units sold across orders where money moved — a cart somebody
+ * abandoned at the payment sheet is not evidence of anything, and
+ * counting it would let a basket nobody paid for decide what the home
+ * page leads with.
+ *
+ * ## This is a real count, not a curated row
+ *
+ * There is no `bestseller` flag and nothing here is hand-picked. The
+ * ranking is `SUM(qty)` grouped by `OrderLine.productSlug`, which is the
+ * column `createPendingOrder` froze at checkout precisely so an order can
+ * still be read after the catalogue moved on.
+ *
+ * It follows that **the row is only as good as the order history**. On a
+ * catalogue that has taken a handful of orders it will come back with a
+ * handful of products, and `hasEnough` drops the section rather than
+ * padding it out with things nobody bought. That is the honest failure:
+ * a "bestsellers" row filled from the catalogue is a lie about the one
+ * thing it claims to measure.
+ *
+ * Photographed products only, for the reason `getTopPicks` gives — a
+ * recommendation row is sold by its pictures.
+ */
+export async function getBestsellers(limit = 10): Promise<Product[]> {
+  /* Grouped in Postgres rather than by pulling every line into Node: the
+     line table grows with sales and this runs on the home page. */
+  const ranked = await db.$queryRaw<{ productSlug: string }[]>`
+    SELECT l."productSlug"
+    FROM order_lines l
+    JOIN orders o ON o.id = l."orderId"
+    WHERE o.status = ANY(${MONEY_MOVED_STATUSES}::text[]::"OrderStatus"[])
+    GROUP BY l."productSlug"
+    ORDER BY SUM(l.qty) DESC, COUNT(*) DESC
+    LIMIT ${limit * 3}
+  `;
+
+  if (ranked.length === 0) return [];
+
+  const slugs = ranked.map((r) => r.productSlug);
+  const rows = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: {
+      ...PRODUCT_QUERY.where,
+      slug: { in: slugs },
+      image: { not: "" },
+      imageIsGenerated: false,
+    },
+  });
+
+  /* Postgres returned the products in whatever order it liked; the order
+     that matters is the one the ranking above produced. */
+  const bySlug = new Map(rows.map((row) => [row.slug, row]));
+  return slugs
+    .map((slug) => bySlug.get(slug))
+    .filter((row): row is (typeof rows)[number] => row != null)
+    .slice(0, limit)
+    .map(toProduct);
 }
 
 /** Null rather than throwing — the route turns a miss into a 404. */

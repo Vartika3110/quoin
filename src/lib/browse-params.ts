@@ -2,6 +2,20 @@ import type { FulfilmentType } from "@/lib/types/catalog";
 import type { ProductSort } from "@/lib/data/catalog";
 
 /**
+ * Where Architectural Selects starts, in rupees.
+ *
+ * Here rather than on the page because two surfaces cut the catalogue at
+ * this line and they have to agree: `/premium` itself, and the home
+ * page's Architectural Selects rail whose "View all" leads there. A rail
+ * showing products the page behind it excludes is worse than no rail.
+ *
+ * The figure is the design prototype's own. Nothing in the schema says
+ * "premium" — see the note on `/premium` for why price is the honest
+ * proxy and what replaces it once merchandising curates a real set.
+ */
+export const PREMIUM_FLOOR_RUPEES = 5000;
+
+/**
  * The browse query, as it appears in the URL.
  *
  * Filters live in the address bar rather than in component state, which is

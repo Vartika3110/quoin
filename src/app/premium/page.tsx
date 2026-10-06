@@ -7,7 +7,7 @@ import { SectionHead } from "@/components/ui/Section";
 import { Crown } from "@/components/icons";
 import { getProductFacets, listProducts } from "@/lib/data/catalog";
 import { readBrowseParams, toProductQuery } from "@/lib/browse-request";
-import { floorPrice } from "@/lib/browse-params";
+import { PREMIUM_FLOOR_RUPEES, floorPrice } from "@/lib/browse-params";
 
 export const dynamic = "force-dynamic";
 
@@ -57,9 +57,6 @@ export const metadata: Metadata = {
  * against that column and the floor goes away. Until then the page is
  * honest about being a price cut, in the subtitle and here.
  */
-
-/** The prototype's line, in rupees. See the note above. */
-const PREMIUM_FLOOR_RUPEES = 5000;
 
 export default async function PremiumPage({
   searchParams,
