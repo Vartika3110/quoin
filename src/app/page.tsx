@@ -6,14 +6,12 @@ import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/Categ
 import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
-import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { BrandRail } from "@/components/storefront/home/BrandWall";
 import { PageSections, SectionHead } from "@/components/ui/Section";
 import {
   getCategories,
   getCategoryPriceFloors,
 } from "@/lib/data/catalog";
-import { listServices } from "@/lib/data/services";
 import { formatPrice } from "@/lib/types/catalog";
 import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
 
@@ -30,28 +28,31 @@ import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
 export const dynamic = "force-dynamic";
 
 /**
- * The home page's order is an argument about what Quoin is, and it is a
- * different argument on a phone than on a desktop.
+ * Three blocks: the hero, one catalogue block, and the brands.
  *
- * **On a desktop** the hero comes first and alone — one composition, and
- * the only sentence on the site that says what this company does.
+ * It was eighteen. What went was everything that repeated something the
+ * reader could already reach — three separate ways to browse the
+ * catalogue, two trust rows, a full-width pitch each for Project Hub,
+ * Parcha and Pro, and a closing call to action under all of it. A
+ * product's home page is not a landing page, and a reader who has
+ * scrolled it has been handed somewhere to go six times already.
  *
- * **On a phone** it follows the reference design, which is a launcher
- * rather than a landing page: four entry cards and a six-icon rail put
- * every part of the business one tap away above the fold, and the banner
- * carousel does the selling underneath them. That ordering assumes a
- * returning customer with a job to do, which is who opens a materials app
- * on a site, and it is why the entry cards are handed to the header
- * rather than rendered here — in the design they sit above search.
+ * **Expert services was the last to go**, at the owner's instruction. It
+ * is not a weak proposition — it is half of what Quoin sells — but the
+ * home page was not where anyone found it: Services has a card in
+ * `EntryCards` at the very top of the phone screen, an entry in the
+ * header, and a column in the footer, so a row of two service cards
+ * two-thirds of the way down was the fourth offer of the same door.
+ * `/services` is unchanged and still the real thing.
  *
- * From there both widths agree: proof, the brands, the catalogue, then
- * the two products — Project Hub and Pro — that make it more than a shop.
+ * The entry cards are handed to the header rather than rendered here —
+ * in the reference design they sit above search, and that is the one
+ * piece of navigation on the first screen.
  */
 export default async function HomePage() {
-  const [categories, priceFloors, services, chosen] = await Promise.all([
+  const [categories, priceFloors, chosen] = await Promise.all([
     getCategories(),
     getCategoryPriceFloors(),
-    listServices(),
     cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
   ]);
 
@@ -132,15 +133,6 @@ export default async function HomePage() {
                 );
               })}
             </div>
-          </section>
-
-          <section>
-            <SectionHead
-              title="Expert services"
-              subtitle="Verified professionals, booked against a real slot."
-              href="/services"
-            />
-            <ServicesRow services={services.slice(0, 4)} />
           </section>
 
           {/* Brands last, because this is the one row on the page a reader
