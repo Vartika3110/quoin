@@ -6,6 +6,7 @@ import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/Categ
 import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
+import { ParchaLine } from "@/components/storefront/home/ParchaLine";
 import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
 import { PageSections, SectionHead } from "@/components/ui/Section";
 import {
@@ -94,6 +95,12 @@ export default async function HomePage() {
               a reader sees a finished building before they read a word
               about it. */}
           <Hero chosen={chosen} />
+
+          {/* Straight under the hero, before the catalogue. Somebody
+              arriving with a list in their hand should not have to scroll
+              past eight departments to find out this site will read it —
+              and somebody who has no list loses one row to it. */}
+          <ParchaLine />
 
           {/* One categories block, not three.
 
