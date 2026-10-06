@@ -27,6 +27,32 @@ Everything below works the day the first clip arrives. Until then:
   Quoin prices under it. That is the same lie the catalogue's department
   photography was, moving.
 
+### The first clip
+
+One clip ships in the repo so the player has something to play before
+anyone signs up for Stream: `public/studio/skyline-bedroom-golden-hour.mp4`,
+a ten-second walkthrough, H.264, 1280×720, no audio, 1 MB. It is an
+AI-generated visualisation, like the stills around it, and its pin
+(`skyline-bedroom-golden-hour` in the manifest) is flagged
+`imageIsGenerated` for the same reason. It has no designer, no location
+and no cues — nobody has watched it with a materials list open.
+
+The file alone does nothing; the pin has to be seeded and then pointed at it:
+
+```bash
+npx tsx prisma/seed-studio.ts
+npm run studio:clip -- <slug> --path /studio/skyline-bedroom-golden-hour.mp4 \
+  --duration 10 --size 1280x720
+```
+
+`<slug>` is the pin's title words plus a random suffix assigned at seed time
+(`slugFor` in the seed), so read it off the pin's URL or from `npm run
+db:studio`. There is deliberately no `--poster`: the pin's own still is the
+clip's first frame, so it already is the poster, and `--poster` rewrites
+`assetPath` — the column the seed matches pins on, so a changed one would
+make the next seed create a duplicate. The statements above describe Studio
+with no clip attached.
+
 ## Delivery: Cloudflare Stream
 
 A sixty-second walkthrough is tens of megabytes at a quality worth

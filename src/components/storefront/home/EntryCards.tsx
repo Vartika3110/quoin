@@ -1,5 +1,6 @@
 import { Box, Building, Chevron, Crown, Helmet } from "@/components/icons";
 import { ContentCard } from "@/components/ui/Card";
+import { cn } from "@/components/ui/cn";
 
 /**
  * The four doors into Quoin, at the very top of the home screen.
@@ -20,7 +21,14 @@ import { ContentCard } from "@/components/ui/Card";
  * label, read in one glance, not prose — the same sizes the design
  * prototype uses for the same row.
  */
-const ENTRIES = [
+const ENTRIES: {
+  href: string;
+  title: string;
+  detail: string;
+  Icon: typeof Box;
+  /** Sets the title a size smaller, for a label too wide for the card. */
+  tight?: boolean;
+}[] = [
   {
     href: "/studio",
     /* `\n` plus `whitespace-pre-line`: at this measure the break decides
@@ -51,12 +59,14 @@ const ENTRIES = [
        one they cannot act on either, since nobody has set a membership
        fee. The storefront now exists. */
     href: "/premium",
-    /* "Premium Studio", not "Architectural Premium Studio". The longer
-       name is wider than a 78px card at any size worth setting, so it had
-       to be hyphenated to fit — and a label broken mid-word reads worse
-       than a shorter one that is whole. The word this drops is the one
-       the crown and "Bespoke products" already say. */
-    title: "PREMIUM\nSTUDIO",
+    /* "Architectural Selects", the name the prototype settled on. It is
+       still a long word for a 78px card — "ARCHITECTURAL" is the widest
+       thing on this row — so `tight` drops this one label to 7px with no
+       tracking below `sm`, which keeps the word whole down to 320px
+       instead of leaving it to break mid-word. From `sm` up the card is
+       wide enough that it sets like the other three. */
+    title: "ARCHITECTURAL\nSELECTS",
+    tight: true,
     detail: "Bespoke\nproducts",
     Icon: Crown,
   },
@@ -65,7 +75,7 @@ const ENTRIES = [
 export function EntryCards() {
   return (
     <div className="grid grid-cols-4 gap-2 px-5 pb-1 lg:gap-3 lg:px-0">
-      {ENTRIES.map(({ href, title, detail, Icon }) => (
+      {ENTRIES.map(({ href, title, detail, Icon, tight }) => (
         <ContentCard
           key={href}
           href={href}
@@ -81,7 +91,13 @@ export function EntryCards() {
                worse than a word broken inside it. */
             <span
               lang="en"
-              className="block whitespace-pre-line text-[8px] font-bold uppercase leading-[1.25] tracking-[0.02em] [overflow-wrap:anywhere] sm:text-[9.5px] sm:tracking-[0.05em] lg:text-[11px] lg:tracking-[0.07em]"
+              className={cn(
+                "block whitespace-pre-line font-bold uppercase leading-[1.25] [overflow-wrap:anywhere] sm:text-[9.5px] sm:tracking-[0.05em] lg:text-[11px] lg:tracking-[0.07em]",
+                /* Two complete alternatives rather than an override: `cn`
+                   does not merge, so two competing `text-*` classes would
+                   be settled by stylesheet order, not by intent. */
+                tight ? "text-[7px] tracking-normal" : "text-[8px] tracking-[0.02em]",
+              )}
             >
               {title}
             </span>
