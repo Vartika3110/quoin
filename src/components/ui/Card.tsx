@@ -185,6 +185,16 @@ export function ImageCard({
   return (
     <Link
       href={href}
+      /* The ratio belongs to the card, not to the photograph inside it.
+         It used to sit on `Photo`, which is how the title ended up
+         *under* the picture rather than on it: `Photo`'s own wrapper is
+         `relative`, `cn` does not merge, and Tailwind emits `.relative`
+         after `.absolute` — so the `absolute inset-0` this passed it lost
+         on stylesheet order, every time, and the photograph stayed in
+         flow and pushed the type out from under itself. Reserving the box
+         here instead makes the picture fill the card and the words sit on
+         it, which is what this component has claimed to do all along. */
+      style={{ aspectRatio: ratio }}
       className={cn(
         "group relative flex flex-col justify-end overflow-hidden rounded-card",
         /* The tile's own ground, rather than `Photo`'s, because a card
@@ -193,26 +203,27 @@ export function ImageCard({
         className,
       )}
     >
-      {missing ? (
-        /* The reserved box, and nothing in it. `MissingPhoto` would do
-           this and also print "Photo coming soon" inside the box, which
-           this card says for itself a few lines down in type that is
-           actually legible here. */
-        <div className="absolute inset-0 size-full" style={{ aspectRatio: ratio }} />
-      ) : (
-        <Photo
-          src={src}
-          /* Decorative: the title below is inside this same link and
-             already names the thing. */
-          alt=""
-          ratio={ratio}
-          sizes={sizes}
-          blurDataURL={blurDataURL}
-          priority={priority}
-          unoptimized={unoptimized}
-          className="absolute inset-0 size-full"
-          imageClassName="transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
-        />
+      {/* Positioned by this wrapper rather than by a class handed to
+          `Photo`, so there is nothing for `Photo`'s own `relative` to
+          beat. Inside a box with a definite height, `size-full` wins over
+          the aspect ratio `Photo` still sets for its own reserved-box
+          behaviour elsewhere. */}
+      {!missing && (
+        <div className="absolute inset-0">
+          <Photo
+            src={src}
+            /* Decorative: the title below is inside this same link and
+               already names the thing. */
+            alt=""
+            ratio={ratio}
+            sizes={sizes}
+            blurDataURL={blurDataURL}
+            priority={priority}
+            unoptimized={unoptimized}
+            className="size-full"
+            imageClassName="transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
+          />
+        </div>
       )}
 
       {!missing && (
