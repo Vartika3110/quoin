@@ -108,7 +108,14 @@ const TRUST = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-line-soft bg-surface app:mt-6 app:border-t-0 app:bg-transparent">
+    /* No top margin on a phone. The page already ends with its own
+       trailing gap, and `mt-16` put 64px on top of that — 104px of empty
+       ground between the last row of content and the footer, where every
+       other block on the page is 40px apart. The border is what separates
+       the footer from the page; it does not also need a hole above it.
+       Desktop keeps the deeper break, where the column of white has
+       somewhere to go. */
+    <footer className="border-t border-line-soft bg-surface app:mt-6 app:border-t-0 app:bg-transparent lg:mt-16">
       {/* The bottom padding on a phone clears the fixed bars, and there
           can still be two: the tab bar is about 60px and the floating
           cart bar adds roughly 76 above it. A page's own `StickyBar` is

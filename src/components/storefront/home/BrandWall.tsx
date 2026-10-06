@@ -24,20 +24,17 @@ import { brandKey, getBrandLinkTargets } from "@/lib/data/catalog";
  * last row, while a centred wrap keeps a short final row balanced at any
  * count.
  *
- * **Grey, at one height, until you point at one.** Fourteen logos in
- * fourteen brand colours is fourteen things competing with the page —
- * Dorset's purple, Ozone's blue, Berger's red — and a row of marks set at
- * whatever height each one happens to want reads as a clip-art collage.
- * Desaturating them makes the row one texture, which is how a logo wall
- * is actually read, and colour returning on hover confirms the mark is a
- * link without a second affordance. `grayscale` is a filter, not an
- * edit: the artwork on disk is untouched and a brand that objects is one
- * class away from being exempt.
+ * **In their own colours, at one height.** The marks were desaturated
+ * until now, on the argument that fourteen brand colours is fourteen
+ * things competing with the page and that a grey row reads as one
+ * texture. The owner wants them in colour, and they are right about what
+ * this row is for: a customer scanning for Jaquar or UltraTech
+ * recognises the colour before the shape, and greyscale takes away the
+ * one cue that makes a logo wall worth having.
  *
- * Desaturated but not dimmed. An earlier pass had `opacity-80` on top of
- * the filter, and grey artwork at four fifths on a near-white plate is
- * faint enough that the row reads as disabled rather than as restrained.
- * One treatment, doing one job.
+ * The uniform 26px height stays, and it is what keeps the row from
+ * reading as a clip-art collage — height was always doing more of that
+ * work than the filter was.
  *
  * On a phone the wall becomes an auto-scrolling marquee — see
  * `BrandRail` below.
@@ -87,7 +84,7 @@ export async function BrandWall() {
                  `object-contain` letterboxes inside it: wide marks stop
                  at the cell width long before they reach the height,
                  square ones are held by it. */
-              className="h-[26px] w-full object-contain grayscale transition-[filter,opacity] duration-200 group-hover/logo:grayscale-0"
+              className="h-[26px] w-full object-contain"
             />
           );
 
@@ -130,7 +127,7 @@ export async function BrandWall() {
  *
  * Each mark sits on the same near-white ground the wall uses, for the
  * same reason: half the roster is dark ink and would vanish against the
- * dark palette's card. Grey, like the wall, so the two agree.
+ * dark palette's card. In colour, like the wall, so the two agree.
  */
 export async function BrandRail() {
   const targets = await getBrandLinkTargets();
@@ -153,7 +150,7 @@ export async function BrandRail() {
             alt={hidden ? "" : name}
             loading="lazy"
             decoding="async"
-            className="h-[26px] w-full object-contain grayscale"
+            className="h-[26px] w-full object-contain"
           />
         );
 

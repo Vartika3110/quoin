@@ -6,7 +6,7 @@ import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/Categ
 import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
-import { BrandRail } from "@/components/storefront/home/BrandWall";
+import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
 import { PageSections, SectionHead } from "@/components/ui/Section";
 import {
   getCategories,
@@ -142,7 +142,15 @@ export default async function HomePage() {
               introduction, so it sits where a shortcut belongs. */}
           <section>
             <SectionHead title="Shop by brand" href="/products" linkLabel="All brands" />
+            {/* Two components, one row — and both are needed. `BrandRail`
+                is `lg:hidden` (an auto-scrolling marquee, because fourteen
+                marks wrapped at 375px is four rows of specks) and
+                `BrandWall` is `hidden lg:block` (the wrapped wall, which
+                only reads as a wall when there is width for it). Rendering
+                the rail alone left the desktop page with this heading and
+                nothing under it. */}
             <BrandRail />
+            <BrandWall />
           </section>
 
         </PageSections>
