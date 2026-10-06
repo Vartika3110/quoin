@@ -7,10 +7,9 @@ import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CatalogTabs } from "@/components/storefront/home/CatalogTabs";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
-import { TrustBar } from "@/components/storefront/home/TrustBar";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { BrandRail } from "@/components/storefront/home/BrandWall";
-import { Gutter, PageSections, SectionHead } from "@/components/ui/Section";
+import { PageSections, SectionHead } from "@/components/ui/Section";
 import {
   getCategories,
   getCategoryPriceFloors,
@@ -167,25 +166,6 @@ export default async function HomePage() {
             <SectionHead title="Shop by brand" href="/products" linkLabel="All brands" />
             <BrandRail />
           </section>
-
-          {/* One trust block, at the end.
-
-              There were two — a strip under the hero and this bar at the
-              foot — saying the same four things twice on one scroll. The
-              strip went: reassurance belongs where a reader has seen
-              enough to want it, not between the headline and the first
-              thing to do.
-
-              Everything else that stood here was a promotion. Project Hub,
-              Parcha and Pro each had a full-width pitch, Pro had two, and
-              a "final CTA" closed the page — five blocks selling four
-              destinations that `QuickActions` and the header already link
-              to. A product's home page is not a landing page, and a
-              reader who has scrolled this far has been given somewhere to
-              go six times already. */}
-          <Gutter>
-            <TrustBar />
-          </Gutter>
 
         </PageSections>
       </div>
