@@ -57,21 +57,49 @@ export function Hero({
     <section className="grid overflow-hidden rounded-2xl border border-line-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
       {/* Solid, not a wash over the photograph: every word on this panel
           is read, and read type belongs on a flat ground. */}
-      <div className="flex flex-col justify-center bg-raised px-5 py-8 sm:py-16 lg:px-12 lg:py-20">
-        <Eyebrow>Build better. Buy smarter.</Eyebrow>
+      {/* Over the photograph on a phone, beside it from `lg`.
+ 
+          Stacked, the picture took the whole first screen and pushed the
+          sentence saying what Quoin is below the fold — so the opening
+          view was a building with no caption. Laid over it, the two
+          arrive together.
+ 
+          `col-start-1 row-start-1` puts the panel and the photograph in
+          the same grid cell instead of two; from `lg` the explicit
+          columns take over and they sit side by side again, which is
+          where there is room for both. */}
+      <div className="relative z-10 col-start-1 row-start-1 flex flex-col justify-end px-5 pb-8 pt-28 text-on-deep sm:pt-40 lg:col-start-auto lg:row-start-auto lg:justify-center lg:bg-raised lg:px-12 lg:py-20 lg:text-ink">
+        {/* The photograph is a bright sky at the top and pale concrete
+            below, so white type needs something under it. A gradient
+            rather than a flat wash: the building stays readable at the
+            top of the frame and the words get their contrast where they
+            actually sit. Gone from `lg`, where the panel has its own
+            opaque ground. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/70 to-deep/25 lg:hidden"
+        />
 
-        <h1 className="mt-3 font-display text-title-lg font-semibold text-ink sm:mt-4 sm:text-display-sm lg:text-display-sm xl:text-display">
+        {/* The eyebrow is accent-coloured, which is a brown on a
+            photograph of concrete at golden hour — it disappeared. Light
+            below `lg`, its own colour from `lg` where the panel is
+            opaque again. */}
+        <span className="relative [&_*]:!text-on-deep lg:[&_*]:!text-accent">
+          <Eyebrow>Build better. Buy smarter.</Eyebrow>
+        </span>
+
+        <h1 className="relative mt-3 font-display text-title-lg font-semibold sm:mt-4 sm:text-display-sm lg:text-display-sm xl:text-display">
           Everything you need to build, renovate and reimagine your space.
         </h1>
 
-        <p className="mt-3 max-w-md text-body leading-relaxed text-muted sm:mt-5 sm:text-body-lg">
+        <p className="relative mt-3 max-w-md text-body leading-relaxed text-on-deep/80 sm:mt-5 sm:text-body-lg lg:text-muted">
           Materials, products, expert services and project tools — brought
           together in one intelligent platform.
         </p>
 
         {/* Side by side on a phone rather than stacked: two full-width
             buttons is 120px of the first screen spent on two taps. */}
-        <div className="mt-6 flex items-center gap-2 sm:mt-8 sm:gap-3">
+        <div className="relative mt-6 flex items-center gap-2 sm:mt-8 sm:gap-3">
           <Button
             href="/products"
             size="lg"
@@ -92,10 +120,10 @@ export function Hero({
           </Button>
         </div>
 
-        <ul className="mt-6 flex flex-col gap-1.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-x-5">
+        <ul className="relative mt-6 flex flex-col gap-1.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-x-5">
           {TICKS.map((tick) => (
-            <li key={tick} className="flex items-center gap-1.5 text-caption text-muted">
-              <Check className="size-3.5 shrink-0 text-accent" />
+            <li key={tick} className="flex items-center gap-1.5 text-caption text-on-deep/85 lg:text-muted">
+              <Check className="size-3.5 shrink-0 text-on-deep lg:text-accent" />
               {tick}
             </li>
           ))}
@@ -110,11 +138,11 @@ export function Hero({
             line below is then the specific version of this one, and two
             sentences about geography stacked reads as a disclaimer. */}
         {areas.length > 0 && chosen == null && (
-          <p className="mt-4 flex items-start gap-1.5 text-caption leading-snug text-muted">
-            <Pin className="mt-0.5 size-3.5 shrink-0 text-accent" />
+          <p className="relative mt-4 flex items-start gap-1.5 text-caption leading-snug text-on-deep/85 lg:text-muted">
+            <Pin className="mt-0.5 size-3.5 shrink-0 text-on-deep lg:text-accent" />
             <span>
               Delivering in {formatAreas(areas)}.{" "}
-              <Link href="/contact" className="text-accent">
+              <Link href="/contact" className="underline underline-offset-2 lg:text-accent lg:no-underline">
                 Somewhere else?
               </Link>
             </span>
@@ -149,7 +177,7 @@ export function Hero({
         blurDataURL={null}
         sizes="(min-width: 1024px) 45vw, 100vw"
         priority
-        className="order-first h-full min-h-56 w-full lg:order-none lg:aspect-auto"
+        className="col-start-1 row-start-1 h-full min-h-[26rem] w-full sm:min-h-[32rem] lg:col-start-auto lg:row-start-auto lg:min-h-0 lg:aspect-auto"
       />
     </section>
   );
