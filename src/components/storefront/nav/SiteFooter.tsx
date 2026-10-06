@@ -243,28 +243,31 @@ export function SiteFooter() {
             ))}
           </ul>
 
+          {/* The registered name and GSTIN, once they are real.
+
+              The owner is filling these in directly, so the loud "these
+              are placeholders" banner that used to sit at the foot of
+              this page is gone at their instruction. What it was
+              guarding against is not: printing `SAMPLE PRIVATE LIMITED`
+              and a made-up GSTIN in the position a customer and a
+              payment gateway's reviewer both read as the registered
+              entity is a worse failure than printing neither, because a
+              placeholder nobody flagged is indistinguishable from a
+              claim. So while `COMPANY_DETAILS_ARE_SAMPLE` holds, the
+              line says only what is true — the year and the trading
+              name — and the registration details appear the moment
+              `src/lib/company.ts` carries real ones. */}
           <p className="mt-4 text-micro leading-relaxed text-faint app:mt-0 lg:text-center">
-            © {new Date().getFullYear()} {COMPANY.legalName}. All rights
-            reserved. GSTIN {COMPANY.gstin}.
+            © {new Date().getFullYear()}{" "}
+            {COMPANY_DETAILS_ARE_SAMPLE ? COMPANY.tradingName : COMPANY.legalName}.
+            All rights reserved.
+            {COMPANY_DETAILS_ARE_SAMPLE ? null : ` GSTIN ${COMPANY.gstin}.`}
           </p>
 
           <p className="mt-1.5 text-micro leading-relaxed text-faint lg:text-center">
             Prices include GST where applicable. Delivery times apply to the
             areas listed at checkout.
           </p>
-
-          {COMPANY_DETAILS_ARE_SAMPLE ? (
-            /* Loud on purpose, and only while the details are
-               placeholders. A sample GSTIN printed as though it were real
-               is a worse failure than an obviously unfinished footer —
-               the same argument `ToConfirm` makes on the legal pages.
-               Deleting this line is `COMPANY_DETAILS_ARE_SAMPLE = false`,
-               which is the same edit that makes it untrue. */
-            <p className="mt-3 text-micro font-semibold text-accent lg:text-center">
-              Company name, GSTIN, email and phone above are placeholders —
-              replace them in src/lib/company.ts before launch.
-            </p>
-          ) : null}
         </div>
       </div>
     </footer>
