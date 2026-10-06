@@ -56,6 +56,14 @@ export default async function HomePage() {
     cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
   ]);
 
+  /* Eight, the same eight at both widths. Fourteen fits neither shape
+     cleanly — four across leaves a last row of two, and on a phone it is
+     seven rows of cards before the next section — so the page shows two
+     full rows and sends the rest to `/categories`. The cut is
+     alphabetical, which is worth knowing: the six left out start with
+     later letters, they are not lesser departments. */
+  const featured = categories.slice(0, 8);
+
   return (
     <AppShell fullBleed headerSlot={<EntryCards />}>
       {/* Site-wide identity, emitted once and only here. Repeating
@@ -97,21 +105,18 @@ export default async function HomePage() {
               index is where it belongs and this is the decision: a few
               departments, with what it costs to start in each. */}
           <section>
-            {/* No "See all". Every department is on this page now, so a
-                link to the page that lists them would lead somewhere the
-                reader is already standing. `/categories` is unchanged and
-                still reachable from the header's category menu. */}
             <SectionHead
               title="Shop by category"
               subtitle="Priced from the manufacturer's own list."
+              href="/categories"
             />
-            <CategoryCards categories={categories} priceFloors={priceFloors} />
-            {/* All fourteen, four across. Three full rows and a last row
-                of two: a ragged final row is what showing everything costs
-                when the count is not a multiple of four, and padding it
-                with departments that do not exist is not an option. */}
+            <CategoryCards categories={featured} priceFloors={priceFloors} />
+            {/* Four across: two full rows of eight. The remaining six are
+                behind the section's own "See all", and behind the
+                header's category menu, which carries all fourteen at
+                every width. */}
             <div className="hidden grid-cols-4 gap-3 lg:grid">
-              {categories.map((category, i) => {
+              {featured.map((category, i) => {
                 const floor = priceFloors.get(category.id);
                 return (
                   <CategoryTile

@@ -6,15 +6,16 @@ import { formatPrice } from "@/lib/types/catalog";
 import type { Category } from "@/lib/types/catalog";
 
 /**
- * Every department, as cards with a price on them.
+ * Departments, as cards with a price on them.
  *
- * It showed four for a while, on the argument that "can I afford to
- * start" stops being an answer and becomes a price list once it is asked
- * too many times. The owner wants the full set, and the shape holds it:
- * these are two-up rows 56px tall, so fourteen of them is a block a
- * reader scans rather than a page they have to scroll past, and it
- * removes the question of why four particular departments were the ones
- * on the home page.
+ * The difference between this and a department rail is the question it
+ * answers. A rail of thumbnails answers "what do you sell"; a card that
+ * says *From ₹380* answers "can I afford to start", which is the
+ * question someone opens a materials app with.
+ *
+ * The caller decides how many. It has been four, then all fourteen, and
+ * is currently eight — two-up rows 56px tall, so eight is four rows and
+ * a block a reader takes in at once rather than scrolls past.
  *
  * The floor is the cheapest active variant in the department, computed in
  * one grouped query rather than per card — see `getCategoryPriceFloors`.
