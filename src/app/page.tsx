@@ -19,7 +19,9 @@ import {
   getCategories,
   getCategoryPriceFloors,
   getTopPicks,
+  listProducts,
 } from "@/lib/data/catalog";
+import { PREMIUM_FLOOR_RUPEES } from "@/lib/browse-params";
 import { listServices } from "@/lib/data/services";
 import { listTopRooms } from "@/lib/data/studio";
 import { formatPrice } from "@/lib/types/catalog";
@@ -74,6 +76,38 @@ export default async function HomePage() {
          a product page somebody may never reach — see `Hero`. */
       listServiceAreas(),
     ]);
+
+  /* Two more product rails, from one query each and after the batch above
+     rather than inside it — `getTopPicks` explains what a wide fan-out
+     costs a pooled Postgres, and the first batch is already seven deep.
+
+     Photographed products only, for the reason `getTopPicks` gives, and
+     nothing already on the Project essentials row. Either rail comes back
+     short or empty rather than padded; `hasEnough` then drops it. */
+  const [selectsPage, arrivalsPage] = await Promise.all([
+    listProducts({
+      minPricePaise: PREMIUM_FLOOR_RUPEES * 100,
+      sort: "newest",
+      pageSize: 30,
+    }),
+    listProducts({ sort: "newest", pageSize: 30 }),
+  ]);
+  const shown = new Set(picks.map((p) => p.id));
+  const takePhotographed = (items: typeof picks, limit: number) => {
+    const out: typeof picks = [];
+    const photos = new Set<string>();
+    for (const product of items) {
+      if (out.length === limit) break;
+      if (!product.photo || product.photoIsIllustration) continue;
+      if (shown.has(product.id) || photos.has(product.photo)) continue;
+      photos.add(product.photo);
+      out.push(product);
+    }
+    out.forEach((p) => shown.add(p.id));
+    return out;
+  };
+  const selects = takePhotographed(selectsPage.items, 10);
+  const arrivals = takePhotographed(arrivalsPage.items, 10);
 
   /* Eight tiles: two full rows of four. Four across is what the brief
      asks for and what the rest of this page is built on — the quick
@@ -199,6 +233,22 @@ export default async function HomePage() {
             </section>
           )}
 
+          {hasEnough(selects) && (
+            <section>
+              <SectionHead
+                title="Architectural Selects"
+                subtitle="The upper end of the catalogue, from ₹5,000."
+                href="/premium"
+                linkLabel="View all"
+              />
+              <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-6">
+                {selects.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+          )}
+
           <section>
             <SectionHead
               title="Expert services"
@@ -217,6 +267,22 @@ export default async function HomePage() {
                 linkLabel="Open Studio"
               />
               <StudioRow rooms={rooms} />
+            </section>
+          )}
+
+          {hasEnough(arrivals) && (
+            <section>
+              <SectionHead
+                title="New arrivals"
+                subtitle="The newest photographed lines in the catalogue."
+                href="/products?sort=newest"
+                linkLabel="View all"
+              />
+              <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-6">
+                {arrivals.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
             </section>
           )}
 

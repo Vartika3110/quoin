@@ -7,18 +7,18 @@ import { SectionHead } from "@/components/ui/Section";
 import { Crown } from "@/components/icons";
 import { getProductFacets, listProducts } from "@/lib/data/catalog";
 import { readBrowseParams, toProductQuery } from "@/lib/browse-request";
-import { floorPrice } from "@/lib/browse-params";
+import { PREMIUM_FLOOR_RUPEES, floorPrice } from "@/lib/browse-params";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Premium Studio — Quoin",
+  title: "Architectural Selects — Quoin",
   description:
     "The upper end of the catalogue: sanitaryware, fittings and appliances at ₹5,000 and above.",
 };
 
 /**
- * Premium Studio.
+ * Architectural Selects (formerly Premium Studio).
  *
  * The home page has carried a **PREMIUM STUDIO · Bespoke products** tile
  * and the navigation a **Premium Products** entry since launch, and both
@@ -58,9 +58,6 @@ export const metadata: Metadata = {
  * honest about being a price cut, in the subtitle and here.
  */
 
-/** The prototype's line, in rupees. See the note above. */
-const PREMIUM_FLOOR_RUPEES = 5000;
-
 export default async function PremiumPage({
   searchParams,
 }: {
@@ -86,14 +83,14 @@ export default async function PremiumPage({
       <div className="pt-4 lg:pt-6">
         <div className="mb-3 px-5 lg:px-0">
           <Breadcrumb
-            items={[{ label: "Home", href: "/" }, { label: "Premium Studio" }]}
+            items={[{ label: "Home", href: "/" }, { label: "Architectural Selects" }]}
           />
         </div>
 
         <SectionHead
           level={1}
           size="lg"
-          title="Premium Studio"
+          title="Architectural Selects"
           /* Says what the shelf actually is. "Hand-picked by our design
              team" would be the natural line here and nobody has picked
              anything — the page is a price cut of the catalogue, and a

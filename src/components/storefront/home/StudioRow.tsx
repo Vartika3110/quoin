@@ -1,3 +1,4 @@
+import { Play } from "@/components/icons";
 import { ImageCard } from "@/components/ui/Card";
 import type { IdeaView } from "@/lib/types/studio";
 import { ROOM_LABEL } from "@/lib/types/studio";
@@ -38,6 +39,16 @@ export function StudioRow({ rooms }: { rooms: IdeaView[] }) {
           ratio="4 / 5"
           sizes="(min-width: 1024px) 18vw, 60vw"
           className="w-44 shrink-0 lg:w-auto"
+          /* A clip is marked as one. Its `imageUrl` is the poster, so
+             without this a video and a photograph are the same card. */
+          overlay={
+            room.video && (
+              <span className="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-photo-cta/85 px-2 py-1 text-micro font-medium text-on-photo-cta backdrop-blur-sm">
+                <Play className="size-3" />
+                Video
+              </span>
+            )
+          }
         />
       ))}
     </div>

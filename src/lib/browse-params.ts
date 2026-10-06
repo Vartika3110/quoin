@@ -2,6 +2,13 @@ import type { FulfilmentType } from "@/lib/types/catalog";
 import type { ProductSort } from "@/lib/data/catalog";
 
 /**
+ * Where Architectural Selects starts, in rupees. The `/premium` page and the
+ * home page's Architectural Selects rail both cut the catalogue here, so the
+ * rail and the page behind its "View all" are the same listing.
+ */
+export const PREMIUM_FLOOR_RUPEES = 5000;
+
+/**
  * The browse query, as it appears in the URL.
  *
  * Filters live in the address bar rather than in component state, which is
