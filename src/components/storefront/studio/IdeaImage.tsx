@@ -50,6 +50,7 @@ export function IdeaImage({
   sizes,
   className,
   preload = false,
+  ratio,
 }: {
   src: string | null;
   alt: string;
@@ -68,6 +69,21 @@ export function IdeaImage({
       True for the handful of tiles above the fold, and no more: preloading
       a whole feed is the same as not preloading any of it. */
   preload?: boolean;
+  /**
+   * Force the box to a shape, e.g. `"4 / 5"`, instead of taking the
+   * picture's own.
+   *
+   * The feed uses it. Left to their intrinsic ratios the tiles are every
+   * shape the uploads happen to be — 1:1, 3:2, 16:9 — and a masonry of
+   * those leaves the columns ending at different points with ragged
+   * paper between them. One shape for every tile and `object-cover` on
+   * top makes the wall a wall.
+   *
+   * Unset everywhere else, because a detail page showing a room cropped
+   * to a grid's convenience is the grid deciding what the photograph is
+   * of.
+   */
+  ratio?: string;
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -121,8 +137,12 @@ export function IdeaImage({
       {...(blurDataUrl
         ? { placeholder: "blur" as const, blurDataURL: blurDataUrl }
         : {})}
+      style={ratio ? { aspectRatio: ratio } : undefined}
       className={cn(
-        "h-auto w-full object-cover",
+        /* `h-full` with a forced ratio, `h-auto` without: the first fills
+           the shape the caller asked for, the second lets the picture
+           set its own. */
+        ratio ? "size-full object-cover" : "h-auto w-full object-cover",
         /* The ground under a photograph that has not arrived. Painted on
            the element itself rather than a wrapper so it is exactly the
            reserved box and cannot peek out from behind the image. */
