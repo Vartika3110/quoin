@@ -54,6 +54,7 @@ const COLUMNS = [
     title: "Company",
     links: [
       { href: "/contact", label: "Contact us" },
+      { href: "/faq", label: "FAQs" },
       { href: "/consult", label: "Talk to an expert" },
       { href: "/services", label: "Expert services" },
       { href: "/pro", label: "Quoin Pro" },

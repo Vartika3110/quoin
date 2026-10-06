@@ -65,19 +65,29 @@ export function TrustStrip() {
   );
 }
 
-/** The desktop cards. From `lg` only. */
+/**
+ * One line, at every width.
+ *
+ * This was four cards, each with an icon, a heading and a sentence under
+ * it — a grid of boxes closing a page whose whole problem was too many
+ * boxes. Four claims set as four cards also reads as four features being
+ * sold; set as one line it reads as what it is, a footnote a reader
+ * glances at on the way past.
+ *
+ * The short labels are the ones the phone strip already used, so the
+ * claim is identical at both sizes rather than growing a longer promise
+ * on a wider screen. The sentences underneath are not lost — each is on
+ * the page that can actually honour it: the delivery promise on a product
+ * page, the consultation on /consult, the card-storage line in the
+ * checkout and the refunds policy.
+ */
 export function TrustBar() {
   return (
-    <ul className="hidden grid-cols-2 gap-px overflow-hidden rounded-card border border-line-soft bg-line-soft lg:grid lg:grid-cols-4">
-      {CLAIMS.map(({ Icon, title, detail }) => (
-        <li key={title} className="flex flex-col gap-2 bg-surface p-4">
-          <Icon className="size-5 text-accent" />
-          <div>
-            <p className="text-caption font-semibold leading-tight text-ink">
-              {title}
-            </p>
-            <p className="mt-1 text-micro leading-snug text-muted">{detail}</p>
-          </div>
+    <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 px-5 text-caption text-muted lg:px-0">
+      {CLAIMS.map(({ Icon, short }) => (
+        <li key={short} className="flex items-center gap-1.5">
+          <Icon className="size-4 shrink-0 text-accent" />
+          {short}
         </li>
       ))}
     </ul>

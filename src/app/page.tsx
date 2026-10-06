@@ -2,26 +2,20 @@ import { cookies } from "next/headers";
 import { AppShell } from "@/components/storefront/AppShell";
 import { JsonLd } from "@/components/analytics/JsonLd";
 import { organizationSchema, webSiteSchema } from "@/lib/seo";
-import { ProductCard } from "@/components/storefront/ProductCard";
 import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CatalogTabs } from "@/components/storefront/home/CatalogTabs";
-import { QuickActions } from "@/components/storefront/home/QuickActions";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
-import { RecentlyViewed } from "@/components/storefront/home/RecentlyViewed";
 import { TrustBar } from "@/components/storefront/home/TrustBar";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { BrandRail } from "@/components/storefront/home/BrandWall";
-import { StudioRow } from "@/components/storefront/home/StudioRow";
-import { Gutter, PageSections, SectionHead, hasEnough } from "@/components/ui/Section";
+import { Gutter, PageSections, SectionHead } from "@/components/ui/Section";
 import {
   getCategories,
   getCategoryPriceFloors,
-  getTopPicks,
 } from "@/lib/data/catalog";
 import { listServices } from "@/lib/data/services";
-import { listTopRooms } from "@/lib/data/studio";
 import { formatPrice } from "@/lib/types/catalog";
 import {
   AREA_COOKIE,
@@ -60,15 +54,11 @@ export const dynamic = "force-dynamic";
  * the two products — Project Hub and Pro — that make it more than a shop.
  */
 export default async function HomePage() {
-  const [categories, picks, priceFloors, services, rooms, chosen, serviceAreas] =
+  const [categories, priceFloors, services, chosen, serviceAreas] =
     await Promise.all([
       getCategories(),
-      getTopPicks(),
       getCategoryPriceFloors(),
       listServices(),
-      /* Six: five for the row and one spare, so the hero's picture is
-         the best-saved room and the row beneath it still has five. */
-      listTopRooms(6),
       cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
       /* Named on the first screen rather than left to a pincode box on
          a product page somebody may never reach — see `Hero`. */
@@ -118,22 +108,15 @@ export default async function HomePage() {
             <Hero chosen={chosen} areas={serviceAreas.map((a) => a.name)} />
           </div>
 
-          {/* The four verbs. The entry cards in the header slot are the
-              four *places*; this is the four things to do in them, and it
-              is the first thing under the hero because it is the answer
-              to "what can I do here". */}
-          <QuickActions />
-
           {/* One categories block, not three.
 
               This page carried Shop by Category (four priced cards), Shop
               by Department (all fourteen as a rail) and Plan by Room
               (eight rooms) — the same catalogue asked three ways, in three
-              different shapes, within one scroll. A reader used one of
-              them and paid attention past the other two. The header's
-              category menu already holds the full index at every width,
-              so the index is where it belongs and this is the decision:
-              a few departments, with what it costs to start in each. */}
+              different shapes, within one scroll. The header's category
+              menu already holds the full index at every width, so the
+              index is where it belongs and this is the decision: a few
+              departments, with what it costs to start in each. */}
           <section>
             <SectionHead
               title="Shop by category"
@@ -166,39 +149,6 @@ export default async function HomePage() {
             </div>
           </section>
 
-          {/* Brands are navigation in this trade, not decoration — people
-              arrive wanting Jaquar or UltraTech by name. The rail stays
-              and the logo wall under it does not: two components for one
-              row of marks, the second of which was a grid of logos with
-              nothing to click through to that the rail does not already
-              reach. */}
-          <section>
-            <SectionHead title="Shop by brand" href="/products" linkLabel="All brands" />
-            <BrandRail />
-          </section>
-
-          {/* Where you were. Client-rendered and renders nothing at all on
-              a first visit, which is why it sits this high: on a return
-              visit it is the most useful thing on the page, and on a
-              first visit it costs nothing. */}
-          <RecentlyViewed />
-
-          {hasEnough(picks) && (
-            <section>
-              <SectionHead
-                title="Project essentials"
-                subtitle="Photographed lines from across the catalogue."
-                href="/products"
-                linkLabel="View all"
-              />
-              <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-6">
-                {picks.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </section>
-          )}
-
           <section>
             <SectionHead
               title="Expert services"
@@ -208,17 +158,15 @@ export default async function HomePage() {
             <ServicesRow services={services.slice(0, 4)} />
           </section>
 
-          {hasEnough(rooms) && (
-            <section>
-              <SectionHead
-                title="From the Studio"
-                subtitle="Finished rooms, and what each one is made of."
-                href="/studio"
-                linkLabel="Open Studio"
-              />
-              <StudioRow rooms={rooms} />
-            </section>
-          )}
+          {/* Brands last, because this is the one row on the page a reader
+              arrives already knowing they want — somebody looking for
+              Jaquar searches or filters, they do not scroll the home page
+              for a logo. It is a shortcut for the return visit, not an
+              introduction, so it sits where a shortcut belongs. */}
+          <section>
+            <SectionHead title="Shop by brand" href="/products" linkLabel="All brands" />
+            <BrandRail />
+          </section>
 
           {/* One trust block, at the end.
 
