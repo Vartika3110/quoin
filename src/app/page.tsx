@@ -5,7 +5,6 @@ import { organizationSchema, webSiteSchema } from "@/lib/seo";
 import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
 import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
-import { CatalogTabs } from "@/components/storefront/home/CatalogTabs";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { BrandRail } from "@/components/storefront/home/BrandWall";
@@ -81,31 +80,26 @@ export default async function HomePage() {
 
       <div className="mx-auto w-full max-w-shell lg:px-6">
         <PageSections>
-          {/* One first screen at every width.
+          {/* The first screen, and the only navigation on it.
 
-              There used to be two: an editorial hero from `lg`, and a
-              rail plus a three-slide banner carousel on a phone. The
-              carousel is gone. It carried the scaffolding artwork this
-              page is not supposed to lead with, it said "Sorted in
-              Minutes" over a photograph of a building site, and two
-              different first screens meant two different answers to what
-              Quoin is — the one question the top of a home page exists to
-              settle.
+              A phone used to open on three rows of links stacked on top
+              of each other before any content: the entry cards, this
+              catalogue rail, and the tab bar pinned at the bottom. All
+              three went to the same handful of places — Services in two
+              of them, Products and Studio in all three — so a reader's
+              first scroll was the same four destinations offered three
+              times in three visual languages.
+
+              The rail is the one that went. The entry cards carry the
+              same four doors with room to say what each one is, and the
+              tab bar is permanent. What the rail had that neither does —
+              Interiors and Lighting — are two categories out of fourteen,
+              and the header's category menu holds all of them.
 
               The hero stacks on a phone and the photograph is on top, so
-              a reader sees a finished room before they read a word about
-              it. The rail stays above it: it is a filter on the
-              catalogue, not a banner, and it belongs where a thumb starts.
-
-              `space-y-5` rather than a page section between them — the
-              rail reads as part of the same block, and `PageSections`'
-              40px would say they are two unrelated things. */}
-          <div className="space-y-5">
-            <div className="lg:hidden">
-              <CatalogTabs />
-            </div>
-            <Hero chosen={chosen} areas={serviceAreas.map((a) => a.name)} />
-          </div>
+              a reader sees a finished building before they read a word
+              about it. */}
+          <Hero chosen={chosen} areas={serviceAreas.map((a) => a.name)} />
 
           {/* One categories block, not three.
 
