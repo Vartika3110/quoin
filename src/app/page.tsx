@@ -58,6 +58,10 @@ export const dynamic = "force-dynamic";
  * no such department: this catalogue's fourteen are materials and
  * fittings. Interiors live in Studio, which has its own section above.
  */
+/** How many of the roster the home page shows. The rest are behind the
+    section's own "View all". */
+const HOME_PROFESSIONALS = 8;
+
 const CATEGORY_RAILS = [
   { slug: "bathware-plumbing", title: "Bathware & sanitary" },
   { slug: "tiling-adhesives", title: "Tiling & adhesives" },
@@ -373,9 +377,15 @@ export default async function HomePage() {
                   page, which is where somebody who has chosen one is
                   going anyway. */}
               <ServiceIconRail services={services} />
-              {/* The roster the reference design asks for. Sample data
-                  for now, labelled as such by the rail itself. */}
-              {people.length > 0 && <ProfessionalRail people={people} />}
+              {/* Eight, not all thirty. On a phone the rest were behind a
+                  swipe and cost nothing, but from `lg` the rail becomes a
+                  grid and thirty people is ten rows — one home-page
+                  section taller than the rest of the page put together.
+                  The roster is not the home page's job; "View all" leads
+                  to it. */}
+              {people.length > 0 && (
+                <ProfessionalRail people={people.slice(0, HOME_PROFESSIONALS)} />
+              )}
             </section>
           )}
 
