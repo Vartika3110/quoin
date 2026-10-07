@@ -34,7 +34,6 @@ export function WishlistRow() {
     <section>
       <SectionHead
         title="Your wishlist"
-        subtitle="Hearted, with today's price."
         href="/account/wishlist"
         linkLabel="See all"
       />

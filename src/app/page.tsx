@@ -252,7 +252,6 @@ export default async function HomePage() {
           <section>
             <SectionHead
               title="Shop by category"
-              subtitle="Priced from the manufacturer's own list."
               href="/categories"
             />
             <CategoryCards categories={featured} priceFloors={priceFloors} />
@@ -289,7 +288,6 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Project essentials"
-                subtitle="Photographed lines from across the catalogue."
                 href="/products"
                 linkLabel="View all"
               />
@@ -311,7 +309,6 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Bestsellers"
-                subtitle="Ranked by what customers have actually ordered."
                 href="/products"
                 linkLabel="View all"
               />
@@ -330,7 +327,6 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Inspired by Studio"
-                subtitle="Finished rooms, and what each one is made of."
                 href="/studio"
                 linkLabel="Open Studio"
               />
@@ -344,7 +340,6 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Architectural Selects"
-                subtitle="The upper end of the catalogue, from ₹5,000."
                 href="/premium"
                 linkLabel="View all"
               />
@@ -360,7 +355,6 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Expert services"
-                subtitle="Verified professionals, booked against a real slot."
                 href="/services"
                 linkLabel="View all"
               />
@@ -413,7 +407,6 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="More to explore"
-                subtitle="Picked across every category."
                 href="/products"
                 linkLabel="View all"
               />

@@ -170,7 +170,22 @@ export function SiteFooter() {
           whether a bar is mounted, and the cost of being wrong is 48px of
           blank paper. */}
       <div className="mx-auto max-w-shell px-5 pb-36 pt-8 app:pt-6 lg:px-6 lg:pb-14 lg:pt-14">
-        <div className="pt-7 app:hidden lg:grid lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-8 lg:pt-8">
+        {/* **Desktop only.** On a phone this block was 743px — most of a
+            screen — of wordmark, mission statement, support details and
+            two columns of links, under a page that already carries a
+            permanent tab bar and a header with the whole catalogue menu
+            in it. A footer is how a *web page* ends; a phone screen with
+            fixed chrome top and bottom does not end, and nobody has ever
+            scrolled to the bottom of one to navigate.
+
+            What a phone keeps is below: the legal strip and the two lines
+            of disclosure. Those are not navigation — they are things a
+            customer and a payment gateway's reviewer both have to be able
+            to find, and no amount of chrome elsewhere replaces them.
+
+            Contact is not lost with it. "Contact us" is the first link in
+            the strip below, and Help & Support sits in the account. */}
+        <div className="hidden pt-7 app:hidden lg:grid lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-8 lg:pt-8">
           <div>
             <p className="font-display text-title tracking-[0.18em] text-ink lg:text-title-lg">
               QUOIN
@@ -266,6 +281,11 @@ export function SiteFooter() {
               complaint both look at the foot of the page. */}
           <ul className="flex flex-wrap gap-x-4 gap-y-1.5 app:hidden">
             {[
+              /* First, and the reason this strip is the whole phone
+                 footer: with the columns gone it is the only way to reach
+                 support from the foot of a page. */
+              { href: "/contact", label: "Contact us" },
+              { href: "/faq", label: "FAQs" },
               { href: "/privacy", label: "Privacy" },
               { href: "/terms", label: "Terms" },
               { href: "/refunds", label: "Refunds & cancellations" },
