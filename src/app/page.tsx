@@ -8,6 +8,7 @@ import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
 import { ParchaLine } from "@/components/storefront/home/ParchaLine";
+import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
 import { ServiceIconRail } from "@/components/storefront/home/ServiceIconRail";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { StudioRow } from "@/components/storefront/home/StudioRow";
@@ -22,6 +23,7 @@ import {
 } from "@/lib/data/catalog";
 import { PREMIUM_FLOOR_RUPEES } from "@/lib/browse-params";
 import { listServices } from "@/lib/data/services";
+import { listProfessionals } from "@/lib/data/professionals";
 import { listTopRooms } from "@/lib/data/studio";
 import { formatPrice } from "@/lib/types/catalog";
 import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
@@ -61,7 +63,7 @@ export const dynamic = "force-dynamic";
  * piece of navigation on the first screen.
  */
 export default async function HomePage() {
-  const [categories, priceFloors, picks, bestsellers, rooms, services, chosen] =
+  const [categories, priceFloors, picks, bestsellers, rooms, services, people, chosen] =
     await Promise.all([
       getCategories(),
       getCategoryPriceFloors(),
@@ -71,6 +73,7 @@ export default async function HomePage() {
          photograph does not leave a gap. */
       listTopRooms(6),
       listServices(),
+      listProfessionals(),
       cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
     ]);
 
@@ -280,6 +283,9 @@ export default async function HomePage() {
               />
               {/* Every trade to choose from, then four read in full. */}
               <ServiceIconRail services={services} />
+              {/* The roster the reference design asks for. Sample data
+                  for now, labelled as such by the rail itself. */}
+              {people.length > 0 && <ProfessionalRail people={people} />}
               <ServicesRow services={services.slice(0, 4)} />
             </section>
           )}
