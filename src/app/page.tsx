@@ -10,7 +10,6 @@ import { CategoryCards } from "@/components/storefront/home/CategoryCards";
 import { ParchaLine } from "@/components/storefront/home/ParchaLine";
 import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
 import { ServiceIconRail } from "@/components/storefront/home/ServiceIconRail";
-import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { StudioRow } from "@/components/storefront/home/StudioRow";
 import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
 import { PageSections, SectionHead, hasEnough } from "@/components/ui/Section";
@@ -281,12 +280,21 @@ export default async function HomePage() {
                 href="/services"
                 linkLabel="View all"
               />
-              {/* Every trade to choose from, then four read in full. */}
+              {/* Every trade to choose from, then the people who do it.
+
+                  The four `ServiceCard`s that used to close this section
+                  are gone at the owner's instruction. They were the long
+                  form — pricing basis, timeline, what is included — of
+                  four of the ten trades named in the row above, so the
+                  section asked the reader to choose twice: once from
+                  icons, then again from cards covering less than half the
+                  same list. The detail is still on each service's own
+                  page, which is where somebody who has chosen one is
+                  going anyway. */}
               <ServiceIconRail services={services} />
               {/* The roster the reference design asks for. Sample data
                   for now, labelled as such by the rail itself. */}
               {people.length > 0 && <ProfessionalRail people={people} />}
-              <ServicesRow services={services.slice(0, 4)} />
             </section>
           )}
 
