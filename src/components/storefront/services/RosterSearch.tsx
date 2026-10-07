@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Search } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
@@ -29,7 +29,24 @@ import type { Professional } from "@/lib/data/professionals";
  * trade, and where. Not on the booking slug — "installation" is how
  * carpentry is filed, not what anybody would type.
  */
-export function RosterSearch({ people }: { people: Professional[] }) {
+export function RosterSearch({
+  people,
+  leading,
+}: {
+  people: Professional[];
+  /**
+   * Rendered to the left of the field, on the same line — the page's
+   * breadcrumb, at the owner's instruction.
+   *
+   * It reads oddly as a prop and is right on the page: "Home › Services"
+   * and the field that searches Services are one row of orientation, and
+   * giving them separate lines spent two rows saying where you are
+   * before the list began. The breadcrumb cannot live inside this
+   * component's own file because it is the *page's* trail, not the
+   * roster's.
+   */
+  leading?: ReactNode;
+}) {
   const [query, setQuery] = useState("");
   const [trade, setTrade] = useState<string | null>(null);
 
@@ -54,20 +71,24 @@ export function RosterSearch({ people }: { people: Professional[] }) {
 
   return (
     <div>
-      <div className="px-5 lg:px-0">
-        <label className="flex items-center gap-2.5 rounded-full border border-line bg-surface px-4 py-3 focus-within:border-accent">
-          <Search className="size-5 shrink-0 text-muted" />
+      <div className="flex items-center gap-3 px-5 lg:px-0">
+        {leading ? <div className="shrink-0">{leading}</div> : null}
+
+        {/* `min-w-0 flex-1` so the field takes what the trail leaves and
+            the placeholder truncates rather than pushing the row wide. */}
+        <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 focus-within:border-accent">
+          <Search className="size-4 shrink-0 text-muted" />
           <span className="sr-only">Search the roster</span>
           <input
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by name, trade or area"
+            placeholder="Name, trade or area"
             /* `[&::-webkit-search-cancel-button]:hidden` because Safari's
                own clear button sits on the pill's right edge and reads as
                a second control. The field clears by selecting and
                deleting, like every other field on the site. */
-            className="min-w-0 flex-1 bg-transparent text-body-sm text-ink outline-none placeholder:text-faint [&::-webkit-search-cancel-button]:hidden"
+            className="min-w-0 flex-1 bg-transparent text-caption text-ink outline-none placeholder:text-faint [&::-webkit-search-cancel-button]:hidden"
           />
         </label>
 

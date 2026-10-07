@@ -37,25 +37,7 @@ export default async function ServicesPage() {
   return (
     <AppShell phoneSearch={false}>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Services" }]} />
-        </div>
-
         <PageSections>
-          {/* The heading, and nothing under it. The standfirst and the
-              two buttons went at the owner's instruction: this page is a
-              list of people, the band below already offers the call, and
-              a reader who has opened Services has made the choice those
-              buttons were asking them to make. */}
-          <header className="px-5 lg:px-0">
-            {/* No eyebrow. "EXPERT SERVICES" over "Find a professional
-                who has built it before" labelled the page twice, and the
-                breadcrumb above already says Services. */}
-            <h1 className="font-display max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
-              Find a professional who has built it before.
-            </h1>
-          </header>
-
           <Gutter>
             <ConsultBand
               title="Not sure which trade you need?"
@@ -72,7 +54,14 @@ export default async function ServicesPage() {
                 title="The people who do the work"
                 subtitle="Booked through Quoin, paid against a quote after the visit."
               />
-              <RosterSearch people={people} />
+              <RosterSearch
+                people={people}
+                leading={
+                  <Breadcrumb
+                    items={[{ label: "Home", href: "/" }, { label: "Services" }]}
+                  />
+                }
+              />
             </section>
           )}
 
