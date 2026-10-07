@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { Headset } from "@/components/icons";
 import { useStickyBarTaken } from "@/components/storefront/StickyBar";
 import { cn } from "@/components/ui/cn";
-import { useCart } from "@/lib/store/cart";
 
 /**
  * Talk to an expert, from anywhere.
@@ -41,7 +40,6 @@ const SILENT_PATHS = ["/cart", "/checkout", "/signin", "/consult"];
 
 export function ConsultBubble() {
   const pathname = usePathname();
-  const { count, ready } = useCart();
   const stickyTaken = useStickyBarTaken();
   /* The same threshold the header compacts at, so the card leaving and
      the bubble arriving are one movement rather than two. */
@@ -59,12 +57,17 @@ export function ConsultBubble() {
    * two. Treating them alike left the bubble floating a tab bar's height
    * above nothing on every product and listing page.
    *
-   * `ready` is false until the cart has been read out of storage, so the
-   * first paint puts the bubble low and the transition slides it up —
-   * which is a slide rather than the jump you get from swapping the class
-   * with no transition on it.
    */
-  const twoBarsBelow = !stickyTaken && ready && count > 0;
+  /* **Only a page's own bottom bar moves it.** The cart bar used to lift
+     it as well, so adding something to the basket made the button jump a
+     tab bar's height up the screen — which is the one moment a reader is
+     watching that corner, and it read as the page shifting under them.
+     It does not need to move: the cart bar rides *above* the tab bar, and
+     the button parks on the tab bar's own line, so the two never meet.
+
+     A `StickyBar` is different. `MobileTabBar` stands down for it, so that
+     bar occupies the line the button parks on and it has to clear it. */
+  const liftedOverOwnBar = stickyTaken;
 
   return (
     <Link
@@ -92,8 +95,8 @@ export function ConsultBubble() {
            A page with its own action bar *and* a cart bar still stacks,
            so the bubble lifts clear of both — there is no room beside
            two bars. */
-        twoBarsBelow
-          ? "bottom-[max(8.75rem,calc(8.25rem_+_env(safe-area-inset-bottom)))]"
+        liftedOverOwnBar
+          ? "bottom-[max(4.75rem,calc(4.25rem_+_env(safe-area-inset-bottom)))]"
           : "bottom-[calc(0.625rem_+_env(safe-area-inset-bottom))]",
       )}
     >

@@ -25,7 +25,7 @@ export const ACCOUNT_SECTIONS = [
   { href: "/account/orders", label: "Orders", Icon: Package },
   { href: "/account/projects", label: "Projects", Icon: Layers },
   { href: "/account/services", label: "Services", Icon: Briefcase },
-  { href: "/account/wishlist", label: "Saved", Icon: Heart },
+  { href: "/account/wishlist", label: "Wishlist", Icon: Heart },
   { href: "/account/documents", label: "Documents", Icon: Document },
   { href: "/account/addresses", label: "Addresses", Icon: Pin },
   { href: "/account/payments", label: "Payments", Icon: CreditCard },
