@@ -107,14 +107,20 @@ export function Hero({ chosen }: { chosen: AreaChoice | null }) {
             locality attached is a slogan, and this has to read as a fact
             about where the customer is. */}
         {chosen?.etaMinutes != null && (
-          <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-muted">
-            <span className="inline-flex items-center gap-1.5 text-ink">
-              <Clock className="size-4 text-accent" />
+          /* `relative`, like every other line on this panel. Without it
+             the line sat *under* the scrim rather than on it, and a
+             reader who had chosen an area got the one sentence addressed
+             to them personally rendered as a grey smudge on a
+             photograph. The colours follow the rest of the panel too:
+             light over the picture, the panel's own ink from `lg`. */
+          <p className="relative mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-on-deep/85 lg:text-muted">
+            <span className="inline-flex items-center gap-1.5 text-on-deep lg:text-ink">
+              <Clock className="size-4 text-on-deep lg:text-accent" />
               <span className="nums font-semibold">{chosen.etaMinutes} minutes</span>
             </span>
             <span>on in-stock items to</span>
-            <span className="inline-flex items-center gap-1 text-ink">
-              <Pin className="size-3.5 text-accent" />
+            <span className="inline-flex items-center gap-1 text-on-deep lg:text-ink">
+              <Pin className="size-3.5 text-on-deep lg:text-accent" />
               {chosen.name}
             </span>
           </p>
