@@ -88,22 +88,39 @@ const CATEGORY_RAILS = [
  * piece of navigation on the first screen.
  */
 export default async function HomePage() {
-  const [categories, priceFloors, picks, bestsellers, rooms, services, people] =
-    await Promise.all([
-      getCategories(),
-      getCategoryPriceFloors(),
-      getTopPicks(),
-      getBestsellers(10),
-      /* Six: five for the row and one spare, so a room that loses its
-         photograph does not leave a gap. */
-      listTopRooms(6),
-      listServices(),
-      listProfessionals(),
-    ]);
+  /* **Three at a time, not seven.**
+     `getTopPicks` records what a wide fan-out costs a pooled Postgres:
+     every query held at once is a connection held at once, and enough of
+     them exhausts the pool and times the page out — "which is how the
+     home page started returning 500 in production". This page grew from
+     four blocks to ten, and with it the burst grew back to seven
+     simultaneous queries on top of the shell's own, against a pooler
+     whose limit is 17. It started failing with P1001 and P2024.
 
-  /* Architectural Selects, after the batch above rather than inside it.
-     `getTopPicks` explains what a wide fan-out costs a pooled Postgres,
-     and that batch is already seven deep. */
+     So the page asks in rounds. Each round is small enough to be safe and
+     wide enough that the page is not simply serial; a round is only as
+     slow as its slowest member, and these are indexed reads. Adding a
+     section means adding it to a round, not widening one indefinitely —
+     which is the mistake this comment exists to stop being repeated. */
+  const [categories, priceFloors] = await Promise.all([
+    getCategories(),
+    getCategoryPriceFloors(),
+  ]);
+
+  const [picks, bestsellers] = await Promise.all([
+    getTopPicks(),
+    getBestsellers(10),
+  ]);
+
+  const [rooms, services, people] = await Promise.all([
+    /* Six: five for the row and one spare, so a room that loses its
+       photograph does not leave a gap. */
+    listTopRooms(6),
+    listServices(),
+    listProfessionals(),
+  ]);
+
+  /* Architectural Selects, in a round of its own. */
   /* Not `sort: "newest"`. The most recently imported premium products
      are an illustrated batch — the newest thirty contain no photographed
      product at all — so sorting by date fills the rail with nothing this
@@ -129,10 +146,12 @@ export default async function HomePage() {
     .map((c) => c.slug)
     .filter((slug) => !railedSlugs.includes(slug as (typeof railedSlugs)[number]));
 
-  const [railProducts, otherProducts] = await Promise.all([
-    listRailProducts(railedSlugs, 12),
-    listRailProducts(otherSlugs, 4),
-  ]);
+  /* Two calls, four queries — each `listRailProducts` is a window
+     function and a hydrate. Sequential, because they are the heaviest
+     reads on the page and the round above has only just let go of its
+     connections. */
+  const railProducts = await listRailProducts(railedSlugs, 12);
+  const otherProducts = await listRailProducts(otherSlugs, 4);
 
   /* Three product rails on one page can show the same thing three times.
      They cut the catalogue on different axes — a recent photographed line,
