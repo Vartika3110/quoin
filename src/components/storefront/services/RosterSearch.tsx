@@ -85,7 +85,7 @@ export function RosterSearch({
 
         {/* `min-w-0 flex-1` so the field takes what the trail leaves and
             the placeholder truncates rather than pushing the row wide. */}
-        <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2 focus-within:border-accent">
+        <label className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-2.5 focus-within:border-accent">
           <Search className="size-4 shrink-0 text-muted" />
           <span className="sr-only">Search the roster</span>
           <input

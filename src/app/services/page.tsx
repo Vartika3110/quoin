@@ -36,7 +36,14 @@ export default async function ServicesPage() {
 
   return (
     <AppShell phoneSearch={false}>
-      <div className="pt-4 lg:pt-6">
+      {/* No `pt` on a phone. `PageSections` already pads its own top, so
+          this was two paddings stacked — 41px of empty ground between the
+          header and the breadcrumb, which read as a gap where something
+          had failed to render rather than as breathing room. The page
+          used to open with a heading, which filled it; it opens with the
+          trail now, and a trail belongs close under the chrome it
+          continues. */}
+      <div className="lg:pt-6">
         <PageSections>
           {/* One component owns the whole page below the chrome: the trail
               and its field, the band, then the roster it filters. The band
