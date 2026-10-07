@@ -32,6 +32,7 @@ import type { Professional } from "@/lib/data/professionals";
 export function RosterSearch({
   people,
   leading,
+  banner,
 }: {
   people: Professional[];
   /**
@@ -46,6 +47,14 @@ export function RosterSearch({
    * roster's.
    */
   leading?: ReactNode;
+  /**
+   * Rendered between the search row and the trade chips — the consult
+   * band. Handed in rather than placed beside this component because it
+   * belongs *inside* the order: trail and field, then the offer of a
+   * call, then the filters and the list. Siblings cannot interleave like
+   * that without the page knowing what this component's first row is.
+   */
+  banner?: ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [trade, setTrade] = useState<string | null>(null);
@@ -93,6 +102,8 @@ export function RosterSearch({
         </label>
 
       </div>
+
+      {banner ? <div className="mt-4">{banner}</div> : null}
 
       {/* The trades, as a row to tap. A chip answers the common case in
           one tap where the field above needs a word typed correctly, and

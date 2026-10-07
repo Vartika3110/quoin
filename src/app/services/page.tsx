@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { Gutter, SectionHead, PageSections } from "@/components/ui/Section";
+import { Gutter, PageSections } from "@/components/ui/Section";
 import { ConsultBand } from "@/components/storefront/ConsultBand";
 import { listProfessionals } from "@/lib/data/professionals";
 import { RosterSearch } from "@/components/storefront/services/RosterSearch";
@@ -38,22 +38,13 @@ export default async function ServicesPage() {
     <AppShell phoneSearch={false}>
       <div className="pt-4 lg:pt-6">
         <PageSections>
-          <Gutter>
-            <ConsultBand
-              title="Not sure which trade you need?"
-              detail="Describe the job on a free video call and we will scope it"
-            />
-          </Gutter>
-
-          {/* Every one of them, not the eight the home page shows. This is
-              the page that "View all" leads to, so it has to be the whole
-              roster or the link is a lie. */}
+          {/* One component owns the whole page below the chrome: the trail
+              and its field, the band, then the roster it filters. The band
+              is handed in rather than rendered beside it because the search
+              row has to sit *above* it and the chips below — which is one
+              component's layout, not two siblings'. */}
           {people.length > 0 && (
             <section>
-              <SectionHead
-                title="The people who do the work"
-                subtitle="Booked through Quoin, paid against a quote after the visit."
-              />
               <RosterSearch
                 people={people}
                 leading={
@@ -61,11 +52,17 @@ export default async function ServicesPage() {
                     items={[{ label: "Home", href: "/" }, { label: "Services" }]}
                   />
                 }
+                banner={
+                  <Gutter>
+                    <ConsultBand
+                      title="Not sure which trade you need?"
+                      detail="Describe the job on a free video call and we will scope it"
+                    />
+                  </Gutter>
+                }
               />
             </section>
           )}
-
-
 
         </PageSections>
       </div>
