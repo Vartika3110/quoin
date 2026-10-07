@@ -13,7 +13,7 @@ import { RecentlyViewed } from "@/components/storefront/home/RecentlyViewed";
 import { TrustBar } from "@/components/storefront/home/TrustBar";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { BrandRail } from "@/components/storefront/home/BrandWall";
-import { StudioRow } from "@/components/storefront/home/StudioRow";
+import { DesignRenovate } from "@/components/storefront/home/DesignRenovate";
 import { Gutter, PageSections, SectionHead, hasEnough } from "@/components/ui/Section";
 import {
   getCategories,
@@ -68,9 +68,8 @@ export default async function HomePage() {
       getTopPicks(),
       getCategoryPriceFloors(),
       listServices(),
-      /* Six: five for the row and one spare, so the hero's picture is
-         the best-saved room and the row beneath it still has five. */
-      listTopRooms(6),
+      /* Three: the Design & Renovate band's collage. */
+      listTopRooms(3),
       cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
       /* Named on the first screen rather than left to a pincode box on
          a product page somebody may never reach — see `Hero`. */
@@ -258,17 +257,11 @@ export default async function HomePage() {
             <ServicesRow services={services.slice(0, 4)} />
           </section>
 
-          {hasEnough(rooms) && (
-            <section>
-              <SectionHead
-                title="From the Studio"
-                subtitle="Finished rooms, and what each one is made of."
-                href="/studio"
-                linkLabel="Open Studio"
-              />
-              <StudioRow rooms={rooms} />
-            </section>
-          )}
+          {/* The whole job, in one band. After the single trades above it,
+              because "an electrician" and "your whole home" are the same
+              question asked at two sizes, and a reader who has just seen
+              the first is ready for the second. */}
+          <DesignRenovate rooms={rooms} />
 
           {hasEnough(arrivals) && (
             <section>

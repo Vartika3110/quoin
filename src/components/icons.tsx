@@ -264,16 +264,6 @@ export const Back = (p: IconProps) => (
   </Svg>
 );
 
-/** Maps the `icon` string on a CatalogTab to its component. */
-export const TAB_ICONS = {
-  grid: Grid,
-  helmet: Helmet,
-  bricks: Bricks,
-  crown: Crown,
-  sofa: Sofa,
-  lamp: LampFloor,
-} as const;
-
 /** Tower block — the design-platform tile. Windows read at 24px; a plain
     outlined rectangle would be indistinguishable from a card icon. */
 export const Building = (p: IconProps) => (
@@ -702,3 +692,13 @@ export const GoogleG = (p: IconProps) => (
     />
   </svg>
 );
+
+/** Maps the `icon` string on a CatalogTab to its component. */
+export const TAB_ICONS = {
+  grid: Grid,
+  helmet: Helmet,
+  trend: Trend,
+  crown: Crown,
+  sofa: Sofa,
+  lamp: LampFloor,
+} as const;

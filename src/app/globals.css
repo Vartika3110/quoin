@@ -91,6 +91,10 @@
   --quoin-deep: #2a160a;
   --quoin-deep-soft: #4a2f1c;
   --quoin-on-deep: #f5ede1;
+  /* Accent tone for type and marks on the espresso bands. `accent-bright`
+     is a mid brown and is only 3.3:1 on `deep`; this is the light tan the
+     same family reads as on a dark ground (8.8:1 on `deep`, 8.2:1 in dark). */
+  --quoin-on-deep-accent: #d8b28b;
   /* Gold survives for Pro only, where it still means "premium". */
   --quoin-pro: #b08b45;
   --quoin-pro-wash: rgb(176 139 69 / 0.12);
@@ -357,6 +361,7 @@
   --color-deep: var(--quoin-deep);
   --color-deep-soft: var(--quoin-deep-soft);
   --color-on-deep: var(--quoin-on-deep);
+  --color-on-deep-accent: var(--quoin-on-deep-accent);
   --color-pro: var(--quoin-pro);
   --color-pro-wash: var(--quoin-pro-wash);
 
