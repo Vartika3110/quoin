@@ -41,12 +41,17 @@ export function EntryCards() {
           href={href}
           className="group flex flex-col items-center gap-1.5 text-center"
         >
-          {/* A square that fills its column rather than a fixed size: four
-              across a 320px screen is a 70px cell, and the mark should use
-              it. `max-w` stops it ballooning on a tablet, where the same
-              four columns are much wider. */}
-          <span className="grid aspect-square w-full max-w-16 place-items-center rounded-2xl border border-line-soft bg-accent-wash text-accent transition-transform duration-200 ease-out-quart group-active:scale-[0.96]">
-            <Icon className="size-6 lg:size-7" />
+          {/* **No tile behind the mark.** The reference sets its category
+              icons bare on the page ground — no plate, no border, no tint
+              — and that is what makes a row of them read as a set of
+              things rather than a row of buttons. It also leaves the slot
+              ready for the illustrated marks, which carry their own
+              colour and would fight a tinted plate under them.
+
+              The mark grows to fill the space the plate was taking, so
+              the row keeps its weight. */}
+          <span className="grid h-12 w-full place-items-center text-accent transition-transform duration-200 ease-out-quart group-active:scale-[0.94] lg:h-14">
+            <Icon className="size-8 lg:size-9" />
           </span>
 
           {/* `overflow-wrap:anywhere` is a net rather than a plan — every
