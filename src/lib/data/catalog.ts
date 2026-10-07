@@ -383,6 +383,74 @@ export async function getBestsellers(limit = 10): Promise<Product[]> {
     .map(toProduct);
 }
 
+/**
+ * The first few products of several departments, in one query.
+ *
+ * The home page carries a shelf per department, and the obvious
+ * implementation — `listProducts({ categorySlug })` once per rail — is
+ * the exact fan-out that took the home page down before. `getTopPicks`
+ * carries the full note: a `findMany` per category means that many
+ * connections asked for at once, and against a pooled Postgres eight of
+ * them is enough to exhaust Prisma's pool and time the page out.
+ *
+ * So the same shape as that fix. A window function ranks each
+ * department's products server-side and one `findMany` hydrates the
+ * winners, which is two connections however many rails the page grows.
+ *
+ * Ordered by name rather than date: a department's newest products are
+ * whatever the last import happened to contain, which puts one supplier's
+ * batch at the front of a shelf that is meant to show the department.
+ *
+ * Returned keyed by slug, and a department with nothing sellable is
+ * simply absent rather than present-and-empty — the caller drops a rail
+ * on `hasEnough` either way.
+ */
+export async function listRailProducts(
+  slugs: readonly string[],
+  perCategory = 12,
+): Promise<Map<string, Product[]>> {
+  if (slugs.length === 0) return new Map();
+
+  const ranked = await db.$queryRaw<{ id: string; slug: string }[]>`
+    SELECT id, slug FROM (
+      SELECT p.id AS id,
+             c.slug AS slug,
+             ROW_NUMBER() OVER (
+               PARTITION BY p."categoryId" ORDER BY p.name ASC
+             ) AS rank
+      FROM products p
+      JOIN categories c ON c.id = p."categoryId"
+      WHERE p."isActive"
+        AND c.slug = ANY(${[...slugs]}::text[])
+        AND EXISTS (
+          SELECT 1 FROM product_variants v
+          WHERE v."productId" = p.id AND v."isActive"
+        )
+    ) ranked
+    WHERE rank <= ${perCategory}
+  `;
+
+  if (ranked.length === 0) return new Map();
+
+  const rows = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: { ...PRODUCT_QUERY.where, id: { in: ranked.map((r) => r.id) } },
+  });
+
+  /* Postgres returned the rows in its own order; the order that matters
+     is the ranking above, which is what each shelf is sorted by. */
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const out = new Map<string, Product[]>();
+  for (const { id, slug } of ranked) {
+    const row = byId.get(id);
+    if (!row) continue;
+    const list = out.get(slug) ?? [];
+    list.push(toProduct(row));
+    out.set(slug, list);
+  }
+  return out;
+}
+
 /** Null rather than throwing — the route turns a miss into a 404. */
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const row = await db.product.findFirst({

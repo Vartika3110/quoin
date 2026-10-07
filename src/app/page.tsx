@@ -19,6 +19,7 @@ import {
   getCategoryPriceFloors,
   getTopPicks,
   listProducts,
+  listRailProducts,
 } from "@/lib/data/catalog";
 import { PREMIUM_FLOOR_RUPEES } from "@/lib/browse-params";
 import { listServices } from "@/lib/data/services";
@@ -113,18 +114,23 @@ export default async function HomePage() {
     pageSize: 60,
   });
 
-  /* One query per department rail, plus the catch-all beneath them. */
-  const [railPages, morePage] = await Promise.all([
-    Promise.all(
-      CATEGORY_RAILS.map((rail) =>
-        listProducts({ categorySlug: rail.slug, sort: "name", pageSize: 12 }),
-      ),
-    ),
-    /* Wide, because it is filtered hard below: the departments with a
-       rail of their own are dropped whole, and `bathware-plumbing` alone
-       is 1,595 of the catalogue's 2,513 sellable products, so a narrow
-       page would be almost entirely things this row must not show. */
-    listProducts({ sort: "name", pageSize: 250 }),
+  /* One query for every department shelf, not one per shelf — see
+     `listRailProducts`. Eight `listProducts` calls fired together is the
+     fan-out that took this page down once already. */
+  /* The departments *without* a shelf, which is what the catch-all row
+     at the foot of the page is for. Asked for by name rather than taken
+     from a wide page of everything: sorted across the whole catalogue,
+     the first few hundred products by name are mostly bathware — 1,595
+     of 2,513 sellable lines — so filtering a general page left this row
+     with nothing and it disappeared. */
+  const railedSlugs = CATEGORY_RAILS.map((rail) => rail.slug);
+  const otherSlugs = categories
+    .map((c) => c.slug)
+    .filter((slug) => !railedSlugs.includes(slug as (typeof railedSlugs)[number]));
+
+  const [railProducts, otherProducts] = await Promise.all([
+    listRailProducts(railedSlugs, 12),
+    listRailProducts(otherSlugs, 4),
   ]);
 
   /* Three product rails on one page can show the same thing three times.
@@ -151,26 +157,40 @@ export default async function HomePage() {
   /* The department rails take what the featured rows did not, and feed
      the same set forward — otherwise "More to explore" opens with the
      twelve products the reader just scrolled past. */
-  const railSections = CATEGORY_RAILS.map((rail, i) => {
-    const items = railPages[i]!.items.filter((p) => !shown.has(p.id)).slice(0, 10);
+  const railSections = CATEGORY_RAILS.map((rail) => {
+    const items = (railProducts.get(rail.slug) ?? [])
+      .filter((p) => !shown.has(p.id))
+      .slice(0, 10);
     items.forEach((p) => shown.add(p.id));
     return { ...rail, items };
   });
 
-  /* Everything else — and *else* means the whole department, not just
-     the ten products already on screen. Dropping only what was shown let
-     the remaining 1,585 bathware lines fill this row, so a reader who had
-     just scrolled a bathware shelf and a tiling shelf reached "More to
-     explore" and found more bathware. The point of the row is the rest of
-     the catalogue. */
-  const railedCategoryIds = new Set(
-    categories
-      .filter((c) => CATEGORY_RAILS.some((rail) => rail.slug === c.slug))
-      .map((c) => c.id),
+  /* Round-robin across the departments with no shelf of their own, not
+     all of one then all of the next. Flattening the map grouped them, so
+     a grid of twenty-four opened with four tools, then four paints — which
+     reads as four more shelves with the headings taken off rather than as
+     a mixed shelf. Taking one from each in turn is what makes "picked
+     across every category" true of the first screen, not just the whole.
+
+     Twelve, which is six rows two-up on a phone. Twenty-four was twelve
+     rows and turned the foot of the page into a listing; this row is an
+     invitation to keep browsing, and `/products` is where the listing
+     actually lives. */
+  const pools = [...otherProducts.values()].map((list) =>
+    list.filter((p) => !shown.has(p.id)),
   );
-  const more = morePage.items
-    .filter((p) => !shown.has(p.id) && !railedCategoryIds.has(p.categoryId))
-    .slice(0, 10);
+  const MORE_TO_EXPLORE = 12;
+  const more: typeof picks = [];
+  for (let depth = 0; more.length < MORE_TO_EXPLORE; depth += 1) {
+    const before = more.length;
+    for (const pool of pools) {
+      if (more.length === MORE_TO_EXPLORE) break;
+      const product = pool[depth];
+      if (product) more.push(product);
+    }
+    /* Every pool exhausted — stop rather than spin. */
+    if (more.length === before) break;
+  }
 
   /* Eight, the same eight at both widths. Fourteen fits neither shape
      cleanly — four across leaves a last row of two, and on a phone it is
@@ -388,7 +408,14 @@ export default async function HomePage() {
                 href="/products"
                 linkLabel="View all"
               />
-              <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-5">
+              {/* A grid, not a rail — the one row on this page that is
+                  meant to be scrolled *down*. Every shelf above it is a
+                  horizontal rail, which is right for a department a reader
+                  is sampling; this is the end of the page, where somebody
+                  still looking wants a wall to read rather than another
+                  thing to swipe. Two across on a phone, so twelve
+                  products is six rows. */}
+              <div className="grid grid-cols-2 gap-3 px-5 sm:grid-cols-3 lg:grid-cols-4 lg:px-0 xl:grid-cols-5">
                 {more.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
