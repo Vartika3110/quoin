@@ -1,9 +1,16 @@
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { ApiError, handler, ok, parseBody } from "@/lib/http";
-import { InvalidPhoneError, normalizePhone } from "@/lib/auth/phone";
-import { setSessionCookie, signSession } from "@/lib/auth/session";
-import { OTP_LENGTH, OTP_MAX_ATTEMPTS, verifyCode } from "@/lib/auth/otp";
+import { InvalidPhoneError, maskPhone, normalizePhone } from "@/lib/auth/phone";
+import {
+  isSupabaseAuthConfigured,
+  supabaseRouteClient,
+} from "@/lib/auth/supabase";
+import {
+  resolveSupabaseUser,
+  SupabaseIdentityError,
+} from "@/lib/auth/supabase-user";
+import { OTP_LENGTH } from "@/lib/auth/otp";
 
 const Body = z.object({
   phone: z.string().min(1, "Enter your mobile number"),
@@ -15,11 +22,29 @@ const Body = z.object({
 /**
  * POST /api/v1/auth/otp/verify
  *
- * Verifies a code and starts a session, creating the account on first
- * successful verification. This is the only place a User row is created,
- * so every account in the system has a verified phone by construction.
+ * Hands the code to Supabase Auth and, if it is good, turns the account
+ * Supabase vouches for into a Quoin customer.
+ *
+ * Two identities meet here and it is worth being precise about which
+ * does what. **Supabase decides whether the phone is real** — it checked
+ * the code, it rejected the expired one, it counted the attempts, and on
+ * success `verifyOtp` writes a session into the cookie jar. **This app
+ * decides which customer that is**, because `User.id` is what twenty
+ * relations hang off and no amount of auth migration changes that.
+ *
+ * The phone in the request body is used for one thing only: telling
+ * Supabase which challenge to check the code against. The number that
+ * reaches the database comes back off the verified Supabase user — see
+ * `resolveSupabaseUser`. A phone a browser typed is never identity.
  */
 export const POST = handler(async (request) => {
+  if (!isSupabaseAuthConfigured()) {
+    throw new ApiError(
+      "conflict",
+      "Sign-in by SMS is not available yet. Please try again later.",
+    );
+  }
+
   const body = await parseBody(request, Body);
 
   let phone: string;
@@ -32,69 +57,68 @@ export const POST = handler(async (request) => {
     throw error;
   }
 
-  const now = new Date();
-
-  const challenge = await db.otpChallenge.findFirst({
-    where: { phone, consumedAt: null, expiresAt: { gt: now } },
-    orderBy: { createdAt: "desc" },
+  const supabase = await supabaseRouteClient();
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone,
+    token: body.code,
+    type: "sms",
   });
 
-  /* Same message whether nothing was ever sent, it expired, or it was
-     already used — distinguishing them tells an attacker which numbers
-     have live challenges. */
-  const invalid = () =>
-    new ApiError("bad_request", "That code is incorrect or has expired.", {
-      code: "Incorrect or expired code",
+  if (error || !data.user) {
+    console.error(`[auth] supabase verifyOtp failed for ${maskPhone(phone)}`, {
+      status: error?.status,
+      code: error?.code,
+      message: error?.message,
     });
 
-  if (!challenge) throw invalid();
+    if (error?.status === 429) {
+      throw new ApiError(
+        "rate_limited",
+        "Too many incorrect attempts. Request a new code.",
+      );
+    }
 
-  if (challenge.attempts >= OTP_MAX_ATTEMPTS) {
-    throw new ApiError(
-      "rate_limited",
-      "Too many incorrect attempts. Request a new code.",
-    );
+    /* One message whether the code was wrong, expired, or already spent.
+       Distinguishing them tells an attacker which numbers have live
+       challenges — the same reasoning the hand-rolled version carried,
+       and it survives the move to Supabase unchanged. */
+    throw new ApiError("bad_request", "That code is incorrect or has expired.", {
+      code: "Incorrect or expired code",
+    });
   }
 
-  /* Recorded before the comparison, so a crash or a dropped connection
-     mid-verify cannot be used to farm unlimited free guesses. */
-  const attempted = await db.otpChallenge.update({
-    where: { id: challenge.id },
-    data: { attempts: { increment: 1 } },
-    select: { attempts: true, codeHash: true },
-  });
-
-  if (!verifyCode(phone, body.code, attempted.codeHash)) {
-    throw invalid();
+  let resolved: { userId: string; isNewUser: boolean };
+  try {
+    resolved = await resolveSupabaseUser(data.user);
+  } catch (identityError) {
+    if (identityError instanceof SupabaseIdentityError) {
+      /* The customer is genuinely verified but cannot be seated at an
+         account — a recycled number, or two Supabase accounts for one
+         line. Signing them out again is the honest end: leaving the
+         Supabase session standing would mean a browser that is logged in
+         to nothing, and every later request silently anonymous. */
+      await supabase.auth.signOut();
+      throw new ApiError("conflict", identityError.message);
+    }
+    throw identityError;
   }
 
-  /* Consume conditionally: `consumedAt: null` in the filter means two
-     concurrent requests with the same valid code cannot both succeed. */
-  const consumed = await db.otpChallenge.updateMany({
-    where: { id: challenge.id, consumedAt: null },
-    data: { consumedAt: now },
-  });
-  if (consumed.count === 0) throw invalid();
-
-  const existing = await db.user.findUnique({
-    where: { phone },
-    select: { id: true },
+  /* Read after linking rather than returned from the resolver: this is
+     the shape the sign-in panel and the checkout step already consume,
+     and the tier and wallet on it have to come from the row, never from
+     a token body. */
+  const user = await db.user.findUniqueOrThrow({
+    where: { id: resolved.userId },
+    select: { id: true, phone: true, name: true, tier: true, walletPaise: true },
   });
 
-  const user = existing
-    ? await db.user.update({
-        where: { id: existing.id },
-        data: {},
-        select: { id: true, phone: true, name: true, tier: true, walletPaise: true },
-      })
-    : await db.user.create({
-        data: { phone },
-        select: { id: true, phone: true, name: true, tier: true, walletPaise: true },
-      });
-
-  await setSessionCookie(await signSession(user.id));
+  /* No `setSessionCookie` here any more. `verifyOtp` already wrote the
+     Supabase session through the cookie adapter in `supabaseRouteClient`,
+     and `getSession` reads it. Minting a second, self-signed cookie
+     beside it would create two sources of truth that could disagree
+     after a sign-out. */
 
   /* The client uses this to decide between sending a new customer to the
      address form and returning a known one to where they left off. */
-  return ok({ user, isNewUser: !existing });
+  return ok({ user, isNewUser: resolved.isNewUser });
 });

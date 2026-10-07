@@ -1,16 +1,11 @@
 import { z } from "zod";
-import { db } from "@/lib/db";
 import { ApiError, handler, ok, parseBody } from "@/lib/http";
 import { InvalidPhoneError, maskPhone, normalizePhone } from "@/lib/auth/phone";
-import { getOtpSender, isOtpDeliveryAvailable } from "@/lib/auth/sender";
 import {
-  generateCode,
-  hashCode,
-  otpExpiry,
-  OTP_MAX_REQUESTS_PER_WINDOW,
-  OTP_REQUEST_WINDOW_MS,
-  OTP_RESEND_COOLDOWN_MS,
-} from "@/lib/auth/otp";
+  isSupabaseAuthConfigured,
+  supabaseRouteClient,
+} from "@/lib/auth/supabase";
+import { OTP_RESEND_COOLDOWN_MS } from "@/lib/auth/otp";
 
 const Body = z.object({
   phone: z.string().min(1, "Enter your mobile number"),
@@ -19,17 +14,26 @@ const Body = z.object({
 /**
  * POST /api/v1/auth/otp/request
  *
- * Sends a login code. Sign-up and sign-in are the same call — the account
- * is created on successful verification, so the response deliberately
- * reveals nothing about whether the number is already registered.
+ * Asks Supabase Auth to send a login code.
+ *
+ * Sign-up and sign-in are the same call — `shouldCreateUser` is left at
+ * its default, so Supabase creates the account on first verification —
+ * and the response deliberately reveals nothing about whether the number
+ * is already registered.
+ *
+ * **Nothing about the code is this app's business any more.** Generation,
+ * hashing, expiry, the attempt cap and the replay check all moved into
+ * Supabase when it became the auth provider; `otp_challenges` is no
+ * longer written. What is left here is the part Supabase cannot do:
+ * deciding that "9876543210" and "+91 98765 43210" are one customer, and
+ * refusing a number that could never receive an SMS before one is paid
+ * for.
  */
 export const POST = handler(async (request) => {
-  /* Checked before anything is written, not after. An unconfigured deploy
-     would otherwise mint a challenge and a code for every customer who
-     reached this screen, none of which could ever be delivered — and the
-     customer would be left staring at a box waiting for an SMS that was
-     never sent. Same shape as the Razorpay check in `/checkout/order`. */
-  if (!isOtpDeliveryAvailable()) {
+  /* Checked before anything else, exactly as the MSG91 version was: an
+     unconfigured deploy would otherwise leave the customer staring at a
+     code box waiting for an SMS nothing ever tried to send. */
+  if (!isSupabaseAuthConfigured()) {
     throw new ApiError(
       "conflict",
       "Sign-in by SMS is not available yet. Please try again later.",
@@ -48,57 +52,38 @@ export const POST = handler(async (request) => {
     throw error;
   }
 
-  const now = new Date();
-  const windowStart = new Date(now.getTime() - OTP_REQUEST_WINDOW_MS);
+  const supabase = await supabaseRouteClient();
+  const { error } = await supabase.auth.signInWithOtp({ phone });
 
-  /* Rate limiting is keyed on the phone, not the IP: the cost being
-     controlled is outbound SMS spend and harassment of the number's real
-     owner, and both survive an IP change. */
-  const recent = await db.otpChallenge.findMany({
-    where: { phone, createdAt: { gte: windowStart } },
-    orderBy: { createdAt: "desc" },
-    select: { createdAt: true },
-  });
-
-  if (recent.length >= OTP_MAX_REQUESTS_PER_WINDOW) {
-    const oldest = recent[recent.length - 1].createdAt;
-    const retryAfterSeconds = Math.max(
-      1,
-      Math.ceil(
-        (oldest.getTime() + OTP_REQUEST_WINDOW_MS - now.getTime()) / 1000,
-      ),
+  if (error) {
+    /* Supabase's own message is not shown. It is written for a developer
+       reading a console — it names rate-limit windows, provider errors
+       and occasionally the SMS gateway's raw response — and none of that
+       belongs in front of a customer. Mapped to the three things a
+       customer can actually do about it instead. */
+    console.error(
+      `[auth] supabase signInWithOtp failed for ${maskPhone(phone)}`,
+      { status: error.status, code: error.code, message: error.message },
     );
-    throw new ApiError(
-      "rate_limited",
-      `Too many codes requested. Try again in ${Math.ceil(retryAfterSeconds / 60)} minutes.`,
-    );
-  }
 
-  if (recent.length > 0) {
-    const sinceLast = now.getTime() - recent[0].createdAt.getTime();
-    if (sinceLast < OTP_RESEND_COOLDOWN_MS) {
-      const wait = Math.ceil((OTP_RESEND_COOLDOWN_MS - sinceLast) / 1000);
+    if (error.status === 429) {
       throw new ApiError(
         "rate_limited",
-        `Please wait ${wait} seconds before requesting another code.`,
+        "Too many codes requested. Please wait a minute and try again.",
       );
     }
-  }
 
-  const code = generateCode();
-  const expiresAt = otpExpiry(now);
+    /* 422 is Supabase's answer when phone sign-ups are switched off in
+       the dashboard, or no SMS provider is wired up. Both are a
+       configuration problem on our side, not something the customer can
+       retry their way out of. */
+    if (error.status === 422) {
+      throw new ApiError(
+        "conflict",
+        "Sign-in by SMS is not available yet. Please try again later.",
+      );
+    }
 
-  await db.otpChallenge.create({
-    data: { phone, codeHash: hashCode(phone, code), expiresAt },
-  });
-
-  /* Delivery failure must not leave a challenge the customer cannot use,
-     but the row is kept for rate-limit history — a retry loop against a
-     broken gateway should still be throttled. */
-  try {
-    await getOtpSender().send(phone, code);
-  } catch (error) {
-    console.error(`[otp] delivery failed for ${maskPhone(phone)}`, error);
     throw new ApiError(
       "internal",
       "We could not send the code right now. Please try again.",
@@ -108,7 +93,9 @@ export const POST = handler(async (request) => {
   return ok({
     sent: true,
     phone: maskPhone(phone),
-    expiresAt: expiresAt.toISOString(),
+    /* The client counts this down to decide when "Resend" lights up.
+       Supabase enforces its own window server-side and answers 429 past
+       it; this is the hint, not the rule. */
     resendAfterSeconds: OTP_RESEND_COOLDOWN_MS / 1000,
   });
 });

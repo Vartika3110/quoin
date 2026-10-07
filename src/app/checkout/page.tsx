@@ -7,7 +7,7 @@ import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { isRazorpayConfigured } from "@/lib/payments/razorpay";
 import { isGoogleSignInConfigured } from "@/lib/auth/google";
-import { isOtpDeliveryAvailable } from "@/lib/auth/sender";
+import { isSupabaseAuthConfigured } from "@/lib/auth/supabase";
 import { deliveryPhoneFor, maskPhone } from "@/lib/auth/phone";
 
 export const dynamic = "force-dynamic";
@@ -74,7 +74,7 @@ export default async function CheckoutPage() {
             savedDeliveryPhone={savedDeliveryPhone}
             paymentsConfigured={paymentsConfigured}
             googleEnabled={isGoogleSignInConfigured()}
-            smsEnabled={isOtpDeliveryAvailable()}
+            smsEnabled={isSupabaseAuthConfigured()}
           />
         </div>
       </div>

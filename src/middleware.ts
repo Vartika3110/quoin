@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 /**
  * Response headers.
@@ -110,8 +111,85 @@ const PERMISSIONS_POLICY = [
   "interest-cohort=()",
 ].join(", ");
 
-export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
+/**
+ * Keeps the Supabase session alive across a navigation.
+ *
+ * Access tokens are short-lived and refresh against the refresh token.
+ * The refreshed pair has to be *written back* as cookies, and middleware
+ * is the only place in an App Router request that can do that on a page
+ * load — a Server Component may not set a cookie, which is why
+ * `supabaseReadClient()` swallows writes and why this exists to make that
+ * safe (see `src/lib/auth/supabase.ts`).
+ *
+ * `getSession()` rather than `getUser()`, and the distinction is the
+ * point: `getSession` reads the cookie and renews it only when it is
+ * actually due, where `getUser` calls the Auth server on *every*
+ * navigation — a network round trip in front of every page a customer
+ * opens. Its return value is deliberately thrown away. Nothing here
+ * trusts it; identity is established in `session.ts` by verifying the
+ * JWT's signature. This call is a refresh trigger and nothing more.
+ *
+ * Reads `process.env` directly rather than importing `@/lib/env`: this
+ * module runs on the edge runtime, and that one throws at import unless
+ * `DATABASE_URL` and `AUTH_SECRET` are present — neither of which has any
+ * business being in the edge bundle.
+ */
+async function refreshSupabaseSession(
+  request: NextRequest,
+  response: NextResponse,
+): Promise<NextResponse> {
+  const url = process.env.SUPABASE_URL;
+  const anonKey = process.env.SUPABASE_ANON_KEY;
+  if (!url || !anonKey) return response;
+
+  /* Signed-out visitors are most of a storefront's traffic and must not
+     pay for this. No session cookie, nothing to refresh. */
+  const hasSession = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+  if (!hasSession) return response;
+
+  let result = response;
+
+  const supabase = createServerClient(url, anonKey, {
+    cookies: {
+      getAll: () => request.cookies.getAll(),
+      setAll: (list) => {
+        /* Both halves are required. The request copy is what any later
+           read in this same pass sees; the response copy is what reaches
+           the browser. Writing only the response leaves this request
+           still holding the stale token. */
+        for (const { name, value } of list) {
+          request.cookies.set(name, value);
+        }
+        result = NextResponse.next({ request });
+        /* `NextResponse.next` starts with bare headers, so the security
+           headers set by the caller would be lost here. Carried over
+           rather than re-derived. */
+        for (const [key, value] of response.headers) {
+          result.headers.set(key, value);
+        }
+        for (const { name, value, options } of list) {
+          result.cookies.set(name, value, options);
+        }
+      },
+    },
+  });
+
+  try {
+    await supabase.auth.getSession();
+  } catch {
+    /* A refresh that cannot reach Supabase must not take the page down
+       with it. The customer keeps the cookies they arrived with; the
+       request is served, and `getSession` will read them as signed out
+       if they have genuinely expired. */
+  }
+
+  return result;
+}
+
+export async function middleware(request: NextRequest) {
+  let response = NextResponse.next();
 
   response.headers.set("X-Content-Type-Options", "nosniff");
   /* Full URL to this origin, bare origin to anyone else. A product URL
@@ -135,6 +213,10 @@ export function middleware(request: NextRequest) {
       "max-age=63072000; includeSubDomains; preload",
     );
   }
+
+  /* Last, so the headers above are already on the response this carries
+     over when a refresh replaces it. */
+  response = await refreshSupabaseSession(request, response);
 
   return response;
 }
