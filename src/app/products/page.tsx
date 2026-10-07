@@ -53,16 +53,27 @@ export default async function ProductsPage({
           />
         </div>
 
-        <SectionHead
-          level={1}
-          size="lg"
-          title={searching ? `Results for “${params.q}”` : "All products"}
-          subtitle={
-            searching
-              ? undefined
-              : "Everything Quoin has priced for sale, across all fourteen departments."
-          }
-        />
+        {/* A visible heading only when there is something to say that the
+            page does not already show.
+
+            "All products" over a grid of all products, with a line
+            counting the departments under it, is the page describing
+            itself to somebody who is looking at it — and it pushed the
+            first row of goods down the screen to do it. The breadcrumb
+            already says where this is. A search is different: "Results
+            for X" is the one thing the grid cannot tell you, because a
+            grid of results looks exactly like a grid.
+
+            The heading still exists when it is not drawn — `sr-only`, the
+            same arrangement `/c/[slug]` uses. A page with no `h1` is one a
+            screen reader cannot summarise and a crawler reads as
+            untitled; that is a cost with no visible benefit, which is the
+            kind worth paying attention to. */}
+        {searching ? (
+          <SectionHead level={1} size="lg" title={`Results for “${params.q}”`} />
+        ) : (
+          <h1 className="sr-only">All products</h1>
+        )}
 
         <Browse
           page={result}

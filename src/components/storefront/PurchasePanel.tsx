@@ -287,34 +287,43 @@ export function PurchasePanel({
       </div>
 
       <div className="space-y-2">
-        <Button
-          block
-          size="lg"
-          onClick={onAdd}
-          variant={added ? "subtle" : "primary"}
-        >
-          {added ? (
-            <>
-              <Check className="size-4.5" />
-              Added to cart
-            </>
-          ) : (
-            <>
-              <Cart className="size-4.5" />
-              {isBookable ? "Add this visit" : "Add to cart"}
-            </>
-          )}
-        </Button>
+        {/* One row, at the owner's instruction. Stacked, "Add to cart" ran
+            the full width and "Buy now" sat under it beside the heart,
+            which made the two actions look like a primary and an
+            afterthought — they are two ways to do the same thing, and the
+            only difference is whether you carry on shopping.
 
+            `flex-1`, never `block`: `block` is `w-full`, which in a flex
+            row takes the whole line and pushes everything after it off the
+            right edge. The labels lose a word each to fit three controls
+            across 375px — "Added" rather than "Added to cart", which the
+            tick already says, and "Add visit" rather than "Add this
+            visit". */}
         <div className="flex gap-2">
-          {/* `flex-1`, not `block`. `block` is `w-full`, which in a flex
-              row takes the whole line and pushes the wishlist button off
-              the right edge of the page. */}
+          <Button
+            size="lg"
+            onClick={onAdd}
+            variant={added ? "subtle" : "primary"}
+            className="min-w-0 flex-1"
+          >
+            {added ? (
+              <>
+                <Check className="size-4.5 shrink-0" />
+                Added
+              </>
+            ) : (
+              <>
+                <Cart className="size-4.5 shrink-0" />
+                {isBookable ? "Add visit" : "Add to cart"}
+              </>
+            )}
+          </Button>
+
           <Button
             size="lg"
             variant="secondary"
             onClick={onBuyNow}
-            className="flex-1"
+            className="min-w-0 flex-1"
           >
             Buy now
           </Button>
