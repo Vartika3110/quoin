@@ -357,10 +357,28 @@ function MobileBar({
           is what pays for it. Once an area is chosen the label is one
           short word and both fit; "Choose your area" is the unset state
           and the one that truncates. */}
+      {/* **This row is what scrolls away; search is what stays.** It was
+          the other way round once and then neither moved, and both were
+          wrong. The promise and the address are read on arrival and then
+          never again — they answer "will you come to me", which is a
+          question asked once. Search is asked continuously. So the block
+          that has done its job folds up, and the toolbar underneath it
+          rides to the top of the screen.
+
+          `grid-rows` rather than `height: auto`, because a height
+          transition from `auto` does not animate at all. */}
+      {/* Unmounted rather than collapsed. A zero-height grid row animates
+          nicely and still leaves its children in the layout — they keep
+          their geometry, and here the account avatar carried on painting
+          over the search field underneath it. A row that is gone should be
+          gone; the animation is not worth one control sitting on top of
+          another. */}
+      {!scrolled && (
+        <div>
       <div
         className={cn(
           "flex items-center gap-1.5 transition-[padding] duration-200 ease-out-quart",
-          scrolled ? "py-2" : "pb-1 pt-3",
+          "pb-1 pt-3",
         )}
       >
         {/* The promise first, the place under it — the reference design's
@@ -426,6 +444,8 @@ function MobileBar({
           <User className="size-5" />
         </Link>
       </div>
+        </div>
+      )}
 
       {/* **Nothing collapses on scroll any more.** Search and the four
           doors used to fold away into a zero-height row, leaving only the
