@@ -1,5 +1,6 @@
 import { Bolt, CheckCircle, Clock, Pin, Star } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
+import { cn } from "@/components/ui/cn";
 import { formatPrice } from "@/lib/types/catalog";
 import {
   initialsOf,
@@ -37,7 +38,20 @@ import {
  * entry point starts; nothing about this row takes a payment or
  * allocates anybody.
  */
-export function ProfessionalRail({ people }: { people: Professional[] }) {
+export function ProfessionalRail({
+  people,
+  layout = "rail",
+}: {
+  people: Professional[];
+  /**
+   * `rail` scrolls sideways — right for the home page, where the roster
+   * is a taste of something with its own page. `list` stacks, for that
+   * page: a reader who has arrived at Services is choosing from the whole
+   * roster, and a list you scroll past is read, where a rail you swipe
+   * through is sampled.
+   */
+  layout?: "rail" | "list";
+}) {
   return (
     <div>
       {PROFESSIONALS_ARE_SAMPLE ? (
@@ -51,14 +65,24 @@ export function ProfessionalRail({ people }: { people: Professional[] }) {
         </p>
       ) : null}
 
-      {/* A rail on a phone, three across from `lg`. `.rail` children
-          refuse to shrink, so the card carries its own width there and
-          the grid takes it back above. */}
-      <div className="rail gap-3 px-5 pb-1 scroll-pl-5 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-4">
+      <div
+        className={cn(
+          layout === "list"
+            ? "grid grid-cols-1 gap-3 px-5 sm:grid-cols-2 lg:grid-cols-3 lg:px-0"
+            : /* `.rail` children refuse to shrink, so the card carries its
+                 own width there and the grid takes it back above `lg`. */
+              "rail gap-3 px-5 pb-1 scroll-pl-5 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-4",
+        )}
+      >
         {people.map((person) => (
           <article
             key={person.id}
-            className="flex w-72 shrink-0 flex-col gap-3 rounded-card border border-line-soft bg-surface p-4 lg:w-auto"
+            className={cn(
+              "flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-4",
+              /* A fixed width only in the rail, where nothing else sets
+                 one. In the list the grid column is the width. */
+              layout === "list" ? "w-auto" : "w-72 shrink-0 lg:w-auto",
+            )}
           >
             <div className="flex items-center gap-3">
               {/* Initials rather than a photograph: there are no
