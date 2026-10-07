@@ -18,7 +18,6 @@ import {
   Chevron,
   ChevronDown,
   Clock,
-  Headset,
   Heart,
   Search,
   User,
@@ -434,14 +433,23 @@ function MobileBar({
         )}
       >
         <div className="overflow-hidden">
+          {/* Search first, then the doors — the order the reference
+              design uses, and the order the row is read in: somebody who
+              knows what they want types it, and the cards are for
+              somebody who does not.
+
+              **Full width**, because the Consult card that used to sit
+              beside it is gone. `ConsultBubble` floats over every phone
+              page already, so the header was offering the same
+              destination a second time on the same screen, and paying
+              120px of the search field's measure for it. */}
+          <div className="pb-2 pt-3">
+            <MobileSearchField />
+          </div>
+
           {/* Negative margin because the slot's own content is a rail
               that has to bleed through this container's gutter. */}
-          {slot && <div className="-mx-5 pt-2">{slot}</div>}
-
-          <div className="flex items-stretch gap-2 pb-3 pt-3">
-            <MobileSearchField className="min-w-0 flex-1" />
-            <ConsultCard />
-          </div>
+          {slot && <div className="-mx-5 pb-3">{slot}</div>}
         </div>
       </div>
     </div>
@@ -505,32 +513,6 @@ function MobileSearchField({ className }: { className?: string }) {
         }
       />
     </div>
-  );
-}
-
-/** Talk to an expert. A card rather than an icon, because "Consult" is a
-    service Quoin sells and not a help button. */
-function ConsultCard() {
-  return (
-    <Link
-      href="/consult"
-      /* A fixed width rather than shrink-to-fit: the search field beside
-         it is what has to keep a readable measure, and a card that sizes
-         itself to its own two words takes that decision away from it. */
-      className="flex h-13 w-[7.5rem] shrink-0 items-center gap-1.5 rounded-card border border-accent-edge bg-accent-wash px-2.5 transition-colors hover:bg-accent-wash-strong"
-    >
-      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-surface text-accent">
-        <Headset className="size-4" />
-      </span>
-      <span className="leading-tight">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.07em] text-accent">
-          Consult
-        </span>
-        <span className="block whitespace-nowrap text-[9px] text-muted">
-          Talk to Experts
-        </span>
-      </span>
-    </Link>
   );
 }
 
