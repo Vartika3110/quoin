@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { AppShell } from "@/components/storefront/AppShell";
 import { JsonLd } from "@/components/analytics/JsonLd";
 import { organizationSchema, webSiteSchema } from "@/lib/seo";
@@ -26,7 +25,6 @@ import { listServices } from "@/lib/data/services";
 import { listProfessionals } from "@/lib/data/professionals";
 import { listTopRooms } from "@/lib/data/studio";
 import { formatPrice } from "@/lib/types/catalog";
-import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
 
 /**
  * Rendered per request.
@@ -90,7 +88,7 @@ const CATEGORY_RAILS = [
  * piece of navigation on the first screen.
  */
 export default async function HomePage() {
-  const [categories, priceFloors, picks, bestsellers, rooms, services, people, chosen] =
+  const [categories, priceFloors, picks, bestsellers, rooms, services, people] =
     await Promise.all([
       getCategories(),
       getCategoryPriceFloors(),
@@ -101,7 +99,6 @@ export default async function HomePage() {
       listTopRooms(6),
       listServices(),
       listProfessionals(),
-      cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
     ]);
 
   /* Architectural Selects, after the batch above rather than inside it.
@@ -233,7 +230,7 @@ export default async function HomePage() {
               The hero stacks on a phone and the photograph is on top, so
               a reader sees a finished building before they read a word
               about it. */}
-          <Hero chosen={chosen} />
+          <Hero />
 
           {/* Straight under the hero, before the catalogue. Somebody
               arriving with a list in their hand should not have to scroll

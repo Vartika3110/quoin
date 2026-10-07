@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Badge";
 import { Photo } from "@/components/ui/Photo";
-import { ArrowRight, Clock, Pin } from "@/components/icons";
-import type { AreaChoice } from "@/lib/data/service-areas";
+import { ArrowRight } from "@/components/icons";
 
 /**
  * The first screen.
@@ -31,13 +30,13 @@ import type { AreaChoice } from "@/lib/data/service-areas";
  * what Quoin sells has no use for its sourcing policy, and the ticks
  * were the third qualifier under a sentence that needed none.
  *
- * What survives is the ETA, and only once a visitor has chosen an area —
- * "18 minutes" with no locality attached is a slogan. It scopes itself
- * to in-stock goods because three of Quoin's four fulfilment types
- * cannot honour it and the page must never imply otherwise.
+ * The area ETA has gone the same way, at the owner's instruction. The
+ * panel is a proposition and two buttons now; the header carries the
+ * delivery promise, which is where a reader looks for it and where it
+ * does not compete with the headline.
  */
 
-export function Hero({ chosen }: { chosen: AreaChoice | null }) {
+export function Hero() {
   return (
     /* Square corners, at the owner's instruction. The rounded card
          read as one tile among the tiles below it; squared off and run to
@@ -107,28 +106,6 @@ export function Hero({ chosen }: { chosen: AreaChoice | null }) {
           </Button>
         </div>
 
-        {/* Rendered only once an area is chosen — "18 minutes" with no
-            locality attached is a slogan, and this has to read as a fact
-            about where the customer is. */}
-        {chosen?.etaMinutes != null && (
-          /* `relative`, like every other line on this panel. Without it
-             the line sat *under* the scrim rather than on it, and a
-             reader who had chosen an area got the one sentence addressed
-             to them personally rendered as a grey smudge on a
-             photograph. The colours follow the rest of the panel too:
-             light over the picture, the panel's own ink from `lg`. */
-          <p className="relative mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-on-deep/85 lg:text-muted">
-            <span className="inline-flex items-center gap-1.5 text-on-deep lg:text-ink">
-              <Clock className="size-4 text-on-deep lg:text-accent" />
-              <span className="nums font-semibold">{chosen.etaMinutes} minutes</span>
-            </span>
-            <span>on in-stock items to</span>
-            <span className="inline-flex items-center gap-1 text-on-deep lg:text-ink">
-              <Pin className="size-3.5 text-on-deep lg:text-accent" />
-              {chosen.name}
-            </span>
-          </p>
-        )}
       </div>
 
       {/* Hard-cropped, and tall on a phone: the panel sits on top of it,
