@@ -36,6 +36,11 @@ wherever a status is shown.
   both go through it rather than writing `Order.status` themselves.
 - WhatsApp: `src/lib/whatsapp/` (provider) and
   `src/lib/data/order-whatsapp.ts` (what is said, and when)
+- Vendors are `Store` rows, not a second table: `/admin/vendors` and
+  `src/lib/data/admin-vendors.ts`. A new one is created **inactive** on
+  purpose — an active store wins the nearest-in-radius contest for every
+  address it covers, and one with no stock then fails to reserve for all
+  of them.
 
 Read `docs/whatsapp-orders.md` before touching any of it. It records why
 the enum was not rewritten, why a store is this app's only idea of a

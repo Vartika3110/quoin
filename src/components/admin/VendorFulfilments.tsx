@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/components/ui/Toast";
@@ -123,8 +124,16 @@ export function VendorFulfilments({
             {/* The number the vendor message was addressed to. Shown in
                 full, not masked, because this is a business contact a
                 staff member may need to ring — unlike a customer's
-                number, which is masked across the admin. */}
-            {fulfilment.vendorPhone ?? "no WhatsApp number on file"}
+                number, which is masked across the admin.
+
+                Null is the commonest cause of a failed vendor
+                notification, and the fix is one page away, so it links
+                there rather than leaving the reader to find it. */}
+            {fulfilment.vendorPhone ?? (
+              <Link href="/admin/vendors" className="text-accent">
+                no WhatsApp number — add one
+              </Link>
+            )}
           </p>
 
           <ul className="mt-2 space-y-1">

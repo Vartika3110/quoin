@@ -4,6 +4,7 @@ import {
   Box,
   Boards,
   Briefcase,
+  Building,
   Grid,
   Headset,
   Package,
@@ -39,6 +40,10 @@ export const ADMIN_SECTIONS = [
   { href: "/admin/support", label: "Support", Icon: Headset },
   { href: "/admin/reports", label: "Reports", Icon: Trend },
   { href: "/admin/inventory", label: "Inventory", Icon: Box },
+  /* Next to Inventory rather than next to Orders, deliberately: a vendor
+     *is* a store, and the thing an operator does right before or right
+     after visiting this page is stock one. */
+  { href: "/admin/vendors", label: "Vendors", Icon: Building },
   { href: "/admin/customers", label: "Customers", Icon: People },
   { href: "/admin/pricing", label: "Pricing", Icon: Rupee },
   { href: "/admin/images", label: "Images", Icon: Sparkle },

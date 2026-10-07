@@ -86,7 +86,16 @@ and from nowhere else.
 **A store is this app's only idea of a vendor.** There is no vendor
 roster behind Quoin; what physically holds the stock an order line
 reserved is the `Store` frozen onto `OrderLine.storeId`. So "notify the
-vendor" means "notify that store", and two columns make one reachable:
+vendor" means "notify that store", and two columns make one reachable.
+
+Manage them at **`/admin/vendors`**: every store, its WhatsApp number and
+contact name, whether it is live, how much tracked stock it holds, and how
+many orders are waiting on it to dispatch. The order page links straight
+here from a vendor with no number, which is the commonest cause of a
+failed notification.
+
+The same two columns are still settable from a script, which is the right
+tool for a deploy script or a bulk edit:
 
 ```
 npm run vendors:whatsapp -- --list
@@ -96,8 +105,37 @@ npm run vendors:whatsapp -- GKP-01 --clear
 
 A store with no number is not a silent failure: the vendor notification is
 written as FAILED with "No WhatsApp number on file for this recipient",
-which the admin order page shows, and retrying after running the command
-above picks the new number up.
+which the admin order page shows, and retrying after filling the number in
+picks the new one up. Changing a number never rewrites history —
+`OrderFulfilment.vendorPhone` snapshots what each past order's message was
+actually addressed to.
+
+### Adding one
+
+`/admin/vendors` → **Add a vendor**. Needs a code (`DEL-JNK`), a name, the
+coordinates, a delivery radius and a pick-and-pack time.
+
+**A new vendor is created switched off, and that is not a setting.** Every
+serviceability read in this app filters on `isActive: true`, and
+`resolveServiceability` picks the *nearest active store within its own
+radius* — so the moment a store is live it starts winning that contest for
+every address it covers. A new store has no stock, so it would then fail
+to reserve for all of them, and those customers would see "Some items in
+this basket are no longer in stock at your delivery address" with nothing
+connecting it to the store somebody added that morning. Inactive, it is
+genuinely inert: nothing reads it, no promise changes, no order routes to
+it.
+
+So the order is: add it, stock it from `/admin/inventory`, then switch it
+on. Switching on a store that still holds no tracked stock asks first and
+names that consequence; switching one *off* is always safe, and leaves
+past orders and outstanding legs alone because both snapshot the store.
+
+One thing the UI cannot protect against, and says so on the page: a
+vendor added there is not in `prisma/seed.ts`, and that script switches
+off every store whose code it does not know. Running `npm run db:seed`
+against the same database will switch a hand-added vendor off again — add
+it to `STORES` there once it is real.
 
 ### Split orders
 
@@ -435,11 +473,11 @@ to walk the whole thing.
    order and sends one.
 4. **Out for delivery, then delivered.** From the admin order page.
    Expect the statuses, the history rows, and one customer message each.
-5. **A WhatsApp failure.** Clear a store's number
-   (`npm run vendors:whatsapp -- <code> --clear`) and place an order.
-   Expect the order to be completely unaffected, a FAILED vendor
-   notification saying no number is on file, and a successful Retry after
-   setting the number.
+5. **A WhatsApp failure.** Clear a store's number — empty the field at
+   `/admin/vendors`, or `npm run vendors:whatsapp -- <code> --clear` —
+   and place an order. Expect the order to be completely unaffected, a
+   FAILED vendor notification saying no number is on file, and a
+   successful Retry after setting the number back.
 6. **A duplicate webhook.** Redeliver `payment.captured` from the
    Razorpay dashboard. Expect no second order, no second fulfilment, no
    second message, and `outcome: "duplicate"` on the delivery.
@@ -455,10 +493,14 @@ to walk the whole thing.
 
 - **Templates.** Six of them, submitted and approved in WhatsApp Manager.
   Nothing in this repository can do that.
-- **Vendor numbers.** `npm run vendors:whatsapp`. There is no stores
-  section in the admin: stores are created by seeding and change about
-  once a year, so a CRUD surface for two columns would be more code than
-  the thing it configures.
+- **Stocking a new vendor.** `/admin/vendors` adds the store and
+  `/admin/inventory` gives it stock, but the two are separate acts on
+  purpose — see "Adding one" above for why a new store starts switched
+  off, and why switching it on before it has stock is the one way that
+  screen can lose orders.
+- **Keeping `prisma/seed.ts` in step.** A vendor added through the admin
+  is not known to the seed script, which switches off every store whose
+  code it does not recognise.
 - **Refund initiation.** Unchanged by this work and still unbuilt — see
   `docs/production-audit.md`. The cancellation message says what the
   database actually records and promises nothing further.
