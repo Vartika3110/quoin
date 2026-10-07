@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Box, Building, Crown, Helmet } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
@@ -21,9 +22,10 @@ import { cn } from "@/components/ui/cn";
  * these sit under search, inside the bar that collapses on scroll.
  */
 /**
- * `art` is an illustrated mark; `Icon` is the line fallback for a door
- * that has not been drawn yet. Both are kept so the row can be filled in
- * one door at a time rather than waiting for the set.
+ * `art` is an illustrated mark; `Icon` is the line fallback. All four are
+ * drawn now, so the fallback renders nowhere — kept because a door added
+ * later should be able to ship before its illustration does, which is how
+ * these four arrived.
  *
  * The artwork has its own label baked into the bottom of the frame —
  * "Services" under the hard hat. That is cropped away by the aspect ratio
@@ -39,21 +41,25 @@ const ENTRIES: {
   Icon: typeof Box;
   art?: string;
 }[] = [
-  { href: "/studio", label: "Quoin Studio", Icon: Building },
+  { href: "/studio", label: "Quoin Studio", Icon: Building, art: "/entry/studio.webp" },
   { href: "/services", label: "Services", Icon: Helmet, art: "/entry/services.webp" },
-  { href: "/products", label: "Products", Icon: Box },
+  { href: "/products", label: "Products", Icon: Box, art: "/entry/products.webp" },
   /* `/premium`, not `/pro`. This door used to open Quoin Pro on the
      argument that there was no bespoke-products storefront to point at.
      A tile reading "Bespoke products" that opens a trade *membership*
      pitch answers a question the customer did not ask, and one they
      cannot act on either, since nobody has set a membership fee. The
      storefront exists now. */
-  { href: "/premium", label: "Architectural Selects", Icon: Crown },
+  { href: "/premium", label: "Architectural Selects", Icon: Crown, art: "/entry/selects.webp" },
 ];
 
 export function EntryCards() {
   return (
-    <div className="grid grid-cols-4 gap-2 px-5 pb-1 lg:gap-3 lg:px-0">
+    /* `pt-2` because the marks are illustrations with very little
+         optical padding of their own — set tight under the search field
+         they read as crowding it, where the line icons they replaced had
+         their own whitespace built in. */
+    <div className="grid grid-cols-4 gap-2 px-5 pb-1 pt-2 lg:gap-3 lg:px-0">
       {ENTRIES.map(({ href, label, Icon, art }) => (
         <Link
           key={href}
@@ -81,22 +87,27 @@ export function EntryCards() {
             )}
           >
             {art ? (
-              /* Taller than its frame by exactly the share of the image
-                 the label occupies — 1145px of artwork of which the last
-                 ~195 is type — so the clip above removes the words and
-                 nothing else. `max-w-none` because the frame is narrower
-                 than this height implies and the mark must not be squeezed
-                 to fit it.
+              /* Taller than its frame by about a sixth — the share of
+                 each file its baked-in label occupies — so the clip above
+                 removes the words and nothing else. `max-w-none` because
+                 the frame is narrower than this height implies and the
+                 mark must not be squeezed to fit it.
 
-                 Not `next/image`: four fixed marks a few dozen pixels
-                 tall, where a per-mark `sizes` negotiation costs more than
-                 it saves. */
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+                 `next/image` after all. The first pass used a plain `img`
+                 on the argument that four fixed marks do not need a
+                 `sizes` negotiation — true, and beside the point: the
+                 source artwork is 1536x1024 and these render about 58px
+                 tall, so serving the originals put a megabyte of
+                 decoration in the header of the home page. The optimiser
+                 resizes once and caches; `width`/`height` are intrinsic
+                 hints only, since the CSS below sets the height and lets
+                 the width follow each file's own ratio. */
+              <Image
                 src={art}
                 alt=""
-                loading="eager"
-                decoding="async"
+                width={288}
+                height={240}
+                priority
                 className="h-[3.6rem] w-auto max-w-none lg:h-[4.2rem]"
               />
             ) : (
