@@ -1,4 +1,15 @@
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
+
+/* Imported rather than referenced by path. A path string is the same URL
+   after the file behind it changes, so the optimiser's derivative — and
+   every browser that has already fetched it — keeps serving the old
+   picture: swapping artwork appeared to do nothing until caches expired.
+   A static import puts a content hash in the URL, so new bytes are a new
+   URL and a swap takes effect the moment it ships. */
+import studioArt from "../../../../public/entry/studio.webp";
+import servicesArt from "../../../../public/entry/services.webp";
+import productsArt from "../../../../public/entry/products.webp";
+import selectsArt from "../../../../public/entry/selects.webp";
 import Link from "next/link";
 import { Box, Building, Crown, Helmet } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
@@ -39,18 +50,18 @@ const ENTRIES: {
   href: string;
   label: string;
   Icon: typeof Box;
-  art?: string;
+  art?: StaticImageData;
 }[] = [
-  { href: "/studio", label: "Quoin Studio", Icon: Building, art: "/entry/studio.webp" },
-  { href: "/services", label: "Services", Icon: Helmet, art: "/entry/services.webp" },
-  { href: "/products", label: "Products", Icon: Box, art: "/entry/products.webp" },
+  { href: "/studio", label: "Quoin Studio", Icon: Building, art: studioArt },
+  { href: "/services", label: "Services", Icon: Helmet, art: servicesArt },
+  { href: "/products", label: "Products", Icon: Box, art: productsArt },
   /* `/premium`, not `/pro`. This door used to open Quoin Pro on the
      argument that there was no bespoke-products storefront to point at.
      A tile reading "Bespoke products" that opens a trade *membership*
      pitch answers a question the customer did not ask, and one they
      cannot act on either, since nobody has set a membership fee. The
      storefront exists now. */
-  { href: "/premium", label: "Architectural Selects", Icon: Crown, art: "/entry/selects.webp" },
+  { href: "/premium", label: "Architectural Selects", Icon: Crown, art: selectsArt },
 ];
 
 export function EntryCards() {
@@ -105,8 +116,14 @@ export function EntryCards() {
               <Image
                 src={art}
                 alt=""
-                width={288}
-                height={240}
+                /* The size the mark is *drawn* at, not the size of the
+                   file. A static import carries the source's own
+                   1536x1024, and without a hint the optimiser sizes the
+                   srcset from that — it served a 768px derivative, 129KB,
+                   into an 86px slot. These numbers put the whole set in a
+                   few kilobytes and still give a retina screen its 2x. */
+                width={120}
+                height={80}
                 priority
                 className="h-[3.6rem] w-auto max-w-none lg:h-[4.2rem]"
               />
