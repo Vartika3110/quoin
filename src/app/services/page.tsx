@@ -7,7 +7,7 @@ import { ConsultBand } from "@/components/storefront/ConsultBand";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Badge";
-import { ArrowRight, CheckCircle, Headset } from "@/components/icons";
+import { ArrowRight, CheckCircle } from "@/components/icons";
 import { listBookableProducts } from "@/lib/data/services";
 import { listProfessionals } from "@/lib/data/professionals";
 import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
@@ -149,25 +149,6 @@ export default async function ServicesPage() {
               </div>
             </section>
           )}
-
-          <section className="px-5 lg:px-0">
-            <Card tone="accent" padding="lg" className="flex flex-wrap items-center gap-4">
-              <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-accent text-on-accent">
-                <Headset className="size-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-body font-semibold text-ink">
-                  Not sure which trade you need?
-                </p>
-                <p className="mt-0.5 text-caption text-muted">
-                  Twenty minutes on a call, free, with nothing to buy at the end.
-                </p>
-              </div>
-              <Button href="/consult" className="shrink-0">
-                Book a consultation
-              </Button>
-            </Card>
-          </section>
 
           <section className="px-5 lg:px-0">
             <div className="rounded-card border border-line-soft bg-surface p-5">
