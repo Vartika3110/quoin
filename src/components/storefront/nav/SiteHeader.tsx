@@ -335,8 +335,6 @@ function MobileBar({
   onOpenCart: () => void;
   signedIn: boolean;
 }) {
-  const { open } = useSearch();
-
   return (
     <div className="px-5 lg:hidden">
       {/* The wordmark, the area, and the controls that are about *you*
@@ -365,26 +363,32 @@ function MobileBar({
           scrolled ? "py-2" : "pb-1 pt-3",
         )}
       >
-        <LocationPicker
-          areas={areas}
-          selected={chosen}
-          compact
-          className="min-w-0 flex-1"
-        />
+        {/* The promise first, the place under it — the reference design's
+            top line, and the right order: the number is what a customer
+            is deciding on, the locality is what qualifies it. Only once
+            they have chosen an area, because "20 minutes" with nowhere
+            attached is a slogan rather than a fact about them, and the
+            picker alone is the right prompt until then.
 
-        {/* Once the search row has collapsed away, search has to still be
-            reachable — so it comes back as an icon in the top row rather
-            than disappearing until you scroll up. */}
-        {scrolled && (
-          <button
-            type="button"
-            onClick={open}
-            aria-label="Search Quoin"
-            className="tap-target anim-fade relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink transition-colors hover:text-accent"
-          >
-            <Search className="size-5" />
-          </button>
-        )}
+            The figure is `ServiceArea.etaMinutes`, the operator's own
+            number for that locality — not a constant written here. */}
+        <div className="min-w-0 flex-1">
+          {chosen?.etaMinutes != null && (
+            <p className="flex items-baseline gap-1.5 leading-none">
+              <span className="text-micro text-muted">Quoin in</span>
+              <span className="nums font-display text-title-sm font-semibold text-ink">
+                {chosen.etaMinutes} minutes
+              </span>
+            </p>
+          )}
+
+          <LocationPicker
+            areas={areas}
+            selected={chosen}
+            compact
+            className={cn("min-w-0", chosen?.etaMinutes != null && "-ml-1 mt-0.5")}
+          />
+        </div>
 
         {/* 36px of artwork, 44px of target — see `.tap-target`. Three
             circles this size sit in a row a thumb has to hit while
@@ -423,16 +427,19 @@ function MobileBar({
         </Link>
       </div>
 
-      {/* Everything below the area row collapses on scroll. `grid-rows`
-          rather than `height: auto` so the transition actually animates —
-          a height from `auto` does not. */}
-      <div
-        className={cn(
-          "grid transition-[grid-template-rows,opacity] duration-200 ease-out-quart",
-          scrolled ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
-        )}
-      >
-        <div className="overflow-hidden">
+      {/* **Nothing collapses on scroll any more.** Search and the four
+          doors used to fold away into a zero-height row, leaving only the
+          address line pinned — so a reader who scrolled had to scroll back
+          to the top to search, and the one control the header exists for
+          was the first thing it gave up. The reference design keeps both
+          on screen the whole way down, and that is the point of a sticky
+          header: it is not a title bar, it is the toolbar.
+
+          The row is affordable now because the doors are marks and labels
+          rather than cards — the whole bar is about 150px, against 230
+          before. */}
+      <div>
+        <div>
           {/* Search first, then the doors — the order the reference
               design uses, and the order the row is read in: somebody who
               knows what they want types it, and the cards are for
