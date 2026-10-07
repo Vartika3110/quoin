@@ -84,12 +84,20 @@ export function ConsultBubble() {
         scrolled
           ? "scale-100 opacity-100"
           : "pointer-events-none scale-90 opacity-0",
-        /* One bar below (a tab bar, or a page's own action bar standing
-           in its place) clears at the shorter offset; the cart bar riding
-           above the tab bar needs both. */
+        /* **On the tab bar's own line, at its right end**, the way the
+           reference parks its round button beside the strip rather than
+           hovering over it. The tab pill is 56px tall and sits
+           `0.625rem` above the safe area, so matching those two numbers
+           puts the two on one line and makes them read as one piece of
+           chrome. `MobileTabBar` reserves the width with its own right
+           padding.
+
+           A page with its own action bar *and* a cart bar still stacks,
+           so the bubble lifts clear of both — there is no room beside
+           two bars. */
         twoBarsBelow
           ? "bottom-[max(8.75rem,calc(8.25rem_+_env(safe-area-inset-bottom)))]"
-          : "bottom-[max(4.75rem,calc(4.25rem_+_env(safe-area-inset-bottom)))]",
+          : "bottom-[calc(0.625rem_+_env(safe-area-inset-bottom))]",
       )}
     >
       <Headset className="size-6" />
