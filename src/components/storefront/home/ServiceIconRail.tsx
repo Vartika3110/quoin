@@ -45,14 +45,16 @@ export function ServiceIconRail({ services }: { services: Service[] }) {
           <Link
             key={service.slug}
             href={`/services/${service.slug}`}
-            className="group flex w-18 shrink-0 flex-col items-center gap-1.5 lg:w-auto lg:flex-1"
+            className="group flex w-16 shrink-0 flex-col items-center gap-1.5 lg:w-auto lg:flex-1"
           >
-            {/* `aspect-square` on a full-width span rather than a fixed
-                size: the tile is then as wide as the column it is in at
-                every breakpoint, and the label below sets its own width
-                instead of being clipped by the mark's. */}
-            <span className="grid aspect-square w-full place-items-center rounded-2xl border border-line-soft bg-accent-wash text-accent transition-transform duration-200 ease-out-quart group-active:scale-[0.96]">
-              <Icon className="size-6 lg:size-7" />
+            {/* A fixed square, not `aspect-square w-full`. Filling the
+                column meant ten trades across a 1100px page gave each one
+                a 100px tile — a row of marks reading as a row of buttons.
+                The mark only has to be recognisable; the cell still
+                spreads on `flex-1`, so the labels stay evenly spaced and
+                the tile sits centred in its share. */}
+            <span className="grid size-14 place-items-center rounded-2xl border border-line-soft bg-accent-wash text-accent transition-transform duration-200 ease-out-quart group-active:scale-[0.96] lg:size-16">
+              <Icon className="size-5.5 lg:size-6" />
             </span>
             <span className="text-center text-micro font-medium leading-tight text-ink">
               {service.name}
