@@ -120,7 +120,11 @@ export default async function HomePage() {
         listProducts({ categorySlug: rail.slug, sort: "name", pageSize: 12 }),
       ),
     ),
-    listProducts({ sort: "name", pageSize: 60 }),
+    /* Wide, because it is filtered hard below: the departments with a
+       rail of their own are dropped whole, and `bathware-plumbing` alone
+       is 1,595 of the catalogue's 2,513 sellable products, so a narrow
+       page would be almost entirely things this row must not show. */
+    listProducts({ sort: "name", pageSize: 250 }),
   ]);
 
   /* Three product rails on one page can show the same thing three times.
@@ -153,9 +157,20 @@ export default async function HomePage() {
     return { ...rail, items };
   });
 
-  /* Everything else, in no department order — the row for a reader who
-     has scrolled the whole page and is still browsing. */
-  const more = morePage.items.filter((p) => !shown.has(p.id)).slice(0, 10);
+  /* Everything else — and *else* means the whole department, not just
+     the ten products already on screen. Dropping only what was shown let
+     the remaining 1,585 bathware lines fill this row, so a reader who had
+     just scrolled a bathware shelf and a tiling shelf reached "More to
+     explore" and found more bathware. The point of the row is the rest of
+     the catalogue. */
+  const railedCategoryIds = new Set(
+    categories
+      .filter((c) => CATEGORY_RAILS.some((rail) => rail.slug === c.slug))
+      .map((c) => c.id),
+  );
+  const more = morePage.items
+    .filter((p) => !shown.has(p.id) && !railedCategoryIds.has(p.categoryId))
+    .slice(0, 10);
 
   /* Eight, the same eight at both widths. Fourteen fits neither shape
      cleanly — four across leaves a last row of two, and on a phone it is
