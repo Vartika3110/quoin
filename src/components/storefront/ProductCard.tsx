@@ -17,7 +17,6 @@ import {
   Minus,
   Plus,
   Ruler,
-  Sliders,
   Trash,
   Truck,
 } from "@/components/icons";
@@ -155,6 +154,11 @@ export function ProductCard({
           out, nothing cropped and no band at all. A landscape photograph
           still bands, but by a quarter rather than two fifths. It is the
           ratio that is wrong for the fewest pictures. */}
+      {/* Two boxes, because the inner one clips. The picture, the heart
+          and the delivery chip all need `overflow-hidden` to stay inside
+          the rounded corners; the Add pill has to hang *over* that edge,
+          so it lives in an outer box that does not clip. */}
+      <div className="relative">
       <div className="relative aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
         <Link href={`/p/${product.slug}`} className="block size-full">
           <ProductImage
@@ -225,7 +229,25 @@ export function ProductCard({
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col pt-2.5">
+        {/* Straddling the picture's bottom edge, as the reference does.
+            It reads as a control belonging to the product rather than a
+            row under it, and it gives the price and name the full width
+            of the card back. */}
+        <div className="absolute -bottom-4 right-2 z-10">
+          {singleVariant && !bookable ? (
+            <AddControl product={product} />
+          ) : (
+            <Link
+              href={`/p/${product.slug}`}
+              className="tap-target relative flex h-9 items-center justify-center rounded-full border-2 border-accent bg-surface px-3.5 text-caption font-bold uppercase tracking-wide text-accent shadow-sm transition-colors hover:bg-accent hover:text-on-accent"
+            >
+              Options
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col pt-5">
         <Link href={`/p/${product.slug}`} className="flex flex-1 flex-col gap-1">
           {product.brand && (
             <span className="truncate text-micro uppercase tracking-wide text-muted">
@@ -268,38 +290,6 @@ export function ProductCard({
           )}
         </Link>
 
-        {/* The action.
-
-            An "Add" that becomes a stepper in place is the interaction
-            that makes a phone storefront feel fast: the second unit is one
-            tap on a control that is already under the thumb, rather than a
-            trip to the cart. It only appears where the choice is
-            unambiguous — one variant, and not a bookable visit. Guessing a
-            pack size, a finish or a length and putting it in someone's
-            cart is worse than one more tap. */}
-        {singleVariant && !bookable ? (
-          <AddControl product={product} />
-        ) : (
-          <Link
-            href={`/p/${product.slug}`}
-            /* `tap-target`: the 40px height is the row's fixed footprint
-               (see AddControl below), so the hit area is grown behind it
-               rather than the box itself. */
-            className="tap-target relative mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-line bg-surface text-caption font-medium text-ink transition-colors duration-150 hover:border-accent hover:bg-accent-wash hover:text-accent lg:h-10"
-          >
-            {bookable ? (
-              <>
-                <Calendar className="size-4" />
-                Book a slot
-              </>
-            ) : (
-              <>
-                <Sliders className="size-4" />
-                Choose options
-              </>
-            )}
-          </Link>
-        )}
       </div>
     </article>
   );
@@ -355,10 +345,13 @@ function AddControl({ product }: { product: Product }) {
           });
         }}
         className={cn(
-          "tap-target relative mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border text-caption font-semibold transition-colors duration-150 lg:h-10",
+          /* A pill on the page's own surface, outlined rather than
+             filled: it sits on a photograph, and a tinted fill reads as
+             part of the picture where a white chip reads as a control. */
+          "tap-target relative flex h-9 items-center justify-center gap-1 rounded-full border-2 bg-surface px-3.5 text-caption font-bold uppercase tracking-wide shadow-sm transition-colors duration-150",
           flash
-            ? "border-success/30 bg-success-wash text-success"
-            : "border-accent-edge bg-accent-wash text-accent hover:bg-accent hover:text-on-accent",
+            ? "border-success text-success"
+            : "border-accent text-accent hover:bg-accent hover:text-on-accent",
         )}
       >
         {flash ? (
@@ -377,12 +370,14 @@ function AddControl({ product }: { product: Product }) {
   }
 
   return (
-    <div className="mt-3 flex h-11 items-center justify-between rounded-lg bg-accent text-on-accent lg:h-10">
+    /* Same footprint as the pill it replaces, so adding a unit does not
+       move the card under the thumb. */
+    <div className="flex h-9 items-center justify-between rounded-full bg-accent text-on-accent shadow-sm">
       <button
         type="button"
         aria-label={`Decrease quantity of ${product.title}`}
         onClick={() => setQty(line.id, line.qty - variant.stepQty)}
-        className="tap-target relative grid h-full w-11 shrink-0 place-items-center rounded-l-lg transition-colors hover:bg-accent-dim lg:w-10"
+        className="tap-target relative grid h-full w-9 shrink-0 place-items-center rounded-l-full transition-colors hover:bg-accent-dim"
       >
         {line.qty <= variant.minQty ? (
           <Trash className="size-4" />
@@ -392,7 +387,7 @@ function AddControl({ product }: { product: Product }) {
       </button>
 
       <span
-        className="nums min-w-0 flex-1 text-center text-caption font-semibold"
+        className="nums min-w-8 px-0.5 text-center text-caption font-semibold"
         aria-live="polite"
       >
         {line.qty}
@@ -402,7 +397,7 @@ function AddControl({ product }: { product: Product }) {
         type="button"
         aria-label={`Increase quantity of ${product.title}`}
         onClick={() => setQty(line.id, line.qty + variant.stepQty)}
-        className="tap-target relative grid h-full w-11 shrink-0 place-items-center rounded-r-lg transition-colors hover:bg-accent-dim lg:w-10"
+        className="tap-target relative grid h-full w-9 shrink-0 place-items-center rounded-r-full transition-colors hover:bg-accent-dim"
       >
         <Plus className="size-4" />
       </button>
