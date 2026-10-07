@@ -108,7 +108,7 @@ export function MobileTabBar() {
          strip — the one gesture that tells a customer the icon on their
          home screen is a web page. Left alone everywhere else: product
          names, SKUs and quantities are text people copy on purpose. */
-      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line-soft bg-bg/95 pt-1.5 backdrop-blur-xl app:select-none lg:hidden"
+      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line-soft bg-bg pt-1.5 app:select-none lg:hidden"
     >
       {TABS.map(({ href, label, Icon }) => {
         const on = isCurrent(pathname, href);

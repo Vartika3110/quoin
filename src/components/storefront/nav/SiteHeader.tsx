@@ -102,10 +102,18 @@ export function SiteHeader({
              edge under a translucent clock, so the space has to be
              reserved by whatever is at the top of the page. It resolves
              to nothing in a browser tab. */
-          "safe-top sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-200 ease-out-quart",
-          scrolled
-            ? "header-edge bg-bg/85 backdrop-blur-xl"
-            : "bg-bg",
+          /* **Opaque, not frosted.** This bar used a translucent ground
+             with a heavy backdrop blur once scrolled, and on a phone that
+             is what reads as the top bar "lagging": the compositor has to
+             re-sample and blur everything behind the header on every
+             scroll frame, and mobile browsers routinely serve that sample
+             a frame late — so the hero bleeding through at 15% visibly
+             trailed the page it was meant to sit on. A solid ground costs
+             nothing per frame and cannot trail. The `header-edge` shadow
+             now does the separating, which is the job the translucency
+             was doing badly. */
+          "safe-top sticky top-0 z-50 bg-bg transition-[box-shadow] duration-200 ease-out-quart",
+          scrolled && "header-edge",
         )}
       >
         {phoneBar && (
