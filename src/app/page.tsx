@@ -8,6 +8,7 @@ import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
 import { ParchaLine } from "@/components/storefront/home/ParchaLine";
+import { ServiceIconRail } from "@/components/storefront/home/ServiceIconRail";
 import { ServicesRow } from "@/components/storefront/home/ServicesRow";
 import { StudioRow } from "@/components/storefront/home/StudioRow";
 import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
@@ -277,6 +278,8 @@ export default async function HomePage() {
                 href="/services"
                 linkLabel="View all"
               />
+              {/* Every trade to choose from, then four read in full. */}
+              <ServiceIconRail services={services} />
               <ServicesRow services={services.slice(0, 4)} />
             </section>
           )}
