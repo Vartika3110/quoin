@@ -42,7 +42,11 @@ export function AppProviders({
   return (
     <ToastProvider>
       <CartProvider>
-        <WishlistProvider>
+        {/* Keyed and told about the session for the same reason
+            `ProjectsProvider` is: the wishlist moved onto the account, so
+            signing in or out has to remount it rather than leave the
+            previous account's hearts in memory. */}
+        <WishlistProvider key={String(isSignedIn)} isSignedIn={isSignedIn}>
           {/* Keyed on the session so signing in or out remounts the store.
               Without it, a logged-out tab keeps the previous account's
               projects in memory until a full reload. */}

@@ -7,6 +7,7 @@ import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
 import { ParchaLine } from "@/components/storefront/home/ParchaLine";
+import { WishlistRow } from "@/components/storefront/home/WishlistRow";
 import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
 import { ServiceIconRail } from "@/components/storefront/home/ServiceIconRail";
 import { StudioRow } from "@/components/storefront/home/StudioRow";
@@ -237,6 +238,13 @@ export default async function HomePage() {
               past eight departments to find out this site will read it —
               and somebody who has no list loses one row to it. */}
           <ParchaLine />
+
+          {/* Before the catalogue, because it is not the catalogue: these
+              are decisions the reader has already made, and somebody who
+              has made one is likelier to be here to act on it than to
+              start again. Renders nothing when the list is empty, which
+              is most visits — see `WishlistRow`. */}
+          <WishlistRow />
 
           {/* One categories block, not three.
 
