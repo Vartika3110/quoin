@@ -39,7 +39,11 @@ import type { AreaChoice } from "@/lib/data/service-areas";
 
 export function Hero({ chosen }: { chosen: AreaChoice | null }) {
   return (
-    <section className="grid overflow-hidden rounded-2xl border border-line-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+    /* Square corners, at the owner's instruction. The rounded card
+         read as one tile among the tiles below it; squared off and run to
+         the gutter it reads as the page's opening image instead of its
+         first card. */
+    <section className="grid overflow-hidden border border-line-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
       {/* Over the photograph on a phone, beside it from `lg`.
 
           Stacked, the picture took the whole first screen and pushed the
@@ -137,6 +141,14 @@ export function Hero({ chosen }: { chosen: AreaChoice | null }) {
         blurDataURL={null}
         sizes="(min-width: 1024px) 45vw, 100vw"
         priority
+        /* Blurred where the words sit on it, sharp from `lg` where they
+           sit beside it. A `filter` is rasterised once by the compositor
+           and costs nothing while scrolling — unlike `backdrop-filter`,
+           which re-samples every frame and is what made the header appear
+           to lag. The scrim stays: blur alone lowers contrast without
+           reliably darkening, and these photographs have a bright sky in
+           the top third. */
+        imageClassName="blur-[3px] lg:blur-0"
         className="col-start-1 row-start-1 h-full min-h-[26rem] w-full sm:min-h-[32rem] lg:col-start-auto lg:row-start-auto lg:min-h-0 lg:aspect-auto"
       />
     </section>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Box, Building, Crown, Helmet } from "@/components/icons";
+import { cn } from "@/components/ui/cn";
 
 /**
  * The four doors into Quoin, at the very top of the home screen.
@@ -19,9 +20,27 @@ import { Box, Building, Crown, Helmet } from "@/components/icons";
  * Handed to the header rather than rendered on the page: in the design
  * these sit under search, inside the bar that collapses on scroll.
  */
-const ENTRIES = [
+/**
+ * `art` is an illustrated mark; `Icon` is the line fallback for a door
+ * that has not been drawn yet. Both are kept so the row can be filled in
+ * one door at a time rather than waiting for the set.
+ *
+ * The artwork has its own label baked into the bottom of the frame —
+ * "Services" under the hard hat. That is cropped away by the aspect ratio
+ * on the wrapper rather than by editing the file: the component sets its
+ * own label underneath, in the page's type, at the page's size, in a
+ * colour that follows the theme. A label flattened into a PNG does none
+ * of those and would be the only text on the screen that cannot change
+ * when the palette does.
+ */
+const ENTRIES: {
+  href: string;
+  label: string;
+  Icon: typeof Box;
+  art?: string;
+}[] = [
   { href: "/studio", label: "Quoin Studio", Icon: Building },
-  { href: "/services", label: "Services", Icon: Helmet },
+  { href: "/services", label: "Services", Icon: Helmet, art: "/entry/services.webp" },
   { href: "/products", label: "Products", Icon: Box },
   /* `/premium`, not `/pro`. This door used to open Quoin Pro on the
      argument that there was no bespoke-products storefront to point at.
@@ -35,7 +54,7 @@ const ENTRIES = [
 export function EntryCards() {
   return (
     <div className="grid grid-cols-4 gap-2 px-5 pb-1 lg:gap-3 lg:px-0">
-      {ENTRIES.map(({ href, label, Icon }) => (
+      {ENTRIES.map(({ href, label, Icon, art }) => (
         <Link
           key={href}
           href={href}
@@ -50,8 +69,39 @@ export function EntryCards() {
 
               The mark grows to fill the space the plate was taking, so
               the row keeps its weight. */}
-          <span className="grid h-12 w-full place-items-center text-accent transition-transform duration-200 ease-out-quart group-active:scale-[0.94] lg:h-14">
-            <Icon className="size-8 lg:size-9" />
+          <span
+            className={cn(
+              "flex w-full justify-center overflow-hidden text-accent transition-transform duration-200 ease-out-quart group-active:scale-[0.94]",
+              /* Top-aligned and clipped, so the taller artwork below has
+                 its baked-in label cut off rather than scaled into
+                 nothing. `object-contain` cannot do this: it fits the
+                 whole frame, label and all, which left the hard hat a few
+                 pixels tall. */
+              art ? "h-12 items-start lg:h-14" : "h-12 items-center lg:h-14",
+            )}
+          >
+            {art ? (
+              /* Taller than its frame by exactly the share of the image
+                 the label occupies — 1145px of artwork of which the last
+                 ~195 is type — so the clip above removes the words and
+                 nothing else. `max-w-none` because the frame is narrower
+                 than this height implies and the mark must not be squeezed
+                 to fit it.
+
+                 Not `next/image`: four fixed marks a few dozen pixels
+                 tall, where a per-mark `sizes` negotiation costs more than
+                 it saves. */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={art}
+                alt=""
+                loading="eager"
+                decoding="async"
+                className="h-[3.6rem] w-auto max-w-none lg:h-[4.2rem]"
+              />
+            ) : (
+              <Icon className="size-8 lg:size-9" />
+            )}
           </span>
 
           {/* `overflow-wrap:anywhere` is a net rather than a plan — every
