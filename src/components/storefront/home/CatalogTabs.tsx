@@ -18,7 +18,7 @@ const TABS = [
   { href: "/categories", label: "All", icon: "grid", current: true },
   { href: "/services", label: "Experts", icon: "helmet" },
   { href: "/products", label: "Trending", icon: "trend" },
-  { href: "/premium", label: "Rooted", icon: "crown" },
+  { href: "/premium", label: "Rooted", icon: "sprout" },
   { href: "/studio", label: "Interiors", icon: "sofa" },
   { href: "/c/electricals-lighting", label: "Lighting", icon: "lamp" },
 ] as const;

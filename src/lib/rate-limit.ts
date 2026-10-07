@@ -59,6 +59,10 @@ const BUCKETS: Record<string, Bucket> = {
   search: { windowMs: 60_000, max: 120, hits: new Map() },
   quote: { windowMs: 60_000, max: 40, hits: new Map() },
   parcha: { windowMs: 10 * 60_000, max: 30, hits: new Map() },
+  /* Photo search spends money at a third party on every call, so it is the
+     tightest bucket here: a person comparing a few photographs, not
+     browsing. Twelve in ten minutes matches `/api/v1/parcha/extract`. */
+  photo: { windowMs: 10 * 60_000, max: 12, hits: new Map() },
 };
 
 /**

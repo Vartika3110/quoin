@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/Button";
 import { SectionHead, hasEnough } from "@/components/ui/Section";
 import {
   Calendar,
+  Camera,
   CheckCircle,
   Clock,
   Headset,
@@ -33,6 +34,7 @@ import {
   getRelatedProducts,
 } from "@/lib/data/catalog";
 import { listServiceAreas } from "@/lib/data/service-areas";
+import { isOwnPhoto, visualiserKindFor } from "@/lib/visualise/kind";
 import { BADGE_LABEL, type FulfilmentType } from "@/lib/types/catalog";
 
 /** Priced from the database on every request — see the note in page.tsx. */
@@ -158,6 +160,16 @@ export default async function ProductPage({
 
   const category = categories.find((c) => c.id === product.categoryId);
   const promise = PROMISE[product.fulfilment];
+  /* Offered only where a preview would mean something — see
+     `visualiserKindFor`. A link on every product would put a cement bag
+     on someone's lounge floor. */
+  const canVisualise =
+    visualiserKindFor({
+      title: product.title,
+      categorySlug: category?.slug,
+      fulfilment: product.fulfilment,
+      hasUsablePhoto: isOwnPhoto(product.photo),
+    }) !== null;
 
   /**
    * The breadcrumb trail, once.
@@ -260,6 +272,23 @@ export default async function ProductPage({
                   areas={serviceAreas.map((a) => a.name)}
                 />
               </div>
+
+              {canVisualise && (
+                <Link
+                  href={`/visualise?product=${encodeURIComponent(product.slug)}`}
+                  className="mt-3 flex items-center gap-3 rounded-card border border-line-soft bg-surface p-4 transition-colors hover:border-line-strong hover:bg-hover"
+                >
+                  <Camera className="size-5 shrink-0 text-accent" />
+                  <span className="min-w-0">
+                    <span className="block text-body-sm font-semibold text-ink">
+                      See it in your space
+                    </span>
+                    <span className="block text-caption leading-snug text-muted">
+                      Try it on a photo of your own room, before you buy.
+                    </span>
+                  </span>
+                </Link>
+              )}
 
               {/* `id` is the sticky bar's scroll target for products
                   whose options must be chosen before adding. */}

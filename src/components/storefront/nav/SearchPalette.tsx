@@ -15,6 +15,10 @@ import {
 } from "@/components/icons";
 import { Spinner } from "@/components/ui/Spinner";
 import { VoiceSearch } from "@/components/storefront/nav/VoiceSearch";
+import {
+  PhotoSearch,
+  type PhotoSearchResult,
+} from "@/components/storefront/nav/PhotoSearch";
 import { cn } from "@/components/ui/cn";
 import {
   clearRecentSearches,
@@ -89,6 +93,12 @@ export function SearchPalette({
   /* Bumped when the customer clears their recents, which is the only
      thing that changes the list while the palette is open. */
   const [recentsToken, setRecentsToken] = useState(0);
+  /* What a photograph search last said: what it saw and the words it
+     turned into, or a sentence about why it could not. Cleared as soon as
+     the customer types, because it describes the photo, not the box. */
+  const [photo, setPhoto] = useState<
+    { kind: "read"; result: PhotoSearchResult } | { kind: "error"; message: string } | null
+  >(null);
 
   /* Everything that happens when the palette opens or closes, in one
      effect. Recents are read on *open* rather than on mount, because the
@@ -111,6 +121,7 @@ export function SearchPalette({
       setTerm("");
       setResults(EMPTY);
       setCursor(0);
+      setPhoto(null);
     };
   }, [open]);
 
@@ -282,7 +293,10 @@ export function SearchPalette({
             aria-autocomplete="list"
             aria-activedescendant={flat[cursor] ? `sr-${flat[cursor].id}` : undefined}
             value={term}
-            onChange={(e) => setTerm(e.target.value)}
+            onChange={(e) => {
+              setTerm(e.target.value);
+              setPhoto(null);
+            }}
             placeholder="Search products, brands, categories and services"
             className="h-14 min-w-0 flex-1 bg-transparent text-body-lg text-ink outline-none placeholder:text-faint"
           />
@@ -293,6 +307,19 @@ export function SearchPalette({
           {/* Renders nothing where the Web Speech API is absent. */}
           <VoiceSearch onTranscript={(text) => setTerm(text)} />
 
+          {/* Renders nothing until the server says photo reading is on,
+              and is only mounted while the palette is open so the check
+              is not made on every page. */}
+          {open && (
+            <PhotoSearch
+              onResult={(result) => {
+                setPhoto({ kind: "read", result });
+                setTerm(result.terms[0] ?? "");
+              }}
+              onError={(message) => setPhoto({ kind: "error", message })}
+            />
+          )}
+
           <button
             type="button"
             onClick={onClose}
@@ -302,6 +329,38 @@ export function SearchPalette({
             <Close className="size-5" />
           </button>
         </div>
+
+        {photo && (
+          <div
+            role="status"
+            className="border-b border-line-soft px-4 py-2.5 text-body-sm"
+          >
+            {photo.kind === "error" ? (
+              <p className="text-muted">{photo.message}</p>
+            ) : (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                <span className="text-muted">
+                  {photo.result.description || "From your photo"}
+                </span>
+                {photo.result.terms.map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setTerm(t)}
+                    className={cn(
+                      "rounded-full border px-2.5 py-0.5 text-micro transition-colors",
+                      term === t
+                        ? "border-accent bg-accent text-on-accent"
+                        : "border-line-soft text-ink hover:bg-hover",
+                    )}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <div
           ref={listRef}

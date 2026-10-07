@@ -66,6 +66,15 @@ export const Crown = (p: IconProps) => (
   </Svg>
 );
 
+/** Sprout — two leaves off one stem. Rooted: grown here, made by hand. */
+export const Sprout = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 21v-9" />
+    <path d="M12 12C12 8 9.5 5.5 5 5.5c0 4 2.5 6.5 7 6.5z" />
+    <path d="M12 14.5c0-3 2-5 6.5-5 0 3.2-2 5-6.5 5z" />
+  </Svg>
+);
+
 export const Sofa = (p: IconProps) => (
   <Svg {...p}>
     <path d="M4 11V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3" />
@@ -699,6 +708,7 @@ export const TAB_ICONS = {
   helmet: Helmet,
   trend: Trend,
   crown: Crown,
+  sprout: Sprout,
   sofa: Sofa,
   lamp: LampFloor,
 } as const;
