@@ -21,8 +21,13 @@ function change(toStatus: string, at: string) {
   return { toStatus: toStatus as never, at };
 }
 
-describe("orderTimeline", () => {
-  it("a freshly placed, unpaid order: only 'placed' is done, 'payment' is current", () => {
+describe("orderTimeline — the four-step customer stepper", () => {
+  it("an unpaid order has nothing done: 'placed' itself is the step in progress", () => {
+    /* An order is not *placed* until its money is confirmed, so a
+       checkout still at the gateway has reached no step. The old
+       six-step stepper marked 'placed' done at `createdAt` and made a
+       separate 'payment' step current; collapsing the two is why
+       `placed` now reads its timestamp from `paidAt`. */
     const result = orderTimeline({
       status: "PENDING_PAYMENT" as never,
       createdAt: "2026-09-01T10:00:00.000Z",
@@ -30,135 +35,165 @@ describe("orderTimeline", () => {
       changes: [],
     });
 
-    assert.equal(result.outcome, null);
-    assert.deepEqual(
-      result.steps.map((s) => s.state),
-      ["done", "current", "upcoming", "upcoming", "upcoming", "upcoming"],
-    );
+    assert.deepEqual(result.steps.map((s) => s.state), [
+      "current",
+      "upcoming",
+      "upcoming",
+      "upcoming",
+    ]);
     assert.equal(result.steps[0].key, "placed");
-    assert.equal(result.steps[0].at, "2026-09-01T10:00:00.000Z");
-    assert.equal(result.steps[1].key, "payment");
-    assert.equal(result.steps[1].at, null);
+    assert.equal(result.steps[0].at, null, "nothing has been paid, so nothing is dated");
+    assert.equal(result.outcome, null);
   });
 
-  it("labels match the spec exactly, in order", () => {
-    const result = orderTimeline({
-      status: "PENDING_PAYMENT" as never,
-      createdAt: "2026-09-01T10:00:00.000Z",
-      paidAt: null,
-      changes: [],
-    });
-    assert.deepEqual(
-      result.steps.map((s) => s.label),
-      ["Order placed", "Payment confirmed", "Order confirmed", "Packed", "Out for delivery", "Delivered"],
-    );
-  });
-
-  it("PAID: placed and payment done (payment.at = paidAt), confirmed current", () => {
+  it("is exactly four steps, named for the four lifecycle stages", () => {
     const result = orderTimeline({
       status: "PAID" as never,
       createdAt: "2026-09-01T10:00:00.000Z",
       paidAt: "2026-09-01T10:05:00.000Z",
-      changes: [change("PAID", "2026-09-01T10:05:00.000Z")],
+      changes: [],
     });
 
-    assert.deepEqual(
-      result.steps.map((s) => s.state),
-      ["done", "done", "current", "upcoming", "upcoming", "upcoming"],
-    );
-    assert.equal(result.steps[1].at, "2026-09-01T10:05:00.000Z");
+    assert.deepEqual(result.steps.map((s) => s.key), [
+      "placed",
+      "dispatched",
+      "out_for_delivery",
+      "delivered",
+    ]);
+    assert.deepEqual(result.steps.map((s) => s.label), [
+      "Order placed",
+      "Dispatched",
+      "Out for delivery",
+      "Delivered",
+    ]);
   });
 
-  it("CONFIRMED and PROCESSING share the 'confirmed' step and its rank", () => {
-    const confirmed = orderTimeline({
-      status: "CONFIRMED" as never,
-      createdAt: "t0",
-      paidAt: "t0",
-      changes: [change("PAID", "t0"), change("CONFIRMED", "t1")],
-    });
-    const processing = orderTimeline({
-      status: "PROCESSING" as never,
-      createdAt: "t0",
-      paidAt: "t0",
-      changes: [change("PAID", "t0"), change("CONFIRMED", "t1"), change("PROCESSING", "t2")],
-    });
-
-    for (const result of [confirmed, processing]) {
-      assert.deepEqual(
-        result.steps.map((s) => s.state),
-        ["done", "done", "done", "current", "upcoming", "upcoming"],
-      );
-    }
-    /* The 'confirmed' step's timestamp is when the order was first
-       confirmed, not when it later moved to PROCESSING. */
-    assert.equal(processing.steps[2].at, "t1");
-  });
-
-  it("DISPATCHED and OUT_FOR_DELIVERY share the 'out' step, at the earliest of the two", () => {
-    const dispatched = orderTimeline({
-      status: "DISPATCHED" as never,
-      createdAt: "t0",
-      paidAt: "t0",
-      changes: [
-        change("PAID", "t0"),
-        change("CONFIRMED", "t1"),
-        change("PACKED", "t2"),
-        change("DISPATCHED", "t3"),
-      ],
-    });
-    // DISPATCHED and OUT_FOR_DELIVERY share rank 4 with the 'out' step
-    // itself, so reaching either one already completes 'out' — the
-    // still-open milestone is 'delivered', which is current.
-    assert.deepEqual(
-      dispatched.steps.map((s) => s.state),
-      ["done", "done", "done", "done", "done", "current"],
-    );
-    assert.equal(dispatched.steps[4].at, "t3");
-
-    const outForDelivery = orderTimeline({
-      status: "OUT_FOR_DELIVERY" as never,
-      createdAt: "t0",
-      paidAt: "t0",
-      changes: [
-        change("PAID", "t0"),
-        change("CONFIRMED", "t1"),
-        change("PACKED", "t2"),
-        change("DISPATCHED", "t3"),
-        change("OUT_FOR_DELIVERY", "t4"),
-      ],
-    });
-    assert.deepEqual(
-      outForDelivery.steps.map((s) => s.state),
-      ["done", "done", "done", "done", "done", "current"],
-    );
-    // 'out' step is done as of the earlier DISPATCHED change, not OUT_FOR_DELIVERY.
-    assert.equal(outForDelivery.steps[4].at, "t3");
-  });
-
-  it("DELIVERED: every step done, nothing current", () => {
+  it("has no step for an accept, prepare or ready stage", () => {
+    /* The whole point of the simplified lifecycle. A customer must never
+       be shown an internal vendor state. */
     const result = orderTimeline({
-      status: "DELIVERED" as never,
+      status: "PAID" as never,
       createdAt: "t0",
-      paidAt: "t0",
-      changes: [
-        change("PAID", "t0"),
-        change("CONFIRMED", "t1"),
-        change("PACKED", "t2"),
-        change("DISPATCHED", "t3"),
-        change("DELIVERED", "t4"),
-      ],
+      paidAt: "t1",
+      changes: [],
     });
-    assert.ok(result.steps.every((s) => s.state === "done"));
-    assert.equal(result.outcome, null);
-    assert.equal(result.steps.at(-1)!.at, "t4");
+    const labels = result.steps.map((s) => s.label.toLowerCase()).join(" ");
+    for (const banned of ["accept", "prepar", "ready", "packed", "confirm"]) {
+      assert.ok(!labels.includes(banned), `the stepper must not mention "${banned}"`);
+    }
   });
 
-  it("never assigns 'current' to more than one step", () => {
-    for (const status of ["PENDING_PAYMENT", "PAID", "CONFIRMED", "PACKED", "DISPATCHED"]) {
+  it("PAID: 'placed' is done and dated from paidAt, 'dispatched' is current", () => {
+    const result = orderTimeline({
+      status: "PAID" as never,
+      createdAt: "2026-09-01T10:00:00.000Z",
+      paidAt: "2026-09-01T10:05:00.000Z",
+      changes: [change("PAID", "2026-09-01T10:05:30.000Z")],
+    });
+
+    assert.deepEqual(result.steps.map((s) => s.state), [
+      "done",
+      "current",
+      "upcoming",
+      "upcoming",
+    ]);
+    assert.equal(
+      result.steps[0].at,
+      "2026-09-01T10:05:00.000Z",
+      "paidAt wins over the PAID change row",
+    );
+  });
+
+  it("the three retired statuses all read as 'placed', awaiting dispatch", () => {
+    /* An order left in CONFIRMED, PROCESSING or PACKED when the
+       simplified lifecycle shipped must still render, and what it means
+       to a customer is the same in all three cases: placed, not yet on
+       its way. */
+    for (const status of ["CONFIRMED", "PROCESSING", "PACKED"] as const) {
       const result = orderTimeline({
         status: status as never,
         createdAt: "t0",
-        paidAt: "t0",
+        paidAt: "t1",
+        changes: [change("PAID", "t1"), change(status, "t2")],
+      });
+      assert.deepEqual(
+        result.steps.map((s) => s.state),
+        ["done", "current", "upcoming", "upcoming"],
+        `${status} should read as placed, awaiting dispatch`,
+      );
+    }
+  });
+
+  it("DISPATCHED and OUT_FOR_DELIVERY are now separate steps, each with its own time", () => {
+    /* They shared one step in the six-step version. They do not any
+       more: "dispatched" and "out for delivery" are two of the four
+       milestones the customer is messaged about, so showing them as one
+       would contradict the WhatsApp they just received. */
+    const dispatched = orderTimeline({
+      status: "DISPATCHED" as never,
+      createdAt: "t0",
+      paidAt: "t1",
+      changes: [change("PAID", "t1"), change("DISPATCHED", "t2")],
+    });
+    assert.deepEqual(dispatched.steps.map((s) => s.state), [
+      "done",
+      "done",
+      "current",
+      "upcoming",
+    ]);
+    assert.equal(dispatched.steps[1].at, "t2");
+    assert.equal(dispatched.steps[2].at, null);
+
+    const out = orderTimeline({
+      status: "OUT_FOR_DELIVERY" as never,
+      createdAt: "t0",
+      paidAt: "t1",
+      changes: [change("PAID", "t1"), change("DISPATCHED", "t2"), change("OUT_FOR_DELIVERY", "t3")],
+    });
+    assert.deepEqual(out.steps.map((s) => s.state), ["done", "done", "done", "current"]);
+    assert.equal(out.steps[1].at, "t2");
+    assert.equal(out.steps[2].at, "t3");
+  });
+
+  it("DELIVERED: every step done, the last dated from its own change row", () => {
+    const result = orderTimeline({
+      status: "DELIVERED" as never,
+      createdAt: "t0",
+      paidAt: "t1",
+      changes: [
+        change("PAID", "t1"),
+        change("DISPATCHED", "t2"),
+        change("OUT_FOR_DELIVERY", "t3"),
+        change("DELIVERED", "t4"),
+      ],
+    });
+
+    assert.ok(result.steps.every((s) => s.state === "done"));
+    assert.equal(result.steps.at(-1)!.at, "t4");
+    assert.equal(result.outcome, null);
+  });
+
+  it("never produces more than one current step, for any status", () => {
+    const statuses = [
+      "PENDING_PAYMENT",
+      "PAID",
+      "FAILED",
+      "CANCELLED",
+      "CONFIRMED",
+      "PROCESSING",
+      "PACKED",
+      "DISPATCHED",
+      "OUT_FOR_DELIVERY",
+      "DELIVERED",
+      "REFUND_PENDING",
+      "REFUNDED",
+    ];
+
+    for (const status of statuses) {
+      const result = orderTimeline({
+        status: status as never,
+        createdAt: "t0",
+        paidAt: null,
         changes: [],
       });
       const currentCount = result.steps.filter((s) => s.state === "current").length;
@@ -166,101 +201,114 @@ describe("orderTimeline", () => {
     }
   });
 
-  describe("terminal statuses — no 'current' step, 'outcome' carries the label and tone", () => {
-    it("CANCELLED straight from PENDING_PAYMENT: only 'placed' done", () => {
+  describe("an order that left the line", () => {
+    it("CANCELLED straight from PENDING_PAYMENT: nothing done at all", () => {
+      /* No money was ever captured, so the order was never placed.
+         Marking 'placed' done would tell a customer their order exists. */
       const result = orderTimeline({
         status: "CANCELLED" as never,
         createdAt: "t0",
         paidAt: null,
         changes: [change("CANCELLED", "t1")],
       });
+
+      assert.deepEqual(result.steps.map((s) => s.state), [
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+      ]);
       assert.deepEqual(result.outcome, { label: "Cancelled", tone: "neutral" });
-      assert.deepEqual(
-        result.steps.map((s) => s.state),
-        ["done", "upcoming", "upcoming", "upcoming", "upcoming", "upcoming"],
-      );
       assert.ok(result.steps.every((s) => s.state !== "current"));
     });
 
-    it("CANCELLED after PAID: 'placed' and 'payment' done, from paidAt alone if no PAID change row exists", () => {
+    it("CANCELLED after PAID: 'placed' done from paidAt alone, with no PAID change row", () => {
       const result = orderTimeline({
         status: "CANCELLED" as never,
         createdAt: "t0",
         paidAt: "t0-paid",
-        changes: [change("CANCELLED", "t1")], // no explicit PAID row
+        changes: [change("CANCELLED", "t2")],
       });
-      assert.deepEqual(
-        result.steps.map((s) => s.state),
-        ["done", "done", "upcoming", "upcoming", "upcoming", "upcoming"],
-      );
-      assert.equal(result.steps[1].at, "t0-paid");
+
+      assert.deepEqual(result.steps.map((s) => s.state), [
+        "done",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+      ]);
+      assert.equal(result.steps[0].at, "t0-paid");
     });
 
-    it("CANCELLED after CONFIRMED: reached rank comes from the highest-ranked change, ignoring CANCELLED itself", () => {
+    it("CANCELLED after DISPATCHED: reached rank comes from the highest-ranked change", () => {
+      /* A parcel called off after it left the store got further than one
+         cancelled on the shelf, and the stepper has to say so. CANCELLED
+         itself has no rank — it is an outcome, not a stage. */
       const result = orderTimeline({
         status: "CANCELLED" as never,
         createdAt: "t0",
-        paidAt: "t0",
-        changes: [change("PAID", "t0"), change("CONFIRMED", "t1"), change("CANCELLED", "t2")],
+        paidAt: "t1",
+        changes: [change("PAID", "t1"), change("DISPATCHED", "t2"), change("CANCELLED", "t3")],
       });
-      assert.deepEqual(
-        result.steps.map((s) => s.state),
-        ["done", "done", "done", "upcoming", "upcoming", "upcoming"],
-      );
+
+      assert.deepEqual(result.steps.map((s) => s.state), [
+        "done",
+        "done",
+        "upcoming",
+        "upcoming",
+      ]);
+      assert.deepEqual(result.outcome, { label: "Cancelled", tone: "neutral" });
     });
 
-    it("FAILED with no payment at all: only 'placed' done", () => {
+    it("FAILED with no payment at all: nothing done", () => {
       const result = orderTimeline({
         status: "FAILED" as never,
         createdAt: "t0",
         paidAt: null,
-        changes: [],
+        changes: [change("FAILED", "t1")],
       });
+
+      assert.deepEqual(result.steps.map((s) => s.state), [
+        "upcoming",
+        "upcoming",
+        "upcoming",
+        "upcoming",
+      ]);
       assert.deepEqual(result.outcome, { label: "Payment failed", tone: "danger" });
-      assert.deepEqual(
-        result.steps.map((s) => s.state),
-        ["done", "upcoming", "upcoming", "upcoming", "upcoming", "upcoming"],
-      );
     });
 
-    it("REFUND_PENDING after DELIVERED: every step done", () => {
-      const result = orderTimeline({
-        status: "REFUND_PENDING" as never,
-        createdAt: "t0",
-        paidAt: "t0",
-        changes: [
-          change("PAID", "t0"),
-          change("CONFIRMED", "t1"),
-          change("PACKED", "t2"),
-          change("DISPATCHED", "t3"),
-          change("DELIVERED", "t4"),
-          change("REFUND_PENDING", "t5"),
-        ],
-      });
-      assert.deepEqual(result.outcome, { label: "Refund pending", tone: "warning" });
-      assert.ok(result.steps.every((s) => s.state === "done"));
-    });
-
-    it("REFUNDED: label and tone", () => {
+    it("REFUNDED after a delivery: every step still done — the delivery happened", () => {
+      /* Money coming back does not un-deliver a parcel, which is why
+         REFUND_PENDING and REFUNDED are outcomes rather than being folded
+         into 'cancelled'. */
       const result = orderTimeline({
         status: "REFUNDED" as never,
         createdAt: "t0",
-        paidAt: "t0",
-        changes: [change("PAID", "t0"), change("REFUNDED", "t1")],
+        paidAt: "t1",
+        changes: [
+          change("PAID", "t1"),
+          change("DISPATCHED", "t2"),
+          change("OUT_FOR_DELIVERY", "t3"),
+          change("DELIVERED", "t4"),
+          change("REFUND_PENDING", "t5"),
+          change("REFUNDED", "t6"),
+        ],
       });
+
+      assert.ok(result.steps.every((s) => s.state === "done"));
       assert.deepEqual(result.outcome, { label: "Refunded", tone: "neutral" });
     });
   });
 
   it("accepts Date objects and ISO strings interchangeably", () => {
     const result = orderTimeline({
-      status: "PAID" as never,
+      status: "DISPATCHED" as never,
       createdAt: new Date("2026-09-01T00:00:00.000Z"),
       paidAt: new Date("2026-09-01T01:00:00.000Z"),
-      changes: [{ toStatus: "PAID" as never, at: new Date("2026-09-01T01:00:00.000Z") }],
+      changes: [{ toStatus: "DISPATCHED" as never, at: new Date("2026-09-01T02:00:00.000Z") }],
     });
-    assert.equal(result.steps[0].at, "2026-09-01T00:00:00.000Z");
-    assert.equal(result.steps[1].at, "2026-09-01T01:00:00.000Z");
+
+    assert.equal(result.steps[0].at, "2026-09-01T01:00:00.000Z");
+    assert.equal(result.steps[1].at, "2026-09-01T02:00:00.000Z");
   });
 });
 

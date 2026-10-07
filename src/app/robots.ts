@@ -21,6 +21,13 @@ import { siteOrigin } from "@/lib/env";
  * variants of pins that already have canonical pages elsewhere. Letting
  * both in is a duplicate-content problem this app does not need.
  *
+ * `/vendor` — a vendor's dispatch URL *is* its credential
+ * (`OrderFulfilment.actionToken`), so the path must not be followed,
+ * indexed or kept by anything. The page sends `noindex, nocache` of its
+ * own as well; this is the half that stops a crawler ever requesting it,
+ * and a GET on that page writes nothing, so a well-behaved crawler could
+ * do no harm even if it did.
+ *
  * Nothing else is excluded. The catalogue is the whole point.
  */
 export default function robots(): MetadataRoute.Robots {
@@ -40,6 +47,7 @@ export default function robots(): MetadataRoute.Robots {
           "/signin",
           "/studio/pin/",
           "/studio/image/",
+          "/vendor",
         ],
       },
     ],

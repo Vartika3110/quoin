@@ -1,9 +1,11 @@
-import { OrderStatus, Prisma } from "@prisma/client";
-import type { Fulfilment, PaymentProvider, PaymentStatus, RefundStatus } from "@prisma/client";
+import { OrderStatus, PaymentStatus, Prisma } from "@prisma/client";
+import type { Fulfilment, PaymentProvider, RefundStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { resolveAdminPage } from "@/lib/data/admin-metrics";
 import { canTransition, IllegalOrderTransitionError, OrderStatusRaceError } from "@/lib/data/orders";
 import { releaseStockForOrder } from "@/lib/data/inventory";
+import { isRetiredStatus } from "@/lib/orders/lifecycle";
+import { summariseWhatsApp, type OrderWhatsAppSummary } from "@/lib/data/whatsapp-notifications";
 import type { Paise } from "@/lib/types/catalog";
 
 /**
@@ -34,6 +36,41 @@ export function parseOrderStatusFilter(value: string | undefined): OrderStatus |
   return undefined;
 }
 
+const PAYMENT_STATUS_VALUES: ReadonlySet<string> = new Set(Object.values(PaymentStatus));
+
+/** The same forgiving parse, for `?payment=`. */
+export function parsePaymentStatusFilter(value: string | undefined): PaymentStatus | undefined {
+  if (value && PAYMENT_STATUS_VALUES.has(value)) return value as PaymentStatus;
+  return undefined;
+}
+
+/**
+ * Turns a `?from=`/`?to=` date input (`YYYY-MM-DD`, what `<input
+ * type="date">` submits) into a UTC instant on the IST calendar day it
+ * names.
+ *
+ * `edge: "start"` is midnight IST that morning; `edge: "end"` is midnight
+ * IST the *next* morning, so a `to` of today includes everything placed
+ * today — an exclusive upper bound built from an inclusive-looking input,
+ * which is the only reading a person filling in "to: 7 Oct" means.
+ *
+ * IST has had no DST since 1947, so a fixed `+05:30` literal is correct
+ * for every day this app will query — the same reasoning
+ * `resolveIstDayRangeUtc` (`src/lib/data/admin-metrics.ts`) records.
+ * Anything that is not a well-formed date returns `undefined`, so a
+ * stale or hand-edited filter link shows the unfiltered queue rather
+ * than 400 — exactly as `parseOrderStatusFilter` does.
+ */
+export function parseIstDateFilter(
+  value: string | undefined,
+  edge: "start" | "end",
+): Date | undefined {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return undefined;
+  const midnight = new Date(`${value}T00:00:00+05:30`);
+  if (Number.isNaN(midnight.getTime())) return undefined;
+  return edge === "start" ? midnight : new Date(midnight.getTime() + 24 * 60 * 60 * 1000);
+}
+
 /** A pathological search box entry cannot become an unbounded `contains` scan. */
 const MAX_SEARCH_LENGTH = 64;
 
@@ -53,6 +90,26 @@ export interface AdminOrderRow {
   totalPaise: Paise;
   itemCount: number;
   createdAt: Date;
+  /** When the row last changed, which for an order is always its last
+      status change — see the note on `getOrderBoard`
+      (`src/lib/data/admin-board.ts`) for why `updatedAt` is a safe
+      stand-in for that rather than a join over `OrderStatusChange`. */
+  updatedAt: Date;
+  /**
+   * The stores this order has to be picked from, snapshotted names.
+   *
+   * An array, not a string, because an order can span stores and the
+   * column has to be able to say so. Empty for an order that reserved no
+   * stock anywhere — a callback, a made-to-order basket — which is not a
+   * missing vendor but the honest answer that Quoin fulfils it itself.
+   */
+  vendorNames: string[];
+  /** Whether every leg has been dispatched, for the vendor column's
+      "1 of 2 dispatched" line. */
+  vendorsDispatched: number;
+  /** The worst state among this order's WhatsApp messages, so a staff
+      member can spot a messaging problem without opening the order. */
+  whatsapp: OrderWhatsAppSummary;
 }
 
 export interface AdminOrderListPage {
@@ -65,7 +122,17 @@ export interface AdminOrderListPage {
 
 export interface AdminOrderListParams {
   status?: OrderStatus;
-  /** Matches the order reference or the customer's account phone. */
+  /** Matched against the *latest* payment attempt — see the note in the
+      query below on why that is the only reading that makes sense. */
+  paymentStatus?: PaymentStatus;
+  /** A `Store.id`: only orders with a leg at that store. */
+  storeId?: string;
+  /** Inclusive lower bound on `createdAt`, from `parseIstDateFilter`. */
+  from?: Date;
+  /** Exclusive upper bound on `createdAt` — midnight IST after the day
+      the filter names, so "to: today" includes today. */
+  to?: Date;
+  /** Matches the order reference, the customer's name, or their phone. */
   q?: string;
   page?: number;
   pageSize?: number;
@@ -87,13 +154,38 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
   const { page, pageSize, skip } = resolveAdminPage(params.page, params.pageSize);
   const q = params.q?.trim().slice(0, MAX_SEARCH_LENGTH) || undefined;
 
+  const createdAt =
+    params.from || params.to
+      ? {
+          ...(params.from ? { gte: params.from } : {}),
+          ...(params.to ? { lt: params.to } : {}),
+        }
+      : undefined;
+
   const where: Prisma.OrderWhereInput = {
     ...(params.status ? { status: params.status } : {}),
+    ...(createdAt ? { createdAt } : {}),
+    /* `some`, on the relation, rather than a join to the latest row:
+       "show me the orders with a captured payment" is the question
+       staff are actually asking, and an order whose first attempt
+       failed and whose second succeeded should appear under both
+       filters because both happened. The *column* still shows the
+       latest attempt, which is where that order currently stands. */
+    ...(params.paymentStatus ? { payments: { some: { status: params.paymentStatus } } } : {}),
+    /* The vendor filter goes through the fulfilment rows rather than
+       `OrderLine.storeId`, deliberately: a fulfilment exists only once
+       the order is actually paid for, so filtering by vendor cannot
+       surface an abandoned checkout nobody was ever asked to pick. */
+    ...(params.storeId ? { fulfilments: { some: { storeId: params.storeId } } } : {}),
     ...(q
       ? {
           OR: [
             { reference: { contains: q, mode: "insensitive" } },
+            { user: { name: { contains: q, mode: "insensitive" } } },
             { user: { phone: { contains: q } } },
+            /* The shipping name too, which is often the only name on a
+               Google account that never filled a profile in. */
+            { shipName: { contains: q, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -110,6 +202,7 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
         reference: true,
         status: true,
         createdAt: true,
+        updatedAt: true,
         totalPaise: true,
         user: { select: { name: true, phone: true, email: true } },
         _count: { select: { lines: true } },
@@ -118,6 +211,13 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
            payment currently stands", same as the customer's own
            order-history read. */
         payments: { orderBy: { createdAt: "desc" }, take: 1, select: { status: true } },
+        /* Two small relation reads per page of twenty rows, both over
+           indexes on `orderId`. Done here rather than as two more
+           queries because the alternative — a second pass keyed by order
+           id — is the same work with an extra round-trip, and these
+           columns are the point of the upgraded queue. */
+        fulfilments: { orderBy: { createdAt: "asc" }, select: { storeName: true, status: true } },
+        whatsappNotifications: { select: { status: true } },
       },
     }),
   ]);
@@ -133,12 +233,37 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
       totalPaise: row.totalPaise,
       itemCount: row._count.lines,
       createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      vendorNames: row.fulfilments.map((fulfilment) => fulfilment.storeName),
+      vendorsDispatched: row.fulfilments.filter((f) => f.status === "DISPATCHED").length,
+      whatsapp: summariseWhatsApp(row.whatsappNotifications.map((n) => n.status)),
     })),
     page,
     pageSize,
     total,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
   };
+}
+
+/**
+ * The stores the vendor filter can offer.
+ *
+ * Every store, not only the ones with a WhatsApp number: a store that
+ * fulfils orders and has no number yet is exactly the one staff most need
+ * to filter to, because its vendor notifications are the ones failing.
+ * Inactive stores are included too — they still appear on past orders,
+ * and a filter that cannot reach them cannot answer a question about
+ * them.
+ */
+export async function listVendorOptions(): Promise<{ id: string; name: string }[]> {
+  const stores = await db.store.findMany({
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, code: true, isActive: true },
+  });
+  return stores.map((store) => ({
+    id: store.id,
+    name: `${store.name}${store.isActive ? "" : " (inactive)"}`,
+  }));
 }
 
 /**
@@ -466,7 +591,18 @@ const ALL_ORDER_STATUSES = Object.values(OrderStatus) as OrderStatus[];
  * PAID" drifting from it.
  */
 export function isAdminTransitionAllowed(from: OrderStatus, to: OrderStatus): boolean {
-  return to !== "PAID" && canTransition(from, to);
+  if (to === "PAID") return false;
+  /* The second rule that is about the asker rather than the machine.
+     `CONFIRMED`, `PROCESSING` and `PACKED` are retired — the simplified
+     lifecycle has no accept, prepare or ready step (see
+     `src/lib/orders/lifecycle.ts`) — so nothing may move an order *into*
+     one of them any more. Their edges stay in `ORDER_TRANSITIONS` so an
+     order already sitting in one can be moved forward; this is what
+     stops a new one arriving there. Read from
+     `RETIRED_FULFILMENT_STATUSES` rather than named here, so the retired
+     list has one home. */
+  if (isRetiredStatus(to)) return false;
+  return canTransition(from, to);
 }
 
 /** Every status this endpoint could move `from` into right now. */
@@ -477,10 +613,22 @@ export function legalNextStatuses(from: OrderStatus): OrderStatus[] {
 export interface TransitionOrderStatusInput {
   reference: string;
   toStatus: OrderStatus;
-  /** The staff account making the change. Never nullable from this
-      caller — there is always a `requireStaff()` behind this endpoint —
-      but the column itself is nullable, see `OrderStatusChange`. */
-  actorUserId: string;
+  /**
+   * Who is making the change.
+   *
+   * A staff account's id from the admin route, where `requireStaff()` has
+   * already run — or **null**, which is not "unknown" but a specific,
+   * meaningful answer: no account was involved. That is the case when a
+   * vendor dispatches their own leg through the link in their WhatsApp
+   * (`dispatchOrderLeg`, src/lib/data/order-dispatch.ts) and the last
+   * outstanding leg rolls the order up to DISPATCHED. There is no vendor
+   * account system in this app, so attributing that move to a staff
+   * member who did not make it would put a fiction in the audit trail —
+   * which is precisely the nullability `OrderStatusChange.actorUserId`
+   * was given, and says so in its own model comment. The `note` carries
+   * which store it was.
+   */
+  actorUserId: string | null;
   note?: string;
 }
 

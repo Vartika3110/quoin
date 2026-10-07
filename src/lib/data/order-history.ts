@@ -30,12 +30,26 @@ import type { Paise } from "@/lib/types/catalog";
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING_PAYMENT: "Payment pending",
-  PAID: "Paid",
+  /* "Placed", not "Paid". `PAID` is the moment the money is confirmed,
+     and in the simplified lifecycle that *is* the moment the order is
+     placed — see `stageForStatus`, `src/lib/orders/lifecycle.ts`. A badge
+     reading "Paid" beside a timeline whose first node reads "Order
+     placed" is two names for one fact, and the one a customer and a
+     vendor both already use is "placed". The payment's own state is
+     `PAYMENT_STATUS_LABEL` below, which still says "Paid" and is the
+     right place for it. */
+  PAID: "Placed",
   FAILED: "Payment failed",
   CANCELLED: "Cancelled",
-  CONFIRMED: "Confirmed",
-  PROCESSING: "Being prepared",
-  PACKED: "Packed",
+  /* The three retired statuses — nothing can be moved into them any
+     more. Labelled as the stage they map to rather than as the internal
+     step they were, so an old order reads consistently with a new one
+     everywhere these labels are shown. The admin's status *filter* adds
+     "(retired)" next to them, which is the one screen where telling them
+     apart is the point. */
+  CONFIRMED: "Placed",
+  PROCESSING: "Placed",
+  PACKED: "Placed",
   DISPATCHED: "Dispatched",
   OUT_FOR_DELIVERY: "Out for delivery",
   DELIVERED: "Delivered",

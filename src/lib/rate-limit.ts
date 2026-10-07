@@ -59,6 +59,22 @@ const BUCKETS: Record<string, Bucket> = {
   search: { windowMs: 60_000, max: 120, hits: new Map() },
   quote: { windowMs: 60_000, max: 40, hits: new Map() },
   parcha: { windowMs: 10 * 60_000, max: 30, hits: new Map() },
+  /* The vendor dispatch action (`POST /api/v1/vendor/fulfilments/{token}
+     /dispatch`), which is the only unauthenticated *write* in this app:
+     the 64-hex-character token in the URL is its whole credential, so
+     there is no account to bound it by. Its own bucket rather than
+     borrowing `parcha`'s, for the reason stated above — a shopkeeper
+     tapping a button must not spend the budget that lets a customer
+     price their list, and nor the reverse.
+
+     Tighter and longer than the others because the shape of the traffic
+     is different: dispatching is a deliberate human act performed once
+     per order, so twenty in ten minutes is already far more than a real
+     vendor does, while being loose enough that a double-tap, a reload
+     and a few orders arriving together all go through. It is not what
+     makes the token unguessable — 256 bits does that — it is what makes
+     trying cost something. */
+  vendorDispatch: { windowMs: 10 * 60_000, max: 20, hits: new Map() },
 };
 
 /**

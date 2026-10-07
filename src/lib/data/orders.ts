@@ -124,12 +124,28 @@ export class OrderStatusRaceError extends Error {
 const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   PENDING_PAYMENT: ["PAID", "FAILED", "CANCELLED"],
   FAILED: ["PENDING_PAYMENT", "CANCELLED"],
-  PAID: ["CONFIRMED", "CANCELLED", "REFUND_PENDING"],
-  CONFIRMED: ["PROCESSING", "CANCELLED", "REFUND_PENDING"],
-  PROCESSING: ["PACKED", "CANCELLED", "REFUND_PENDING"],
-  PACKED: ["DISPATCHED", "REFUND_PENDING"],
-  DISPATCHED: ["OUT_FOR_DELIVERY", "REFUND_PENDING"],
-  OUT_FOR_DELIVERY: ["DELIVERED", "REFUND_PENDING"],
+  /* `PAID -> DISPATCHED` directly: a paid order's next move is a vendor
+     sending it out, with no accept, prepare or pack step in between. See
+     `src/lib/orders/lifecycle.ts`, which owns that decision; `CONFIRMED`
+     stays listed here only so an order already sitting in it can still
+     be moved forward. Nothing offers it as a destination any more — that
+     narrowing is `isAdminTransitionAllowed`'s job, not this table's. */
+  PAID: ["DISPATCHED", "CONFIRMED", "CANCELLED", "REFUND_PENDING"],
+  /* The three retired statuses keep their old onward edges *and* gain a
+     direct one to DISPATCHED. An order left in PROCESSING on the day the
+     simplified lifecycle shipped must not be stranded where no button
+     can reach it. */
+  CONFIRMED: ["DISPATCHED", "PROCESSING", "CANCELLED", "REFUND_PENDING"],
+  PROCESSING: ["DISPATCHED", "PACKED", "CANCELLED", "REFUND_PENDING"],
+  PACKED: ["DISPATCHED", "CANCELLED", "REFUND_PENDING"],
+  /* `CANCELLED` added from here on: "any appropriate status -> cancelled"
+     is the one exceptional edge the simplified lifecycle requires, and a
+     parcel that has left the store can still be called off before it
+     arrives. It is not added to `DELIVERED`, which is genuinely done —
+     undoing a delivery is a return, and `REFUND_PENDING` is the edge for
+     that. */
+  DISPATCHED: ["OUT_FOR_DELIVERY", "CANCELLED", "REFUND_PENDING"],
+  OUT_FOR_DELIVERY: ["DELIVERED", "CANCELLED", "REFUND_PENDING"],
   DELIVERED: ["REFUND_PENDING"],
   REFUND_PENDING: ["REFUNDED"],
   CANCELLED: [],
@@ -902,34 +918,35 @@ export interface RecordOfflinePaymentInput {
 
 export interface OfflinePaymentResult {
   reference: string;
-  /** Always `"CONFIRMED"` on success — see the module comment on why this
-      function moves the order twice. */
+  /** Always `"PAID"` on success. One write, not two — see the module
+      comment on why the second one went away. */
   status: OrderStatus;
 }
 
 /**
- * Records money staff took by phone and confirms the order.
+ * Records money staff took by phone.
  *
- * Two status writes, `PENDING_PAYMENT -> PAID -> CONFIRMED`, in the one
- * transaction, not one write to `CONFIRMED` directly: `PAID` is the fact
- * that money was received, and `CONFIRMED` is a distinct fact — that
- * staff have looked at the order and are proceeding with it — and a
- * Razorpay capture produces exactly the first without the second (the
- * webhook never auto-confirms; a human still has to move `PAID ->
- * CONFIRMED` through `transitionOrderStatus`). Collapsing them here would
- * mean an offline order and an online one reach "confirmed" through
- * different numbers of recorded steps, which makes the audit trail lie
- * about what happened. Since this function is itself the person telling
- * the state machine "money moved" for the first edge, it is also the
- * natural place to take the second, ordinary one straight after — the
- * owner does not separately click "confirm" immediately after "mark
- * paid".
+ * One status write, `PENDING_PAYMENT -> PAID`, and that is the whole of
+ * it. This used to take a second hop to `CONFIRMED` straight afterwards,
+ * on the reasoning that "money received" and "staff are proceeding with
+ * it" are two distinct facts and the owner would not separately click
+ * confirm. The second fact no longer exists: the simplified lifecycle has
+ * no accept step (`src/lib/orders/lifecycle.ts`), `CONFIRMED` is retired,
+ * and a paid order's next move is a vendor dispatching it. Writing a
+ * retired status here would put every offline order into a state nothing
+ * offers a way out of.
  *
- * Guarded exactly like `settleCapturedPayment`: each status write is a
+ * `PAID` is now the one status both payment paths land on, which is also
+ * what makes `onOrderPlaced` (`src/lib/data/order-whatsapp.ts`) a single
+ * trigger rather than two — the gateway capture and the money the owner
+ * took by phone reach the customer and the vendor through exactly the
+ * same code.
+ *
+ * Guarded exactly like `settleCapturedPayment`: the status write is a
  * conditional `updateMany` re-asserting the state it read, and a zero
  * count means a concurrent request already moved this order — thrown as
  * `OrderStatusRaceError` rather than silently overwriting or double-
- * applying either edge. Stock is committed with `commitStockForOrder`,
+ * applying it. Stock is committed with `commitStockForOrder`,
  * the same function and the same call shape `settleCapturedPayment` uses
  * — including its handling (none) of an already-expired reservation: if
  * `releaseExpiredReservations` has already given the stock back by the
@@ -977,19 +994,16 @@ export async function recordOfflinePayment(
     );
   }
 
-  /* Both edges checked up front, against the lifecycle table itself
-     rather than assumed — see `transitionOrderStatus`'s own use of
-     `canTransition` before it writes anything. Both are legal today by
-     construction (`ORDER_TRANSITIONS`), so neither throw is reachable
-     while that table matches this function's own hard-coded two writes;
-     the check exists so a future edit to the table that removed either
-     edge would fail here loudly, not silently start writing an illegal
+  /* The edge checked up front, against the lifecycle table itself rather
+     than assumed — see `transitionOrderStatus`'s own use of
+     `canTransition` before it writes anything. It is legal today by
+     construction (`ORDER_TRANSITIONS`), so the throw is not reachable
+     while that table matches this function's own hard-coded write; the
+     check exists so a future edit to the table that removed the edge
+     would fail here loudly, not silently start writing an illegal
      transition. */
   if (!canTransition("PENDING_PAYMENT", "PAID")) {
     throw new IllegalOrderTransitionError("PENDING_PAYMENT", "PAID");
-  }
-  if (!canTransition("PAID", "CONFIRMED")) {
-    throw new IllegalOrderTransitionError("PAID", "CONFIRMED");
   }
 
   const claim = validateOfflinePayment(input, order.totalPaise);
@@ -1045,23 +1059,7 @@ export async function recordOfflinePayment(
         note: paidNote,
       },
     });
-
-    const claimedConfirmed = await tx.order.updateMany({
-      where: { id: order.id, status: "PAID" },
-      data: { status: "CONFIRMED" },
-    });
-    if (claimedConfirmed.count === 0) throw new OrderStatusRaceError();
-
-    await tx.orderStatusChange.create({
-      data: {
-        orderId: order.id,
-        fromStatus: "PAID",
-        toStatus: "CONFIRMED",
-        actorUserId: input.actorUserId,
-        note: "Confirmed after offline payment",
-      },
-    });
   });
 
-  return { reference: input.reference, status: "CONFIRMED" };
+  return { reference: input.reference, status: "PAID" };
 }

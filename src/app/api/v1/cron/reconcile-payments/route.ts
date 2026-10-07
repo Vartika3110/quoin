@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { isAuthorizedCron, refuseCron } from "@/lib/cron";
 import { notifyPaymentSettled } from "@/lib/data/order-notifications";
+import { onOrderPlacedForGatewayOrder } from "@/lib/data/order-whatsapp";
 import { settleCapturedPayment } from "@/lib/data/orders";
 import {
   RazorpayError,
@@ -201,6 +202,13 @@ export async function GET(request: Request) {
           providerOrderId,
           providerPaymentId: captured.id,
         });
+        /* The customer and the vendors still have to be told, and this
+           job is the only thing that will tell them when the webhook
+           delivery was lost. Keyed identically to the webhook's own
+           send, so a late delivery arriving after this run messages
+           nobody twice. Swallows its own errors — one unlucky
+           notification must not abort the rest of the batch. */
+        await onOrderPlacedForGatewayOrder(providerOrderId);
       } else if (outcome === "duplicate") {
         /* A webhook landed between the query above and this call. Exactly
            what the conditional claim inside the settlement exists for. */

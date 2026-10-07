@@ -6,13 +6,19 @@ import { formatPrice } from "@/lib/types/catalog";
 /**
  * The bell-icon notifications an order's own status changes ring.
  *
- * Deliberately narrow: only the four transitions a customer would
- * actually want pinged for produce one, and every other status (`PAID`
- * itself, `PACKED`, every terminal status) is silently a no-op rather than
- * a `default` branch that has to be remembered to stay empty. `PAID` is
- * excluded on purpose — `PAYMENT_SUCCESSFUL` exists on `NotificationKind`
- * for it, but nothing wires it yet, and pretending this function covers
- * that case would be worse than leaving it honestly unimplemented.
+ * Deliberately narrow, and narrow to exactly the four milestones the
+ * simplified lifecycle has (`src/lib/orders/lifecycle.ts`) — the same
+ * four `notifyCustomerOfStatus` sends a WhatsApp for, because a bell dot
+ * and a WhatsApp about different sets of events would be two stories
+ * about one order. Every other status is silently a no-op rather than a
+ * `default` branch that has to be remembered to stay empty.
+ *
+ * `CONFIRMED` used to be in here and is gone with the status: the
+ * simplified lifecycle has no accept step, nothing writes `CONFIRMED` any
+ * more, and a branch for it would be a ring nothing can trigger. `PAID`
+ * is excluded for a different reason — `notifyPaymentSettled` below
+ * already rings `PAYMENT_SUCCESSFUL` at that exact moment, from the
+ * settlement itself, and a second bell for the same event is spam.
  *
  * Called from wherever `transitionOrderStatus` is actually invoked
  * (`POST /api/v1/admin/orders/{reference}/status` — the order board's own
@@ -24,19 +30,24 @@ export async function notifyOrderStatus(input: {
   userId: string;
   reference: string;
   status: OrderStatus;
+  /**
+   * Whether money was ever captured for this order — i.e. whether it was
+   * ever *placed*.
+   *
+   * Read only by the `CANCELLED` branch, and it has to be: `CANCELLED` is
+   * reachable straight from `PENDING_PAYMENT`, which is where abandoned
+   * checkouts live forever (see the enum's own comment). Staff tidying
+   * those up must not ring the bell for everyone who once reached the
+   * gateway and changed their mind. The same guard, for the same reason,
+   * as `wasPlaced` in `src/lib/data/order-whatsapp.ts` — one order, one
+   * decision about whether there is anything to tell anybody.
+   *
+   * Optional, defaulting to false, so a caller that cannot answer errs
+   * towards silence rather than towards a notification nobody asked for.
+   */
+  wasPlaced?: boolean;
 }): Promise<void> {
   switch (input.status) {
-    case "CONFIRMED":
-      await notify({
-        userId: input.userId,
-        kind: "ORDER_CONFIRMED",
-        title: `Order ${input.reference} confirmed`,
-        body: "We've accepted your order and are preparing it.",
-        href: `/account/orders/${input.reference}`,
-        dedupeKey: `order:${input.reference}:CONFIRMED`,
-      });
-      return;
-
     case "DISPATCHED":
       await notify({
         userId: input.userId,
@@ -64,6 +75,25 @@ export async function notifyOrderStatus(input: {
         title: `Order ${input.reference} delivered`,
         href: `/account/orders/${input.reference}`,
         dedupeKey: `order:${input.reference}:DELIVERED`,
+      });
+      return;
+
+    case "CANCELLED":
+      if (!input.wasPlaced) return;
+      /* `ORDER_CONFIRMED` is the nearest kind on `NotificationKind` and
+         would be a lie, so this reuses nothing: a cancellation is an
+         order-state change, which is what `ORDER_SHIPPED`'s siblings all
+         are, and inventing an `ORDER_CANCELLED` kind would be a schema
+         migration for one row's icon. `PROJECT_UPDATE` is the honest
+         generic — the title carries the meaning, and the WhatsApp the
+         customer also receives carries the refund line. */
+      await notify({
+        userId: input.userId,
+        kind: "PROJECT_UPDATE",
+        title: `Order ${input.reference} cancelled`,
+        body: "If anything was paid for this order, we'll be in touch about it.",
+        href: `/account/orders/${input.reference}`,
+        dedupeKey: `order:${input.reference}:CANCELLED`,
       });
       return;
 

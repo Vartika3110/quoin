@@ -278,6 +278,71 @@ const schema = z.object({
    * the same shape as Razorpay and Supabase above.
    */
   CRON_SECRET: z.string().optional(),
+
+  /**
+   * WhatsApp Business Cloud API — order notifications to customers and
+   * vendors. See `src/lib/whatsapp/client.ts` and
+   * `docs/whatsapp-orders.md`.
+   *
+   * All optional, and — like Razorpay, Supabase and Cloudflare above, and
+   * unlike MSG91 — there is deliberately no production guard demanding
+   * them. The unconfigured state is safe and it is also the state a
+   * deploy sits in for the days that Meta's business verification and six
+   * template reviews take: orders are placed, paid, dispatched and
+   * delivered exactly as before, and every notification that could not be
+   * sent is written to `whatsapp_notifications` as FAILED with
+   * "WhatsApp is not configured" on it, visible on the admin order page
+   * and retryable with one click once the credentials land. Refusing to
+   * boot over it would take a working storefront down to protect against
+   * nothing — and WhatsApp is explicitly secondary to order creation.
+   *
+   * `WHATSAPP_PHONE_NUMBER_ID` is the id of the business number that
+   * sends (WhatsApp Manager → API Setup). Not a secret, but there is no
+   * reason for the browser to have it.
+   *
+   * `WHATSAPP_ACCESS_TOKEN` is a permanent system-user token with
+   * `whatsapp_business_messaging`. It can send as the business number,
+   * so treat it exactly like `SUPABASE_SERVICE_ROLE_KEY`: never
+   * `NEXT_PUBLIC_`, never in a response body, never in a log line.
+   */
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  /** Graph API version. Defaults to `DEFAULT_API_VERSION` in
+      `src/lib/whatsapp/client.ts` when unset. A variable rather than a
+      constant for the reason `OPENAI_MODEL` is one: Graph versions are
+      retired on Meta's schedule, not on this app's deploy schedule. */
+  WHATSAPP_API_VERSION: z.string().optional(),
+  /** The language code the templates were approved under — `en`, or
+      `en_US` if that is what the dashboard shows. A mismatch is the
+      single most common cause of "Template name does not exist in the
+      translation", which is why it is configurable rather than assumed. */
+  WHATSAPP_TEMPLATE_LANGUAGE: z.string().optional(),
+  /**
+   * `template` (the default, and the only production answer) or `text`.
+   *
+   * A free-form string rather than `z.enum`, for the reason
+   * `SHOW_SOURCE_IMAGES` records above: an enum rejects a *present but
+   * empty* value and would 500 every route at boot over a messaging
+   * setting. Anything that is not exactly `text` means `template`.
+   */
+  WHATSAPP_MESSAGE_MODE: z.string().optional(),
+  /**
+   * Answers Meta's `GET` verification challenge when the delivery-status
+   * webhook is first subscribed. Chosen by you, typed into both the
+   * dashboard and here. Unset, that route refuses to verify — fail
+   * closed, exactly like `CRON_SECRET`.
+   */
+  WHATSAPP_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
+  /**
+   * The Meta **app secret**, which signs every webhook delivery
+   * (`X-Hub-Signature-256`). Unset, the delivery-status webhook rejects
+   * every request rather than trusting whatever a public URL is posted:
+   * the same fail-closed rule `verifyWebhookSignature` applies to
+   * Razorpay. Not the access token above — a deploy can hold a valid
+   * sending token and still be unable to trust a single incoming
+   * delivery.
+   */
+  WHATSAPP_APP_SECRET: z.string().optional(),
 });
 
 type Env = z.infer<typeof schema>;
@@ -325,6 +390,13 @@ function load(): Env {
         CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
         CF_STREAM_API_TOKEN: process.env.CF_STREAM_API_TOKEN,
         CRON_SECRET: process.env.CRON_SECRET,
+        WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID,
+        WHATSAPP_ACCESS_TOKEN: process.env.WHATSAPP_ACCESS_TOKEN,
+        WHATSAPP_API_VERSION: process.env.WHATSAPP_API_VERSION,
+        WHATSAPP_TEMPLATE_LANGUAGE: process.env.WHATSAPP_TEMPLATE_LANGUAGE,
+        WHATSAPP_MESSAGE_MODE: process.env.WHATSAPP_MESSAGE_MODE,
+        WHATSAPP_WEBHOOK_VERIFY_TOKEN: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
+        WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET,
       };
     }
 

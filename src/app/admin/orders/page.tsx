@@ -15,8 +15,15 @@ import {
   ORDER_STATUS_TONE,
   PAYMENT_STATUS_LABEL,
 } from "@/lib/data/order-history";
-import { listAdminOrders, parseOrderStatusFilter } from "@/lib/data/admin-orders";
+import {
+  listAdminOrders,
+  listVendorOptions,
+  parseIstDateFilter,
+  parseOrderStatusFilter,
+  parsePaymentStatusFilter,
+} from "@/lib/data/admin-orders";
 import { OrderStatusFilterForm } from "@/components/admin/OrderStatusFilterForm";
+import { WhatsAppStatusBadge } from "@/components/admin/WhatsAppStatusBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -53,42 +60,69 @@ export default async function AdminOrdersPage({
 
   const sp = await searchParams;
   const status = parseOrderStatusFilter(one(sp.status));
+  const paymentStatus = parsePaymentStatusFilter(one(sp.payment));
+  const vendorId = one(sp.vendor)?.trim() || undefined;
+  /* Echoed back to the form as typed, and separately parsed into instants
+     for the query — a `to` of "7 Oct" has to become midnight IST on the
+     8th to include the 7th, and the form must still show "7 Oct". */
+  const fromRaw = one(sp.from)?.trim() || "";
+  const toRaw = one(sp.to)?.trim() || "";
   const q = one(sp.q)?.trim() || "";
   const page = Number(one(sp.page)) || undefined;
 
-  const { items, total, totalPages, page: currentPage } = await listAdminOrders({
-    status,
-    q,
-    page,
-  });
+  const [{ items, total, totalPages, page: currentPage }, vendors] = await Promise.all([
+    listAdminOrders({
+      status,
+      paymentStatus,
+      storeId: vendorId,
+      from: parseIstDateFilter(fromRaw, "start"),
+      to: parseIstDateFilter(toRaw, "end"),
+      q,
+      page,
+    }),
+    listVendorOptions(),
+  ]);
 
   /* Carried onto every pagination link so "next page" does not silently
-     drop the filter that got the staff member here. */
+     drop the filters that got the staff member here. */
   const filterParams = new URLSearchParams();
   if (status) filterParams.set("status", status);
+  if (paymentStatus) filterParams.set("payment", paymentStatus);
+  if (vendorId) filterParams.set("vendor", vendorId);
+  if (fromRaw) filterParams.set("from", fromRaw);
+  if (toRaw) filterParams.set("to", toRaw);
   if (q) filterParams.set("q", q);
   const filterQuery = filterParams.toString() ? `${filterParams.toString()}&` : "";
+  const anyFilter = filterParams.toString().length > 0;
 
   return (
     <AdminShell
       current="/admin/orders"
       title="Orders"
-      subtitle={`${total} order${total === 1 ? "" : "s"}${status ? ` — ${ORDER_STATUS_LABEL[status]}` : ""}${q ? ` matching “${q}”` : ""}.`}
+      subtitle={`${total} order${total === 1 ? "" : "s"}${status ? ` — ${ORDER_STATUS_LABEL[status]}` : ""}${q ? ` matching “${q}”` : ""}${anyFilter && !status && !q ? " matching these filters" : ""}.`}
       actions={
         <Button href="/admin/orders/board" variant="outline" size="sm">
           Order board
         </Button>
       }
     >
-      <OrderStatusFilterForm status={status} q={q} />
+      <OrderStatusFilterForm
+        status={status}
+        paymentStatus={paymentStatus}
+        vendorId={vendorId}
+        from={fromRaw}
+        to={toRaw}
+        q={q}
+        vendors={vendors}
+      />
 
       {items.length === 0 ? (
         <EmptyState
           icon={<Package className="size-6" />}
-          title={status || q ? "No order matches these filters." : "No orders yet."}
+          title={anyFilter ? "No order matches these filters." : "No orders yet."}
           className="mt-6"
         >
-          {(status || q) && (
+          {anyFilter && (
             <Link href="/admin/orders" className="text-accent">
               Clear filters
             </Link>
@@ -102,11 +136,14 @@ export default async function AdminOrdersPage({
                 <tr>
                   <th className="px-4 py-3 font-medium">Order</th>
                   <th className="px-4 py-3 font-medium">Customer</th>
+                  <th className="px-4 py-3 font-medium">Vendor</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Payment</th>
+                  <th className="px-4 py-3 font-medium">WhatsApp</th>
                   <th className="px-4 py-3 text-right font-medium">Items</th>
                   <th className="px-4 py-3 text-right font-medium">Total</th>
                   <th className="px-4 py-3 font-medium">Placed</th>
+                  <th className="px-4 py-3 font-medium">Updated</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,6 +169,22 @@ export default async function AdminOrdersPage({
                       </span>
                     </td>
                     <td className="px-4 py-3">
+                      {row.vendorNames.length === 0 ? (
+                        /* Not a missing vendor: this order reserved no
+                           stock anywhere, so Quoin fulfils it itself. */
+                        <span className="text-faint">Quoin</span>
+                      ) : (
+                        <>
+                          <span className="block text-ink">{row.vendorNames.join(", ")}</span>
+                          {row.vendorNames.length > 1 && (
+                            <span className="nums block text-caption text-muted">
+                              {row.vendorsDispatched} of {row.vendorNames.length} dispatched
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       <Badge tone={ORDER_STATUS_TONE[row.status]} size="sm">
                         {ORDER_STATUS_LABEL[row.status]}
                       </Badge>
@@ -139,11 +192,15 @@ export default async function AdminOrdersPage({
                     <td className="px-4 py-3 text-muted">
                       {row.paymentStatus ? PAYMENT_STATUS_LABEL[row.paymentStatus] : "—"}
                     </td>
+                    <td className="px-4 py-3">
+                      <WhatsAppStatusBadge summary={row.whatsapp} />
+                    </td>
                     <td className="nums px-4 py-3 text-right">{row.itemCount}</td>
                     <td className="nums px-4 py-3 text-right font-medium text-ink">
                       {formatPrice(row.totalPaise)}
                     </td>
                     <td className="px-4 py-3 text-muted">{DATE_FORMAT.format(row.createdAt)}</td>
+                    <td className="px-4 py-3 text-muted">{DATE_FORMAT.format(row.updatedAt)}</td>
                   </tr>
                 ))}
               </tbody>

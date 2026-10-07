@@ -73,20 +73,55 @@ describe("admin transition boundary — PAID is refused regardless of the machin
   });
 });
 
+describe("admin transition boundary — the retired statuses are refused as destinations", () => {
+  it("refuses CONFIRMED, PROCESSING and PACKED from every starting state", () => {
+    /* These three are the accept, prepare and ready steps the simplified
+       lifecycle does not have. `canTransition` still connects them — so
+       an order already sitting in one can be moved forward — and this
+       boundary is what stops a *new* order ever arriving there. */
+    for (const from of ALL_STATUSES) {
+      for (const to of ["CONFIRMED", "PROCESSING", "PACKED"] as const) {
+        assert.equal(
+          isAdminTransitionAllowed(from, to),
+          false,
+          `${from} -> ${to} must be refused: ${to} is retired`,
+        );
+        assert.ok(
+          !legalNextStatuses(from).includes(to),
+          `legalNextStatuses(${from}) must not include the retired ${to}`,
+        );
+      }
+    }
+  });
+
+  it("still moves an order already in a retired status forward to DISPATCHED", () => {
+    for (const from of ["CONFIRMED", "PROCESSING", "PACKED"] as const) {
+      assert.equal(
+        isAdminTransitionAllowed(from, "DISPATCHED"),
+        true,
+        `an order stuck in ${from} must still be dispatchable`,
+      );
+    }
+  });
+});
+
 describe("admin transition boundary — everything else still goes through canTransition", () => {
-  it("allows a representative set of legal, non-PAID moves", () => {
+  it("allows the simplified lifecycle's own moves", () => {
     const legal: [OrderStatus, OrderStatus][] = [
       ["PENDING_PAYMENT", "FAILED"],
       ["PENDING_PAYMENT", "CANCELLED"],
       ["FAILED", "PENDING_PAYMENT"],
       ["FAILED", "CANCELLED"],
-      ["PAID", "CONFIRMED"],
-      ["PAID", "CANCELLED"],
-      ["CONFIRMED", "PROCESSING"],
-      ["PROCESSING", "PACKED"],
-      ["PACKED", "DISPATCHED"],
+      /* placed -> dispatched -> out for delivery -> delivered. */
+      ["PAID", "DISPATCHED"],
       ["DISPATCHED", "OUT_FOR_DELIVERY"],
       ["OUT_FOR_DELIVERY", "DELIVERED"],
+      /* The exceptional edge, from each status it is reachable from. */
+      ["PAID", "CANCELLED"],
+      ["DISPATCHED", "CANCELLED"],
+      ["OUT_FOR_DELIVERY", "CANCELLED"],
+      /* The refund path is untouched by any of this. */
+      ["DELIVERED", "REFUND_PENDING"],
       ["REFUND_PENDING", "REFUNDED"],
     ];
 
@@ -97,9 +132,11 @@ describe("admin transition boundary — everything else still goes through canTr
 
   it("rejects a move canTransition itself does not allow", () => {
     const illegal: [OrderStatus, OrderStatus][] = [
-      ["PENDING_PAYMENT", "CONFIRMED"], // skips PAID
-      ["PACKED", "PROCESSING"], // backwards
+      ["PENDING_PAYMENT", "DISPATCHED"], // skips PAID
+      ["PAID", "DELIVERED"], // skips the vendor and the rider
+      ["DELIVERED", "OUT_FOR_DELIVERY"], // backwards
       ["DELIVERED", "PENDING_PAYMENT"],
+      ["DELIVERED", "CANCELLED"], // delivered is done; a return is a refund
       ["CANCELLED", "PENDING_PAYMENT"], // terminal
       ["REFUNDED", "PAID"], // terminal, and PAID besides
     ];
@@ -119,7 +156,7 @@ describe("admin transition boundary — everything else still goes through canTr
   });
 });
 
-describe("legalNextStatuses — matches canTransition minus PAID, for every state", () => {
+describe("legalNextStatuses — matches canTransition minus PAID and the retired statuses", () => {
   it("never offers a move that disagrees with isAdminTransitionAllowed", () => {
     for (const from of ALL_STATUSES) {
       const options = legalNextStatuses(from);

@@ -22,6 +22,7 @@
     "images:generate": "tsx scripts/generate-product-images.ts",
     "db:import-brand": "tsx prisma/import-brand-catalogue.ts",
     "admin:grant": "tsx scripts/grant-staff.ts",
+    "vendors:whatsapp": "tsx scripts/set-vendor-whatsapp.ts",
     "images:pair": "tsx scripts/pair-images-by-code.ts",
     "db:retire-scraped": "tsx scripts/retire-scraped.ts",
     "images:localise": "tsx scripts/localise-source-images.ts",

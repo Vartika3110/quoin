@@ -126,6 +126,11 @@ model User {
   notifications               Notification[]
   supportRequests             SupportRequest[]
   wishlistItems               WishlistItem[]
+  /// Vendor legs this account dispatched *on a vendor's behalf* from the
+  /// admin order page — not its own orders. Null on the other side when
+  /// the vendor dispatched through their own WhatsApp link, which has no
+  /// account behind it at all. See `OrderFulfilment.dispatchedBy`.
+  fulfilmentsDispatched       OrderFulfilment[]            @relation("FulfilmentDispatchedBy")
 
   @@map("users")
 }
@@ -236,6 +241,29 @@ model Store {
   /// it does not corrupt anything — but the operator is expected to keep
   /// exactly one active store flagged.
   isDefault Boolean @default(false)
+
+  /// Who at this store actually picks and dispatches an order, and the
+  /// number the new-order WhatsApp goes to.
+  ///
+  /// A store is this app's only idea of a *vendor*: there is no vendor
+  /// roster behind Quoin — see the note on `StudioDesigner` — and the
+  /// thing that physically holds the stock an order line reserved is the
+  /// store frozen onto `OrderLine.storeId`. So "notify the vendor" means
+  /// "notify this store", and these two columns are what makes that
+  /// possible.
+  ///
+  /// E.164, same normalisation as `User.phone` (`normalizePhone`,
+  /// src/lib/auth/phone.ts). Nullable because a store can exist before
+  /// anybody has given a number for it, and the system must behave
+  /// honestly when one has not: `dispatchNewOrderToVendors`
+  /// (src/lib/data/order-whatsapp.ts) records a FAILED
+  /// `WhatsAppNotification` saying the number is missing rather than
+  /// silently sending nothing — the order still exists, and the admin
+  /// can see exactly why no vendor was told.
+  whatsappPhone String?
+  /// Shown in the vendor's own message and on the admin order page. Falls
+  /// back to `name` when unset.
+  contactName   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -972,6 +1000,15 @@ model Order {
   lines         OrderLine[]
   payments      Payment[]
   statusChanges OrderStatusChange[]
+  /// One row per store this order has to be picked from — see
+  /// `OrderFulfilment`. Empty for an order whose basket reserved no
+  /// stock anywhere (a callback order, a made-to-order basket, an
+  /// untracked product), which is not an error: there is no vendor to
+  /// notify and staff dispatch it themselves.
+  fulfilments   OrderFulfilment[]
+  /// Every WhatsApp message this order has caused anybody to be sent,
+  /// successful or not. The admin order page's whole WhatsApp story.
+  whatsappNotifications WhatsAppNotification[]
 
   /// Set at creation only when at least one line actually reserved stock
   /// — see `createPendingOrder`. Null means either nothing in the basket
@@ -1101,6 +1138,227 @@ model OrderStatusChange {
   /// The order detail page reads its own history newest-first.
   @@index([orderId, createdAt])
   @@map("order_status_changes")
+}
+
+/// ---------------------------------------------------------------------
+/// Vendor fulfilment — who has to pick what, and whether they have.
+/// ---------------------------------------------------------------------
+
+/// How far one store has got with its own share of an order.
+///
+/// Deliberately three values, not five. The order lifecycle a customer
+/// sees is `PAID -> DISPATCHED -> OUT_FOR_DELIVERY -> DELIVERED`
+/// (`src/lib/orders/lifecycle.ts`), with no accept, prepare or ready
+/// step, and a vendor's own leg is narrower still: they have the order,
+/// or they have sent it out, or it was called off. Anything more would be
+/// internal vocabulary leaking into a WhatsApp message.
+enum OrderFulfilmentStatus {
+  /// The vendor has been told and has not dispatched yet. There is no
+  /// "accepted" — a vendor does not accept a Quoin order, they fulfil it.
+  PENDING
+  /// This store's items have left it. The *order* only moves to
+  /// `DISPATCHED` once every one of its fulfilments says this — see
+  /// `rollUpFulfilments`, src/lib/data/order-fulfilments.ts.
+  DISPATCHED
+  /// The order was cancelled while this leg was still outstanding. Kept
+  /// rather than deleted: that the vendor was once asked to pick these
+  /// items is a fact, and the row is what the admin page shows to explain
+  /// why they received a message about an order that no longer exists.
+  CANCELLED
+}
+
+/// One store's share of one order.
+///
+/// A Quoin basket can span stores. A tracked `INSTANT` line reserves from
+/// the dark store inside whose radius the address falls; a tracked
+/// `SCHEDULED` line can fall back to the default warehouse
+/// (`resolveStoreForStockLine`, src/lib/data/inventory.ts). So "the
+/// vendor for this order" is not a single answer, and the whole reason
+/// this table exists is that marking an order DISPATCHED because *one*
+/// store dispatched would tell the customer something untrue.
+///
+/// Created once, immediately after the payment settles, by
+/// `createFulfilmentsForOrder` — never at checkout. A PENDING_PAYMENT
+/// order has no vendor work in it: nobody should be asked to pick an
+/// order that was abandoned at the gateway.
+///
+/// Store identity is **snapshotted**, exactly as `OrderLine` snapshots
+/// the product: `storeId` is a plain string and not a foreign key, and
+/// the name and number are copied. A store renamed, deactivated or given
+/// a new number next quarter must not rewrite which store was asked to
+/// pick a past order, or who was actually messaged about it.
+model OrderFulfilment {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Matches `OrderLine.storeId`, and not a foreign key for the reason
+  /// above. The admin page joins back to `stores` best-effort for a live
+  /// phone number; everything it *must* show is on this row already.
+  storeId   String
+  storeCode String
+  storeName String
+  /// The number the vendor message was addressed to, frozen. Null when the
+  /// store had none when this row was written — the admin page says so,
+  /// and the matching `WhatsAppNotification` row records the failure.
+  vendorPhone String?
+
+  status OrderFulfilmentStatus @default(PENDING)
+
+  /// The vendor's own credential, and the only one they have.
+  ///
+  /// There is no vendor account system in this app and inventing one
+  /// would be a second authentication surface to get wrong. Instead the
+  /// new-order WhatsApp carries a link ending in this token, and holding
+  /// the token authorises exactly one action on exactly one fulfilment —
+  /// nothing else, no other order, no customer list. 256 bits from
+  /// `randomBytes`, so it cannot be guessed from another one issued the
+  /// same second, and revocable by rotating the column.
+  ///
+  /// Not an expiring JWT: a vendor who dispatches two days late must not
+  /// be locked out of the one button they have, and a token that can be
+  /// invalidated in the database is easier to reason about than one that
+  /// cannot.
+  actionToken String @unique
+
+  /// Set once, when this leg is dispatched. A repeated dispatch of the
+  /// same leg must not move it — see `dispatchFulfilment`.
+  dispatchedAt DateTime?
+  /// The staff account that dispatched this leg from the admin page, or
+  /// null when the vendor did it themselves through their WhatsApp link.
+  /// Null is therefore meaningful here and reads as "the vendor", not as
+  /// "unknown".
+  dispatchedByUserId String?
+  dispatchedBy       User?   @relation("FulfilmentDispatchedBy", fields: [dispatchedByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  whatsappNotifications WhatsAppNotification[]
+
+  /// One row per store per order. Two lines from the same store are one
+  /// vendor's work, not two.
+  @@unique([orderId, storeId])
+  @@index([orderId])
+  /// The vendor queue, oldest outstanding first.
+  @@index([status, createdAt])
+  @@map("order_fulfilments")
+}
+
+/// ---------------------------------------------------------------------
+/// WhatsApp — the outbound notification log.
+///
+/// WhatsApp is a *channel*, never the source of truth. Every row here
+/// describes an attempt to tell somebody about something this database
+/// already knows; deleting the whole table would lose no order, no
+/// payment and no status. That asymmetry is the point, and it is what
+/// lets every send be best-effort and every failure be retryable without
+/// a successful order ever being rolled back.
+/// ---------------------------------------------------------------------
+
+enum WhatsAppRecipient {
+  CUSTOMER
+  VENDOR
+}
+
+/// Which message was sent — one value per approved WhatsApp Business
+/// template, and no more.
+///
+/// There is deliberately no `ORDER_ACCEPTED`, `ORDER_PREPARING` or
+/// `ORDER_READY`: those states do not exist in this app's lifecycle, so a
+/// template for them could only ever be dead weight that a later reader
+/// mistakes for a feature.
+enum WhatsAppMessageType {
+  /// To the customer, once the payment is confirmed.
+  ORDER_PLACED
+  /// To each vendor, with their own items only.
+  NEW_VENDOR_ORDER
+  ORDER_DISPATCHED
+  OUT_FOR_DELIVERY
+  ORDER_DELIVERED
+  ORDER_CANCELLED
+}
+
+enum WhatsAppStatus {
+  /// Written before the provider is called. A row stuck here means the
+  /// process died mid-send — visible in the admin, and retryable.
+  PENDING
+  /// The provider accepted it. Not the same as the customer having read
+  /// it; `providerMessageId` is what the status webhook later matches on
+  /// to say more than that.
+  SENT
+  /// The provider rejected it, or there was nothing to send it to (no
+  /// number on file). `errorMessage` says which.
+  FAILED
+  /// A retry is in flight for a row that previously failed.
+  RETRYING
+}
+
+model WhatsAppNotification {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  /// Set only on a vendor message, naming which leg it was about. Lets
+  /// the admin page show "Vendor notified" against the right store on a
+  /// multi-store order rather than against the order in general.
+  fulfilmentId String?
+  fulfilment   OrderFulfilment? @relation(fields: [fulfilmentId], references: [id], onDelete: SetNull)
+
+  recipientType WhatsAppRecipient
+  /// E.164, frozen. The customer's account number can change; what this
+  /// message was addressed to cannot.
+  recipientPhone String
+  messageType    WhatsAppMessageType
+  status         WhatsAppStatus      @default(PENDING)
+
+  /// The provider's own id (`wamid....`). Null until the provider accepts
+  /// the message, and the key the delivery-status webhook matches on.
+  providerMessageId String?
+  /// Why it failed, for staff to read. Provider error bodies can be long;
+  /// the sender truncates.
+  errorMessage      String?
+
+  /// How many times this row has been sent, including the first attempt.
+  attempts Int @default(0)
+
+  /// What makes a send safe to repeat, and the whole of this feature's
+  /// idempotency.
+  ///
+  /// Razorpay retries `payment.captured` by design; the reconciler
+  /// settles the same payment when a delivery is lost; two staff can
+  /// click the same transition; a vendor can hit their dispatch link
+  /// twice. Every one of those paths calls into the sender again, and
+  /// without a key the customer gets the same message twice.
+  ///
+  /// Shaped as `{order reference}:{message type}` — or with a store code
+  /// appended for a vendor message, since two vendors on one order must
+  /// each be told once. Unique across the table: a repeat insert is
+  /// rejected by Postgres on the index rather than prevented by a
+  /// `findFirst` two statements earlier that a concurrent request can
+  /// pass at the same time. See `sendOrderMessage`,
+  /// src/lib/data/whatsapp-notifications.ts.
+  ///
+  /// A *retry* of a failed row deliberately reuses the row rather than
+  /// writing a new one with a new key — the admin is retrying a message,
+  /// not sending a different one.
+  eventKey String @unique
+
+  createdAt DateTime  @default(now())
+  /// When the provider accepted it. Null for PENDING and for FAILED.
+  sentAt    DateTime?
+  updatedAt DateTime  @updatedAt
+
+  /// The order page reads its own WhatsApp activity oldest-first, as a
+  /// story.
+  @@index([orderId, createdAt])
+  /// "Show me everything that failed" across all orders.
+  @@index([status, createdAt])
+  /// The delivery-status webhook arrives knowing only the provider's id.
+  @@index([providerMessageId])
+  @@map("whatsapp_notifications")
 }
 
 enum PaymentProvider {

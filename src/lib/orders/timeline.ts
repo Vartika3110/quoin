@@ -1,29 +1,43 @@
 import type { OrderStatus } from "@prisma/client";
+import { stageForStatus, type OrderStage } from "@/lib/orders/lifecycle";
 
 /**
  * The customer-facing order timeline.
  *
- * `src/lib/data/orders.ts` owns the real lifecycle table
- * (`ORDER_TRANSITIONS`) — twelve statuses, some of them ops vocabulary a
- * customer has no reason to see distinguished (`CONFIRMED` vs
- * `PROCESSING` read the same to someone waiting for a delivery). This
- * module is the one place that folds those twelve into the six milestones
- * a customer actually thinks in, so the order detail page and anything
- * else that ever wants the same stepper compute it identically rather
- * than each hand-rolling a slightly different reading of the same table.
+ * Four steps, and only four:
+ *
+ *   Order placed → Dispatched → Out for delivery → Delivered
+ *
+ * `src/lib/data/orders.ts` still owns the real lifecycle table
+ * (`ORDER_TRANSITIONS`) and `src/lib/orders/lifecycle.ts` owns the
+ * mapping from its twelve statuses onto the four stages above. This
+ * module is the third, narrowest layer: it turns one order's status and
+ * history into a stepper, so the order detail page and anything else that
+ * ever wants the same stepper compute it identically rather than each
+ * hand-rolling a slightly different reading of the same table.
+ *
+ * It used to be six steps, with "Payment confirmed" between placed and
+ * confirmed, and "Packed" after it. Both are gone. `CONFIRMED`,
+ * `PROCESSING` and `PACKED` are retired statuses (see
+ * `RETIRED_FULFILMENT_STATUSES`) — there is no accept, prepare or ready
+ * step any more — and a separate payment step was always a half-truth
+ * here: an order is not *placed* until the money is confirmed, so the
+ * two were one milestone wearing two labels. Collapsing them is why
+ * `placed` now reads its timestamp from `paidAt`.
  *
  * Pure and `db`-free by construction — only a *type* is imported from
- * `@prisma/client`, which erases at compile time, so this file carries no
- * runtime dependency on Prisma at all and is safe to import from a client
- * component (a future animated stepper, say) without pulling a database
- * client into the browser bundle. That is also why the outcome label and
- * tone below are a short local table rather than an import of
- * `ORDER_STATUS_LABEL`/`ORDER_STATUS_TONE` (`src/lib/data/order-history.ts`)
- * — that module's own first line is `import { db } from "@/lib/db"`, and
- * importing anything from it, even for its type, would pull that in too.
+ * `@prisma/client`, which erases at compile time, and `lifecycle.ts`
+ * holds to the same rule — so this file carries no runtime dependency on
+ * Prisma at all and is safe to import from a client component without
+ * pulling a database client into the browser bundle. That is also why the
+ * outcome label and tone below are a short local table rather than an
+ * import of `ORDER_STATUS_LABEL`/`ORDER_STATUS_TONE`
+ * (`src/lib/data/order-history.ts`) — that module's own first line is
+ * `import { db } from "@/lib/db"`.
  */
 
-export type OrderTimelineStepKey = "placed" | "payment" | "confirmed" | "packed" | "out" | "delivered";
+/** One key per stage on the happy path. `cancelled` is not a step. */
+export type OrderTimelineStepKey = Exclude<OrderStage, "cancelled">;
 export type OrderTimelineStepState = "done" | "current" | "upcoming";
 
 export interface OrderTimelineStep {
@@ -76,27 +90,34 @@ export interface OrderTimelineInput {
 }
 
 /**
- * Where each status sits on the "how far has this got" line the six
- * steps below walk. `CONFIRMED`/`PROCESSING` share a rank, and so do
- * `DISPATCHED`/`OUT_FOR_DELIVERY` — see the `confirmed` and `out` steps'
- * `toStatuses` — because the customer-facing milestone is the same one
- * either half of that pair reports.
+ * How far along the four-step line each status sits.
  *
- * The four terminal statuses (`CANCELLED`, `FAILED`, `REFUND_PENDING`,
- * `REFUNDED`) have no rank at all: they do not sit further along this
- * line, they leave it, which is exactly what `outcome` exists to say
- * instead of forcing them onto a step they were never really "up to".
+ * Derived from `stageForStatus` rather than listed again, so the stepper
+ * and every other reader of the lifecycle cannot disagree about where
+ * `PACKED` belongs. The three retired statuses all map to `placed`,
+ * which is what a customer waiting for a parcel would have understood
+ * them to mean anyway.
+ *
+ * A status with no stage — `PENDING_PAYMENT`, `FAILED`, `REFUND_PENDING`,
+ * `REFUNDED` — has no rank, and that is deliberate for two different
+ * reasons. The first two have not reached the line yet (an order is not
+ * placed until its money is confirmed; an abandoned checkout sits in
+ * `PENDING_PAYMENT` forever). The last two have left it sideways: they
+ * describe money coming back, not a parcel, and `outcome` says so
+ * instead of forcing them onto a step they were never "up to".
  */
-const RANK: Partial<Record<OrderStatus, number>> = {
-  PENDING_PAYMENT: 0,
-  PAID: 1,
-  CONFIRMED: 2,
-  PROCESSING: 2,
-  PACKED: 3,
-  DISPATCHED: 4,
-  OUT_FOR_DELIVERY: 4,
-  DELIVERED: 5,
+const STAGE_RANK: Record<OrderTimelineStepKey, number> = {
+  placed: 0,
+  dispatched: 1,
+  out_for_delivery: 2,
+  delivered: 3,
 };
+
+function rankOf(status: OrderStatus): number | null {
+  const stage = stageForStatus(status);
+  if (stage === null || stage === "cancelled") return null;
+  return STAGE_RANK[stage];
+}
 
 /** Same four labels and tones `ORDER_STATUS_LABEL`/`ORDER_STATUS_TONE`
     carry for these statuses — kept local rather than imported; see the
@@ -114,12 +135,14 @@ const STEPS: {
   rank: number;
   toStatuses: readonly OrderStatus[];
 }[] = [
-  { key: "placed", label: "Order placed", rank: 0, toStatuses: [] },
-  { key: "payment", label: "Payment confirmed", rank: 1, toStatuses: [] },
-  { key: "confirmed", label: "Order confirmed", rank: 2, toStatuses: ["CONFIRMED", "PROCESSING"] },
-  { key: "packed", label: "Packed", rank: 3, toStatuses: ["PACKED"] },
-  { key: "out", label: "Out for delivery", rank: 4, toStatuses: ["DISPATCHED", "OUT_FOR_DELIVERY"] },
-  { key: "delivered", label: "Delivered", rank: 5, toStatuses: ["DELIVERED"] },
+  /* `placed`'s timestamp comes from `paidAt`, not from a change row — see
+     `stepAt`. The three retired statuses are listed anyway so that an
+     order which reached `CONFIRMED` through the old flow and never had a
+     `paidAt` written still shows a date on this step. */
+  { key: "placed", label: "Order placed", rank: 0, toStatuses: ["PAID", "CONFIRMED", "PROCESSING", "PACKED"] },
+  { key: "dispatched", label: "Dispatched", rank: 1, toStatuses: ["DISPATCHED"] },
+  { key: "out_for_delivery", label: "Out for delivery", rank: 2, toStatuses: ["OUT_FOR_DELIVERY"] },
+  { key: "delivered", label: "Delivered", rank: 3, toStatuses: ["DELIVERED"] },
 ];
 
 function iso(value: Date | string): string {
@@ -141,41 +164,50 @@ function earliestAt(changes: OrderTimelineStatusChange[], toStatuses: readonly O
 }
 
 function stepAt(step: (typeof STEPS)[number], input: OrderTimelineInput): string | null {
-  if (step.key === "placed") return iso(input.createdAt);
-  if (step.key === "payment") return input.paidAt != null ? iso(input.paidAt) : null;
+  if (step.key === "placed") {
+    /* `paidAt` first: it is written by the settlement itself and is the
+       moment the order became real. The change rows are the fallback for
+       an order whose `PAID` write predates that column being set, or
+       which reached a retired status without one. */
+    return input.paidAt != null ? iso(input.paidAt) : earliestAt(input.changes, step.toStatuses);
+  }
   return earliestAt(input.changes, step.toStatuses);
 }
 
 /**
- * Turns one order's status and history into the six-step customer stepper.
+ * Turns one order's status and history into the four-step customer
+ * stepper.
  *
  * Two branches, matching the two shapes an order's life actually takes:
  *
- * **Still on the line.** `status` has a rank, and everything up to it is
+ * **Still on the line.** `status` has a rank, everything up to it is
  * `done`, the first step past it is `current`, and the rest are
- * `upcoming` — a plain walk of `STEPS` against `RANK[status]`.
+ * `upcoming` — a plain walk of `STEPS`. A `PENDING_PAYMENT` order has no
+ * rank, so nothing is done and `placed` itself is the current step: the
+ * order is in the act of being placed, which is exactly true while the
+ * payment is still in flight.
  *
- * **Left the line.** `status` is one of the four terminal statuses, which
- * have no rank of their own — see `OUTCOME`. There is no `current` step
- * here at all: an order that was cancelled did not pause partway through
- * step 3, it stopped being on this line. What *is* still meaningful is
- * how far it got before that happened, recovered from the highest rank
- * among its own `changes` (falling back to at least `payment` if
- * `paidAt` is set, since a captured payment is real even if no
- * `OrderStatusChange` row ever named `PAID` directly — see
- * `recordOfflinePayment`, `src/lib/data/orders.ts`, which does write one,
- * but nothing requires every path to).
+ * **Left the line.** `status` is one of the five statuses `OUTCOME`
+ * names. There is no `current` step at all — an order that was cancelled
+ * did not pause partway through step 3, it stopped being on this line.
+ * What *is* still meaningful is how far it got, recovered from the
+ * highest rank among its own `changes`, with `paidAt` alone enough to
+ * prove the first step: a captured payment is real even if no
+ * `OrderStatusChange` row ever named `PAID` directly.
  */
 export function orderTimeline(input: OrderTimelineInput): OrderTimelineResult {
   const outcome = OUTCOME[input.status] ?? null;
 
   if (outcome) {
-    let reached = 0; // `placed` always happened.
+    /* -1, not 0: a payment that failed before anything was captured has
+       not reached `placed`, and marking it done would tell a customer
+       their order exists when it does not. */
+    let reached = -1;
     for (const change of input.changes) {
-      const rank = RANK[change.toStatus];
+      const rank = rankOf(change.toStatus);
       if (rank != null && rank > reached) reached = rank;
     }
-    if (input.paidAt != null && reached < 1) reached = 1;
+    if (input.paidAt != null && reached < 0) reached = 0;
 
     return {
       steps: STEPS.map((step) => ({
@@ -188,7 +220,7 @@ export function orderTimeline(input: OrderTimelineInput): OrderTimelineResult {
     };
   }
 
-  const currentRank = RANK[input.status] ?? 0;
+  const currentRank = rankOf(input.status) ?? -1;
   let currentAssigned = false;
 
   const steps: OrderTimelineStep[] = STEPS.map((step) => {

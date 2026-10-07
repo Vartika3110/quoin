@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { recordFailedPayment, settleCapturedPayment } from "@/lib/data/orders";
 import { verifyWebhookSignature } from "@/lib/payments/razorpay";
 import { notifyPaymentSettled } from "@/lib/data/order-notifications";
+import { onOrderPlacedForGatewayOrder } from "@/lib/data/order-whatsapp";
 
 /**
  * POST /api/v1/webhooks/razorpay
@@ -289,6 +290,21 @@ export async function POST(request: Request) {
              reconciler, which settles the same way when a delivery here
              never arrives. */
           await notifyPaymentSettled({ providerOrderId, providerPaymentId });
+          /* And the order is now genuinely placed: this is the moment —
+             and the only moment — the customer's WhatsApp confirmation
+             and each vendor's new-order message go out. Not when the
+             customer clicked Pay, and not from the browser's own
+             `/checkout/verify` handoff, which proves Razorpay replied
+             rather than that money moved.
+
+             Best-effort and outside the settlement, exactly like the
+             line above it, and `onOrderPlacedForGatewayOrder` swallows
+             everything of its own accord: a WhatsApp outage must never
+             turn a captured payment into a 500 that Razorpay retries
+             for hours. Every send is keyed on the order reference and
+             the message type, so a redelivered `payment.captured`
+             messages nobody twice. */
+          await onOrderPlacedForGatewayOrder(providerOrderId);
         }
         break;
       }

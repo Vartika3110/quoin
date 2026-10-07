@@ -883,20 +883,33 @@ describe("order lifecycle transitions", () => {
       ["PENDING_PAYMENT", "CANCELLED"],
       ["FAILED", "PENDING_PAYMENT"],
       ["FAILED", "CANCELLED"],
-      ["PAID", "CONFIRMED"],
+      /* The simplified lifecycle: a paid order's next move is a vendor
+         sending it out, with no accept, prepare or pack step between. */
+      ["PAID", "DISPATCHED"],
       ["PAID", "CANCELLED"],
       ["PAID", "REFUND_PENDING"],
+      /* The retired statuses keep their old onward edges and gain a
+         direct one to DISPATCHED, so an order left in one of them when
+         the simplified lifecycle shipped is not stranded. */
+      ["PAID", "CONFIRMED"],
+      ["CONFIRMED", "DISPATCHED"],
       ["CONFIRMED", "PROCESSING"],
       ["CONFIRMED", "CANCELLED"],
       ["CONFIRMED", "REFUND_PENDING"],
+      ["PROCESSING", "DISPATCHED"],
       ["PROCESSING", "PACKED"],
       ["PROCESSING", "CANCELLED"],
       ["PROCESSING", "REFUND_PENDING"],
       ["PACKED", "DISPATCHED"],
+      ["PACKED", "CANCELLED"],
       ["PACKED", "REFUND_PENDING"],
       ["DISPATCHED", "OUT_FOR_DELIVERY"],
+      /* "Any appropriate status -> cancelled": a parcel that has left
+         the store can still be called off before it arrives. */
+      ["DISPATCHED", "CANCELLED"],
       ["DISPATCHED", "REFUND_PENDING"],
       ["OUT_FOR_DELIVERY", "DELIVERED"],
+      ["OUT_FOR_DELIVERY", "CANCELLED"],
       ["OUT_FOR_DELIVERY", "REFUND_PENDING"],
       ["DELIVERED", "REFUND_PENDING"],
       ["REFUND_PENDING", "REFUNDED"],
@@ -913,17 +926,26 @@ describe("order lifecycle transitions", () => {
 
   it("rejects a representative set of illegal moves", () => {
     const illegal: [OrderStatus, OrderStatus][] = [
-      /* Cannot skip stages. */
+      /* Cannot skip stages. An unpaid order cannot be dispatched, and a
+         paid one cannot jump past the vendor to the rider. */
+      ["PENDING_PAYMENT", "DISPATCHED"],
       ["PENDING_PAYMENT", "CONFIRMED"],
       ["PAID", "PACKED"],
-      ["CONFIRMED", "DISPATCHED"],
+      ["PAID", "OUT_FOR_DELIVERY"],
+      ["PAID", "DELIVERED"],
+      ["DISPATCHED", "DELIVERED"],
       /* Cannot go backwards. */
       ["PACKED", "PROCESSING"],
       ["DELIVERED", "OUT_FOR_DELIVERY"],
+      ["DISPATCHED", "PAID"],
       ["PAID", "PENDING_PAYMENT"],
-      /* Cannot re-request a refund or skip straight to refunded. */
-      ["PACKED", "CANCELLED"],
+      /* A delivered order is genuinely done: undoing a delivery is a
+         return, and REFUND_PENDING is the edge for that. */
+      ["DELIVERED", "CANCELLED"],
+      /* Cannot skip straight to refunded, or move off a terminal state. */
       ["PAID", "REFUNDED"],
+      ["CANCELLED", "PENDING_PAYMENT"],
+      ["REFUNDED", "REFUND_PENDING"],
       /* Cannot pay twice or fail from a paid state. */
       ["PAID", "PAID"],
       ["PAID", "FAILED"],

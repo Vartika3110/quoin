@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/Button";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { OfflinePaymentForm } from "@/components/admin/OfflinePaymentForm";
 import { DeliveryDateForm } from "@/components/admin/DeliveryDateForm";
+import { OrderTimeline } from "@/components/admin/OrderTimeline";
+import { WhatsAppActivity } from "@/components/admin/WhatsAppActivity";
+import { VendorFulfilments } from "@/components/admin/VendorFulfilments";
 import { requireStaffPage } from "@/lib/auth/staff";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/types/catalog";
@@ -22,6 +25,9 @@ import {
   legalNextStatuses,
 } from "@/lib/data/admin-orders";
 import { OFFLINE_METHOD_LABEL, type OfflinePaymentMethod } from "@/lib/data/orders";
+import { listOrderFulfilments } from "@/lib/data/order-fulfilments";
+import { listOrderWhatsAppActivity } from "@/lib/data/whatsapp-notifications";
+import { isWhatsAppConfigured } from "@/lib/whatsapp/client";
 
 export const dynamic = "force-dynamic";
 
@@ -58,10 +64,14 @@ export default async function AdminOrderPage({ params }: Ctx) {
      `expectedDeliveryOn` — nothing there reads it yet — so this page
      reads the one extra column itself rather than widening that
      module's projection for a single field only this card needs. */
-  const deliveryRow = await db.order.findUnique({
-    where: { id: order.id },
-    select: { expectedDeliveryOn: true },
-  });
+  const [deliveryRow, fulfilments, whatsappActivity] = await Promise.all([
+    db.order.findUnique({
+      where: { id: order.id },
+      select: { expectedDeliveryOn: true },
+    }),
+    listOrderFulfilments(order.id),
+    listOrderWhatsAppActivity(order.id),
+  ]);
   const expectedDeliveryOn = deliveryRow?.expectedDeliveryOn
     ? deliveryRow.expectedDeliveryOn.toISOString().slice(0, 10)
     : null;
@@ -207,7 +217,48 @@ export default async function AdminOrderPage({ params }: Ctx) {
           </Card>
 
           <Card>
-            <CardHeader title="Status history" subtitle="Newest first" />
+            <CardHeader
+              title="Order timeline"
+              subtitle="Every status change, from the order's own history"
+            />
+            <OrderTimeline
+              status={order.status}
+              createdAt={order.createdAt}
+              paidAt={order.paidAt}
+              /* `getAdminOrder` reads the audit trail newest-first for
+                 the history card below; a timeline reads as a story and
+                 has to run the other way. Reversed here rather than
+                 queried twice. */
+              entries={[...order.statusChanges].reverse()}
+            />
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Vendors"
+              subtitle={
+                fulfilments.length === 0
+                  ? "Fulfilled by Quoin"
+                  : `${fulfilments.filter((f) => f.status === "DISPATCHED").length} of ${fulfilments.length} dispatched`
+              }
+            />
+            <VendorFulfilments reference={order.reference} fulfilments={fulfilments} />
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="WhatsApp activity"
+              subtitle="Every message this order has caused, and why any of them failed"
+            />
+            <WhatsAppActivity
+              reference={order.reference}
+              activity={whatsappActivity}
+              configured={isWhatsAppConfigured()}
+            />
+          </Card>
+
+          <Card>
+            <CardHeader title="Status history" subtitle="Newest first, exact statuses" />
             {order.statusChanges.length === 0 ? (
               <p className="text-body-sm text-muted">
                 No staff action has been recorded against this order yet.
@@ -216,8 +267,15 @@ export default async function AdminOrderPage({ params }: Ctx) {
               <ul className="space-y-3">
                 {order.statusChanges.map((change) => (
                   <li key={change.id} className="text-body-sm">
-                    <p className="text-ink">
-                      {ORDER_STATUS_LABEL[change.fromStatus]} → {ORDER_STATUS_LABEL[change.toStatus]}
+                    {/* The raw enum values, deliberately, where the
+                        timeline above uses the friendly stage names. An
+                        audit trail is read when something has gone wrong,
+                        and the three retired statuses all *label* as
+                        "Placed" — so a legacy `PAID -> CONFIRMED` would
+                        read "Placed → Placed" and lose the one fact the
+                        row exists to record. */}
+                    <p className="nums text-ink">
+                      {change.fromStatus} → {change.toStatus}
                     </p>
                     <p className="text-caption text-muted">
                       {DATE_TIME_FORMAT.format(change.createdAt)} ·{" "}
@@ -280,9 +338,18 @@ export default async function AdminOrderPage({ params }: Ctx) {
           <Card>
             <CardHeader title="Customer" />
             <p className="text-body-sm text-ink">{order.customer.name ?? "Unnamed account"}</p>
-            <p className="nums text-body-sm text-muted">
-              {order.customer.phone ?? order.customer.email ?? "—"}
-            </p>
+            <p className="nums text-body-sm text-muted">{order.customer.phone ?? "No phone"}</p>
+            {order.customer.email && (
+              <p className="text-body-sm text-muted">{order.customer.email}</p>
+            )}
+            <Button
+              href={`/admin/customers/${order.customer.id}`}
+              variant="outline"
+              size="sm"
+              className="mt-3"
+            >
+              Customer record
+            </Button>
           </Card>
 
           <Card>
