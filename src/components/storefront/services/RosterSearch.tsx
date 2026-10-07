@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "@/components/icons";
+import { cn } from "@/components/ui/cn";
 import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
 import type { Professional } from "@/lib/data/professionals";
 
@@ -30,17 +31,26 @@ import type { Professional } from "@/lib/data/professionals";
  */
 export function RosterSearch({ people }: { people: Professional[] }) {
   const [query, setQuery] = useState("");
+  const [trade, setTrade] = useState<string | null>(null);
+
+  /* Taken from the roster rather than written out, so a trade nobody
+     works disappears from the row instead of filtering to nothing. */
+  const trades = useMemo(
+    () => [...new Set(people.map((p) => p.trade))].sort(),
+    [people],
+  );
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return people;
-    return people.filter((person) =>
-      [person.name, person.trade, person.area ?? ""]
+    return people.filter((person) => {
+      if (trade && person.trade !== trade) return false;
+      if (!q) return true;
+      return [person.name, person.trade, person.area ?? ""]
         .join(" ")
         .toLowerCase()
-        .includes(q),
-    );
-  }, [people, query]);
+        .includes(q);
+    });
+  }, [people, query, trade]);
 
   return (
     <div>
@@ -61,18 +71,37 @@ export function RosterSearch({ people }: { people: Professional[] }) {
           />
         </label>
 
+      </div>
+
+      {/* The trades, as a row to tap. A chip answers the common case in
+          one tap where the field above needs a word typed correctly, and
+          it also *shows* what Quoin books — a customer who does not know
+          the roster has tilers on it will not think to search for one. */}
+      <div className="rail mt-3 gap-2 px-5 pb-1 scroll-pl-5 lg:px-0 lg:scroll-pl-0">
+        <Chip label="All" on={trade === null} onClick={() => setTrade(null)} />
+        {trades.map((name) => (
+          <Chip
+            key={name}
+            label={name}
+            on={trade === name}
+            onClick={() => setTrade(trade === name ? null : name)}
+          />
+        ))}
+      </div>
+
+      <div className="px-5 lg:px-0">
         {/* Announced, so a screen reader is told the list changed under
             it — a filtered list that updates silently is one a
             non-sighted reader has to go and check. */}
-        <p aria-live="polite" className="mt-2 text-caption text-muted">
-          {query.trim()
-            ? `${results.length} of ${people.length} ${people.length === 1 ? "person" : "people"}`
-            : `${people.length} ${people.length === 1 ? "person" : "people"}`}
+        <p aria-live="polite" className="mt-3 text-caption text-muted">
+          {results.length === people.length
+            ? `${people.length} professionals available`
+            : `${results.length} of ${people.length} professionals`}
         </p>
       </div>
 
       {results.length > 0 ? (
-        <div className="mt-4">
+        <div className="mt-3">
           <ProfessionalRail people={results} layout="list" />
         </div>
       ) : (
@@ -82,5 +111,33 @@ export function RosterSearch({ people }: { people: Professional[] }) {
         </p>
       )}
     </div>
+  );
+}
+
+/** One trade, as a button. `aria-pressed` rather than a checkbox: it is a
+    filter the page applies immediately, not a value submitted later. */
+function Chip({
+  label,
+  on,
+  onClick,
+}: {
+  label: string;
+  on: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={cn(
+        "shrink-0 rounded-full border px-4 py-2 text-caption font-medium transition-colors",
+        on
+          ? "border-accent bg-accent text-on-accent"
+          : "border-line bg-surface text-muted hover:text-ink",
+      )}
+    >
+      {label}
+    </button>
   );
 }

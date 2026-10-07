@@ -64,6 +64,7 @@ export function SiteHeader({
   mobileSlot,
   signedIn,
   phoneBar = true,
+  phoneSearch = true,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
@@ -74,6 +75,8 @@ export function SiteHeader({
    * header does not vanish at a width where nothing replaces it.
    */
   phoneBar?: boolean;
+  /** `false` hides the phone search row — see `AppShell`'s `phoneSearch`. */
+  phoneSearch?: boolean;
   /**
    * Rendered on a phone between the area row and the search row, and
    * collapsed along with search on scroll.
@@ -121,6 +124,7 @@ export function SiteHeader({
             chosen={chosen}
             scrolled={scrolled}
             slot={mobileSlot}
+            showSearch={phoneSearch}
             onOpenCart={() => setCartOpen(true)}
             signedIn={signedIn}
           />
@@ -325,6 +329,7 @@ function MobileBar({
   chosen,
   scrolled,
   slot,
+  showSearch = true,
   onOpenCart,
   signedIn,
 }: {
@@ -332,6 +337,7 @@ function MobileBar({
   chosen: AreaChoice | null;
   scrolled: boolean;
   slot?: ReactNode;
+  showSearch?: boolean;
   onOpenCart: () => void;
   signedIn: boolean;
 }) {
@@ -470,9 +476,11 @@ function MobileBar({
               page already, so the header was offering the same
               destination a second time on the same screen, and paying
               120px of the search field's measure for it. */}
-          <div className="pb-2 pt-3">
-            <MobileSearchField />
-          </div>
+          {showSearch && (
+            <div className="pb-2 pt-3">
+              <MobileSearchField />
+            </div>
+          )}
 
           {/* Negative margin because the slot's own content is a rail
               that has to bleed through this container's gutter. */}

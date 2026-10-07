@@ -35,7 +35,7 @@ export default async function ServicesPage() {
   const people = await listProfessionals();
 
   return (
-    <AppShell>
+    <AppShell phoneSearch={false}>
       <div className="pt-4 lg:pt-6">
         <div className="mb-3 px-5 lg:px-0">
           <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Services" }]} />

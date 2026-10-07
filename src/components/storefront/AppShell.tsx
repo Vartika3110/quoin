@@ -36,6 +36,7 @@ export async function AppShell({
   fullBleed = false,
   headerSlot,
   phoneChrome = true,
+  phoneSearch = true,
 }: {
   children: React.ReactNode;
   fullBleed?: boolean;
@@ -54,6 +55,16 @@ export async function AppShell({
    * less chrome of its own.
    */
   phoneChrome?: boolean;
+  /**
+   * `false` on a page that does its own searching.
+   *
+   * The header's field searches the *catalogue*. On a page whose content
+   * is not products — the roster on `/services` — it looks like the
+   * page's own search and is not: typing "plumber" there returned
+   * bathroom fittings. Rather than teach one field two behaviours, the
+   * page turns it off and supplies a field attached to its own list.
+   */
+  phoneSearch?: boolean;
   /**
    * Extra chrome for the phone header, between the area row and the
    * search field. Only the home page uses it, for the four entry cards
@@ -86,6 +97,7 @@ export async function AppShell({
           categories={categories}
           mobileSlot={headerSlot}
           phoneBar={phoneChrome}
+          phoneSearch={phoneSearch}
           /* Read here rather than left for the header's own client code to
              discover: the header is a client component with no request of
              its own, and a client-side "am I signed in" check would render
