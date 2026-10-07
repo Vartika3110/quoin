@@ -40,6 +40,29 @@ import { AREA_COOKIE, getAreaChoice } from "@/lib/data/service-areas";
 export const dynamic = "force-dynamic";
 
 /**
+ * Departments that get a rail of their own, in page order.
+ *
+ * Config rather than five copies of the same JSX: adding, renaming or
+ * reordering one of these is a line here.
+ *
+ * **Not filtered to photographed products**, unlike the featured rows
+ * above them. Only `bathware-plumbing` has photography — 1,339 products,
+ * and none anywhere else in the catalogue — so a photo filter would make
+ * every other department's rail empty. The reference design shows the
+ * brand-initial swatch card in exactly these rows, and `ProductCard`
+ * already falls back to it, so a department with no photography still
+ * reads as a shelf rather than vanishing.
+ *
+ * The prototype's **Interiors & Decor** has no rail here because there is
+ * no such department: this catalogue's fourteen are materials and
+ * fittings. Interiors live in Studio, which has its own section above.
+ */
+const CATEGORY_RAILS = [
+  { slug: "bathware-plumbing", title: "Bathware & sanitary" },
+  { slug: "tiling-adhesives", title: "Tiling & adhesives" },
+] as const;
+
+/**
  * Three blocks: the hero, one catalogue block, and the brands.
  *
  * It was eighteen. What went was everything that repeated something the
@@ -90,6 +113,16 @@ export default async function HomePage() {
     pageSize: 60,
   });
 
+  /* One query per department rail, plus the catch-all beneath them. */
+  const [railPages, morePage] = await Promise.all([
+    Promise.all(
+      CATEGORY_RAILS.map((rail) =>
+        listProducts({ categorySlug: rail.slug, sort: "name", pageSize: 12 }),
+      ),
+    ),
+    listProducts({ sort: "name", pageSize: 60 }),
+  ]);
+
   /* Three product rails on one page can show the same thing three times.
      They cut the catalogue on different axes — a recent photographed line,
      a genuine bestseller, anything over ₹5,000 — and a product can satisfy
@@ -110,6 +143,19 @@ export default async function HomePage() {
     shownPhotos.add(product.photo);
     selects.push(product);
   }
+
+  /* The department rails take what the featured rows did not, and feed
+     the same set forward — otherwise "More to explore" opens with the
+     twelve products the reader just scrolled past. */
+  const railSections = CATEGORY_RAILS.map((rail, i) => {
+    const items = railPages[i]!.items.filter((p) => !shown.has(p.id)).slice(0, 10);
+    items.forEach((p) => shown.add(p.id));
+    return { ...rail, items };
+  });
+
+  /* Everything else, in no department order — the row for a reader who
+     has scrolled the whole page and is still browsing. */
+  const more = morePage.items.filter((p) => !shown.has(p.id)).slice(0, 10);
 
   /* Eight, the same eight at both widths. Fourteen fits neither shape
      cleanly — four across leaves a last row of two, and on a phone it is
@@ -295,6 +341,43 @@ export default async function HomePage() {
               {/* The roster the reference design asks for. Sample data
                   for now, labelled as such by the rail itself. */}
               {people.length > 0 && <ProfessionalRail people={people} />}
+            </section>
+          )}
+
+          {/* One rail per department, then everything else. These sit
+              after the people and before the brands: a reader who has not
+              been caught by anything above is browsing rather than
+              looking, and a shelf is what browsing wants. */}
+          {railSections.map((rail) =>
+            hasEnough(rail.items) ? (
+              <section key={rail.slug}>
+                <SectionHead
+                  title={rail.title}
+                  href={`/c/${rail.slug}`}
+                  linkLabel="View all"
+                />
+                <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-5">
+                  {rail.items.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </section>
+            ) : null,
+          )}
+
+          {hasEnough(more) && (
+            <section>
+              <SectionHead
+                title="More to explore"
+                subtitle="Picked across every category."
+                href="/products"
+                linkLabel="View all"
+              />
+              <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-5">
+                {more.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
             </section>
           )}
 
