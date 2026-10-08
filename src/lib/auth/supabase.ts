@@ -40,6 +40,29 @@ export function isSupabaseAuthConfigured(): boolean {
   return Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY);
 }
 
+/**
+ * Whether phone sign-in should be offered.
+ *
+ * This briefly also required MSG91 to be configured, because delivery
+ * ran through a Send SMS Hook in this app and the panel was offering a
+ * "Send me a code" button that answered 500. Delivery has since moved to
+ * a **native Supabase SMS provider**, configured in the Supabase
+ * dashboard — so whether a message can actually leave is now Supabase's
+ * business and is deliberately not knowable from here. Re-adding a
+ * second condition would mean this app asserting something about a
+ * provider it no longer talks to.
+ *
+ * The honest consequence: with the provider missing or out of credit,
+ * the button appears and the request fails. That failure is handled
+ * where it happens — `POST /api/v1/auth/otp/request` maps Supabase's
+ * 422 "no provider" and `sms_send_failed` onto plain language, and the
+ * panel offers Google instead. Guessing here would be worse, because the
+ * guess would be wrong in both directions.
+ */
+export function isPhoneSignInAvailable(): boolean {
+  return isSupabaseAuthConfigured();
+}
+
 function requireAuthConfig(): SupabaseAuthConfig {
   if (!isSupabaseAuthConfigured()) {
     throw new Error("Supabase Auth is not configured");

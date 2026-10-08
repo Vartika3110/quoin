@@ -221,21 +221,13 @@ const schema = z.object({
    */
   SUPABASE_ANON_KEY: z.string().optional(),
 
-  /**
-   * Shared secret for Supabase's "Send SMS Hook".
-   *
-   * Supabase mints and checks the code; delivery is handed back to this
-   * app so the existing MSG91 account and its DLT-registered template
-   * keep doing the sending (see `/api/v1/auth/supabase/send-sms`). The
-   * hook is a public endpoint Supabase POSTs to, so it is authenticated
-   * by a Standard Webhooks signature over this secret — without it the
-   * route refuses every request rather than texting whoever a forged
-   * body names.
-   *
-   * Supabase shows this in the dashboard as `v1,whsec_…`; store it
-   * exactly as shown.
-   */
-  SUPABASE_SMS_HOOK_SECRET: z.string().optional(),
+  /* There was a `SUPABASE_SMS_HOOK_SECRET` here, authenticating a Send
+     SMS Hook that handed delivery back to this app so MSG91 could do the
+     sending. Delivery now goes through a native Supabase SMS provider
+     configured in the dashboard, so the hook, its route and this secret
+     are gone — an unused public endpoint that sends SMS on request is
+     attack surface, not a spare tyre. It is in git history if MSG91 ever
+     becomes the cheaper route again. */
 
   /**
    * Cloudflare Stream — where Studio's clips are played from.
@@ -320,7 +312,6 @@ function load(): Env {
         SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET,
         SUPABASE_PUBLIC_BUCKET: process.env.SUPABASE_PUBLIC_BUCKET,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
-        SUPABASE_SMS_HOOK_SECRET: process.env.SUPABASE_SMS_HOOK_SECRET,
         CF_STREAM_CUSTOMER_CODE: process.env.CF_STREAM_CUSTOMER_CODE,
         CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
         CF_STREAM_API_TOKEN: process.env.CF_STREAM_API_TOKEN,

@@ -78,10 +78,29 @@ export const POST = handler(async (request) => {
       );
     }
 
-    /* One message whether the code was wrong, expired, or already spent.
-       Distinguishing them tells an attacker which numbers have live
-       challenges — the same reasoning the hand-rolled version carried,
-       and it survives the move to Supabase unchanged. */
+    /**
+     * Expiry is called out separately, and this is a deliberate reversal.
+     *
+     * The hand-rolled version answered "incorrect or has expired" to
+     * everything, on the reasoning that telling them apart reveals which
+     * numbers have live challenges. That reasoning is sound but the
+     * leak is worth almost nothing — anyone can request a code for a
+     * number and learn the same thing — while the cost is paid by every
+     * real customer who comes back to a stale tab and retypes a correct
+     * code three times because nothing told them it had simply gone off.
+     *
+     * "Incorrect" and "never existed" stay merged below. Only expiry,
+     * which has a clear and different remedy, is named.
+     */
+    if (error?.code === "otp_expired") {
+      throw new ApiError(
+        "bad_request",
+        "That code has expired. Send yourself a new one.",
+        { code: "Expired — request a new code" },
+      );
+    }
+
+    /* One message whether the code was wrong or no challenge existed. */
     throw new ApiError("bad_request", "That code is incorrect or has expired.", {
       code: "Incorrect or expired code",
     });

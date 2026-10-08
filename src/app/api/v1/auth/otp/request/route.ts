@@ -66,6 +66,51 @@ export const POST = handler(async (request) => {
       { status: error.status, code: error.code, message: error.message },
     );
 
+    /* Supabase's `code` is the stable identifier; `status` is coarser and
+       several unrelated faults share one. Matched on code first, falling
+       back to status, so a provider outage and a rate limit do not end up
+       wearing the same sentence. */
+    switch (error.code) {
+      /* The provider accepted nothing — no credit, bad credentials, a
+         carrier rejection, or (in India) a template not cleared for the
+         sender. Nothing the customer can fix by retrying harder, so the
+         copy points at the door that does work. */
+      case "sms_send_failed":
+        throw new ApiError(
+          "internal",
+          "We could not send the code just now. Please try again in a moment, or continue with Google.",
+        );
+
+      /* Per-number and per-project send limits. Distinguished from a
+         generic 429 because the wait is minutes, not seconds. */
+      case "over_sms_send_rate_limit":
+        throw new ApiError(
+          "rate_limited",
+          "Too many codes sent to this number. Please wait a few minutes before trying again.",
+        );
+
+      /* Phone sign-ups switched off in the dashboard, or no SMS provider
+         configured at all. A configuration fault on our side — the
+         customer cannot retry their way out of it. */
+      case "otp_disabled":
+      case "phone_provider_disabled":
+        throw new ApiError(
+          "conflict",
+          "Sign-in by SMS is not available yet. Please continue with Google.",
+        );
+
+      /* Supabase rejected the number itself. Rare — `normalizePhone` has
+         already proved it is a well-formed Indian mobile — so this means
+         Supabase and this app disagree, and the customer should be told
+         about the field rather than about the system. */
+      case "validation_failed":
+        throw new ApiError(
+          "bad_request",
+          "That mobile number was not accepted. Please check it and try again.",
+          { phone: "Check this number" },
+        );
+    }
+
     if (error.status === 429) {
       throw new ApiError(
         "rate_limited",
@@ -73,14 +118,10 @@ export const POST = handler(async (request) => {
       );
     }
 
-    /* 422 is Supabase's answer when phone sign-ups are switched off in
-       the dashboard, or no SMS provider is wired up. Both are a
-       configuration problem on our side, not something the customer can
-       retry their way out of. */
     if (error.status === 422) {
       throw new ApiError(
         "conflict",
-        "Sign-in by SMS is not available yet. Please try again later.",
+        "Sign-in by SMS is not available yet. Please continue with Google.",
       );
     }
 
