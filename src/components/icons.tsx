@@ -698,5 +698,5 @@ export const TAB_ICONS = {
   crown: Crown,
   sprout: Sprout,
   sofa: Sofa,
-  lamp: LampFloor,
+  lamp: Lamp,
 } as const;
