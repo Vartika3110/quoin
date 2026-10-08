@@ -108,11 +108,16 @@ export async function AppShell({
         {/* Clearance for the fixed tab bar is on the footer, not here —
             the footer is the last thing on the page, so padding `main`
             would leave a gap above a footer that is still cut off. */}
+        {/* The desktop figure is larger than the phone's on purpose: the
+            footer is desktop-only in the default shell, so this is the
+            gap between the last section and a dense sitemap. On a phone
+            the footer carries its own clearance for the tab bar and this
+            padding only adds dead scroll. */}
         <main
           className={
             fullBleed
-              ? "flex-1 pb-10"
-              : "mx-auto w-full max-w-shell flex-1 pb-10 lg:px-6"
+              ? "flex-1 pb-10 lg:pb-16"
+              : "mx-auto w-full max-w-shell flex-1 pb-10 lg:px-6 lg:pb-16"
           }
         >
           <RouteTransition>{children}</RouteTransition>
