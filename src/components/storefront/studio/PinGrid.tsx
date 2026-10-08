@@ -174,4 +174,7 @@ export function PinGrid({
    assignment on their identity, and a fresh arrow per render would
    recompute the layout every time anything above it changed. */
 const keyOf = (pin: IdeaView) => pin.id;
-const ratioOf = (pin: IdeaView) => pin.height / pin.width;
+/* Every tile is drawn at 4:5 regardless of the file's own shape — see
+   `PinCard` — so the balancer is told the same, and the columns come out
+   level instead of balanced for heights nothing renders at. */
+const ratioOf = () => 5 / 4;

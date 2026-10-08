@@ -189,6 +189,47 @@ const schema = z.object({
   SUPABASE_PUBLIC_BUCKET: z.string().optional(),
 
   /**
+   * Supabase Auth — the anon key, paired with `SUPABASE_URL` above.
+   *
+   * Deliberately **not** `NEXT_PUBLIC_`, and that is worth stating
+   * because every Supabase tutorial says otherwise. Those assume a
+   * browser that calls `signInWithOtp` itself. This app's browser never
+   * talks to Supabase at all: it posts a phone number to
+   * `/api/v1/auth/otp/request` and a code to `.../verify`, and the
+   * Supabase calls happen on the server. Nothing client-side imports
+   * `@/lib/auth/supabase`.
+   *
+   * So the prefix would buy nothing and cost something — it would inline
+   * the key into every page bundle, and it would force a second copy of
+   * the project URL (`NEXT_PUBLIC_SUPABASE_URL`) alongside the
+   * `SUPABASE_URL` the storage module already uses. Two variables holding
+   * one value is a variable that goes stale: somebody repoints storage,
+   * forgets auth, and sign-in starts verifying against a different
+   * project. Reusing `SUPABASE_URL` makes that unrepresentable.
+   *
+   * Reach for `NEXT_PUBLIC_` only if the browser ever needs a Supabase
+   * client of its own — realtime, or direct-to-bucket uploads. Then add
+   * it as a *new* variable for that purpose; do not re-prefix this one.
+   *
+   * Not a secret in the way `SUPABASE_SERVICE_ROLE_KEY` is: the anon key
+   * grants exactly what row-level security grants the `anon` role. It is
+   * kept server-side here for tidiness, not because exposure is fatal.
+   *
+   * Optional, like every other integration here: unset,
+   * `isSupabaseAuthConfigured()` is false and the sign-in panel says SMS
+   * is unavailable rather than offering a box that cannot work.
+   */
+  SUPABASE_ANON_KEY: z.string().optional(),
+
+  /* There was a `SUPABASE_SMS_HOOK_SECRET` here, authenticating a Send
+     SMS Hook that handed delivery back to this app so MSG91 could do the
+     sending. Delivery now goes through a native Supabase SMS provider
+     configured in the dashboard, so the hook, its route and this secret
+     are gone — an unused public endpoint that sends SMS on request is
+     attack surface, not a spare tyre. It is in git history if MSG91 ever
+     becomes the cheaper route again. */
+
+  /**
    * Cloudflare Stream — where Studio's clips are played from.
    *
    * All optional, and there is deliberately no production guard: with
@@ -270,6 +311,7 @@ function load(): Env {
         SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
         SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET,
         SUPABASE_PUBLIC_BUCKET: process.env.SUPABASE_PUBLIC_BUCKET,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
         CF_STREAM_CUSTOMER_CODE: process.env.CF_STREAM_CUSTOMER_CODE,
         CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
         CF_STREAM_API_TOKEN: process.env.CF_STREAM_API_TOKEN,

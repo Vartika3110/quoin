@@ -49,11 +49,16 @@ import { COMPANY, COMPANY_DETAILS_ARE_SAMPLE } from "@/lib/company";
  * links would have traded a tidier footer for a stalled payment
  * onboarding — so they are still one click from every page, just quiet.
  */
-const COLUMNS = [
+const COLUMNS: {
+  title: string;
+  links: { href: string; label: string }[];
+  hideOnPhone?: boolean;
+}[] = [
   {
     title: "Company",
     links: [
       { href: "/contact", label: "Contact us" },
+      { href: "/faq", label: "FAQs" },
       { href: "/consult", label: "Talk to an expert" },
       { href: "/services", label: "Expert services" },
       { href: "/pro", label: "Quoin Pro" },
@@ -61,6 +66,14 @@ const COLUMNS = [
   },
   {
     title: "Categories",
+    /* Desktop only. On a phone these six were the widest labels in the
+       footer — "Kitchen & wardrobe fittings" wrapped to two lines in a
+       half-width column — and every one of them is already reached from
+       the tab bar's Shop and the header's category menu, both of which
+       carry all fourteen rather than a chosen six. A footer column that
+       repeats the primary navigation in a worse typographic setting is
+       the first thing that should go when the width runs out. */
+    hideOnPhone: true,
     /* Six of the fourteen, chosen because they are the departments with
        the most stock behind them. Every one is a real category page — a
        footer that links to a 404 is worse than a shorter footer. */
@@ -93,9 +106,59 @@ const TRUST = [
   { Icon: Shield, label: "Secure checkout" },
 ];
 
+/**
+ * The four claims, as pills, on the page rather than in the footer.
+ *
+ * They used to be a 2x2 grid of icon-and-text rows inside the footer's
+ * own panel, above a rule. That made them look like the footer's first
+ * column — a heading-less list among three headed ones — when they are
+ * not navigation at all. A pill reads as a badge: a short standing fact,
+ * complete in itself, not a link you failed to notice.
+ *
+ * Outside `<footer>` so they sit on the page's ground with the footer's
+ * top border beneath them. The separation is the point of the change:
+ * the page ends with what Quoin stands behind, and then the footer
+ * begins.
+ *
+ * A rail on a phone, a centred wrap from `lg`. Four pills of this length
+ * is more than 375px holds, and wrapping them there gives two ragged
+ * rows; scrolled, the row stays one line and reads as one statement.
+ */
+function TrustPills() {
+  return (
+    <div className="mx-auto w-full max-w-shell app:hidden lg:px-6">
+      {/* `-mx-5 px-5` lets the row bleed to the screen edge on a phone
+          while keeping the first and last pill off it, and `scroll-pl-5`
+          is what stops snap parking a pill flush against that edge — see
+          the note on `.rail` in globals.css. All three reset at `lg`,
+          where the row wraps and centres instead. */}
+      <ul className="rail -mx-5 gap-2 px-5 pb-6 scroll-pl-5 lg:mx-0 lg:flex-wrap lg:justify-center lg:gap-3 lg:overflow-visible lg:px-0 lg:pb-10 lg:scroll-pl-0">
+        {TRUST.map(({ Icon, label }) => (
+          <li key={label}>
+            <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-line-soft bg-surface px-3.5 py-2 text-micro text-muted lg:text-caption">
+              <Icon className="size-4 shrink-0 text-accent" />
+              {label}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function SiteFooter() {
   return (
-    <footer className="mt-16 border-t border-line-soft bg-surface app:mt-6 app:border-t-0 app:bg-transparent">
+    <>
+      <TrustPills />
+
+      {/* No top margin on a phone. The page already ends with its own
+          trailing gap, and `mt-16` put 64px on top of that — 104px of
+          empty ground between the last row of content and the footer,
+          where every other block on the page is 40px apart. The border is
+          what separates the footer from the page; it does not also need a
+          hole above it. Desktop keeps the deeper break, where the column
+          of white has somewhere to go. */}
+      <footer className="border-t border-line-soft bg-surface app:mt-6 app:border-t-0 app:bg-transparent lg:mt-16">
       {/* The bottom padding on a phone clears the fixed bars, and there
           can still be two: the tab bar is about 60px and the floating
           cart bar adds roughly 76 above it. A page's own `StickyBar` is
@@ -107,18 +170,22 @@ export function SiteFooter() {
           whether a bar is mounted, and the cost of being wrong is 48px of
           blank paper. */}
       <div className="mx-auto max-w-shell px-5 pb-36 pt-8 app:pt-6 lg:px-6 lg:pb-14 lg:pt-14">
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-3 border-b border-line-hair pb-6 app:hidden lg:grid-cols-4 lg:gap-4 lg:pb-8">
-          {TRUST.map(({ Icon, label }) => (
-            <li key={label} className="flex items-start gap-2">
-              <Icon className="mt-0.5 size-4 shrink-0 text-accent" />
-              <span className="text-micro leading-snug text-muted lg:text-caption">
-                {label}
-              </span>
-            </li>
-          ))}
-        </ul>
+        {/* **Desktop only.** On a phone this block was 743px — most of a
+            screen — of wordmark, mission statement, support details and
+            two columns of links, under a page that already carries a
+            permanent tab bar and a header with the whole catalogue menu
+            in it. A footer is how a *web page* ends; a phone screen with
+            fixed chrome top and bottom does not end, and nobody has ever
+            scrolled to the bottom of one to navigate.
 
-        <div className="pt-7 app:hidden lg:grid lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-8 lg:pt-8">
+            What a phone keeps is below: the legal strip and the two lines
+            of disclosure. Those are not navigation — they are things a
+            customer and a payment gateway's reviewer both have to be able
+            to find, and no amount of chrome elsewhere replaces them.
+
+            Contact is not lost with it. "Contact us" is the first link in
+            the strip below, and Help & Support sits in the account. */}
+        <div className="hidden pt-7 app:hidden lg:grid lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-8 lg:pt-8">
           <div>
             <p className="font-display text-title tracking-[0.18em] text-ink lg:text-title-lg">
               QUOIN
@@ -164,7 +231,11 @@ export function SiteFooter() {
               rather than one cell inside it. Two layouts, one tree. */}
           <div className="mt-7 grid grid-cols-2 gap-x-5 gap-y-7 lg:mt-0 lg:contents">
             {COLUMNS.map((column) => (
-              <nav key={column.title} aria-label={column.title}>
+              <nav
+                key={column.title}
+                aria-label={column.title}
+                className={column.hideOnPhone ? "hidden lg:block" : undefined}
+              >
                 <h2 className="text-micro font-semibold uppercase tracking-wide text-ink">
                   {column.title}
                 </h2>
@@ -210,6 +281,11 @@ export function SiteFooter() {
               complaint both look at the foot of the page. */}
           <ul className="flex flex-wrap gap-x-4 gap-y-1.5 app:hidden">
             {[
+              /* First, and the reason this strip is the whole phone
+                 footer: with the columns gone it is the only way to reach
+                 support from the foot of a page. */
+              { href: "/contact", label: "Contact us" },
+              { href: "/faq", label: "FAQs" },
               { href: "/privacy", label: "Privacy" },
               { href: "/terms", label: "Terms" },
               { href: "/refunds", label: "Refunds & cancellations" },
@@ -226,30 +302,34 @@ export function SiteFooter() {
             ))}
           </ul>
 
+          {/* The registered name and GSTIN, once they are real.
+
+              The owner is filling these in directly, so the loud "these
+              are placeholders" banner that used to sit at the foot of
+              this page is gone at their instruction. What it was
+              guarding against is not: printing `SAMPLE PRIVATE LIMITED`
+              and a made-up GSTIN in the position a customer and a
+              payment gateway's reviewer both read as the registered
+              entity is a worse failure than printing neither, because a
+              placeholder nobody flagged is indistinguishable from a
+              claim. So while `COMPANY_DETAILS_ARE_SAMPLE` holds, the
+              line says only what is true — the year and the trading
+              name — and the registration details appear the moment
+              `src/lib/company.ts` carries real ones. */}
           <p className="mt-4 text-micro leading-relaxed text-faint app:mt-0 lg:text-center">
-            © {new Date().getFullYear()} {COMPANY.legalName}. All rights
-            reserved. GSTIN {COMPANY.gstin}.
+            © {new Date().getFullYear()}{" "}
+            {COMPANY_DETAILS_ARE_SAMPLE ? COMPANY.tradingName : COMPANY.legalName}.
+            All rights reserved.
+            {COMPANY_DETAILS_ARE_SAMPLE ? null : ` GSTIN ${COMPANY.gstin}.`}
           </p>
 
           <p className="mt-1.5 text-micro leading-relaxed text-faint lg:text-center">
             Prices include GST where applicable. Delivery times apply to the
             areas listed at checkout.
           </p>
-
-          {COMPANY_DETAILS_ARE_SAMPLE ? (
-            /* Loud on purpose, and only while the details are
-               placeholders. A sample GSTIN printed as though it were real
-               is a worse failure than an obviously unfinished footer —
-               the same argument `ToConfirm` makes on the legal pages.
-               Deleting this line is `COMPANY_DETAILS_ARE_SAMPLE = false`,
-               which is the same edit that makes it untrue. */
-            <p className="mt-3 text-micro font-semibold text-accent lg:text-center">
-              Company name, GSTIN, email and phone above are placeholders —
-              replace them in src/lib/company.ts before launch.
-            </p>
-          ) : null}
         </div>
       </div>
     </footer>
+    </>
   );
 }

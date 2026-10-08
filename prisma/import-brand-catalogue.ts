@@ -7,6 +7,7 @@ import path from "node:path";
 
 import { Fulfilment, PricingUnit, PrismaClient } from "@prisma/client";
 
+import { firstFreeSlug, slugifyProduct } from "../src/lib/catalogue-slug";
 import { PRODUCT_SLUG_MAX_LENGTH } from "../src/lib/types/catalog";
 
 /**
@@ -63,27 +64,11 @@ function withoutFinish(code: string): string {
 }
 type Record_<K extends string, V> = { [key in K]: V };
 
-function slugify(value: string): string {
-  return (
-    value
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "item"
-  );
-}
-
+/** Records each slug it hands out; see the note in import-catalogue.ts. */
 function uniqueSlug(base: string, maxLength: number, taken: Set<string>): string {
-  const root = slugify(base).slice(0, maxLength);
-  let candidate = root;
-  let n = 1;
-  while (taken.has(candidate)) {
-    n += 1;
-    const suffix = `-${n}`;
-    candidate = `${root.slice(0, maxLength - suffix.length)}${suffix}`;
-  }
-  taken.add(candidate);
-  return candidate;
+  const slug = firstFreeSlug(base, maxLength, taken);
+  taken.add(slug);
+  return slug;
 }
 
 async function main() {
@@ -150,13 +135,13 @@ async function main() {
   const brand =
     (await db.brand.findFirst({ where: { name: defaults.brand } })) ??
     (await db.brand.create({
-      data: { name: defaults.brand, slug: slugify(defaults.brand) },
+      data: { name: defaults.brand, slug: slugifyProduct(defaults.brand) },
     }));
 
   const category =
     (await db.category.findFirst({ where: { name: defaults.category } })) ??
     (await db.category.create({
-      data: { name: defaults.category, slug: slugify(defaults.category) },
+      data: { name: defaults.category, slug: slugifyProduct(defaults.category) },
     }));
 
   const slugs = new Set(

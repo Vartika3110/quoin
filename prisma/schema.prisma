@@ -48,6 +48,25 @@ model User {
   /// see `resolveGoogleUser` in `src/lib/auth/google.ts` for why.
   googleSub String? @unique
 
+  /// The `auth.users.id` of the Supabase Auth account that verifies this
+  /// customer, and the only thing a Supabase sign-in is matched on.
+  ///
+  /// Supabase Auth owns *verification* — it mints the OTP, checks it, and
+  /// issues the session. This table stays the root of everything Quoin
+  /// sells: twenty-odd relations hang off `User.id`, and re-keying them
+  /// onto `auth.users` would buy nothing a foreign key cannot.
+  ///
+  /// Deliberately not a real FK. `auth.users` lives in a schema Prisma
+  /// does not manage and Supabase migrates on its own schedule, so a
+  /// database-level constraint here would make their upgrades our
+  /// outages. The link is enforced in `resolveSupabaseUser` instead.
+  ///
+  /// Never matched by phone when a row already carries a different
+  /// `supabaseUserId` — same rule, and for the same reason, as the note
+  /// on `googleSub`: matching on a recycled identifier hands one person's
+  /// orders to another.
+  supabaseUserId String? @unique
+
   /// E.164, normalised, **unverified**. A shipping contact only — never
   /// sign-in, never identity. Not unique: a household can share one
   /// number across two accounts, which `phone` above must never allow but
@@ -106,6 +125,7 @@ model User {
   serviceBookingStatusChanges ServiceBookingStatusChange[]
   notifications               Notification[]
   supportRequests             SupportRequest[]
+  wishlistItems               WishlistItem[]
 
   @@map("users")
 }
@@ -223,6 +243,42 @@ model Store {
   inventoryItems InventoryItem[]
 
   @@map("stores")
+}
+
+/// A product somebody hearted.
+///
+/// The wishlist lived in browser storage until now, which meant it did
+/// not follow a customer to a second device, did not survive clearing
+/// site data, and could not be read by anything server-side — a
+/// back-in-stock mail, say. This is the same list with an owner.
+///
+/// Only the slug is stored. The browser version kept a snapshot of the
+/// title, brand, photograph and price so the page could render without a
+/// query, and that snapshot went stale: it showed yesterday's price for
+/// a product whose price had moved, on the one page a customer visits
+/// precisely to check whether it has. The slug is the fact; everything
+/// else is looked up fresh.
+///
+/// `onDelete: Cascade` because a wishlist is not a record of anything —
+/// deleting the account should take it, unlike an order.
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Not a foreign key, deliberately. A retired product should drop out
+  /// of the list quietly rather than block its deletion, and the
+  /// catalogue is reimported wholesale — see `OrderLine.productSlug`,
+  /// which makes the same choice for the same reason.
+  productSlug String
+
+  createdAt DateTime @default(now())
+
+  /// Hearting twice is the same fact, not two.
+  @@unique([userId, productSlug])
+  /// The list is always read by owner, newest first.
+  @@index([userId, createdAt])
+  @@map("wishlist_items")
 }
 
 /// ---------------------------------------------------------------------

@@ -10,6 +10,7 @@ import {
   People,
   Rupee,
   Sparkle,
+  Tag,
   Trend,
 } from "@/components/icons";
 
@@ -38,6 +39,7 @@ export const ADMIN_SECTIONS = [
   { href: "/admin/services", label: "Services", Icon: Briefcase },
   { href: "/admin/support", label: "Support", Icon: Headset },
   { href: "/admin/reports", label: "Reports", Icon: Trend },
+  { href: "/admin/products", label: "Products", Icon: Tag },
   { href: "/admin/inventory", label: "Inventory", Icon: Box },
   { href: "/admin/customers", label: "Customers", Icon: People },
   { href: "/admin/pricing", label: "Pricing", Icon: Rupee },

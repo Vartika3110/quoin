@@ -1,3 +1,4 @@
+import Script from "next/script";
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
@@ -148,11 +149,24 @@ export default async function RootLayout({
           who has never chosen still gets the palette their device asked
           for and nothing has to run to give it to them.
         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var t=localStorage.getItem("quoin-theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`,
-          }}
-        />
+        {/*
+          `next/script` with `beforeInteractive`, not a bare `<script>`.
+
+          A raw script tag inside a component is only ever executed when
+          the server rendered it. React says so itself, and says it in the
+          console every time this subtree is rendered on the client
+          instead — which happens on an error boundary's fallback, so the
+          warning arrives attached to whatever actually went wrong and
+          reads like a second fault.
+
+          `beforeInteractive` is the one strategy Next guarantees runs in
+          the document head before hydration, which is exactly the
+          contract this needs: it has to beat the first paint or the flash
+          it exists to prevent happens anyway.
+        */}
+        <Script id="quoin-theme" strategy="beforeInteractive">
+          {`try{var t=localStorage.getItem("quoin-theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t}catch(e){}`}
+        </Script>
       </head>
       <body className="min-h-full flex flex-col antialiased">
         <AppProviders isSignedIn={isSignedIn}>{children}</AppProviders>

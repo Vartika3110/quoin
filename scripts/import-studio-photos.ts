@@ -522,48 +522,6 @@ const PHOTOS: Photo[] = [
     materials: ["ceramic", "plywood", "brass"],
     colors: [{ hex: "#a9492c", name: "Glazed terracotta" }, { hex: "#cdb89a", name: "Oak" }],
   },
-  /* ---- Added 5 Oct 2026 ---------------------------------------------
-     Screened the way the rest were: both opened at full size, corners
-     included. No third-party mark in either. The sparkle at the lower
-     right of the still is the generator's own, as in the other frames
-     from the same tool. The clip's frames were checked at 0.1, 2.5, 5,
-     7.5 and 9.8 seconds. */
-  {
-    file: "Gemini_Generated_Image_wg3ekwwg3ekwwg3e.png",
-    slug: "rose-headboard-walnut-stone-bedroom",
-    title: "Rose headboard against walnut and stone",
-    description:
-      "A dusty-rose channel headboard set against walnut panelling, with a rough-cut stone band above and a brass starburst pendant overhead.",
-    room: "BEDROOM",
-    styles: ["luxe", "contemporary"],
-    materials: ["plywood", "laminate", "brass"],
-    colors: [
-      { hex: "#b88a86", name: "Dusty rose" },
-      { hex: "#4f3724", name: "Walnut" },
-      { hex: "#cea267", name: "Antique brass" },
-    ],
-  },
-  {
-    /* The still for the pin that carries a clip. It is the first frame of
-       premium_luxury_bedroom_walkthrough_10sec.mp4, taken with
-         ffmpeg -ss 0.1 -i <clip> -frames:v 1 <this file>
-       The clip itself ships as public/studio/skyline-bedroom-golden-hour.mp4
-       and is attached to the seeded pin with `npm run studio:clip` — see
-       docs/studio-video.md. */
-    file: "premium_luxury_bedroom_walkthrough_10sec__poster.png",
-    slug: "skyline-bedroom-golden-hour",
-    title: "A skyline bedroom at golden hour",
-    description:
-      "Layered neutrals, a dark runner across the bed and a floor-to-ceiling view over the city at dusk.",
-    room: "BEDROOM",
-    styles: ["luxe", "contemporary"],
-    materials: ["laminate", "brass"],
-    colors: [
-      { hex: "#4a321b", name: "Espresso" },
-      { hex: "#936d4b", name: "Caramel taupe" },
-      { hex: "#e3cfba", name: "Pale sand" },
-    ],
-  },
 ];
 
 /* ---- Encoding ------------------------------------------------------ */

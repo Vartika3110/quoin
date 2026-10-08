@@ -1,10 +1,7 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Badge";
 import { Photo } from "@/components/ui/Photo";
-import { ArrowRight, Check, Clock, Pin } from "@/components/icons";
-import { formatAreas } from "@/lib/areas";
-import type { AreaChoice } from "@/lib/data/service-areas";
+import { ArrowRight } from "@/components/icons";
 
 /**
  * The first screen.
@@ -21,57 +18,74 @@ import type { AreaChoice } from "@/lib/data/service-areas";
  * and it needed a second gradient on top to survive the dark palette.
  * Two gradients to hide an edge is more machinery than the edge costs.
  *
- * **The default photograph is Quoin's own construction shot**, restored
- * at the owner's instruction — see `FALLBACK` at the foot of this file
- * for the argument it overrode. `photo` still comes from Studio's
- * best-saved room and still wins when there is one, so the day real
- * interiors are uploaded the home page improves without anybody editing
+ * **The photograph is Quoin's own construction shot**, restored at the
+ * owner's instruction and now fixed — see `HERO_PHOTO` at the foot of
  * this file.
  *
- * The delivery promise is here rather than in the header because it is a
- * *claim*, and a claim belongs next to the proposition it qualifies. It
- * names the area and scopes itself to in-stock goods — three of Quoin's
- * four fulfilment types cannot honour eighteen minutes and the page must
- * never imply otherwise.
+ * The panel carries the proposition and two buttons, and stops there. It
+ * also held a tick list — "Brands bought direct", "Delivery promised per
+ * item" — and a line naming the four live localities. Both are gone at
+ * the owner's instruction. They were true, and being true is not the
+ * same as being worth the first screen: a visitor who has not yet read
+ * what Quoin sells has no use for its sourcing policy, and the ticks
+ * were the third qualifier under a sentence that needed none.
+ *
+ * The area ETA has gone the same way, at the owner's instruction. The
+ * panel is a proposition and two buttons now; the header carries the
+ * delivery promise, which is where a reader looks for it and where it
+ * does not compete with the headline.
  */
 
-/** Two, and each one is a fact this app can stand behind: a brand roster
-    and a per-item fulfilment type.
-
-    "Serviced across West Delhi" was a third, and it is gone. It was
-    vague where it could be exact — the four live localities are in the
-    database and two of them, Pitampura and Rajendra Nagar, are not in
-    West Delhi at all — so the claim was both less useful and less true
-    than simply naming them. `areas` does that, below. */
-const TICKS = ["Brands bought direct", "Delivery promised per item"];
-
-export function Hero({
-  chosen,
-  areas,
-}: {
-  chosen: AreaChoice | null;
-  /** Every live locality, named. See `TICKS`. */
-  areas: string[];
-}) {
+export function Hero() {
   return (
-    <section className="grid overflow-hidden rounded-2xl border border-line-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
-      {/* Solid, not a wash over the photograph: every word on this panel
-          is read, and read type belongs on a flat ground. */}
-      <div className="flex flex-col justify-center bg-raised px-5 py-8 sm:py-16 lg:px-12 lg:py-20">
-        <Eyebrow>Build better. Buy smarter.</Eyebrow>
+    /* Square corners, at the owner's instruction. The rounded card
+         read as one tile among the tiles below it; squared off and run to
+         the gutter it reads as the page's opening image instead of its
+         first card. */
+    <section className="grid overflow-hidden border border-line-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+      {/* Over the photograph on a phone, beside it from `lg`.
 
-        <h1 className="mt-3 font-display text-title-lg font-semibold text-ink sm:mt-4 sm:text-display-sm lg:text-display-sm xl:text-display">
+          Stacked, the picture took the whole first screen and pushed the
+          sentence saying what Quoin is below the fold — so the opening
+          view was a building with no caption. Laid over it, the two
+          arrive together.
+
+          `col-start-1 row-start-1` puts the panel and the photograph in
+          the same grid cell instead of two; from `lg` the explicit
+          columns take over and they sit side by side again, which is
+          where there is room for both. */}
+      <div className="relative z-10 col-start-1 row-start-1 flex flex-col justify-end px-5 pb-8 pt-28 text-on-deep sm:pt-40 lg:col-start-auto lg:row-start-auto lg:justify-center lg:bg-raised lg:px-12 lg:py-20 lg:text-ink">
+        {/* The photograph is a bright sky at the top and pale concrete
+            below, so white type needs something under it. A gradient
+            rather than a flat wash: the building stays readable at the
+            top of the frame and the words get their contrast where they
+            actually sit. Gone from `lg`, where the panel has its own
+            opaque ground. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/70 to-deep/25 lg:hidden"
+        />
+
+        {/* The eyebrow is accent-coloured, which is a brown on a
+            photograph of concrete at golden hour — it disappeared. Light
+            below `lg`, its own colour from `lg` where the panel is
+            opaque again. */}
+        <span className="relative [&_*]:!text-on-deep lg:[&_*]:!text-accent">
+          <Eyebrow>Build better. Buy smarter.</Eyebrow>
+        </span>
+
+        <h1 className="relative mt-3 font-display text-title-lg font-semibold sm:mt-4 sm:text-display-sm lg:text-display-sm xl:text-display">
           Everything you need to build, renovate and reimagine your space.
         </h1>
 
-        <p className="mt-3 max-w-md text-body leading-relaxed text-muted sm:mt-5 sm:text-body-lg">
+        <p className="relative mt-3 max-w-md text-body leading-relaxed text-on-deep/80 sm:mt-5 sm:text-body-lg lg:text-muted">
           Materials, products, expert services and project tools — brought
           together in one intelligent platform.
         </p>
 
         {/* Side by side on a phone rather than stacked: two full-width
             buttons is 120px of the first screen spent on two taps. */}
-        <div className="mt-6 flex items-center gap-2 sm:mt-8 sm:gap-3">
+        <div className="relative mt-6 flex items-center gap-2 sm:mt-8 sm:gap-3">
           <Button
             href="/products"
             size="lg"
@@ -92,56 +106,11 @@ export function Hero({
           </Button>
         </div>
 
-        <ul className="mt-6 flex flex-col gap-1.5 sm:mt-8 sm:flex-row sm:flex-wrap sm:gap-x-5">
-          {TICKS.map((tick) => (
-            <li key={tick} className="flex items-center gap-1.5 text-caption text-muted">
-              <Check className="size-3.5 shrink-0 text-accent" />
-              {tick}
-            </li>
-          ))}
-        </ul>
-
-        {/* Where Quoin actually operates, named, on the first screen.
-            The question "do you come to me" was previously answerable
-            only by typing a pincode into a product page, and a visitor
-            who never reaches one leaves without an answer.
-
-            Stood down once the visitor has chosen their own area: the
-            line below is then the specific version of this one, and two
-            sentences about geography stacked reads as a disclaimer. */}
-        {areas.length > 0 && chosen == null && (
-          <p className="mt-4 flex items-start gap-1.5 text-caption leading-snug text-muted">
-            <Pin className="mt-0.5 size-3.5 shrink-0 text-accent" />
-            <span>
-              Delivering in {formatAreas(areas)}.{" "}
-              <Link href="/contact" className="text-accent">
-                Somewhere else?
-              </Link>
-            </span>
-          </p>
-        )}
-
-        {/* Rendered only once an area is chosen — "18 minutes" with no
-            locality attached is a slogan, and this has to read as a fact
-            about where the customer is. */}
-        {chosen?.etaMinutes != null && (
-          <p className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-muted">
-            <span className="inline-flex items-center gap-1.5 text-ink">
-              <Clock className="size-4 text-accent" />
-              <span className="nums font-semibold">{chosen.etaMinutes} minutes</span>
-            </span>
-            <span>on in-stock items to</span>
-            <span className="inline-flex items-center gap-1 text-ink">
-              <Pin className="size-3.5 text-accent" />
-              {chosen.name}
-            </span>
-          </p>
-        )}
       </div>
 
-      {/* Hard-cropped, and taller than it is wide on a phone so the
-          stacked order — picture, then words — still shows a room rather
-          than a letterbox strip of one. */}
+      {/* Hard-cropped, and tall on a phone: the panel sits on top of it,
+          so the frame has to be deep enough that the building is still
+          legible either side of the words. */}
       <Photo
         src={HERO_PHOTO.url}
         alt=""
@@ -149,7 +118,15 @@ export function Hero({
         blurDataURL={null}
         sizes="(min-width: 1024px) 45vw, 100vw"
         priority
-        className="order-first h-full min-h-56 w-full lg:order-none lg:aspect-auto"
+        /* Blurred where the words sit on it, sharp from `lg` where they
+           sit beside it. A `filter` is rasterised once by the compositor
+           and costs nothing while scrolling — unlike `backdrop-filter`,
+           which re-samples every frame and is what made the header appear
+           to lag. The scrim stays: blur alone lowers contrast without
+           reliably darkening, and these photographs have a bright sky in
+           the top third. */
+        imageClassName="blur-[3px] lg:blur-0"
+        className="col-start-1 row-start-1 h-full min-h-[26rem] w-full sm:min-h-[32rem] lg:col-start-auto lg:row-start-auto lg:min-h-0 lg:aspect-auto"
       />
     </section>
   );

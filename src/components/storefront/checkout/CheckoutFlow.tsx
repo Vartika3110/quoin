@@ -17,6 +17,7 @@ import {
   type Address,
 } from "@/components/storefront/checkout/AddressPicker";
 import { OrderPlaced, type PlacedState } from "@/components/storefront/checkout/OrderPlaced";
+import { estimateFor } from "@/lib/orders/delivery-estimate";
 import { cn } from "@/components/ui/cn";
 import {
   Alert,
@@ -329,6 +330,12 @@ export function CheckoutFlow({
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [placedState, setPlacedState] = useState<PlacedState | null>(null);
+  /* Captured when the order is written, not read off the cart at render:
+     by the time the confirmation screen is on screen the basket has been
+     emptied, and for an online payment that screen is reached from
+     `confirmHandoff`, which has only a reference to work with. Set in
+     `placeOrder` below, the one place that sees both. */
+  const [deliveryEstimate, setDeliveryEstimate] = useState<string | null>(null);
   const [placing, setPlacing] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
 
@@ -479,6 +486,11 @@ export function CheckoutFlow({
 
       const order = body.data;
 
+      /* The lines as they were priced into the order — `QuoteLine` carries
+         each one's fulfilment, which is what decides whether this is a
+         three-hour bulk delivery or something slower. */
+      setDeliveryEstimate(estimateFor(order.quote.lines.map((line) => line.fulfilment)));
+
       /* Surfaced the same way the pre-checkout quote is: this request
          re-priced the basket one more time, against the catalogue at the
          exact moment it became an order, and this may be the request that
@@ -611,7 +623,8 @@ export function CheckoutFlow({
 
   if (!ready) return <ListSkeleton rows={3} />;
 
-  if (placedState) return <OrderPlaced state={placedState} />;
+  if (placedState)
+    return <OrderPlaced state={placedState} deliveryEstimate={deliveryEstimate} />;
 
   if (lines.length === 0) {
     return (

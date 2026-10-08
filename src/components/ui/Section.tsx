@@ -41,8 +41,12 @@ export function SectionHead({
   return (
     <div
       className={cn(
-        "mb-3 flex items-end justify-between gap-4 px-5 lg:px-0",
-        subtitle && "mb-4",
+        /* A heading needs more room beneath it than between its own two
+           lines, or it reads as part of the thing below rather than as
+           the thing that names it. 12px was doing neither job: too wide
+           to be a caption, too tight to be a break. */
+        "mb-4 flex items-end justify-between gap-4 px-5 lg:px-0",
+        subtitle && "mb-5",
         className,
       )}
     >
@@ -99,7 +103,22 @@ export function Gutter({
   return <div className={cn("px-5 lg:px-0", className)}>{children}</div>;
 }
 
-/** Vertical rhythm between top-level page sections. One value, one place. */
+/**
+ * Vertical rhythm between top-level page sections. One value, one place.
+ *
+ * The desktop figure is the one that does the work. At 56px, a category
+ * grid, a Studio rail and a product row sat close enough together that
+ * the home page read as one continuous wall of cards — each section's
+ * heading looked like a label on the row above it rather than the start
+ * of something new. 72px is enough for the eye to register a break
+ * without the page feeling padded out, and it is still tighter than the
+ * gap between the hero and the first section.
+ *
+ * The phone figure moves less, deliberately: vertical space is the
+ * scarcest thing on a 375px screen, and every pixel added here is a
+ * pixel of scrolling between a customer and the next row. 48px is one
+ * notch, not a redesign.
+ */
 export function PageSections({
   children,
   className,
@@ -108,7 +127,7 @@ export function PageSections({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-10 pt-4 lg:space-y-14 lg:pt-0", className)}>
+    <div className={cn("space-y-12 pt-4 lg:space-y-18 lg:pt-0", className)}>
       {children}
     </div>
   );

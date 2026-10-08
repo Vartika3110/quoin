@@ -9,6 +9,13 @@
  * So the styles here are inline, deliberately, and the palette is
  * hard-coded to the light ground rather than read from a token that may
  * never have been defined.
+ *
+ * **Which means a retheme does not reach this file.** The button below
+ * carried the original orange through two accent changes, because
+ * nothing here imports anything and nothing fails when it drifts — the
+ * page only renders when the app is already broken, so the mismatch is
+ * invisible until the day it is the only thing on screen. Changing
+ * `--quoin-accent` is therefore two edits: the token, and this literal.
  */
 export default function GlobalError({
   error,
@@ -51,7 +58,7 @@ export default function GlobalError({
             type="button"
             onClick={() => unstable_retry()}
             style={{
-              background: "#7a4b28",
+              background: "#a85a2a",
               color: "#fff",
               border: 0,
               borderRadius: "0.625rem",

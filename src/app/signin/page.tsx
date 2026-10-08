@@ -9,7 +9,7 @@ import { CheckCircle } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
 import { safeNext } from "@/lib/auth/next";
 import { isGoogleSignInConfigured } from "@/lib/auth/google";
-import { isOtpDeliveryAvailable } from "@/lib/auth/sender";
+import { isPhoneSignInAvailable } from "@/lib/auth/supabase";
 import { one } from "@/lib/search-params";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +53,7 @@ export default async function SignInPage({
   if (await getSession()) redirect(safeNext(next));
 
   const googleEnabled = isGoogleSignInConfigured();
-  const smsEnabled = isOtpDeliveryAvailable();
+  const smsEnabled = isPhoneSignInAvailable();
 
   /* Truthful for whichever methods are actually live — never the fixed
      "one number, one code" line when SMS is the one thing not working,

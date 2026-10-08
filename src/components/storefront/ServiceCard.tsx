@@ -27,7 +27,9 @@ import type { Service, ServiceIcon } from "@/lib/data/services";
  * how the fee is arrived at, and how long the work takes.
  */
 
-const ICON: Record<ServiceIcon, typeof Building> = {
+/** Shared with `ServiceIconRail`, so a trade is the same mark wherever it
+    appears. Exported rather than duplicated: two maps drift. */
+export const SERVICE_ICON: Record<ServiceIcon, typeof Building> = {
   architect: Building,
   interior: Sofa,
   electrical: Bolt,
@@ -47,7 +49,7 @@ export function ServiceCard({
   service: Service;
   className?: string;
 }) {
-  const Icon = ICON[service.icon];
+  const Icon = SERVICE_ICON[service.icon];
 
   return (
     <ContentCard

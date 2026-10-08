@@ -1,4 +1,4 @@
-import { clearSessionCookie } from "@/lib/auth/session";
+import { endSession } from "@/lib/auth/session";
 import { handler, ok } from "@/lib/http";
 
 /**
@@ -7,11 +7,12 @@ import { handler, ok } from "@/lib/http";
  * POST rather than GET so a prefetch, an image tag or a link in an email
  * cannot sign the customer out.
  *
- * This clears the cookie only; the JWT itself stays valid until it
- * expires. That is acceptable for a storefront session and is the stated
- * tradeoff in `session.ts` — a denylist is the fix if it stops being.
+ * `endSession` clears both schemes — it asks Supabase to revoke the
+ * refresh token and drops the legacy cookie beside it. Clearing only one
+ * would leave `getSession` answering from the other, which is a sign-out
+ * button that does not sign out.
  */
 export const POST = handler(async () => {
-  await clearSessionCookie();
+  await endSession();
   return ok({ signedOut: true });
 });

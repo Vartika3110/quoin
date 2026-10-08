@@ -23,6 +23,9 @@ const {
 const { generateCode, hashCode, verifyCode, OTP_LENGTH } = await import(
   "@/lib/auth/otp"
 );
+const { writeDigits, eraseDigit, isComplete } = await import(
+  "@/lib/auth/otp-digits"
+);
 const { haversineKm, resolveServiceability } = await import("@/lib/geo");
 const { normalizeQty, areaFromDimensions, applyWastage, lineTotal } =
   await import("@/lib/cart/quantity");
@@ -359,6 +362,93 @@ describe("otp", () => {
 
   it("never stores the code itself", () => {
     assert.ok(!hashCode("+919876543210", "123456").includes("123456"));
+  });
+});
+
+/* The segmented code field in `src/components/ui/OtpInput.tsx`. Only the
+   string arithmetic is here — focus and markup need a DOM, but every way
+   a digit can end up in the wrong box does not. */
+describe("otp digit entry", () => {
+  const L = 6;
+
+  it("types one digit per box, left to right", () => {
+    let code = "";
+    for (const [i, d] of [..."123456"].entries()) {
+      const next = writeDigits(code, i, d, L);
+      code = next.code;
+    }
+    assert.equal(code, "123456");
+    assert.ok(isComplete(code, L));
+  });
+
+  it("moves focus one box on, and stops at the last", () => {
+    assert.equal(writeDigits("", 0, "1", L).focus, 1);
+    assert.equal(writeDigits("12345", 5, "6", L).focus, 5);
+  });
+
+  it("spreads a pasted code across every box from where it lands", () => {
+    const { code, focus } = writeDigits("", 0, "123456", L);
+    assert.equal(code, "123456");
+    /* Clamped: there is no seventh box to focus. */
+    assert.equal(focus, 5);
+  });
+
+  it("accepts a code pasted with spaces or dashes", () => {
+    assert.equal(writeDigits("", 0, "123 456", L).code, "123456");
+    assert.equal(writeDigits("", 0, "123-456", L).code, "123456");
+  });
+
+  it("discards anything past the last box rather than wrapping it", () => {
+    /* Pasting something longer means the wrong thing was pasted; keeping
+       its tail would fill the field with the end of it. */
+    assert.equal(writeDigits("", 0, "12345678", L).code, "123456");
+    assert.equal(writeDigits("", 4, "123456", L).code, "    12");
+  });
+
+  it("keeps a hole in the middle rather than collapsing it", () => {
+    /* The bug this guards: index is the box. Dropping the blank would
+       shift every later digit one box left, and the customer would see a
+       code they did not type. */
+    const { code } = writeDigits("12", 3, "9", L);
+    assert.equal(code, "12 9");
+    assert.ok(!isComplete(code, L));
+  });
+
+  it("ignores a keystroke that carries no digit", () => {
+    const { code, focus } = writeDigits("123", 3, "a", L);
+    assert.equal(code, "123");
+    assert.equal(focus, 3);
+  });
+
+  it("reports complete only when every box is filled", () => {
+    assert.ok(isComplete("123456", L));
+    assert.ok(!isComplete("12345", L));
+    /* Six characters, but one of them is a hole. */
+    assert.ok(!isComplete("12 456", L));
+  });
+
+  it("backspace clears the box it is on", () => {
+    const { code, focus } = eraseDigit("123456", 3, L);
+    assert.equal(code, "123 56");
+    assert.equal(focus, 3);
+  });
+
+  it("backspace on an empty box steps back and clears that one", () => {
+    const { code, focus } = eraseDigit("123", 3, L);
+    assert.equal(code, "12");
+    assert.equal(focus, 2);
+  });
+
+  it("backspace at the first box does nothing", () => {
+    const { code, focus } = eraseDigit("", 0, L);
+    assert.equal(code, "");
+    assert.equal(focus, 0);
+  });
+
+  it("trims trailing blanks so length still counts digits entered", () => {
+    /* `OtpInput`'s caller disables its submit button on `value.length`. */
+    assert.equal(eraseDigit("123456", 5, L).code.length, 5);
+    assert.equal(writeDigits("", 0, "12", L).code.length, 2);
   });
 });
 
@@ -1661,5 +1751,66 @@ describe("saved-product stock state (productStockState)", () => {
       state: "out_of_stock",
       variantId: "v1",
     });
+  });
+});
+
+const { estimateFor, BULK_DELIVERY_HOURS } = await import(
+  "@/lib/orders/delivery-estimate"
+);
+
+describe("delivery estimate (estimateFor)", () => {
+  it("promises the owner's three hours for bulk goods", () => {
+    assert.equal(BULK_DELIVERY_HOURS, 3);
+    assert.equal(estimateFor(["SCHEDULED"]), "Within about 3 hours");
+  });
+
+  it("is the same promise however many bulk lines there are", () => {
+    assert.equal(
+      estimateFor(["SCHEDULED", "SCHEDULED", "SCHEDULED"]),
+      "Within about 3 hours",
+    );
+  });
+
+  /* The whole catalogue is SCHEDULED today — 2,512 active products
+     against one BOOKABLE service — so this is the live path. */
+  it("covers a dark-store line when one ever exists", () => {
+    assert.equal(estimateFor(["INSTANT"]), "Within about 18 minutes");
+  });
+
+  it("takes the slowest line, never the quickest", () => {
+    /* A customer told "three hours" who waits a week for the cut-to-order
+       worktop in the same order has been misled, whatever the other
+       lines did. */
+    assert.equal(
+      estimateFor(["INSTANT", "SCHEDULED", "MADE_TO_ORDER"]),
+      "Confirmed on call",
+    );
+    assert.equal(estimateFor(["INSTANT", "SCHEDULED"]), "Within about 3 hours");
+  });
+
+  it("does not promise a delivery window for a professional's slot", () => {
+    assert.equal(
+      estimateFor(["BOOKABLE"]),
+      "Scheduled with the professional",
+    );
+  });
+
+  it("lets goods in a mixed basket keep their own promise", () => {
+    /* A booking alongside bulk goods still has goods to deliver, and
+       BOOKABLE is the less certain of the two, so it wins. */
+    assert.equal(
+      estimateFor(["BOOKABLE", "SCHEDULED"]),
+      "Scheduled with the professional",
+    );
+  });
+
+  it("falls back to the always-true sentence with nothing to read", () => {
+    assert.equal(estimateFor([]), "Date confirmed on call");
+  });
+
+  it("falls back rather than guessing at an unknown fulfilment", () => {
+    /* A new enum member reaching production before this file knows about
+       it must not silently inherit somebody else's promise. */
+    assert.equal(estimateFor(["TELEPORTED"]), "Date confirmed on call");
   });
 });

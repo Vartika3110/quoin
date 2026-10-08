@@ -1,126 +1,148 @@
-import { Box, Building, Chevron, Crown, Helmet } from "@/components/icons";
-import { ContentCard } from "@/components/ui/Card";
+import Image, { type StaticImageData } from "next/image";
+
+/* Imported rather than referenced by path. A path string is the same URL
+   after the file behind it changes, so the optimiser's derivative — and
+   every browser that has already fetched it — keeps serving the old
+   picture: swapping artwork appeared to do nothing until caches expired.
+   A static import puts a content hash in the URL, so new bytes are a new
+   URL and a swap takes effect the moment it ships. */
+import studioArt from "../../../../public/entry/studio.webp";
+import servicesArt from "../../../../public/entry/services.webp";
+import productsArt from "../../../../public/entry/products.webp";
+import selectsArt from "../../../../public/entry/selects.webp";
+import Link from "next/link";
+import { Box, Building, Crown, Helmet } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 
 /**
  * The four doors into Quoin, at the very top of the home screen.
  *
- * Not the same row as `QuickActions`, and the difference is the point.
- * Quick actions are *verbs* — upload a parcha, start a project. These are
- * the four **places** the business is divided into, and someone arriving
- * for the first time picks one of them before they pick a task.
+ * **Marks and labels, not cards.** They were four bordered content cards
+ * carrying a title, a descriptor and a chevron each — at 320px that is
+ * four 52px boxes holding three pieces of type apiece, set at 7px to fit,
+ * with "ARCHITECTURAL" needing its own smaller size to survive. Type that
+ * small is not read, it is squinted at, and the descriptors were saying
+ * what the labels already said: "PRODUCTS / Construction materials".
  *
- * Four across at every width, never a rail. All four doors have to be on
- * screen at once or the row stops being a set of choices and becomes a
- * carousel whose fourth card — the premium one — nobody finds.
+ * A mark with a word under it is what this row is for. It is the shape
+ * the reference design uses, the shape `ServiceIconRail` already uses
+ * further down the page, and it buys the label enough size to be read at
+ * a glance — which is the only way a row above the fold is ever read.
  *
- * That costs 78px a card on a 375px phone, and 64px on a 320px one, which
- * is what dictates everything else here: the type runs 8px and 7px, the
- * chevron drops to 16px, and the labels carry their own line breaks
- * rather than leaving the wrap to a measure this narrow. It is a tile
- * label, read in one glance, not prose — the same sizes the design
- * prototype uses for the same row.
+ * Handed to the header rather than rendered on the page: in the design
+ * these sit under search, inside the bar that collapses on scroll.
+ */
+/**
+ * `art` is an illustrated mark; `Icon` is the line fallback. All four are
+ * drawn now, so the fallback renders nowhere — kept because a door added
+ * later should be able to ship before its illustration does, which is how
+ * these four arrived.
+ *
+ * The artwork has its own label baked into the bottom of the frame —
+ * "Services" under the hard hat. That is cropped away by the aspect ratio
+ * on the wrapper rather than by editing the file: the component sets its
+ * own label underneath, in the page's type, at the page's size, in a
+ * colour that follows the theme. A label flattened into a PNG does none
+ * of those and would be the only text on the screen that cannot change
+ * when the palette does.
  */
 const ENTRIES: {
   href: string;
-  title: string;
-  detail: string;
+  label: string;
   Icon: typeof Box;
-  /** Sets the title a size smaller, for a label too wide for the card. */
-  tight?: boolean;
+  art?: StaticImageData;
 }[] = [
-  {
-    href: "/studio",
-    /* `\n` plus `whitespace-pre-line`: at this measure the break decides
-       whether "QUOIN STUDIO" reads as two words or as "QUOIN STU-/DIO". */
-    title: "QUOIN\nSTUDIO",
-    detail: "Your design\nplatform",
-    Icon: Building,
-  },
-  {
-    href: "/services",
-    title: "SERVICES",
-    detail: "Professional\nservices",
-    Icon: Helmet,
-  },
-  {
-    href: "/products",
-    title: "PRODUCTS",
-    detail: "Construction\nmaterials",
-    Icon: Box,
-  },
-  {
-    /* `/premium`, not `/pro`. This tile used to open Quoin Pro on the
-       argument that there was no bespoke-products storefront to point at
-       and that sending the intent somewhere real beat inventing a link.
-       The first half was true and the second does not follow: a tile
-       reading "Premium Studio · Bespoke products" that opens a trade
-       *membership* pitch answers a question the customer did not ask, and
-       one they cannot act on either, since nobody has set a membership
-       fee. The storefront now exists. */
-    href: "/premium",
-    /* "Architectural Selects", the name the prototype settled on. It is
-       still a long word for a 78px card — "ARCHITECTURAL" is the widest
-       thing on this row — so `tight` drops this one label to 7px with no
-       tracking below `sm`, which keeps the word whole down to 320px
-       instead of leaving it to break mid-word. From `sm` up the card is
-       wide enough that it sets like the other three. */
-    title: "ARCHITECTURAL\nSELECTS",
-    tight: true,
-    detail: "Bespoke\nproducts",
-    Icon: Crown,
-  },
+  { href: "/studio", label: "Quoin Studio", Icon: Building, art: studioArt },
+  { href: "/services", label: "Services", Icon: Helmet, art: servicesArt },
+  { href: "/products", label: "Products", Icon: Box, art: productsArt },
+  /* `/premium`, not `/pro`. This door used to open Quoin Pro on the
+     argument that there was no bespoke-products storefront to point at.
+     A tile reading "Bespoke products" that opens a trade *membership*
+     pitch answers a question the customer did not ask, and one they
+     cannot act on either, since nobody has set a membership fee. The
+     storefront exists now. */
+  { href: "/premium", label: "Architectural Selects", Icon: Crown, art: selectsArt },
 ];
 
 export function EntryCards() {
   return (
-    <div className="grid grid-cols-4 gap-2 px-5 pb-1 lg:gap-3 lg:px-0">
-      {ENTRIES.map(({ href, title, detail, Icon, tight }) => (
-        <ContentCard
+    /* `pt-2` because the marks are illustrations with very little
+         optical padding of their own — set tight under the search field
+         they read as crowding it, where the line icons they replaced had
+         their own whitespace built in. */
+    <div className="grid grid-cols-4 gap-2 px-5 pb-1 pt-2 lg:gap-3 lg:px-0">
+      {ENTRIES.map(({ href, label, Icon, art }) => (
+        <Link
           key={href}
           href={href}
-          size="sm"
-          /* The icon slot's 36px accent plate is most of a 52px card at
-             320px, so the mark is rendered inline instead. The card is
-             still a content card — white surface, hairline, sans type —
-             which is the part that has to be the same across the site. */
-          title={
-            /* A net, not a plan: every label here is chosen to fit its
-               own line down to 320px, and this only decides what happens
-               if a future one is not. A word spilling out of its card is
-               worse than a word broken inside it. */
-            <span
-              lang="en"
-              className={cn(
-                "block whitespace-pre-line font-bold uppercase leading-[1.25] [overflow-wrap:anywhere] sm:text-[9.5px] sm:tracking-[0.05em] lg:text-[11px] lg:tracking-[0.07em]",
-                /* Two complete alternatives rather than an override: `cn`
-                   does not merge, so two competing `text-*` classes would
-                   be settled by stylesheet order, not by intent. */
-                tight ? "text-[7px] tracking-normal" : "text-[8px] tracking-[0.02em]",
-              )}
-            >
-              {title}
-            </span>
-          }
-          padding="none"
-          className="h-[7.75rem] p-1.5 sm:h-[8.5rem] sm:p-2.5 lg:h-36 lg:p-4"
+          className="group flex flex-col items-center gap-1.5 text-center"
         >
-          <Icon className="mx-auto my-auto size-5 text-ink sm:size-6 lg:size-8" />
+          {/* **No tile behind the mark.** The reference sets its category
+              icons bare on the page ground — no plate, no border, no tint
+              — and that is what makes a row of them read as a set of
+              things rather than a row of buttons. It also leaves the slot
+              ready for the illustrated marks, which carry their own
+              colour and would fight a tinted plate under them.
 
-          <span className="flex items-end justify-between gap-1">
-            <span className="min-w-0 whitespace-pre-line text-[7px] leading-[1.3] text-muted sm:text-[8.5px] lg:text-[11px]">
-              {detail}
-            </span>
-            {/* Gone below 375px. A card is 52px of usable width there, and
-                the chevron plus its gap takes 20 of them — which leaves
-                "Construction" clipped mid-word. The chevron is decoration;
-                the whole card is the link, and a cut-off word is a worse
-                signal than a missing arrow. */}
-            <span className="hidden size-4 shrink-0 place-items-center rounded-full bg-accent text-on-accent shadow-xs transition-colors group-hover:bg-accent-bright min-[375px]:grid sm:size-5 lg:size-7">
-              <Chevron className="size-2.5 sm:size-3 lg:size-4" />
-            </span>
+              The mark grows to fill the space the plate was taking, so
+              the row keeps its weight. */}
+          <span
+            className={cn(
+              "flex w-full justify-center overflow-hidden text-accent transition-transform duration-200 ease-out-quart group-active:scale-[0.94]",
+              /* Top-aligned and clipped, so the taller artwork below has
+                 its baked-in label cut off rather than scaled into
+                 nothing. `object-contain` cannot do this: it fits the
+                 whole frame, label and all, which left the hard hat a few
+                 pixels tall. */
+              art ? "h-12 items-start lg:h-14" : "h-12 items-center lg:h-14",
+            )}
+          >
+            {art ? (
+              /* Taller than its frame by about a sixth — the share of
+                 each file its baked-in label occupies — so the clip above
+                 removes the words and nothing else. `max-w-none` because
+                 the frame is narrower than this height implies and the
+                 mark must not be squeezed to fit it.
+
+                 `next/image` after all. The first pass used a plain `img`
+                 on the argument that four fixed marks do not need a
+                 `sizes` negotiation — true, and beside the point: the
+                 source artwork is 1536x1024 and these render about 58px
+                 tall, so serving the originals put a megabyte of
+                 decoration in the header of the home page. The optimiser
+                 resizes once and caches; `width`/`height` are intrinsic
+                 hints only, since the CSS below sets the height and lets
+                 the width follow each file's own ratio. */
+              <Image
+                src={art}
+                alt=""
+                /* The size the mark is *drawn* at, not the size of the
+                   file. A static import carries the source's own
+                   1536x1024, and without a hint the optimiser sizes the
+                   srcset from that — it served a 768px derivative, 129KB,
+                   into an 86px slot. These numbers put the whole set in a
+                   few kilobytes and still give a retina screen its 2x. */
+                width={120}
+                height={80}
+                priority
+                className="h-[3.6rem] w-auto max-w-none lg:h-[4.2rem]"
+              />
+            ) : (
+              <Icon className="size-8 lg:size-9" />
+            )}
           </span>
-        </ContentCard>
+
+          {/* `overflow-wrap:anywhere` is a net rather than a plan — every
+              label here fits its own line down to 320px, and this only
+              decides what happens if a future one does not. A word
+              spilling out of the row is worse than one broken inside it. */}
+          <span
+            lang="en"
+            className="text-micro font-medium leading-tight text-ink [overflow-wrap:anywhere]"
+          >
+            {label}
+          </span>
+        </Link>
       ))}
     </div>
   );

@@ -52,13 +52,13 @@
 
 /* ---------------------------------------------------------------- 1. palette
 
-   Warm light: an off-white paper ground, white cards, brown accent and
+   Warm light: an off-white paper ground, white cards, terracotta accent and
    a deep brown ink. Not wired to `prefers-color-scheme` for its identity —
    this is the brand, not a preference — but it does have a dark rendering,
    below, for people who have asked their device for one.
 
    Three colour families and no more:
-     accent  brown      — the only thing that means "act on this"
+     accent  terracotta — the only thing that means "act on this"
      deep    espresso   — dark bands, scrims, secondary CTAs
      pro     gold       — Quoin Pro, and nothing else, ever
    Everything else is the neutral ramp. A fourth family is how a design
@@ -75,15 +75,14 @@
   --quoin-surface-hover: #f3e7d9;
   --quoin-surface-active: #eadcc7;
 
-  /* Brown — wordmark flourish, prices, active states, primary CTAs.
-     White on the accent is 7.3:1; the accent on the paper ground is 6.5:1. */
-  --quoin-accent: #7a4b28;
-  --quoin-accent-bright: #96603a;
-  --quoin-accent-dim: #5c3519;
+  /* Burnt sienna — wordmark flourish, prices, active states, primary CTAs */
+  --quoin-accent: #a85a2a;
+  --quoin-accent-bright: #bd6d3c;
+  --quoin-accent-dim: #8a4620;
   /* Accent at low alpha for tinted chips and hairlines */
-  --quoin-accent-wash: rgb(122 75 40 / 0.10);
-  --quoin-accent-wash-strong: rgb(122 75 40 / 0.18);
-  --quoin-accent-edge: rgb(122 75 40 / 0.26);
+  --quoin-accent-wash: rgb(168 90 42 / 0.10);
+  --quoin-accent-wash-strong: rgb(168 90 42 / 0.18);
+  --quoin-accent-edge: rgb(168 90 42 / 0.26);
   /* What type on an accent fill must be to stay legible. */
   --quoin-on-accent: #ffffff;
 
@@ -173,13 +172,13 @@
   --quoin-shadow-lg: 0 4px 8px rgb(42 22 10 / 0.04), 0 18px 40px -12px rgb(42 22 10 / 0.14);
   --quoin-shadow-xl: 0 8px 16px rgb(42 22 10 / 0.05), 0 32px 72px -20px rgb(42 22 10 / 0.20);
   /* Ring of accent for focus and selected states. */
-  --quoin-ring: rgb(122 75 40 / 0.35);
+  --quoin-ring: rgb(168 90 42 / 0.35);
 }
 
 
 /* The same brand after dark.
 
-   Not the light palette inverted. Brown at #7a4b28 goes muddy on a
+   Not the light palette inverted. Terracotta at #d95d24 goes muddy on a
    near-black ground, so the accent lifts; the grounds keep their warmth
    rather than going neutral grey, because a cool dark under a warm brand
    reads as a different shop. `deep` inverts its job — on paper it is the
@@ -200,14 +199,14 @@
   --quoin-surface-hover: #2e2820;
   --quoin-surface-active: #3a3228;
 
-  --quoin-accent: #c4996e;
-  --quoin-accent-bright: #d8b28b;
-  --quoin-accent-dim: #a8794d;
-  --quoin-accent-wash: rgb(196 153 110 / 0.16);
-  --quoin-accent-wash-strong: rgb(196 153 110 / 0.26);
-  --quoin-accent-edge: rgb(196 153 110 / 0.34);
-  /* Ink, not white. The dark theme's accent is a light brown:
-     white on it is 2.6:1, dark ink on it is 6.7:1. */
+  --quoin-accent: #d18a5c;
+  --quoin-accent-bright: #e5a77f;
+  --quoin-accent-dim: #b06f45;
+  --quoin-accent-wash: rgb(209 138 92 / 0.16);
+  --quoin-accent-wash-strong: rgb(209 138 92 / 0.26);
+  --quoin-accent-edge: rgb(209 138 92 / 0.34);
+  /* Ink, not white. The dark theme's accent is a light sienna:
+     white on it is 3.2:1, dark ink on it is 5.4:1. */
   --quoin-on-accent: #2a160a;
 
   --quoin-deep: #262019;
@@ -245,7 +244,7 @@
   --quoin-photo: #f5f1ea;
   --quoin-photo-edge: #262019;
 
-  --quoin-photo-cta: #5c3519;
+  --quoin-photo-cta: #8a4620;
   --quoin-on-photo-cta: #f5ede1;
 
   --quoin-skeleton: #2e2115;
@@ -258,7 +257,7 @@
   --quoin-shadow-md: 0 2px 4px rgb(0 0 0 / 0.30), 0 8px 20px -6px rgb(0 0 0 / 0.45);
   --quoin-shadow-lg: 0 4px 8px rgb(0 0 0 / 0.32), 0 18px 40px -12px rgb(0 0 0 / 0.55);
   --quoin-shadow-xl: 0 8px 16px rgb(0 0 0 / 0.35), 0 32px 72px -20px rgb(0 0 0 / 0.65);
-  --quoin-ring: rgb(196 153 110 / 0.45);
+  --quoin-ring: rgb(201 129 86 / 0.45);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -270,14 +269,14 @@
     --quoin-surface-hover: #2e2820;
     --quoin-surface-active: #3a3228;
 
-    --quoin-accent: #c4996e;
-    --quoin-accent-bright: #d8b28b;
-    --quoin-accent-dim: #a8794d;
-    --quoin-accent-wash: rgb(196 153 110 / 0.16);
-    --quoin-accent-wash-strong: rgb(196 153 110 / 0.26);
-    --quoin-accent-edge: rgb(196 153 110 / 0.34);
-    /* Ink, not white. The dark theme's accent is a light brown:
-       white on it is 2.6:1, dark ink on it is 6.7:1. */
+    --quoin-accent: #d18a5c;
+    --quoin-accent-bright: #e5a77f;
+    --quoin-accent-dim: #b06f45;
+    --quoin-accent-wash: rgb(209 138 92 / 0.16);
+    --quoin-accent-wash-strong: rgb(209 138 92 / 0.26);
+    --quoin-accent-edge: rgb(209 138 92 / 0.34);
+    /* Ink, not white. The dark theme's accent is a light sienna:
+       white on it is 3.2:1, dark ink on it is 5.4:1. */
     --quoin-on-accent: #2a160a;
 
     --quoin-deep: #262019;
@@ -315,7 +314,7 @@
     --quoin-photo: #f5f1ea;
     --quoin-photo-edge: #262019;
 
-    --quoin-photo-cta: #5c3519;
+    --quoin-photo-cta: #8a4620;
     --quoin-on-photo-cta: #f5ede1;
 
     --quoin-skeleton: #2e2115;
@@ -328,7 +327,7 @@
     --quoin-shadow-md: 0 2px 4px rgb(0 0 0 / 0.30), 0 8px 20px -6px rgb(0 0 0 / 0.45);
     --quoin-shadow-lg: 0 4px 8px rgb(0 0 0 / 0.32), 0 18px 40px -12px rgb(0 0 0 / 0.55);
     --quoin-shadow-xl: 0 8px 16px rgb(0 0 0 / 0.35), 0 32px 72px -20px rgb(0 0 0 / 0.65);
-    --quoin-ring: rgb(196 153 110 / 0.45);
+    --quoin-ring: rgb(201 129 86 / 0.45);
   }
 }
 

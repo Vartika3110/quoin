@@ -10,6 +10,7 @@ import type {
   ConsultSlot,
 } from "@prisma/client";
 import { db } from "@/lib/db";
+import { estimateFor } from "@/lib/orders/delivery-estimate";
 import type { Paise } from "@/lib/types/catalog";
 
 /**
@@ -238,6 +239,12 @@ export interface ProjectOrderView {
   /** The real count of lines on the order — never capped, unlike
       `lines` below, so a project with a 60-line order still says 60. */
   itemCount: number;
+  /** What to say while `expectedDeliveryOn` is null — "Within about 3
+      hours" for a bulk basket. Read from the same 50-line cap as `lines`,
+      which is the one place this can drift: an order whose 51st line is
+      slower than its first fifty would read optimistically here, and
+      correctly on the order's own page. See `estimateFor`. */
+  deliveryEstimate: string;
   /** Capped at 50: a hub card, not the order itself — the full line list
       already exists at `/account/orders/{reference}`. */
   lines: ProjectOrderLineView[];
@@ -345,6 +352,9 @@ const ORDER_LINE_SELECT = {
   qty: true,
   productSlug: true,
   linePaise: true,
+  /* Not rendered — read only by `estimateFor`, which turns the basket's
+     fulfilment mix into the delivery line this panel shows. */
+  fulfilment: true,
 } as const satisfies Prisma.OrderLineSelect;
 
 const SERVICE_SELECT = {
@@ -515,6 +525,7 @@ function projectDetailToView(row: ProjectDetailRow): ProjectDetailView {
         ? fromCalendarDate(po.order.expectedDeliveryOn)
         : null,
       itemCount: po.order._count.lines,
+      deliveryEstimate: estimateFor(po.order.lines.map((line) => line.fulfilment)),
       lines: po.order.lines.map(orderLineToView),
     })),
     services: row.serviceBookings.map(serviceToView),
@@ -1007,6 +1018,7 @@ export async function linkOrder(
     createdAt: order.createdAt.toISOString(),
     expectedDeliveryOn: order.expectedDeliveryOn ? fromCalendarDate(order.expectedDeliveryOn) : null,
     itemCount: order._count.lines,
+    deliveryEstimate: estimateFor(order.lines.map((line) => line.fulfilment)),
     lines: order.lines.map(orderLineToView),
   };
 }

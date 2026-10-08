@@ -21,7 +21,7 @@ export function SavedCard() {
   if (!ready) {
     return (
       <Card padding="lg" className="anim-rise flex h-full flex-col">
-        <DashboardCardHead icon={<Heart className="size-4.5" />} title="Saved" />
+        <DashboardCardHead icon={<Heart className="size-4.5" />} title="Wishlist" />
         <Skeleton className="mt-4 h-5 w-32" />
         <Skeleton className="mt-3 h-9 w-28 rounded-lg" />
       </Card>
@@ -30,7 +30,7 @@ export function SavedCard() {
 
   return (
     <Card padding="lg" className="anim-rise flex h-full flex-col">
-      <DashboardCardHead icon={<Heart className="size-4.5" />} title="Saved" />
+      <DashboardCardHead icon={<Heart className="size-4.5" />} title="Wishlist" />
 
       {count === 0 ? (
         <>

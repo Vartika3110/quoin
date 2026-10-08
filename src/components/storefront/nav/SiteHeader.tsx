@@ -18,7 +18,6 @@ import {
   Chevron,
   ChevronDown,
   Clock,
-  Headset,
   Heart,
   Search,
   User,
@@ -65,6 +64,7 @@ export function SiteHeader({
   mobileSlot,
   signedIn,
   phoneBar = true,
+  phoneSearch = true,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
@@ -75,6 +75,8 @@ export function SiteHeader({
    * header does not vanish at a width where nothing replaces it.
    */
   phoneBar?: boolean;
+  /** `false` hides the phone search row — see `AppShell`'s `phoneSearch`. */
+  phoneSearch?: boolean;
   /**
    * Rendered on a phone between the area row and the search row, and
    * collapsed along with search on scroll.
@@ -102,10 +104,18 @@ export function SiteHeader({
              edge under a translucent clock, so the space has to be
              reserved by whatever is at the top of the page. It resolves
              to nothing in a browser tab. */
-          "safe-top sticky top-0 z-50 transition-[background-color,box-shadow,backdrop-filter] duration-200 ease-out-quart",
-          scrolled
-            ? "header-edge bg-bg/85 backdrop-blur-xl"
-            : "bg-bg",
+          /* **Opaque, not frosted.** This bar used a translucent ground
+             with a heavy backdrop blur once scrolled, and on a phone that
+             is what reads as the top bar "lagging": the compositor has to
+             re-sample and blur everything behind the header on every
+             scroll frame, and mobile browsers routinely serve that sample
+             a frame late — so the hero bleeding through at 15% visibly
+             trailed the page it was meant to sit on. A solid ground costs
+             nothing per frame and cannot trail. The `header-edge` shadow
+             now does the separating, which is the job the translucency
+             was doing badly. */
+          "safe-top sticky top-0 z-50 bg-bg transition-[box-shadow] duration-200 ease-out-quart",
+          scrolled && "header-edge",
         )}
       >
         {phoneBar && (
@@ -114,6 +124,7 @@ export function SiteHeader({
             chosen={chosen}
             scrolled={scrolled}
             slot={mobileSlot}
+            showSearch={phoneSearch}
             onOpenCart={() => setCartOpen(true)}
             signedIn={signedIn}
           />
@@ -318,6 +329,7 @@ function MobileBar({
   chosen,
   scrolled,
   slot,
+  showSearch = true,
   onOpenCart,
   signedIn,
 }: {
@@ -325,11 +337,10 @@ function MobileBar({
   chosen: AreaChoice | null;
   scrolled: boolean;
   slot?: ReactNode;
+  showSearch?: boolean;
   onOpenCart: () => void;
   signedIn: boolean;
 }) {
-  const { open } = useSearch();
-
   return (
     <div className="px-5 lg:hidden">
       {/* The wordmark, the area, and the controls that are about *you*
@@ -352,32 +363,56 @@ function MobileBar({
           is what pays for it. Once an area is chosen the label is one
           short word and both fit; "Choose your area" is the unset state
           and the one that truncates. */}
+      {/* **This row is what scrolls away; search is what stays.** It was
+          the other way round once and then neither moved, and both were
+          wrong. The promise and the address are read on arrival and then
+          never again — they answer "will you come to me", which is a
+          question asked once. Search is asked continuously. So the block
+          that has done its job folds up, and the toolbar underneath it
+          rides to the top of the screen.
+
+          `grid-rows` rather than `height: auto`, because a height
+          transition from `auto` does not animate at all. */}
+      {/* Unmounted rather than collapsed. A zero-height grid row animates
+          nicely and still leaves its children in the layout — they keep
+          their geometry, and here the account avatar carried on painting
+          over the search field underneath it. A row that is gone should be
+          gone; the animation is not worth one control sitting on top of
+          another. */}
+      {!scrolled && (
+        <div>
       <div
         className={cn(
           "flex items-center gap-1.5 transition-[padding] duration-200 ease-out-quart",
-          scrolled ? "py-2" : "pb-1 pt-3",
+          "pb-1 pt-3",
         )}
       >
-        <LocationPicker
-          areas={areas}
-          selected={chosen}
-          compact
-          className="min-w-0 flex-1"
-        />
+        {/* The promise first, the place under it — the reference design's
+            top line, and the right order: the number is what a customer
+            is deciding on, the locality is what qualifies it. Only once
+            they have chosen an area, because "20 minutes" with nowhere
+            attached is a slogan rather than a fact about them, and the
+            picker alone is the right prompt until then.
 
-        {/* Once the search row has collapsed away, search has to still be
-            reachable — so it comes back as an icon in the top row rather
-            than disappearing until you scroll up. */}
-        {scrolled && (
-          <button
-            type="button"
-            onClick={open}
-            aria-label="Search Quoin"
-            className="tap-target anim-fade relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink transition-colors hover:text-accent"
-          >
-            <Search className="size-5" />
-          </button>
-        )}
+            The figure is `ServiceArea.etaMinutes`, the operator's own
+            number for that locality — not a constant written here. */}
+        <div className="min-w-0 flex-1">
+          {chosen?.etaMinutes != null && (
+            <p className="flex items-baseline gap-1.5 leading-none">
+              <span className="text-micro text-muted">Quoin in</span>
+              <span className="nums font-display text-title-sm font-semibold text-ink">
+                {chosen.etaMinutes} minutes
+              </span>
+            </p>
+          )}
+
+          <LocationPicker
+            areas={areas}
+            selected={chosen}
+            compact
+            className={cn("min-w-0", chosen?.etaMinutes != null && "-ml-1 mt-0.5")}
+          />
+        </div>
 
         {/* 36px of artwork, 44px of target — see `.tap-target`. Three
             circles this size sit in a row a thumb has to hit while
@@ -415,25 +450,41 @@ function MobileBar({
           <User className="size-5" />
         </Link>
       </div>
+        </div>
+      )}
 
-      {/* Everything below the area row collapses on scroll. `grid-rows`
-          rather than `height: auto` so the transition actually animates —
-          a height from `auto` does not. */}
-      <div
-        className={cn(
-          "grid transition-[grid-template-rows,opacity] duration-200 ease-out-quart",
-          scrolled ? "grid-rows-[0fr] opacity-0" : "grid-rows-[1fr] opacity-100",
-        )}
-      >
-        <div className="overflow-hidden">
+      {/* **Nothing collapses on scroll any more.** Search and the four
+          doors used to fold away into a zero-height row, leaving only the
+          address line pinned — so a reader who scrolled had to scroll back
+          to the top to search, and the one control the header exists for
+          was the first thing it gave up. The reference design keeps both
+          on screen the whole way down, and that is the point of a sticky
+          header: it is not a title bar, it is the toolbar.
+
+          The row is affordable now because the doors are marks and labels
+          rather than cards — the whole bar is about 150px, against 230
+          before. */}
+      <div>
+        <div>
+          {/* Search first, then the doors — the order the reference
+              design uses, and the order the row is read in: somebody who
+              knows what they want types it, and the cards are for
+              somebody who does not.
+
+              **Full width**, because the Consult card that used to sit
+              beside it is gone. `ConsultBubble` floats over every phone
+              page already, so the header was offering the same
+              destination a second time on the same screen, and paying
+              120px of the search field's measure for it. */}
+          {showSearch && (
+            <div className="pb-2 pt-3">
+              <MobileSearchField />
+            </div>
+          )}
+
           {/* Negative margin because the slot's own content is a rail
               that has to bleed through this container's gutter. */}
-          {slot && <div className="-mx-5 pt-2">{slot}</div>}
-
-          <div className="flex items-stretch gap-2 pb-3 pt-3">
-            <MobileSearchField className="min-w-0 flex-1" />
-            <ConsultCard />
-          </div>
+          {slot && <div className="-mx-5 pb-3">{slot}</div>}
         </div>
       </div>
     </div>
@@ -497,32 +548,6 @@ function MobileSearchField({ className }: { className?: string }) {
         }
       />
     </div>
-  );
-}
-
-/** Talk to an expert. A card rather than an icon, because "Consult" is a
-    service Quoin sells and not a help button. */
-function ConsultCard() {
-  return (
-    <Link
-      href="/consult"
-      /* A fixed width rather than shrink-to-fit: the search field beside
-         it is what has to keep a readable measure, and a card that sizes
-         itself to its own two words takes that decision away from it. */
-      className="flex h-13 w-[7.5rem] shrink-0 items-center gap-1.5 rounded-card border border-accent-edge bg-accent-wash px-2.5 transition-colors hover:bg-accent-wash-strong"
-    >
-      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-surface text-accent">
-        <Headset className="size-4" />
-      </span>
-      <span className="leading-tight">
-        <span className="block text-[10px] font-semibold uppercase tracking-[0.07em] text-accent">
-          Consult
-        </span>
-        <span className="block whitespace-nowrap text-[9px] text-muted">
-          Talk to Experts
-        </span>
-      </span>
-    </Link>
   );
 }
 

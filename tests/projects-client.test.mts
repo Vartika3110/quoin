@@ -80,8 +80,8 @@ describe("summarise: money wiring (projectMoney)", () => {
     const project = makeProject({
       budgetPaise: 100_000,
       orders: [
-        { reference: "QO-1", status: "DELIVERED", totalPaise: 40_000, createdAt: "2026-01-01T00:00:00.000Z", expectedDeliveryOn: null, itemCount: 1, lines: [] },
-        { reference: "QO-2", status: "PENDING_PAYMENT", totalPaise: 9_999, createdAt: "2026-01-02T00:00:00.000Z", expectedDeliveryOn: null, itemCount: 1, lines: [] },
+        { reference: "QO-1", status: "DELIVERED", totalPaise: 40_000, createdAt: "2026-01-01T00:00:00.000Z", expectedDeliveryOn: null, itemCount: 1, deliveryEstimate: "Within about 3 hours", lines: [] },
+        { reference: "QO-2", status: "PENDING_PAYMENT", totalPaise: 9_999, createdAt: "2026-01-02T00:00:00.000Z", expectedDeliveryOn: null, itemCount: 1, deliveryEstimate: "Within about 3 hours", lines: [] },
       ],
       materials: [
         { id: "m1", title: "Cement", qty: 10, unit: "bags", unitPricePaise: 1_000, status: "ordered", productSlug: null, variantId: null, brand: null, expectedOn: null },

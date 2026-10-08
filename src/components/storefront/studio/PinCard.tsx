@@ -98,6 +98,11 @@ export function PinCard({
           blurDataUrl={idea.blurDataUrl}
           sizes={sizes}
           preload={preload}
+          /* Every tile the same shape, so the columns end level and the
+             wall reads as one surface instead of ragged paper. 4:5 because
+             a room photographed for a feed is usually landscape and 4:5
+             keeps enough of it to be worth tapping. */
+          ratio="4 / 5"
           /* This card parks a save button in one corner and a "shop this
              look" pill along the bottom edge, and on a touch screen both
              are permanently visible. Over a photograph they overlap

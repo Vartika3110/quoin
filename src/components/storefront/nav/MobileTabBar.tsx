@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building, Grid, Home, Layers, Upload } from "@/components/icons";
+import { Grid, Home, Layers, Upload } from "@/components/icons";
 import { useStickyBarTaken } from "@/components/storefront/StickyBar";
 import { cn } from "@/components/ui/cn";
 
@@ -63,10 +63,14 @@ import { cn } from "@/components/ui/cn";
  * tab says that an item in a basket is an order, which is the one thing a
  * commerce app must never blur.
  */
+/* Studio is not here, at the owner's instruction. Four tabs rather than
+   five, and the strip is a floating pill now, which is a shape that gets
+   crowded faster than a full-width bar. Studio keeps its door in the four
+   marks at the top of the home screen and its own section further down
+   the page, so it is one tap from the front either way. */
 const TABS = [
   { href: "/", label: "Home", Icon: Home },
   { href: "/products", label: "Shop", Icon: Grid },
-  { href: "/studio", label: "Studio", Icon: Building },
   { href: "/upload", label: "Parcha", Icon: Upload },
   { href: "/projects", label: "Projects", Icon: Layers },
 ] as const;
@@ -108,8 +112,31 @@ export function MobileTabBar() {
          strip — the one gesture that tells a customer the icon on their
          home screen is a web page. Left alone everywhere else: product
          names, SKUs and quantities are text people copy on purpose. */
-      className="safe-bottom fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-line-soft bg-bg/95 pt-1.5 backdrop-blur-xl app:select-none lg:hidden"
+      /* **A floating pill, not a full-width bar.** The strip used to run
+         edge to edge with a hairline on top, which reads as the bottom of
+         the page; lifted off the edge it reads as a control that belongs
+         to the app and sits above whatever is scrolling underneath. The
+         inset is what makes the difference, so it is the one measurement
+         here that is not negotiable.
+
+         `mb` carries the safe-area inset itself rather than leaning on
+         `safe-bottom`: the pill has to clear the home indicator *and*
+         keep its own gap, and padding inside a rounded bar would show as
+         dead space under the labels. */
+      /* `pr` leaves the lane the consult button parks in — see
+         `ConsultBubble`, which pins itself to this same bottom offset so
+         the two sit on one line. 14 for the button, 4 for the gap. */
+      className="fixed inset-x-0 bottom-0 z-40 pl-4 pr-[calc(3.5rem_+_1.5rem)] pb-[calc(0.625rem_+_env(safe-area-inset-bottom))] app:select-none lg:hidden"
     >
+      <div /* Translucent, so the page reads as continuing underneath rather
+             than stopping at a solid bar — and **no `backdrop-filter`**.
+             A blurred backdrop is what made the header appear to lag:
+             the compositor re-samples everything behind it every frame
+             and serves that sample a frame late. Plain alpha costs
+             nothing per frame. 90% keeps the labels legible over a
+             product photograph scrolling past, which is the case that
+             decides how far this can go. */
+          className="grid grid-cols-4 gap-1 rounded-full border border-line-soft bg-raised/90 p-1.5 shadow-lg">
       {TABS.map(({ href, label, Icon }) => {
         const on = isCurrent(pathname, href);
         return (
@@ -118,8 +145,12 @@ export function MobileTabBar() {
             href={href}
             aria-current={on ? "page" : undefined}
             className={cn(
-              "relative flex min-h-12 flex-col items-center justify-center gap-1 px-0.5 transition-colors",
-              on ? "text-accent" : "text-muted",
+              /* The current tab gets a filled pill of its own, which is
+                 how the reference says "you are here" — a colour change
+                 alone is easy to miss on a strip this small, and the
+                 shape repeats the bar's own. */
+              "relative flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-full px-0.5 transition-colors",
+              on ? "bg-accent-wash text-accent" : "text-muted",
             )}
           >
             <Icon className="size-5.5" />
@@ -134,6 +165,7 @@ export function MobileTabBar() {
           </Link>
         );
       })}
+      </div>
     </nav>
   );
 }

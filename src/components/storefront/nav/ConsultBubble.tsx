@@ -4,9 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Headset } from "@/components/icons";
 import { useStickyBarTaken } from "@/components/storefront/StickyBar";
-import { useScrolled } from "@/components/storefront/nav/useScrolled";
 import { cn } from "@/components/ui/cn";
-import { useCart } from "@/lib/store/cart";
 
 /**
  * Talk to an expert, from anywhere.
@@ -42,11 +40,9 @@ const SILENT_PATHS = ["/cart", "/checkout", "/signin", "/consult"];
 
 export function ConsultBubble() {
   const pathname = usePathname();
-  const { count, ready } = useCart();
   const stickyTaken = useStickyBarTaken();
   /* The same threshold the header compacts at, so the card leaving and
      the bubble arriving are one movement rather than two. */
-  const scrolled = useScrolled();
 
   if (SILENT_PATHS.some((p) => pathname.startsWith(p))) return null;
 
@@ -61,35 +57,47 @@ export function ConsultBubble() {
    * two. Treating them alike left the bubble floating a tab bar's height
    * above nothing on every product and listing page.
    *
-   * `ready` is false until the cart has been read out of storage, so the
-   * first paint puts the bubble low and the transition slides it up —
-   * which is a slide rather than the jump you get from swapping the class
-   * with no transition on it.
    */
-  const twoBarsBelow = !stickyTaken && ready && count > 0;
+  /* **Only a page's own bottom bar moves it.** The cart bar used to lift
+     it as well, so adding something to the basket made the button jump a
+     tab bar's height up the screen — which is the one moment a reader is
+     watching that corner, and it read as the page shifting under them.
+     It does not need to move: the cart bar rides *above* the tab bar, and
+     the button parks on the tab bar's own line, so the two never meet.
+
+     A `StickyBar` is different. `MobileTabBar` stands down for it, so that
+     bar occupies the line the button parks on and it has to clear it. */
+  const liftedOverOwnBar = stickyTaken;
 
   return (
     <Link
       href="/consult"
       aria-label="Talk to an expert"
-      aria-hidden={!scrolled}
-      tabIndex={scrolled ? undefined : -1}
       className={cn(
         "fixed right-4 z-30 grid size-14 place-items-center rounded-full bg-deep text-on-deep shadow-lg",
         "transition-[bottom,background-color,transform,opacity] duration-200 ease-out-quart",
         "hover:bg-deep-soft active:scale-95 lg:hidden",
-        /* Faded and untouchable rather than unmounted: a button that
-           pops into the DOM mid-scroll cannot animate, and one that is
-           only invisible would still swallow taps meant for the page. */
-        scrolled
-          ? "scale-100 opacity-100"
-          : "pointer-events-none scale-90 opacity-0",
-        /* One bar below (a tab bar, or a page's own action bar standing
-           in its place) clears at the shorter offset; the cart bar riding
-           above the tab bar needs both. */
-        twoBarsBelow
-          ? "bottom-[max(8.75rem,calc(8.25rem_+_env(safe-area-inset-bottom)))]"
-          : "bottom-[max(4.75rem,calc(4.25rem_+_env(safe-area-inset-bottom)))]",
+        /* **Always on**, at the owner's instruction. It used to fade in
+           only once the page had moved, on the argument that a button
+           over the first screen competes with the hero. That also meant
+           the one control for "I do not know what I need, talk to me"
+           was missing at the exact moment a first-time visitor most
+           wants it — and now that it sits on the tab bar's line rather
+           than over the content, there is nothing left to compete with. */
+        /* **On the tab bar's own line, at its right end**, the way the
+           reference parks its round button beside the strip rather than
+           hovering over it. The tab pill is 56px tall and sits
+           `0.625rem` above the safe area, so matching those two numbers
+           puts the two on one line and makes them read as one piece of
+           chrome. `MobileTabBar` reserves the width with its own right
+           padding.
+
+           A page with its own action bar *and* a cart bar still stacks,
+           so the bubble lifts clear of both — there is no room beside
+           two bars. */
+        liftedOverOwnBar
+          ? "bottom-[max(4.75rem,calc(4.25rem_+_env(safe-area-inset-bottom)))]"
+          : "bottom-[calc(0.625rem_+_env(safe-area-inset-bottom))]",
       )}
     >
       <Headset className="size-6" />

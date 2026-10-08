@@ -2,9 +2,16 @@ import type { FulfilmentType } from "@/lib/types/catalog";
 import type { ProductSort } from "@/lib/data/catalog";
 
 /**
- * Where Architectural Selects starts, in rupees. The `/premium` page and the
- * home page's Architectural Selects rail both cut the catalogue here, so the
- * rail and the page behind its "View all" are the same listing.
+ * Where Architectural Selects starts, in rupees.
+ *
+ * Here rather than on the page because two surfaces cut the catalogue at
+ * this line and they have to agree: `/premium` itself, and the home
+ * page's Architectural Selects rail whose "View all" leads there. A rail
+ * showing products the page behind it excludes is worse than no rail.
+ *
+ * The figure is the design prototype's own. Nothing in the schema says
+ * "premium" — see the note on `/premium` for why price is the honest
+ * proxy and what replaces it once merchandising curates a real set.
  */
 export const PREMIUM_FLOOR_RUPEES = 5000;
 

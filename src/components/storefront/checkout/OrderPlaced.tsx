@@ -47,7 +47,17 @@ const MAX_POLL_ATTEMPTS = 10;
  * notification, once the webhook lands) is what keeps telling the
  * customer, not a tab they may well have already closed.
  */
-export function OrderPlaced({ state }: { state: PlacedState }) {
+export function OrderPlaced({
+  state,
+  deliveryEstimate,
+}: {
+  state: PlacedState;
+  /** What the basket's own fulfilment mix promises — "Within about 3
+      hours" for bulk goods. Null only if the screen is somehow reached
+      without an order having been priced, which falls back to the
+      sentence that is always true. See `estimateFor`. */
+  deliveryEstimate: string | null;
+}) {
   /* Pulled out once, rather than re-narrowed by `state.kind === "online"`
      at every use below: a plain `state.verified` in a dependency array
      does not narrow the union the way it does inside an `if`, so the
@@ -156,11 +166,14 @@ export function OrderPlaced({ state }: { state: PlacedState }) {
       <p className="nums mt-4 text-body-sm font-semibold text-ink">
         Order {state.reference}
       </p>
-      {/* No date exists at order creation — nothing behind this app
-          schedules a slot yet, see docs/design-system.md — so this states
-          the relationship, never a fabricated day. */}
+      {/* Still not a *date* — nothing behind this app schedules a slot,
+          and inventing a day here would be a promise no one made. What it
+          can say is how long this kind of basket takes: the owner's three
+          hours for bulk goods, and the slowest line's figure when the
+          basket mixes kinds. A real day replaces this on the order's own
+          page the moment operations commits to one. */}
       <p className="mt-1 text-caption text-muted">
-        Estimated delivery: Date confirmed on call
+        Estimated delivery: {deliveryEstimate ?? "Date confirmed on call"}
       </p>
 
       <div className="mt-7 flex flex-wrap justify-center gap-2">

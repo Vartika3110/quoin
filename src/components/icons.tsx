@@ -91,19 +91,6 @@ export const Lamp = (p: IconProps) => (
   </Svg>
 );
 
-/**
- * Floor lamp — shade, stem and weighted foot. The Lighting tab's mark: the
- * table-lamp `Lamp` above reads as a desk accessory, and the department is
- * wall, ceiling and floor lighting, not bedside lamps.
- */
-export const LampFloor = (p: IconProps) => (
-  <Svg {...p}>
-    <path d="M9 2.5h6L18 9H6z" />
-    <path d="M12 9v12" />
-    <path d="M8.5 21.5h7" />
-  </Svg>
-);
-
 export const Search = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="11" cy="11" r="7" />
@@ -707,6 +694,7 @@ export const TAB_ICONS = {
   grid: Grid,
   helmet: Helmet,
   trend: Trend,
+  bricks: Bricks,
   crown: Crown,
   sprout: Sprout,
   sofa: Sofa,

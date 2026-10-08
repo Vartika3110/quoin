@@ -10,6 +10,7 @@ import type {
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { MONEY_MOVED_STATUSES } from "@/lib/orders/status-groups";
 import type {
   BadgeKind as DbBadge,
   Fulfilment as DbFulfilment,
@@ -32,7 +33,7 @@ export const TABS: CatalogTab[] = [
   { id: "all", label: "All", icon: "grid" },
   { id: "services", label: "Services", icon: "helmet" },
   { id: "materials", label: "Materials", icon: "bricks" },
-  { id: "premium", label: "Premium Products", icon: "crown" },
+  { id: "premium", label: "Architectural Selects", icon: "crown" },
   { id: "interiors", label: "Interiors", icon: "sofa" },
   { id: "lighting", label: "Lighting", icon: "lamp" },
 ];
@@ -77,8 +78,20 @@ const VARIANT_QUERY = {
   orderBy: { pricePaise: "asc" },
 } as const;
 
+/**
+ * What makes a product showable at all: switched on, and with something
+ * sellable under it. Exported because the admin catalogue register in
+ * `src/lib/data/catalog-admin.ts` needs the same rule to label a row as
+ * live — restated there, it would be a second definition of "in the shop"
+ * free to drift from this one.
+ */
+export const SELLABLE_PRODUCT = {
+  isActive: true,
+  variants: { some: { isActive: true } },
+} as const;
+
 const PRODUCT_QUERY = {
-  where: { isActive: true, variants: { some: { isActive: true } } },
+  where: SELLABLE_PRODUCT,
   include: { brand: true, category: { select: { slug: true } }, variants: VARIANT_QUERY },
 } as const;
 
@@ -319,6 +332,135 @@ export async function getTopPicks(): Promise<Product[]> {
      section comes back short, or empty, rather than padded with pictures
      that are not of the product. */
   return picks.map(toProduct);
+}
+
+/**
+ * What customers have actually ordered, most first.
+ *
+ * Ranked by units sold across orders where money moved — a cart somebody
+ * abandoned at the payment sheet is not evidence of anything, and
+ * counting it would let a basket nobody paid for decide what the home
+ * page leads with.
+ *
+ * ## This is a real count, not a curated row
+ *
+ * There is no `bestseller` flag and nothing here is hand-picked. The
+ * ranking is `SUM(qty)` grouped by `OrderLine.productSlug`, which is the
+ * column `createPendingOrder` froze at checkout precisely so an order can
+ * still be read after the catalogue moved on.
+ *
+ * It follows that **the row is only as good as the order history**. On a
+ * catalogue that has taken a handful of orders it will come back with a
+ * handful of products, and `hasEnough` drops the section rather than
+ * padding it out with things nobody bought. That is the honest failure:
+ * a "bestsellers" row filled from the catalogue is a lie about the one
+ * thing it claims to measure.
+ *
+ * Photographed products only, for the reason `getTopPicks` gives — a
+ * recommendation row is sold by its pictures.
+ */
+export async function getBestsellers(limit = 10): Promise<Product[]> {
+  /* Grouped in Postgres rather than by pulling every line into Node: the
+     line table grows with sales and this runs on the home page. */
+  const ranked = await db.$queryRaw<{ productSlug: string }[]>`
+    SELECT l."productSlug"
+    FROM order_lines l
+    JOIN orders o ON o.id = l."orderId"
+    WHERE o.status = ANY(${MONEY_MOVED_STATUSES}::text[]::"OrderStatus"[])
+    GROUP BY l."productSlug"
+    ORDER BY SUM(l.qty) DESC, COUNT(*) DESC
+    LIMIT ${limit * 3}
+  `;
+
+  if (ranked.length === 0) return [];
+
+  const slugs = ranked.map((r) => r.productSlug);
+  const rows = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: {
+      ...PRODUCT_QUERY.where,
+      slug: { in: slugs },
+      image: { not: "" },
+      imageIsGenerated: false,
+    },
+  });
+
+  /* Postgres returned the products in whatever order it liked; the order
+     that matters is the one the ranking above produced. */
+  const bySlug = new Map(rows.map((row) => [row.slug, row]));
+  return slugs
+    .map((slug) => bySlug.get(slug))
+    .filter((row): row is (typeof rows)[number] => row != null)
+    .slice(0, limit)
+    .map(toProduct);
+}
+
+/**
+ * The first few products of several departments, in one query.
+ *
+ * The home page carries a shelf per department, and the obvious
+ * implementation — `listProducts({ categorySlug })` once per rail — is
+ * the exact fan-out that took the home page down before. `getTopPicks`
+ * carries the full note: a `findMany` per category means that many
+ * connections asked for at once, and against a pooled Postgres eight of
+ * them is enough to exhaust Prisma's pool and time the page out.
+ *
+ * So the same shape as that fix. A window function ranks each
+ * department's products server-side and one `findMany` hydrates the
+ * winners, which is two connections however many rails the page grows.
+ *
+ * Ordered by name rather than date: a department's newest products are
+ * whatever the last import happened to contain, which puts one supplier's
+ * batch at the front of a shelf that is meant to show the department.
+ *
+ * Returned keyed by slug, and a department with nothing sellable is
+ * simply absent rather than present-and-empty — the caller drops a rail
+ * on `hasEnough` either way.
+ */
+export async function listRailProducts(
+  slugs: readonly string[],
+  perCategory = 12,
+): Promise<Map<string, Product[]>> {
+  if (slugs.length === 0) return new Map();
+
+  const ranked = await db.$queryRaw<{ id: string; slug: string }[]>`
+    SELECT id, slug FROM (
+      SELECT p.id AS id,
+             c.slug AS slug,
+             ROW_NUMBER() OVER (
+               PARTITION BY p."categoryId" ORDER BY p.name ASC
+             ) AS rank
+      FROM products p
+      JOIN categories c ON c.id = p."categoryId"
+      WHERE p."isActive"
+        AND c.slug = ANY(${[...slugs]}::text[])
+        AND EXISTS (
+          SELECT 1 FROM product_variants v
+          WHERE v."productId" = p.id AND v."isActive"
+        )
+    ) ranked
+    WHERE rank <= ${perCategory}
+  `;
+
+  if (ranked.length === 0) return new Map();
+
+  const rows = await db.product.findMany({
+    ...PRODUCT_QUERY,
+    where: { ...PRODUCT_QUERY.where, id: { in: ranked.map((r) => r.id) } },
+  });
+
+  /* Postgres returned the rows in its own order; the order that matters
+     is the ranking above, which is what each shelf is sorted by. */
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  const out = new Map<string, Product[]>();
+  for (const { id, slug } of ranked) {
+    const row = byId.get(id);
+    if (!row) continue;
+    const list = out.get(slug) ?? [];
+    list.push(toProduct(row));
+    out.set(slug, list);
+  }
+  return out;
 }
 
 /** Null rather than throwing — the route turns a miss into a 404. */

@@ -115,6 +115,10 @@ export interface AccountOverviewOrder {
   /** `YYYY-MM-DD`, or null — see the model comment on
       `Order.expectedDeliveryOn`. Never computed from a lead time. */
   expectedDeliveryOn: string | null;
+  /** What to say while the above is null — "Within about 3 hours" for a
+      bulk basket. An estimate from the basket's fulfilment mix, never a
+      date, which is why it is a separate field: see `estimateFor`. */
+  deliveryEstimate: string;
   itemCount: number;
   createdAt: Date;
 }
@@ -292,6 +296,7 @@ export async function getAccountOverview(userId: string): Promise<AccountOvervie
             status: latestOrderSummary.status,
             totalPaise: latestOrderSummary.totalPaise,
             expectedDeliveryOn: latestOrderSummary.expectedDeliveryOn,
+            deliveryEstimate: latestOrderSummary.deliveryEstimate,
             itemCount: latestOrderSummary.itemCount,
             createdAt: latestOrderSummary.createdAt,
           }

@@ -4,10 +4,18 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Input";
+import { OtpInput } from "@/components/ui/OtpInput";
 import { InlineError } from "@/components/ui/ErrorState";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/components/ui/cn";
-import { ArrowRight, Back, GoogleG, Phone, Shield } from "@/components/icons";
+import {
+  ArrowRight,
+  Back,
+  CheckCircle,
+  GoogleG,
+  Phone,
+  Shield,
+} from "@/components/icons";
 import { InvalidPhoneError, normalizePhone } from "@/lib/auth/phone";
 
 /**
@@ -40,8 +48,11 @@ export function SignInPanel({
       `isGoogleSignInConfigured()`, read by the server parent so the
       button never renders only to 404 or bounce back unavailable. */
   googleEnabled: boolean;
-  /** `isOtpDeliveryAvailable()` — true in development regardless, false
-      in production until MSG91's DLT template is approved. */
+  /** `isSupabaseAuthConfigured()` — whether Supabase Auth, which now
+      mints and checks the code, has a URL and an anon key. No longer
+      true-in-development-regardless: there is no console fallback behind
+      Supabase, so an unconfigured deploy must say so rather than offer a
+      box that answers 503. */
   smsEnabled: boolean;
 }) {
   const router = useRouter();
@@ -54,7 +65,27 @@ export function SignInPanel({
   const [error, setError] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
 
-  const codeRef = useRef<HTMLInputElement>(null);
+  /**
+   * Verified, and now waiting on the navigation.
+   *
+   * A terminal state, never reset: the session cookie exists by the time
+   * this is true, so there is nothing to go back to. It also covers a real
+   * gap rather than decorating one — `router.push` to a server-rendered
+   * page is a round trip, and without this the customer watches a spinner
+   * on a button they have already succeeded at pressing.
+   */
+  const [done, setDone] = useState(false);
+
+  /**
+   * Bumped on every rejected code, and used as the `OtpInput` key.
+   *
+   * Remounting is how the boxes get refocused from the start after a wrong
+   * code. The alternative is an imperative handle on the child purely to
+   * call `focus`, and the value lives up here, so a remount costs nothing
+   * and leaves `OtpInput` with no API beyond the value it renders.
+   */
+  const [attempt, setAttempt] = useState(0);
+
   const phoneRef = useRef<HTMLInputElement>(null);
 
   /* The resend cooldown the server told us about, counted down here so the
@@ -65,20 +96,50 @@ export function SignInPanel({
     return () => window.clearInterval(id);
   }, [resendIn]);
 
-  useEffect(() => {
-    if (sentTo) codeRef.current?.focus();
-  }, [sentTo]);
+  /* The code field focuses itself on mount (`autoFocus` on the first box),
+     so the effect that used to chase it with a ref is gone. */
 
+  /**
+   * One POST, with every failure already turned into something worth
+   * reading.
+   *
+   * Three distinct failures used to arrive here as raw text: a dropped
+   * connection surfaced the browser's own "Failed to fetch", a 502 from
+   * the platform returned an HTML error page that `res.json()` threw on,
+   * and both ended up in the panel as either jargon or
+   * "Something went wrong." Each gets its own sentence now, because
+   * "check your connection" and "try again shortly" ask the customer to
+   * do different things.
+   */
   async function post(path: string, body: unknown) {
-    const res = await fetch(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const json = (await res.json()) as {
-      data?: Record<string, unknown>;
-      error?: { message: string };
-    };
+    let res: Response;
+    try {
+      res = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    } catch {
+      /* `fetch` rejects only for transport failures — offline, DNS, a
+         killed request. Never for a 4xx or 5xx, which resolve normally. */
+      throw new Error(
+        "We could not reach Quoin. Check your connection and try again.",
+      );
+    }
+
+    let json: { data?: Record<string, unknown>; error?: { message: string } };
+    try {
+      json = await res.json();
+    } catch {
+      /* A response that is not JSON did not come from the API — it is a
+         gateway or platform error page. Nothing in it is worth showing. */
+      throw new Error(
+        res.ok
+          ? "We got an unexpected response. Please try again."
+          : "Something went wrong on our side. Please try again shortly.",
+      );
+    }
+
     if (!res.ok) throw new Error(json.error?.message ?? "Something went wrong.");
     return json.data ?? {};
   }
@@ -108,6 +169,11 @@ export function SignInPanel({
       const data = await post("/api/v1/auth/otp/request", { phone });
       setSentTo(String(data.phone ?? phone));
       setResendIn(Number(data.resendAfterSeconds ?? 30));
+      /* A resend must clear whatever was typed against the old code.
+         Leaving it would show six filled boxes holding a code the server
+         has just superseded, and the customer would press Verify on it. */
+      setCode("");
+      setAttempt((n) => n + 1);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -115,11 +181,25 @@ export function SignInPanel({
     }
   }
 
-  async function verify() {
+  /**
+   * `submitted` is passed explicitly by the auto-submit path.
+   *
+   * `OtpInput` calls `onComplete` from the same handler that produced the
+   * final digit, so `code` in this closure is still five characters long
+   * at that moment — React has not re-rendered. Reading state here would
+   * verify the wrong code on every automatic submit.
+   */
+  async function verify(submitted?: string) {
+    const value = submitted ?? code;
+    if (value.length < 6) return;
+
     setBusy(true);
     setError(null);
     try {
-      await post("/api/v1/auth/otp/verify", { phone, code });
+      await post("/api/v1/auth/otp/verify", { phone, code: value });
+      /* Shown before navigating, not after: `push` to a server-rendered
+         page takes a moment, and this is what fills it. */
+      setDone(true);
       toast.success("Signed in");
       onDone?.();
       /* `refresh` as well as `push`: the session is a cookie, and every
@@ -130,10 +210,35 @@ export function SignInPanel({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
       setCode("");
-      codeRef.current?.focus();
+      /* Remounts the boxes, which refocuses the first one — see `attempt`. */
+      setAttempt((n) => n + 1);
     } finally {
       setBusy(false);
     }
+  }
+
+  if (done) {
+    /* Replaces the form outright rather than sitting above it. The session
+       exists; leaving a phone field and a Verify button on screen invites a
+       customer to start a second sign-in over the top of the navigation
+       that is already in flight. */
+    return (
+      <div
+        className="flex flex-col items-center gap-3 py-6 text-center"
+        role="status"
+        aria-live="polite"
+      >
+        <CheckCircle className="size-9 text-accent" />
+        <div>
+          <p className="text-body-lg font-medium text-ink">
+            Verified
+          </p>
+          <p className="mt-1 text-body-sm leading-relaxed text-muted">
+            Taking you back to where you left off…
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (!googleEnabled && !smsEnabled) {
@@ -248,27 +353,35 @@ export function SignInPanel({
                 label="Enter the code"
                 htmlFor="code"
                 hint={`Sent to ${sentTo}. It expires in a few minutes.`}
+                error={error ?? undefined}
                 required
               >
-                <Input
+                <OtpInput
+                  /* Remounted on each rejection so the first box takes
+                     focus again — see `attempt`. */
+                  key={attempt}
                   id="code"
-                  ref={codeRef}
-                  name="one-time-code"
-                  type="text"
-                  inputMode="numeric"
-                  /* Lets iOS and Android offer the code straight from the SMS
-                     rather than making the customer switch apps to read it. */
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  placeholder="••••••"
                   value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                  className="nums tracking-[0.5em]"
-                  aria-invalid={error ? true : undefined}
+                  onChange={setCode}
+                  /* Submits itself on the sixth digit. The button below
+                     stays, because autofill and paste can both land a
+                     complete code while the request is already in flight,
+                     and because a form with no visible action to press is
+                     disorienting even when it does not need one. */
+                  onComplete={(value) => {
+                    if (!busy) void verify(value);
+                  }}
+                  disabled={busy}
+                  invalid={Boolean(error)}
+                  describedBy="code-msg"
+                  autoFocus
                 />
               </Field>
 
-              {error && <InlineError>{error}</InlineError>}
+              {/* No `InlineError` here: `Field` above now renders the
+                  error into `#code-msg`, which the boxes point at through
+                  `aria-describedby`. Printing it twice was two different
+                  failures as far as a screen reader is concerned. */}
 
               <Button
                 type="submit"
