@@ -8,6 +8,7 @@ import { SectionHead } from "@/components/ui/Section";
 import { Camera } from "@/components/icons";
 import { getCategories, getProductBySlug } from "@/lib/data/catalog";
 import {
+  doorSizeFromTitle,
   isOwnPhoto,
   sameOriginSrc,
   tileSizeFromTitle,
@@ -30,8 +31,9 @@ export const metadata: Metadata = {
  * The page is a thin server shell: it decides *whether* the product can be
  * visualised and *how* (`visualiserKindFor`), and hands the browser a
  * same-origin picture to draw. Everything after that — the camera, the
- * photograph, the placement — happens client-side, and the customer's room
- * photo never reaches a server.
+ * photograph, finding the floor or wall or door, the placement — happens
+ * client-side, and the customer's room photo never reaches a server unless
+ * they press the optional AI button, which says what it does first.
  */
 export default async function VisualisePage({
   searchParams,
@@ -86,6 +88,7 @@ export default async function VisualisePage({
               photoIsIllustration: Boolean(product.photoIsIllustration),
               kind,
               tileMm: tileSizeFromTitle(product.title) ?? [600, 600],
+              doorFt: kind === "door" ? doorSizeFromTitle(product.title) : null,
             }}
           />
         ) : (

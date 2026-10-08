@@ -63,6 +63,10 @@ const BUCKETS: Record<string, Bucket> = {
      tightest bucket here: a person comparing a few photographs, not
      browsing. Twelve in ten minutes matches `/api/v1/parcha/extract`. */
   photo: { windowMs: 10 * 60_000, max: 12, hits: new Map() },
+  /* The AI redraw in "See it in your space" is an image edit — the most
+     expensive call this site makes, several cents each. Six in ten minutes
+     is a person trying a few products in one room. */
+  render: { windowMs: 10 * 60_000, max: 6, hits: new Map() },
 };
 
 /**

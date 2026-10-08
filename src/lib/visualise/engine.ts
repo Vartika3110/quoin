@@ -429,6 +429,110 @@ export function drawObject(
   ctx.restore();
 }
 
+/** Crops a cut-out to the pixels that are actually there. */
+export function trimToContent(canvas: HTMLCanvasElement): HTMLCanvasElement {
+  const { width: w, height: h } = canvas;
+  const d = canvas.getContext("2d", { willReadFrequently: true })!.getImageData(0, 0, w, h).data;
+  let x0 = w;
+  let x1 = -1;
+  let y0 = h;
+  let y1 = -1;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] < 40) continue;
+      if (x < x0) x0 = x;
+      if (x > x1) x1 = x;
+      if (y < y0) y0 = y;
+      if (y > y1) y1 = y;
+    }
+  }
+  if (x1 < x0 || y1 < y0) return canvas;
+  const out = document.createElement("canvas");
+  out.width = x1 - x0 + 1;
+  out.height = y1 - y0 + 1;
+  out.getContext("2d")!.drawImage(canvas, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
+  return out;
+}
+
+/**
+ * Fits the product's own photograph, cut out and trimmed, into the opening
+ * the quad marks. The leaf is stretched to the opening: the page says so
+ * and states the product's real size beside the opening's, so a door that
+ * is really 6 inches narrower is not quietly drawn as if it fitted.
+ */
+export function drawDoor(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  base: CanvasImageSource | null,
+  quadNorm: Pt[],
+  art: HTMLCanvasElement,
+  opts: { fast?: boolean } = {},
+) {
+  const q = quadNorm.map((p): Pt => [p[0] * w, p[1] * h]);
+  /* A dark reveal and a soft shadow, so the leaf sits in the opening. */
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.38)";
+  ctx.shadowBlur = w * 0.02;
+  ctx.shadowOffsetX = w * 0.005;
+  ctx.shadowOffsetY = w * 0.004;
+  ctx.fillStyle = "#2a1c12";
+  quadPath(ctx, q);
+  ctx.fill();
+  ctx.restore();
+
+  const layer = scratch(w, h);
+  drawWarped(layer.ctx, art, q, art.width, art.height, opts.fast ? 8 : 14);
+  /* A gentle side-to-side light, and a darker leaf in a dim room. The
+     photograph's own pixels are not laid over the door: that would show
+     the old door's panels through the new one. */
+  const g = layer.ctx.createLinearGradient(q[0][0], 0, q[1][0], 0);
+  g.addColorStop(0, "rgba(255,255,255,0.07)");
+  g.addColorStop(1, "rgba(0,0,0,0.13)");
+  layer.ctx.fillStyle = g;
+  layer.ctx.fillRect(0, 0, w, h);
+  if (base) {
+    const lum = averageLuminance(base);
+    if (lum < 0.55) {
+      layer.ctx.fillStyle = `rgba(20,12,6,${((0.55 - lum) * 0.8).toFixed(2)})`;
+      layer.ctx.fillRect(0, 0, w, h);
+    }
+  }
+  const clipped = scratch(w, h);
+  clipped.ctx.save();
+  quadPath(clipped.ctx, q);
+  clipped.ctx.clip();
+  clipped.ctx.drawImage(layer.canvas, 0, 0);
+  clipped.ctx.restore();
+  ctx.drawImage(clipped.canvas, 0, 0);
+}
+
+/** Mean brightness, 0–1, from an 8×8 reduction. */
+export function averageLuminance(source: CanvasImageSource): number {
+  const c = scratch(8, 8);
+  c.ctx.drawImage(source, 0, 0, 8, 8);
+  const d = c.ctx.getImageData(0, 0, 8, 8).data;
+  let sum = 0;
+  for (let i = 0; i < d.length; i += 4) sum += (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
+  return sum / (d.length / 4);
+}
+
+/** A found-objects mask as a canvas the size of the photograph, for `drawSurface`'s erase layer. */
+export function holesToCanvas(holes: { mask: Uint8Array; w: number; h: number }, w: number, h: number): HTMLCanvasElement {
+  const small = scratch(holes.w, holes.h);
+  const img = small.ctx.createImageData(holes.w, holes.h);
+  for (let i = 0; i < holes.w * holes.h; i++) {
+    img.data[i * 4] = 255;
+    img.data[i * 4 + 1] = 255;
+    img.data[i * 4 + 2] = 255;
+    img.data[i * 4 + 3] = holes.mask[i];
+  }
+  small.ctx.putImageData(img, 0, 0);
+  const out = scratch(w, h);
+  out.ctx.drawImage(small.canvas, 0, 0, w, h);
+  return out.canvas;
+}
+
 /** The dashed outline and corner handles. Drawn onto the preview only,
     never into the saved image. */
 export function drawGuides(ctx: CanvasRenderingContext2D, quadNorm: Pt[], w: number, h: number) {
@@ -472,7 +576,8 @@ export function drawObjectGuide(
 }
 
 /** Where the quad starts: a floor patch or a wall patch. */
-export function defaultQuad(surface: "floor" | "wall"): Pt[] {
+export function defaultQuad(surface: "floor" | "wall" | "door"): Pt[] {
+  if (surface === "door") return [[0.3, 0.12], [0.7, 0.12], [0.7, 0.93], [0.3, 0.93]];
   return surface === "wall"
     ? [[0.2, 0.1], [0.8, 0.1], [0.8, 0.55], [0.2, 0.55]]
     : [[0.2, 0.57], [0.8, 0.57], [0.97, 0.96], [0.03, 0.96]];

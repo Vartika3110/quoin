@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-const { visualiserKindFor, tileSizeFromTitle, isOwnPhoto, sameOriginSrc } = await import("@/lib/visualise/kind");
+const { visualiserKindFor, tileSizeFromTitle, doorSizeFromTitle, isOwnPhoto, sameOriginSrc } = await import("@/lib/visualise/kind");
 const { squareToQuad, affineFrom, hitCorner, defaultQuad } = await import("@/lib/visualise/engine");
 
 const base = { fulfilment: "scheduled", hasUsablePhoto: true };
@@ -25,6 +25,19 @@ describe("visualiserKindFor", () => {
     assert.equal(visualiserKindFor({ ...base, title: "OPC 53 Cement 50kg", categorySlug: "cement-steel" }), null);
     assert.equal(visualiserKindFor({ ...base, title: "CPVC Pipe 1 inch", categorySlug: "bathware-plumbing" }), null);
     assert.equal(visualiserKindFor({ ...base, hasUsablePhoto: false, title: "Pendant light", categorySlug: "lighting" }), null);
+  });
+
+  it("offers a door for a door, but never for door hardware or door-named parts", () => {
+    assert.equal(visualiserKindFor({ ...base, title: "Flush Door, Teak Veneer, 7 x 3 ft", categorySlug: "doors-windows" }), "door");
+    for (const [title, categorySlug] of [
+      ["Europa Main Door Lock Antique Brass", "hardware-handles-locks"],
+      ["Premium Door Butt Hinges, Stainless Steel", "hardware-handles-locks"],
+      ["Ebco Eurolift Bi-Fold Door System, Soft Close", "hardware-handles-locks"],
+      ["Door Elbow PVC", "bathware-plumbing"],
+      ["Schneider Acti9 SPN DB, Double Door", "electrical-lighting"],
+    ] as const) {
+      assert.notEqual(visualiserKindFor({ ...base, title, categorySlug }), "door", title);
+    }
   });
 
   it("places everything else as an object", () => {
@@ -85,5 +98,18 @@ describe("perspective maths", () => {
     const q = defaultQuad("floor");
     assert.equal(hitCorner(q, 0.21, 0.58, 0.07), 0);
     assert.equal(hitCorner(q, 0.5, 0.2, 0.07), -1);
+  });
+});
+
+describe("doorSizeFromTitle", () => {
+  it("reads feet and millimetres, width first", () => {
+    assert.deepEqual(doorSizeFromTitle("Flush Door 7 x 3 ft"), [3, 7]);
+    assert.deepEqual(doorSizeFromTitle("Flush Door 3 ft x 7 ft"), [3, 7]);
+    assert.deepEqual(doorSizeFromTitle("Panel Door 2100 x 900 mm"), [3, 6.9]);
+  });
+  it("says nothing when the title states no size, or one that is not a door", () => {
+    assert.equal(doorSizeFromTitle("Teak Panel Door"), null);
+    assert.equal(doorSizeFromTitle("Door 600 x 600 mm"), null);
+    assert.equal(doorSizeFromTitle("Door 40 x 50 ft"), null);
   });
 });

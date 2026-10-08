@@ -1,23 +1,35 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, Check, Close, Download, Plus, Refresh, Upload } from "@/components/icons";
+import { Camera, Check, Close, Download, Plus, Refresh, Sparkle, Upload } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
 import { cn } from "@/components/ui/cn";
 import { useHydrated } from "@/lib/store/hydrated";
 import {
+  confidenceLabel,
+  doorFitNote,
+  fitSurface,
+  padDoorQuad,
+  rasterFrom,
+  type FitKind,
+} from "@/lib/visualise/autofit";
+import {
   cutout,
   defaultQuad,
   drawBase,
+  drawDoor,
   drawGuides,
   drawObject,
   drawObjectGuide,
   drawSurface,
   hitCorner,
+  holesToCanvas,
   objectBox,
   type ObjectScene,
   type Pt,
+  trimToContent,
   type SurfaceScene,
 } from "@/lib/visualise/engine";
 import type { VisualiserKind } from "@/lib/visualise/kind";
@@ -31,11 +43,19 @@ import type { VisualiserKind } from "@/lib/visualise/kind";
  * product itself — a light, a fitting, a piece of furniture — placed and
  * sized.
  *
- * It runs entirely in the browser. The photograph is never uploaded,
- * which matters: it is a picture of the inside of someone's home. There
- * is no model involved, so it works the same whether or not the site has
- * an AI key, and it cannot invent anything — it draws the product's own
- * photograph, or the colour the customer picked.
+ * The moment a photograph is loaded the page works out where the floor,
+ * wall or door is (`autofit.ts`), puts a rough size on it, and lays the
+ * product there; the customer corrects what it got wrong. All of that
+ * runs in the browser and nothing is uploaded, which matters: it is a
+ * picture of the inside of someone's home. It does not invent anything —
+ * it draws the product's own photograph, or the colour the customer
+ * picked.
+ *
+ * One optional step does leave the browser: "Make it photo-realistic"
+ * sends the photograph to an AI image service and shows the redrawn
+ * picture beside the original. It is a button, with the disclosure beside
+ * it, never automatic; it only appears when the site has an AI key; and
+ * its output is labelled as AI-generated.
  *
  * It is a mock-up, and the page says so. A tile photographed in a studio
  * under white light and the same tile in a room at six in the evening are
@@ -52,6 +72,8 @@ export interface VisualiserProduct {
   kind: VisualiserKind;
   /** Millimetres, from the title when it states one. */
   tileMm: [number, number];
+  /** A door's own width and height in feet, when its title states them. */
+  doorFt: [number, number] | null;
 }
 
 type Base = { el: HTMLCanvasElement; w: number; h: number };
@@ -115,6 +137,39 @@ async function baseFromFile(file: File): Promise<Base> {
   }
 }
 
+/* One answer per page load: is the AI redraw switched on? */
+let renderEnabledCache: boolean | null = null;
+function probeRender(): Promise<boolean> {
+  if (renderEnabledCache !== null) return Promise.resolve(renderEnabledCache);
+  return fetch("/api/v1/visualise/render")
+    .then((r) => (r.ok ? r.json() : null))
+    .then((body) => Boolean(body?.data?.enabled))
+    .catch(() => false)
+    .then((value) => {
+      renderEnabledCache = value;
+      return value;
+    });
+}
+
+/** The photograph as a JPEG small enough to send (the server caps it at 4 MB). */
+function toJpeg(el: CanvasImageSource, w: number, h: number, maxEdge = 1280): Promise<Blob | null> {
+  const k = Math.min(1, maxEdge / Math.max(w, h));
+  const c = document.createElement("canvas");
+  c.width = Math.round(w * k);
+  c.height = Math.round(h * k);
+  c.getContext("2d")!.drawImage(el, 0, 0, c.width, c.height);
+  return new Promise((resolve) => c.toBlob(resolve, "image/jpeg", 0.88));
+}
+
+interface FitSummary {
+  kind: FitKind;
+  confidence: number;
+  widthFt: number;
+  lengthFt: number;
+  /** Objects found standing in front of the surface. */
+  found: number;
+}
+
 export function Visualiser({ product }: { product: VisualiserProduct }) {
   const hydrated = useHydrated();
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -141,7 +196,7 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
 
   /* Surface */
   const [surface, setSurface] = useState<"floor" | "wall">(product.kind === "paint" ? "wall" : "floor");
-  const [quad, setQuad] = useState<Pt[]>(() => defaultQuad(product.kind === "paint" ? "wall" : "floor"));
+  const [quad, setQuad] = useState<Pt[]>(() => defaultQuad(product.kind === "door" ? "door" : product.kind === "paint" ? "wall" : "floor"));
   const [areaW, setAreaW] = useState(12);
   const [areaD, setAreaD] = useState(14);
   const [tileMm, setTileMm] = useState<[number, number]>(product.tileMm);
@@ -152,6 +207,20 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
      because the "clear" link has to appear when the first stroke lands. */
   const [hasMask, setHasMask] = useState(false);
 
+  /* Door: the opening, as measured from the photo and corrected by the customer. */
+  const [opening, setOpening] = useState({ widthFt: 3, heightFt: 6.9 });
+
+  /* What the automatic fit found, and whether it is running. */
+  const [fit, setFit] = useState<FitSummary | null>(null);
+  const [fitting, setFitting] = useState(false);
+  const fitTimer = useRef<number | null>(null);
+
+  /* The optional AI redraw. */
+  const [aiEnabled, setAiEnabled] = useState(renderEnabledCache === true);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiImage, setAiImage] = useState<{ before: string; after: string } | null>(null);
+  const [aiOpen, setAiOpen] = useState(false);
+
   /* Object */
   const [obj, setObj] = useState({ x: 0.5, y: 0.6, widthCm: 40, rotation: 0 });
   const [roomWidthM, setRoomWidthM] = useState(3);
@@ -160,6 +229,18 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
   const [fast, setFast] = useState(false);
 
   const isSurface = product.kind === "tile" || product.kind === "paint";
+  const isDoor = product.kind === "door";
+  /* Floors, walls and doors are all fitted by four corners. */
+  const isQuad = isSurface || isDoor;
+  const fitKind: FitKind = isDoor ? "door" : surface;
+
+  useEffect(() => {
+    let live = true;
+    void probeRender().then((v) => live && setAiEnabled(v));
+    return () => {
+      live = false;
+    };
+  }, []);
 
   /* ---- Load the product's own picture once ------------------------------ */
   useEffect(() => {
@@ -169,6 +250,7 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
         if (!live) return;
         setSwatches((s) => (s.some((x) => x.id === "product") ? s : [{ id: "product", label: product.brand ?? "This product", el }, ...s]));
         if (product.kind === "object") setArt(cutout(el));
+        if (product.kind === "door") setArt(trimToContent(cutout(el)));
       })
       .catch(() => live && setNotice("We could not load this product's picture, so it cannot be placed. Try again in a moment."));
     return () => {
@@ -219,9 +301,11 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
   function capture() {
     const video = videoRef.current;
     if (!video || !video.videoWidth) return;
-    setBase(toBase(video, video.videoWidth, video.videoHeight));
+    const captured = toBase(video, video.videoWidth, video.videoHeight);
+    setBase(captured);
     resetPlacement();
     stopCamera();
+    runFit(captured, fitKind, true);
   }
 
   /* ---- Photo ------------------------------------------------------------ */
@@ -230,9 +314,11 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
     setBusy(true);
     setNotice(null);
     try {
-      setBase(await baseFromFile(file));
+      const loaded = await baseFromFile(file);
+      setBase(loaded);
       resetPlacement();
       stopCamera();
+      runFit(loaded, fitKind, true);
     } catch {
       setNotice("This browser cannot open that photo. Try a JPG or PNG.");
     } finally {
@@ -266,9 +352,65 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
     maskRef.current = null;
     setHasMask(false);
     setMaskVersion((v) => v + 1);
-    setQuad(defaultQuad(surface));
+    setQuad(defaultQuad(fitKind));
     setObj((o) => ({ ...o, x: 0.5, y: 0.6 }));
+    setFit(null);
+    setAiImage(null);
+    setAiOpen(false);
   }
+
+  /* ---- Automatic fit ----------------------------------------------------- */
+  /**
+   * Looks at the photograph, finds the surface and sizes it. A tile that
+   * does not find a convincing floor tries the wall, so a customer who
+   * photographs a bathroom wall is not left fitting a floor by hand.
+   */
+  function runFit(b: Base, want: FitKind, allowSwitch: boolean) {
+    if (!isQuad) return;
+    if (fitTimer.current !== null) window.clearTimeout(fitTimer.current);
+    setFitting(true);
+    /* One tick, so "Reading your photo" paints before the work starts. */
+    fitTimer.current = window.setTimeout(() => {
+      fitTimer.current = null;
+      try {
+        const raster = rasterFrom(b.el, b.w, b.h);
+        let kind = want;
+        let result = fitSurface(raster, kind, { holes: kind !== "door" });
+        if (allowSwitch && product.kind === "tile" && result.confidence < 0.5) {
+          const other: FitKind = kind === "floor" ? "wall" : "floor";
+          const alt = fitSurface(raster, other, { holes: true });
+          if (alt.confidence > result.confidence + 0.2) {
+            kind = other;
+            result = alt;
+          }
+        }
+        if (kind === "door") {
+          setQuad(padDoorQuad(result.quad));
+          setOpening({ widthFt: Math.max(2, Math.min(6, result.widthFt)), heightFt: Math.max(5.5, Math.min(9, result.lengthFt)) });
+        } else {
+          setSurface(kind);
+          setQuad(result.quad);
+          setAreaW(Math.max(4, Math.min(40, result.widthFt)));
+          setAreaD(Math.max(4, Math.min(40, result.lengthFt)));
+        }
+        maskRef.current = result.holes && result.holes.count > 0 ? holesToCanvas(result.holes, b.w, b.h) : null;
+        setHasMask(maskRef.current !== null);
+        setMaskVersion((v) => v + 1);
+        setFit({ kind, confidence: result.confidence, widthFt: result.widthFt, lengthFt: result.lengthFt, found: result.holes?.count ?? 0 });
+      } catch {
+        setNotice("We could not find the surface automatically. Drag the corners onto it.");
+      } finally {
+        setFitting(false);
+      }
+    }, 30);
+  }
+
+  useEffect(
+    () => () => {
+      if (fitTimer.current !== null) window.clearTimeout(fitTimer.current);
+    },
+    [],
+  );
 
   /* ---- Scenes ----------------------------------------------------------- */
   const surfaceScene: SurfaceScene = useMemo(
@@ -291,12 +433,15 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
           drawSurface(ctx, w, h, base.el, surfaceScene, fill, { mask: maskRef.current, fast: quick });
         }
         if (guides) drawGuides(ctx, quad, w, h);
+      } else if (isDoor) {
+        if (art) drawDoor(ctx, w, h, base.el, quad, art, { fast: quick });
+        if (guides) drawGuides(ctx, quad, w, h);
       } else if (art) {
         drawObject(ctx, w, h, objectScene, art);
         if (guides) drawObjectGuide(ctx, w, h, objectScene, art);
       }
     },
-    [base, isSurface, product.kind, colour, activeSwatch, surfaceScene, quad, art, objectScene],
+    [base, isSurface, isDoor, product.kind, colour, activeSwatch, surfaceScene, quad, art, objectScene],
   );
 
   useEffect(() => {
@@ -352,7 +497,7 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
       stroke(e);
       return;
     }
-    if (isSurface) {
+    if (isQuad) {
       /* A thumb is wider than a mouse: the reach is 7% of the picture. */
       const i = hitCorner(quad, x, y, 0.07);
       if (i >= 0) {
@@ -386,7 +531,7 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
   }
 
   function onKey(e: React.KeyboardEvent<HTMLCanvasElement>) {
-    if (isSurface) return;
+    if (isQuad) return;
     const step = 0.01;
     const move: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
     const m = move[e.key];
@@ -414,6 +559,58 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
   function setSurfaceKind(next: "floor" | "wall") {
     setSurface(next);
     setQuad(defaultQuad(next));
+    if (base) runFit(base, next, false);
+  }
+
+  /* ---- AI redraw (optional, always the customer's choice) ----------------- */
+  async function aiRedraw() {
+    if (!base || aiBusy) return;
+    setAiBusy(true);
+    setNotice(null);
+    try {
+      const room = await toJpeg(base.el, base.w, base.h);
+      if (!room) throw new Error("encode");
+      const form = new FormData();
+      form.append("room", room, "room.jpg");
+      if (product.kind !== "paint" && activeSwatch) {
+        const tex = await toJpeg(activeSwatch.el, activeSwatch.el.naturalWidth, activeSwatch.el.naturalHeight, 640);
+        if (tex) form.append("product", tex, "product.jpg");
+      } else if (product.kind === "door" || product.kind === "object") {
+        const own = await loadImage(product.photoSrc).catch(() => null);
+        const tex = own ? await toJpeg(own, own.naturalWidth, own.naturalHeight, 640) : null;
+        if (tex) form.append("product", tex, "product.jpg");
+      }
+      const colourName = COLOURS.find(([, hex]) => hex === colour)?.[0];
+      form.append(
+        "spec",
+        JSON.stringify({
+          kind: product.kind,
+          surface: isDoor ? "door" : surface,
+          title: product.title,
+          tileMm: product.kind === "tile" ? tileMm : undefined,
+          colourName: product.kind === "paint" ? colourName : undefined,
+          colourHex: product.kind === "paint" ? colour : undefined,
+          at: product.kind === "object" ? { x: obj.x, y: obj.y } : undefined,
+          widthCm: product.kind === "object" ? obj.widthCm : undefined,
+        }),
+      );
+      const response = await fetch("/api/v1/visualise/render", { method: "POST", body: form });
+      const body = await response.json().catch(() => null);
+      if (!response.ok || !body?.data?.image) {
+        setNotice(body?.error?.message ?? "We could not make the AI view just now. The preview on your photo still works.");
+        return;
+      }
+      const before = document.createElement("canvas");
+      before.width = base.w;
+      before.height = base.h;
+      before.getContext("2d")!.drawImage(base.el, 0, 0);
+      setAiImage({ before: before.toDataURL("image/jpeg", 0.85), after: body.data.image as string });
+      setAiOpen(true);
+    } catch {
+      setNotice("We could not make the AI view just now. The preview on your photo still works.");
+    } finally {
+      setAiBusy(false);
+    }
   }
 
   const canCamera = hydrated && typeof navigator !== "undefined" && Boolean(navigator.mediaDevices?.getUserMedia);
@@ -447,8 +644,8 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
               <canvas
                 ref={canvasRef}
                 role="img"
-                tabIndex={isSurface ? -1 : 0}
-                aria-label={`${product.title} placed on your photo. ${isSurface ? "Drag the corners to fit the surface." : "Drag the product, or use the arrow keys, to place it."}`}
+                tabIndex={isQuad ? -1 : 0}
+                aria-label={`${product.title} placed on your photo. ${isDoor ? "Drag the corners to fit the opening." : isSurface ? "Drag the corners to fit the surface." : "Drag the product, or use the arrow keys, to place it."}`}
                 onPointerDown={onDown}
                 onPointerMove={onMove}
                 onPointerUp={onUp}
@@ -459,7 +656,9 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
             ) : (
               <div className="grid place-items-center gap-4 px-6 py-16 text-center">
                 <p className="max-w-sm text-body text-muted">
-                  Take a photo of the room, or upload one. Your photo stays on this device — it is never uploaded.
+                  {isDoor
+                    ? "Take a photo of your door or doorway, or upload one. Quoin finds the opening, sizes it and fits this door in. Your photo stays on this device."
+                    : "Take a photo of the room, or upload one. Quoin finds the surface for you to adjust. Your photo stays on this device."}
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {canCamera && (
@@ -484,6 +683,22 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
             </p>
           )}
 
+          {base && !cameraOn && isQuad && (fitting || fit) && (
+            <FitCard
+              fitting={fitting}
+              fit={fit}
+              kind={fitKind}
+              opening={opening}
+              door={product.doorFt}
+              tileCount={
+                product.kind === "tile"
+                  ? Math.ceil(((areaW * 304.8 * areaD * 304.8) / (tileMm[0] * tileMm[1])) * 1.1)
+                  : null
+              }
+              onRefit={() => base && runFit(base, fitKind, false)}
+            />
+          )}
+
           {base && !cameraOn && (
             <div className="mt-3 flex flex-wrap gap-2">
               {canCamera && (
@@ -497,6 +712,23 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
               <Button size="sm" onClick={save}><Download className="size-4" />
                 Save image
               </Button>
+            </div>
+          )}
+
+          {base && !cameraOn && aiEnabled && (
+            <div className="mt-3 rounded-card border border-line-soft bg-surface p-4">
+              <Button size="sm" variant="outline" onClick={() => (aiImage ? setAiOpen(true) : void aiRedraw())} disabled={aiBusy}>
+                {aiBusy ? <Spinner className="size-4" /> : <Sparkle className="size-4" />}
+                {aiBusy ? "Drawing your room…" : aiImage ? "View the AI picture again" : "Make it photo-realistic with AI"}
+              </Button>
+              <p className="mt-2 text-caption leading-snug text-muted">
+                This sends your photo to an AI image service, which redraws it with the product in place. The picture is made up by the AI and the real product may look different. Nothing is kept.
+              </p>
+              {aiImage && !aiBusy && (
+                <button type="button" onClick={() => void aiRedraw()} className="mt-2 text-caption text-accent">
+                  Draw it again
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -567,6 +799,22 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
             </Panel>
           )}
 
+          {isDoor && (
+            <Panel title="Fit the door">
+              <p className="text-caption leading-snug text-muted">
+                Drag the four round handles onto the corners of the door or opening in your photo. Then set the opening&apos;s real size.
+              </p>
+              <Range label="Opening width" unit="ft" value={opening.widthFt} min={2} max={6} step={0.1} onChange={(v) => setOpening((o) => ({ ...o, widthFt: v }))} />
+              <Range label="Opening height" unit="ft" value={opening.heightFt} min={5.5} max={9} step={0.1} onChange={(v) => setOpening((o) => ({ ...o, heightFt: v }))} />
+              <p className="mt-2 text-caption leading-snug text-muted">
+                Height starts from an ordinary door&apos;s 6.9 ft when the photo has nothing else to measure against, so set it to your real opening. The leaf is stretched to fill the opening you outline; its listed size is compared with the opening above.
+              </p>
+              <button type="button" onClick={() => base && runFit(base, "door", false)} disabled={!base || fitting} className="mt-3 text-body-sm text-accent disabled:text-faint">
+                Find the door again
+              </button>
+            </Panel>
+          )}
+
           {isSurface && (
             <Panel title="Where it goes">
               <Segmented
@@ -619,7 +867,7 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
                 </div>
                 {hasMask && (
                   <button type="button" onClick={() => { maskRef.current = null; setHasMask(false); setMaskVersion((v) => v + 1); }} className="mt-2 text-caption text-accent">
-                    Clear all rubbing out
+                    Clear the cut-outs
                   </button>
                 )}
               </div>
@@ -627,7 +875,7 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
           )}
 
           {/* ---- Object ------------------------------------------------- */}
-          {!isSurface && (
+          {!isQuad && (
             <Panel title="Place it">
               <p className="text-caption leading-snug text-muted">
                 Drag the product to where it would go. Set its real width so it sits at the right size against your room.
@@ -645,8 +893,17 @@ export function Visualiser({ product }: { product: VisualiserProduct }) {
         </aside>
       </div>
 
+      <Modal open={aiOpen && aiImage !== null} onClose={() => setAiOpen(false)} title="Your room, redrawn by AI" description="Drag the handle to compare. The AI made this picture up from your photo, so the real product may look different." size="lg">
+        {aiImage && <BeforeAfter before={aiImage.before} after={aiImage.after} ratio={base ? base.w / base.h : 4 / 3} />}
+        {aiImage && (
+          <a href={aiImage.after} download="quoin-ai-view.png" className="mt-3 inline-block text-body-sm text-accent">
+            Save the AI picture
+          </a>
+        )}
+      </Modal>
+
       <p className="mt-6 max-w-prose text-caption leading-snug text-faint">
-        A mock-up on your own photograph, drawn in your browser. Colour, texture and scale will differ in the room — use it to compare ideas, not to specify an order.
+        A mock-up on your own photograph, drawn in your browser. Sizes are estimated from the picture and colour, texture and scale will differ in the room — use it to compare ideas, not to specify an order.
       </p>
     </div>
   );
@@ -716,5 +973,96 @@ function Range({
       </span>
       <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="mt-1 w-full accent-[var(--color-accent)]" />
     </label>
+  );
+}
+
+function FitCard({
+  fitting,
+  fit,
+  kind,
+  opening,
+  door,
+  tileCount,
+  onRefit,
+}: {
+  fitting: boolean;
+  fit: FitSummary | null;
+  kind: FitKind;
+  opening: { widthFt: number; heightFt: number };
+  door: [number, number] | null;
+  tileCount: number | null;
+  onRefit: () => void;
+}) {
+  const label = fit ? confidenceLabel(fit.confidence) : "low";
+  const shownKind = fit?.kind ?? kind;
+  return (
+    <div className="mt-3 flex gap-3 rounded-card border border-line-soft bg-surface p-4" role="status" aria-live="polite">
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-on-accent">
+        {fitting ? <Spinner className="size-4" /> : <Sparkle className="size-4" />}
+      </span>
+      <div className="min-w-0 flex-1">
+        {fitting || !fit ? (
+          <>
+            <p className="text-body-sm font-semibold text-ink">Reading your photo…</p>
+            <p className="text-caption leading-snug text-muted">Finding the {kind === "door" ? "door opening" : kind} and working out its size.</p>
+          </>
+        ) : (
+          <>
+            <p className="text-body-sm font-semibold text-ink">
+              {shownKind === "door"
+                ? `Door opening about ${opening.widthFt.toFixed(1)} × ${opening.heightFt.toFixed(1)} ft`
+                : shownKind === "wall"
+                  ? `Wall about ${fit.widthFt} ft wide × ${fit.lengthFt} ft high`
+                  : `Visible floor about ${fit.widthFt} × ${fit.lengthFt} ft`}
+            </p>
+            <p className="mt-0.5 text-caption leading-snug text-muted">
+              {shownKind === "door"
+                ? door
+                  ? doorFitNote({ widthFt: opening.widthFt, heightFt: opening.heightFt }, { widthFt: door[0], heightFt: door[1] }).text
+                  : "This listing does not state a size, so Quoin cannot say whether it fits. Measure your opening and check with the seller."
+                : tileCount
+                  ? `About ${tileCount} tiles including 10% wastage, drawn at the real tile size.`
+                  : "Drag the corners if the edges are off."}
+              {fit.found > 0 && shownKind !== "door" ? ` ${fit.found === 1 ? "One object" : `${fit.found} objects`} in the way ${fit.found === 1 ? "was" : "were"} left in front.` : ""}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className={cn("rounded-full px-2 py-0.5 text-micro font-semibold", label === "low" ? "bg-warning-wash text-warning" : "bg-success-wash text-success")}>
+                {label === "good" ? "Good fit" : label === "check" ? "Check the corners" : "Low confidence — adjust the corners"}
+              </span>
+              <button type="button" onClick={onRefit} className="text-caption text-accent">
+                Fit again
+              </button>
+            </div>
+            <p className="mt-1.5 text-micro leading-snug text-faint">Sizes are estimated from the photo. Confirm with a tape measure before you order.</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Two pictures with a draggable divider. The range input carries the pointer and the keyboard. */
+function BeforeAfter({ before, after, ratio }: { before: string; after: string; ratio: number }) {
+  const [pos, setPos] = useState(50);
+  return (
+    <div className="relative w-full select-none overflow-hidden rounded-lg bg-black" style={{ aspectRatio: String(ratio) }}>
+      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${after}")` }} />
+      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${before}")`, clipPath: `inset(0 ${100 - pos}% 0 0)` }} />
+      <div className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow" style={{ left: `${pos}%` }} />
+      <span className="pointer-events-none absolute top-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-ink shadow" style={{ left: `${pos}%` }} aria-hidden>
+        ↔
+      </span>
+      <span className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-micro font-semibold text-white">Your photo</span>
+      <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-micro font-semibold text-white">AI picture</span>
+      <input
+        type="range"
+        min={2}
+        max={98}
+        value={pos}
+        onChange={(e) => setPos(Number(e.target.value))}
+        aria-label="Slide between your photo and the AI picture"
+        className="absolute inset-0 size-full cursor-ew-resize opacity-0"
+      />
+    </div>
   );
 }
