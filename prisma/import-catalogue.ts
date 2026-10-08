@@ -22,6 +22,7 @@ import path from "node:path";
 
 import { Fulfilment, PricingUnit, PrismaClient } from "@prisma/client";
 
+import { firstFreeSlug } from "../src/lib/catalogue-slug";
 import { PRODUCT_SLUG_MAX_LENGTH } from "../src/lib/types/catalog";
 
 const db = new PrismaClient();
@@ -122,33 +123,15 @@ function toPaise(raw: string): number | null {
   return Number.isFinite(value) ? Math.round(value * 100) : null;
 }
 
-function slugify(value: string): string {
-  return (
-    value
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "item"
-  );
-}
-
 /**
- * A slug free of collisions. Distinct names routinely collapse onto one
- * slug — "Dr Fixit" and "Dr. Fixit" are different brands that both
- * slugify to "dr-fixit" — so a numeric suffix is appended until free.
+ * `firstFreeSlug` is pure; this import assigns every slug in one pass,
+ * so each one taken has to be recorded or the next row may be handed
+ * the same slug again.
  */
 function uniqueSlug(base: string, maxLength: number, taken: Set<string>): string {
-  const root = slugify(base).slice(0, maxLength);
-  let candidate = root;
-  let n = 1;
-  while (taken.has(candidate)) {
-    n += 1;
-    const suffix = `-${n}`;
-    candidate = `${root.slice(0, maxLength - suffix.length)}${suffix}`;
-  }
-  taken.add(candidate);
-  return candidate;
+  const slug = firstFreeSlug(base, maxLength, taken);
+  taken.add(slug);
+  return slug;
 }
 
 /**

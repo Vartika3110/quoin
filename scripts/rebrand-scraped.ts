@@ -6,6 +6,9 @@ import path from "node:path";
 
 import { PrismaClient } from "@prisma/client";
 
+import { firstFreeSlug } from "../src/lib/catalogue-slug";
+import { PRODUCT_SLUG_MAX_LENGTH } from "../src/lib/types/catalog";
+
 /**
  * Take a competitor's name off the catalogue.
  *
@@ -100,29 +103,11 @@ const FIRST_WORD_ALIASES: Record<string, string> = {
   ultratech: "UltraTech",
 };
 
-function slugify(value: string): string {
-  return (
-    value
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[̀-ͯ]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "item"
-  );
-}
-
-/** Matches the importer's collision handling exactly — see import-catalogue.ts. */
+/** Records each slug it hands out; see the note in import-catalogue.ts. */
 function uniqueSlug(base: string, maxLength: number, taken: Set<string>): string {
-  const root = slugify(base).slice(0, maxLength);
-  let candidate = root;
-  let n = 1;
-  while (taken.has(candidate)) {
-    n += 1;
-    const suffix = `-${n}`;
-    candidate = `${root.slice(0, maxLength - suffix.length)}${suffix}`;
-  }
-  taken.add(candidate);
-  return candidate;
+  const slug = firstFreeSlug(base, maxLength, taken);
+  taken.add(slug);
+  return slug;
 }
 
 /** Whether `name` begins with `maker` on a word boundary. */
@@ -218,7 +203,7 @@ async function main() {
       oldName: p.name,
       newName,
       oldSlug: p.slug,
-      newSlug: uniqueSlug(`${newBrand} ${newName} ${p.sku}`, 280, taken),
+      newSlug: uniqueSlug(`${newBrand} ${newName} ${p.sku}`, PRODUCT_SLUG_MAX_LENGTH, taken),
       oldBrand: p.brand?.name ?? null,
       newBrand,
       reason,
