@@ -44,13 +44,32 @@ export function slugifyProduct(value: string): string {
  * same slug twice.
  */
 export function firstFreeSlug(base: string, maxLength: number, taken: Set<string>): string {
-  const root = slugifyProduct(base).slice(0, maxLength);
-  let candidate = root;
+  return firstFreeValue(slugifyProduct(base), maxLength, taken);
+}
+
+/**
+ * The same suffixing, for a value that must not be slugified.
+ *
+ * Variant SKUs are the case: `reserveVariantSku` derives one from the
+ * product's own code, and those are upper-case manufacturer codes.
+ * Putting them through `slugifyProduct` first would quietly turn
+ * `CEMAMBCEMN50G7-STD` into `cemambcemn50g7-std` — still unique, still
+ * stored, and no longer the code printed on the box.
+ *
+ * Shared with `firstFreeSlug` rather than copied, because the suffixing
+ * rule is the thing that was duplicated three ways before this module
+ * existed, and a second copy of it here would start that again.
+ */
+export function firstFreeValue(root: string, maxLength: number, taken: Set<string>): string {
+  const base = root.slice(0, maxLength);
+  let candidate = base;
   let n = 1;
+
   while (taken.has(candidate)) {
     n += 1;
     const suffix = `-${n}`;
-    candidate = `${root.slice(0, maxLength - suffix.length)}${suffix}`;
+    candidate = `${base.slice(0, maxLength - suffix.length)}${suffix}`;
   }
+
   return candidate;
 }

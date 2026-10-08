@@ -78,8 +78,20 @@ const VARIANT_QUERY = {
   orderBy: { pricePaise: "asc" },
 } as const;
 
+/**
+ * What makes a product showable at all: switched on, and with something
+ * sellable under it. Exported because the admin catalogue register in
+ * `src/lib/data/catalog-admin.ts` needs the same rule to label a row as
+ * live — restated there, it would be a second definition of "in the shop"
+ * free to drift from this one.
+ */
+export const SELLABLE_PRODUCT = {
+  isActive: true,
+  variants: { some: { isActive: true } },
+} as const;
+
 const PRODUCT_QUERY = {
-  where: { isActive: true, variants: { some: { isActive: true } } },
+  where: SELLABLE_PRODUCT,
   include: { brand: true, category: { select: { slug: true } }, variants: VARIANT_QUERY },
 } as const;
 
