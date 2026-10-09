@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Shield, Truck, Headset, CheckCircle } from "@/components/icons";
+import { TrustPills } from "@/components/storefront/Trust";
 import { COMPANY, COMPANY_DETAILS_ARE_SAMPLE } from "@/lib/company";
 
 /**
@@ -99,57 +99,19 @@ const COLUMNS: {
  */
 const LOCATIONS = ["Janakpuri", "Paschim Vihar", "Pitampura", "Rajendra Nagar"];
 
-const TRUST = [
-  { Icon: CheckCircle, label: "Verified brands and suppliers" },
-  { Icon: Truck, label: "Delivery promised per item" },
-  { Icon: Headset, label: "Support from people who build" },
-  { Icon: Shield, label: "Secure checkout" },
-];
-
-/**
- * The four claims, as pills, on the page rather than in the footer.
- *
- * They used to be a 2x2 grid of icon-and-text rows inside the footer's
- * own panel, above a rule. That made them look like the footer's first
- * column — a heading-less list among three headed ones — when they are
- * not navigation at all. A pill reads as a badge: a short standing fact,
- * complete in itself, not a link you failed to notice.
- *
- * Outside `<footer>` so they sit on the page's ground with the footer's
- * top border beneath them. The separation is the point of the change:
- * the page ends with what Quoin stands behind, and then the footer
- * begins.
- *
- * A rail on a phone, a centred wrap from `lg`. Four pills of this length
- * is more than 375px holds, and wrapping them there gives two ragged
- * rows; scrolled, the row stays one line and reads as one statement.
- */
-function TrustPills() {
-  return (
-    <div className="mx-auto w-full max-w-shell app:hidden lg:px-6">
-      {/* `-mx-5 px-5` lets the row bleed to the screen edge on a phone
-          while keeping the first and last pill off it, and `scroll-pl-5`
-          is what stops snap parking a pill flush against that edge — see
-          the note on `.rail` in globals.css. All three reset at `lg`,
-          where the row wraps and centres instead. */}
-      <ul className="rail -mx-5 gap-2 px-5 pb-6 scroll-pl-5 lg:mx-0 lg:flex-wrap lg:justify-center lg:gap-3 lg:overflow-visible lg:px-0 lg:pb-10 lg:scroll-pl-0">
-        {TRUST.map(({ Icon, label }) => (
-          <li key={label}>
-            <span className="inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-line-soft bg-surface px-3.5 py-2 text-micro text-muted lg:text-caption">
-              <Icon className="size-4 shrink-0 text-accent" />
-              {label}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-export function SiteFooter() {
+export function SiteFooter({
+  /**
+   * The home page renders the same four claims under its hero, so it
+   * turns these off rather than stating them twice on one page — see
+   * `TrustRow` in `src/components/storefront/Trust.tsx`.
+   */
+  showTrustPills = true,
+}: {
+  showTrustPills?: boolean;
+} = {}) {
   return (
     <>
-      <TrustPills />
+      {showTrustPills && <TrustPills />}
 
       {/* No top margin on a phone. The page already ends with its own
           trailing gap, and `mt-16` put 64px on top of that — 104px of

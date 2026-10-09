@@ -34,12 +34,18 @@ import {
 export async function AppShell({
   children,
   fullBleed = false,
+  showTrustPills = true,
   headerSlot,
   phoneChrome = true,
   phoneSearch = true,
 }: {
   children: React.ReactNode;
   fullBleed?: boolean;
+  /**
+   * Off for the home page, which states the same four claims under its
+   * hero — see `TrustRow` in `src/components/storefront/Trust.tsx`.
+   */
+  showTrustPills?: boolean;
   /**
    * `false` hands the whole phone screen to the page.
    *
@@ -127,7 +133,7 @@ export async function AppShell({
             page ends, and a page that has given its whole phone screen to
             one surface does not want a sitemap under it. */}
         <div className={phoneChrome ? undefined : "hidden lg:block"}>
-          <SiteFooter />
+          <SiteFooter showTrustPills={showTrustPills} />
         </div>
 
         {/* Phone-only chrome, all three fixed. The bar sits above the tab

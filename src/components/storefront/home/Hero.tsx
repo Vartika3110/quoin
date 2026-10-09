@@ -1,153 +1,180 @@
-import { Button } from "@/components/ui/Button";
-import { Eyebrow } from "@/components/ui/Badge";
-import { Photo } from "@/components/ui/Photo";
-import { ArrowRight } from "@/components/icons";
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Chevron } from "@/components/icons";
+import { TrustRow } from "@/components/storefront/Trust";
 
 /**
  * The first screen.
  *
- * Two columns inside one card: a solid cream panel carrying every word,
- * and a photograph hard-cropped beside it.
+ * One image with the words laid over its left-hand side, behind a wash
+ * that fades out across the frame — rebuilt to the design reference at
+ * the owner's instruction, replacing the two-column arrangement of a
+ * solid panel beside a hard-cropped photograph.
  *
- * The previous hero faded the photograph into the band with a mask and a
- * scrim, on the argument that a cropped panel "draws a seam down the
- * middle". It does draw a line, and the line is the point — it is the
- * edge of a card, which is the vocabulary every other block on this page
- * is built from. What the fade actually produced was a photograph
- * dissolving into nothing, which reads as an image that failed to load,
- * and it needed a second gradient on top to survive the dark palette.
- * Two gradients to hide an edge is more machinery than the edge costs.
+ * Three of the decisions this reverses were themselves made at the
+ * owner's instruction, and are reversed knowingly rather than
+ * forgotten:
  *
- * **The photograph is Quoin's own construction shot**, restored at the
- * owner's instruction and now fixed — see `HERO_PHOTO` at the foot of
- * this file.
+ * **The corners are round again.** They were squared off because a
+ * rounded card "read as one tile among the tiles below it". That is
+ * still true of a tile-sized card; it is not true of this one, which is
+ * the full width of the column and twice the height of anything under
+ * it. The radius is the card radius every other surface uses, so it
+ * reads as the page's opening image rather than as a foreign shape.
  *
- * The panel carries the proposition and two buttons, and stops there. It
- * also held a tick list — "Brands bought direct", "Delivery promised per
- * item" — and a line naming the four live localities. Both are gone at
- * the owner's instruction. They were true, and being true is not the
- * same as being worth the first screen: a visitor who has not yet read
- * what Quoin sells has no use for its sourcing policy, and the ticks
- * were the third qualifier under a sentence that needed none.
+ * **The words sit on the photograph at every width**, not only on a
+ * phone. The old panel existed so the type had an opaque ground from
+ * `lg`; the wash below does that job without taking half the frame, and
+ * the reference's whole composition depends on the picture running the
+ * full width behind the text.
  *
- * The area ETA has gone the same way, at the owner's instruction. The
- * panel is a proposition and two buttons now; the header carries the
- * delivery promise, which is where a reader looks for it and where it
- * does not compete with the headline.
+ * **There is a row of claims under it again.** A tick list was removed
+ * from this page once for being "the third qualifier under a sentence
+ * that needed none". The sentence is shorter now and the claims are no
+ * longer stacked under it — they are a separate row beneath the card,
+ * which is where the reference puts them. They are also the four lines
+ * this site already uses, not the reference's: see `TRUST` in
+ * `src/components/storefront/Trust.tsx` for why *Fast Delivery* is not
+ * among them.
+ *
+ * What is **not** reversed is the photograph. The reference shows an
+ * interior visualisation and a carousel of three; this stays the single
+ * fixed construction shot, at the owner's instruction, confirmed again
+ * when this hero was rebuilt. See `HERO_PHOTO` at the foot of the file.
  */
 
 export function Hero() {
   return (
-    /* Square corners, at the owner's instruction. The rounded card
-         read as one tile among the tiles below it; squared off and run to
-         the gutter it reads as the page's opening image instead of its
-         first card. */
-    <section className="grid overflow-hidden border border-line-soft lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
-      {/* Over the photograph on a phone, beside it from `lg`.
+    /* The claims row is rendered here rather than by the page so it sits
+       directly under the card. As a sibling in `PageSections` it picked
+       up the full between-sections gap and floated in the middle of
+       nowhere; it is part of the opening, not the section after it.
 
-          Stacked, the picture took the whole first screen and pushed the
-          sentence saying what Quoin is below the fold — so the opening
-          view was a building with no caption. Laid over it, the two
-          arrive together.
+       A `div` and not a fragment, which is the same bug one layer up: a
+       fragment has no DOM node, so `PageSections`' `space-y` would still
+       see the card and the row as two of its own children and push them
+       apart. One element makes them one section. */
+    <div>
+      <section className="relative isolate overflow-hidden rounded-card border border-line-soft">
+        {/* Behind everything, at every width. The text block below sets
+          the card's height and this stretches to whatever that turns out
+          to be, rather than the other way round.
 
-          `col-start-1 row-start-1` puts the panel and the photograph in
-          the same grid cell instead of two; from `lg` the explicit
-          columns take over and they sit side by side again, which is
-          where there is room for both. */}
-      <div className="relative z-10 col-start-1 row-start-1 flex flex-col justify-end px-5 pb-8 pt-28 text-on-deep sm:pt-40 lg:col-start-auto lg:row-start-auto lg:justify-center lg:bg-raised lg:px-12 lg:py-20 lg:text-ink">
-        {/* The photograph is a bright sky at the top and pale concrete
-            below, so white type needs something under it. A gradient
-            rather than a flat wash: the building stays readable at the
-            top of the frame and the words get their contrast where they
-            actually sit. Gone from `lg`, where the panel has its own
-            opaque ground. */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-deep/90 via-deep/70 to-deep/25 lg:hidden"
+          `next/image` directly rather than this app's `Photo`: that one
+          reserves a box with an `aspect-ratio`, which is exactly what a
+          fill background must not do, and it carries a `useState` error
+          fallback that would make the whole hero a client component. The
+          fallback buys nothing here — this is a fixed asset committed to
+          the repo, not a catalogue photograph that may be missing. */}
+        <Image
+          src={HERO_PHOTO.url}
+          alt=""
+          fill
+          sizes="100vw"
+          priority
+          className="-z-10 object-cover"
         />
 
-        {/* The eyebrow is accent-coloured, which is a brown on a
-            photograph of concrete at golden hour — it disappeared. Light
-            below `lg`, its own colour from `lg` where the panel is
-            opaque again. */}
-        <span className="relative [&_*]:!text-on-deep lg:[&_*]:!text-accent">
-          <Eyebrow>Build better. Buy smarter.</Eyebrow>
-        </span>
+        {/* The wash.
+          Horizontal, and it is what makes the composition work: the type
+          needs an opaque-enough ground on the left, and the photograph
+          needs to be visibly a photograph on the right. A flat scrim
+          over the whole frame would give the first and lose the second.
 
-        <h1 className="relative mt-3 font-display text-title-lg font-semibold sm:mt-4 sm:text-display-sm lg:text-display-sm xl:text-display">
-          Everything you need to build, renovate and reimagine your space.
-        </h1>
+          Built from `bg`, the page's own ground, so it is cream in the
+          light theme and near-black in the dark one and `text-ink` reads
+          on both without a second set of colours. The stops are steeper
+          below `lg`: at 375px the text occupies most of the width, so
+          the wash has to carry further across before it clears. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-bg via-bg/80 to-bg/25 lg:from-bg lg:via-bg/65 lg:to-transparent"
+        />
 
-        <p className="relative mt-3 max-w-md text-body leading-relaxed text-on-deep/80 sm:mt-5 sm:text-body-lg lg:text-muted">
-          Materials, products, expert services and project tools — brought
-          together in one intelligent platform.
-        </p>
+        {/* Top-right, over the part of the frame the wash has cleared.
+          A link rather than a `Button`: it is a quiet secondary route
+          into the catalogue sitting on a photograph, and every Button
+          variant here would either fight the headline's pill or vanish
+          into the picture. */}
+        <Link
+          href="/categories"
+          className="absolute right-4 top-4 z-10 inline-flex items-center gap-1 rounded-full bg-surface px-3.5 py-2 text-micro font-semibold text-ink shadow-sm transition-colors hover:bg-hover lg:right-6 lg:top-6 lg:text-caption"
+        >
+          Shop by Category
+          <Chevron className="size-3.5" />
+        </Link>
 
-        {/* Side by side on a phone rather than stacked: two full-width
-            buttons is 120px of the first screen spent on two taps. */}
-        <div className="relative mt-6 flex items-center gap-2 sm:mt-8 sm:gap-3">
-          <Button
-            href="/products"
-            size="lg"
-            className="flex-1 whitespace-nowrap px-4 sm:flex-none sm:px-6"
+        <div className="relative max-w-[18rem] px-5 pb-8 pt-16 sm:max-w-sm sm:pt-20 lg:max-w-lg lg:px-12 lg:pb-16 lg:pt-24">
+          {/* Uppercase and broken by hand. The line break is content, not
+            styling — "BUILD YOUR / DREAM SPACE" is two balanced lines and
+            letting it wrap on its own gives "BUILD YOUR DREAM / SPACE" at
+            most widths. `text-balance` cannot help: it balances what it
+            is given, and what looks right here is a specific break. */}
+          <h1 className="font-display text-title-lg font-bold uppercase leading-[1.05] text-ink sm:text-display-sm lg:text-display">
+            Build your
+            <br />
+            dream space
+          </h1>
+
+          {/* The reference sets this in a script face. There is no script
+            family loaded — the app ships two, a sans for everything read
+            and a serif for everything scanned — and pulling a third from
+            Google for one line of six words is a font request on every
+            first paint for a flourish. The serif's italic carries the
+            same editorial note at no cost. */}
+          <p className="mt-2 font-display text-title-sm italic text-accent sm:text-title lg:mt-3 lg:text-title-lg">
+            One Platform. Every Need.
+          </p>
+
+          {/* A styled link rather than a `Button`.
+
+            The reference draws a near-black pill, which is `Button`'s
+            `secondary` variant — and that variant is a *fixed* dark in
+            both themes, so on this page's dark ground it was a black
+            pill on a black card and all but disappeared. Overriding it
+            through `className` does not work either: `cn` here is not
+            `tailwind-merge`, so the variant's own background wins on
+            stylesheet order (the same trap `StickyBar` documents).
+
+            `bg-ink text-bg` inverts with the theme instead: near-black
+            on cream in the light theme, exactly as drawn, and cream on
+            near-black in the dark one. Maximum contrast against the
+            page either way, which is what the reference's pill is
+            actually doing. */}
+          <Link
+            href="/studio"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-body-sm font-semibold text-bg transition-opacity hover:opacity-90 lg:mt-7 lg:text-body"
           >
-            Explore products
-            {/* Dropped on a phone: at `flex-1` the arrow is what tips the
-                label onto a second line. */}
-            <ArrowRight className="hidden size-4 sm:block" />
-          </Button>
-          <Button
-            href="/projects/new"
-            size="lg"
-            variant="outline"
-            className="flex-1 whitespace-nowrap px-4 sm:flex-none sm:px-6"
-          >
-            Plan a project
-          </Button>
+            Explore Studio
+            <ArrowRight className="size-4" />
+          </Link>
         </div>
+      </section>
 
-      </div>
-
-      {/* Hard-cropped, and tall on a phone: the panel sits on top of it,
-          so the frame has to be deep enough that the building is still
-          legible either side of the words. */}
-      <Photo
-        src={HERO_PHOTO.url}
-        alt=""
-        ratio="4 / 3"
-        blurDataURL={null}
-        sizes="(min-width: 1024px) 45vw, 100vw"
-        priority
-        /* Blurred where the words sit on it, sharp from `lg` where they
-           sit beside it. A `filter` is rasterised once by the compositor
-           and costs nothing while scrolling — unlike `backdrop-filter`,
-           which re-samples every frame and is what made the header appear
-           to lag. The scrim stays: blur alone lowers contrast without
-           reliably darkening, and these photographs have a bright sky in
-           the top third. */
-        imageClassName="blur-[3px] lg:blur-0"
-        className="col-start-1 row-start-1 h-full min-h-[26rem] w-full sm:min-h-[32rem] lg:col-start-auto lg:row-start-auto lg:min-h-0 lg:aspect-auto"
-      />
-    </section>
+      <TrustRow />
+    </div>
   );
 }
 
 /**
  * The hero's picture: Quoin's own construction photograph.
  *
- * Fixed, and deliberately not sourced from anywhere else. Two earlier
- * revisions each took it away by a different route — one swapped it for
- * catalogue bathroom photography on the argument that the hero should
- * show the finished room a customer ends up with rather than the site it
- * came out of; the other left it as a fallback behind "Studio's
- * best-saved room", which quietly replaced it again the moment Studio
- * had any rooms at all.
+ * Fixed, and deliberately not sourced from anywhere else. Three
+ * revisions have now each tried to take it away by a different route —
+ * one swapped it for catalogue bathroom photography on the argument
+ * that the hero should show the finished room a customer ends up with
+ * rather than the site it came out of; one left it as a fallback behind
+ * "Studio's best-saved room", which quietly replaced it again the moment
+ * Studio had any rooms at all; and the design reference this hero is
+ * built to draws an interior visualisation with a three-slide carousel
+ * over it.
  *
- * That second arrangement is the worse of the two, because the home
- * page's main image then changes on its own whenever somebody uploads an
- * interior — a surprise nobody asked for and nobody would think to look
- * for. The owner has asked for this photograph, twice. It is Quoin's
- * own, it is of a real building, and it says what the company is for, so
- * it is a constant and changing it is an edit to this line.
+ * The second and third are the worse ones, because the home page's main
+ * image then changes on its own whenever somebody uploads an interior —
+ * a surprise nobody asked for and nobody would think to look for. The
+ * owner has asked for this photograph three times now, most recently
+ * when choosing it over the reference's carousel. It is Quoin's own, it
+ * is of a real building, and it says what the company is for, so it is a
+ * constant and changing it is an edit to this line.
  */
 const HERO_PHOTO = { url: "/hero/under-construction.webp" };

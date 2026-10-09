@@ -221,7 +221,7 @@ export default async function HomePage() {
   const featured = categories.slice(0, 8);
 
   return (
-    <AppShell fullBleed headerSlot={<EntryCards />}>
+    <AppShell fullBleed showTrustPills={false} headerSlot={<EntryCards />}>
       {/* Site-wide identity, emitted once and only here. Repeating
           Organization on every page is noise a crawler has to de-
           duplicate; the home page is the canonical place for it. */}
