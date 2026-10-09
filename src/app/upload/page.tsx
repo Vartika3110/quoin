@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ParchaWorkbench } from "@/components/storefront/parcha/ParchaWorkbench";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { Eyebrow } from "@/components/ui/Badge";
 import { CheckCircle, Layers, Rupee } from "@/components/icons";
 
 export const metadata: Metadata = {
@@ -39,9 +38,15 @@ export default function UploadPage() {
           />
         </div>
 
+        {/* No eyebrow here, unlike the other pages that have one.
+            "Upload Parcha" is already the last crumb directly above, and
+            the heading says it a third time in a sentence — three
+            statements of the same two words stacked in 120px. An eyebrow
+            earns its place when it classifies something the heading does
+            not, which is what `Service` does over a service's own name
+            on `/services/[slug]`; here it only repeated the breadcrumb. */}
         <header className="px-5 lg:px-0">
-          <Eyebrow>Upload Parcha</Eyebrow>
-          <h1 className="font-display mt-3 max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
+          <h1 className="font-display max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
             Upload your parcha. We&rsquo;ll organise the rest.
           </h1>
           <p className="mt-3 max-w-xl text-body-lg leading-relaxed text-muted">
