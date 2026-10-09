@@ -251,6 +251,36 @@ export default async function HomePage() {
               about it. */}
           <Hero />
 
+          {/* Directly under the hero, at the owner's instruction and
+              following the design reference, which opens with the hero
+              and then Top Brands.
+
+              This reverses the argument that stood here before, which is
+              worth stating rather than deleting: brands were last on the
+              reasoning that somebody looking for Jaquar searches or
+              filters rather than scrolling a home page for a logo, so the
+              row was a shortcut for a return visit and belonged where a
+              shortcut belongs. That is still true of how a *returning*
+              buyer behaves. What it missed is what the row says to a
+              first-time one — fourteen manufacturers they recognise,
+              immediately under the proposition, is the fastest claim this
+              page makes that Quoin stocks the real thing. It is doing
+              reassurance here, not navigation, which is why it now sits
+              next to the four claims rather than at the foot. */}
+          <section>
+            <SectionHead title="Shop by brand" href="/products" linkLabel="All brands" />
+            {/* Two components, one row — and both are needed. `BrandRail`
+                is `lg:hidden` (an auto-scrolling marquee, because fourteen
+                marks wrapped at 375px is four rows of specks) and
+                `BrandWall` is `hidden lg:block` (the wrapped wall, which
+                only reads as a wall when there is width for it). Rendering
+                the rail alone left the desktop page with this heading and
+                nothing under it. */}
+            <BrandRail />
+            <BrandWall />
+          </section>
+
+
 
           {/* Before the catalogue, because it is not the catalogue: these
               are decisions the reader has already made, and somebody who
@@ -443,24 +473,6 @@ export default async function HomePage() {
               </div>
             </section>
           )}
-
-          {/* Brands last, because this is the one row on the page a reader
-              arrives already knowing they want — somebody looking for
-              Jaquar searches or filters, they do not scroll the home page
-              for a logo. It is a shortcut for the return visit, not an
-              introduction, so it sits where a shortcut belongs. */}
-          <section>
-            <SectionHead title="Shop by brand" href="/products" linkLabel="All brands" />
-            {/* Two components, one row — and both are needed. `BrandRail`
-                is `lg:hidden` (an auto-scrolling marquee, because fourteen
-                marks wrapped at 375px is four rows of specks) and
-                `BrandWall` is `hidden lg:block` (the wrapped wall, which
-                only reads as a wall when there is width for it). Rendering
-                the rail alone left the desktop page with this heading and
-                nothing under it. */}
-            <BrandRail />
-            <BrandWall />
-          </section>
 
         </PageSections>
       </div>

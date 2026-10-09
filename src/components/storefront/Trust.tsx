@@ -116,7 +116,7 @@ export function TrustPills() {
  */
 export function TrustRow() {
   return (
-    <ul className="grid grid-cols-4 gap-x-2 px-4 pt-6 lg:gap-x-6 lg:px-0">
+    <ul className="grid grid-cols-4 gap-x-2 pt-6 lg:gap-x-6">
       {TRUST.map(({ Icon, short }) => (
         <li key={short} className="flex flex-col items-center gap-2 text-center">
           <Icon className="size-5 shrink-0 text-accent" />

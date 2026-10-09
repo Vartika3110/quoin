@@ -53,8 +53,16 @@ export function Hero() {
        A `div` and not a fragment, which is the same bug one layer up: a
        fragment has no DOM node, so `PageSections`' `space-y` would still
        see the card and the row as two of its own children and push them
-       apart. One element makes them one section. */
-    <div>
+       apart. One element makes them one section.
+
+       `mx-5` to `lg` and nothing after it, which looks arbitrary and is
+       not. The page's own wrapper is `max-w-shell lg:px-6`: it insets
+       the column from `lg` and gives a phone no horizontal padding at
+       all, because every section below reaches the edge itself and then
+       insets its own contents by `px-5`. The hero had no such inset, so
+       it alone ran edge to edge while everything under it sat 20px in.
+       This matches it to them rather than introducing a new measure. */
+    <div className="mx-5 lg:mx-0">
       <section className="relative isolate overflow-hidden rounded-card border border-line-soft">
         {/* Behind everything, at every width. The text block below sets
           the card's height and this stretches to whatever that turns out
