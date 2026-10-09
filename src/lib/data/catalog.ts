@@ -891,18 +891,49 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 }
 
 /**
+ * The cheapest thing a department's pill is allowed to quote.
+ *
+ * A plain `MIN` over every sellable variant is arithmetically right and
+ * tells the reader something false. Fourteen departments were being
+ * priced by their smallest accessory: *Hardware & locks* said **From ₹1**
+ * (a mis-filed gypsum keel), *Electricals & lighting* **From ₹3** (a
+ * conduit collar), *Kitchen & wardrobe fittings* **From ₹3** (a shelf
+ * support pin), *Bathware & plumbing* **From ₹4** (a saddle clamp).
+ *
+ * Every one of those is a real price on a real row. None of them is what
+ * "From ₹3" leads somebody to expect of a lighting department, and a
+ * figure that collapses on contact is worse for trust than no figure —
+ * it reads as a broken price even when it is not.
+ *
+ * ₹25 is set where it is because of what the catalogue actually holds:
+ * exactly fourteen variants sit under ₹10 and all fourteen are fittings
+ * — collars, pins, clamps, thimbles, a putty blade — while the cheapest
+ * thing anyone browses a department *for* starts well above it. It is a
+ * threshold on what may be **quoted**, not on what may be sold: the
+ * clamps are still in the catalogue, still searchable and still
+ * buyable. Only the headline changes.
+ */
+const MIN_QUOTABLE_FLOOR_PAISE = 2500;
+
+/**
  * Cheapest sellable price per category, for the "From ₹49" pills.
  *
  * One grouped query rather than a cheapest-product lookup per tile: the
  * home page renders every top-level category, so the per-tile version is
  * fourteen round trips to Singapore before the page can paint.
+ *
+ * A department whose every variant is under the threshold returns no row
+ * and therefore no pill, which is the right outcome: a department of
+ * nothing but fittings has no meaningful "from" price to give.
  */
 export async function getCategoryPriceFloors(): Promise<Map<string, number>> {
   const rows = await db.$queryRaw<{ categoryId: string; floor: number }[]>`
     SELECT p."categoryId" AS "categoryId", MIN(v."pricePaise")::int AS floor
     FROM products p
     JOIN product_variants v ON v."productId" = p.id AND v."isActive"
-    WHERE p."isActive" AND p."categoryId" IS NOT NULL
+    WHERE p."isActive"
+      AND p."categoryId" IS NOT NULL
+      AND v."pricePaise" >= ${MIN_QUOTABLE_FLOOR_PAISE}
     GROUP BY p."categoryId"
   `;
   return new Map(rows.map((r) => [r.categoryId, r.floor]));
