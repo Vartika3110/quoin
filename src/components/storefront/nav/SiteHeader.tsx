@@ -384,7 +384,13 @@ function MobileBar({
       <div
         className={cn(
           "flex items-center gap-1.5 transition-[padding] duration-200 ease-out-quart",
-          "pb-1 pt-3",
+          /* Three bands stack before any content on a phone — this one,
+             the search field, and the entry cards — and each used to
+             carry its own generous padding. Sixty of the header's 263px
+             were padding alone. Trimmed together rather than one at a
+             time, because the complaint is the sum, not any single
+             band. */
+          "pb-0.5 pt-2",
         )}
       >
         {/* The promise first, the place under it — the reference design's
@@ -477,14 +483,14 @@ function MobileBar({
               destination a second time on the same screen, and paying
               120px of the search field's measure for it. */}
           {showSearch && (
-            <div className="pb-2 pt-3">
+            <div className="pb-1.5 pt-2">
               <MobileSearchField />
             </div>
           )}
 
           {/* Negative margin because the slot's own content is a rail
               that has to bleed through this container's gutter. */}
-          {slot && <div className="-mx-5 pb-3">{slot}</div>}
+          {slot && <div className="-mx-5 pb-2">{slot}</div>}
         </div>
       </div>
     </div>

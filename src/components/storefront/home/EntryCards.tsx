@@ -70,12 +70,12 @@ export function EntryCards() {
          optical padding of their own — set tight under the search field
          they read as crowding it, where the line icons they replaced had
          their own whitespace built in. */
-    <div className="grid grid-cols-4 gap-2 px-5 pb-1 pt-2 lg:gap-3 lg:px-0">
+    <div className="grid grid-cols-4 gap-2 px-5 pb-0 pt-1 lg:gap-3 lg:px-0">
       {ENTRIES.map(({ href, label, Icon, art }) => (
         <Link
           key={href}
           href={href}
-          className="group flex flex-col items-center gap-1.5 text-center"
+          className="group flex flex-col items-center gap-1 text-center"
         >
           {/* **No tile behind the mark.** The reference sets its category
               icons bare on the page ground — no plate, no border, no tint
@@ -94,7 +94,7 @@ export function EntryCards() {
                  nothing. `object-contain` cannot do this: it fits the
                  whole frame, label and all, which left the hard hat a few
                  pixels tall. */
-              art ? "h-12 items-start lg:h-14" : "h-12 items-center lg:h-14",
+              art ? "h-11 items-start lg:h-14" : "h-11 items-center lg:h-14",
             )}
           >
             {art ? (
