@@ -46,13 +46,16 @@ export default function UploadPage() {
             not, which is what `Service` does over a service's own name
             on `/services/[slug]`; here it only repeated the breadcrumb. */}
         <header className="px-5 lg:px-0">
+          {/* The heading stands on its own. A standfirst under it
+              explained what a parcha run does — priced line by line
+              against the catalogue, so you see the cost before ordering
+              — which is the same thing the three numbered steps
+              immediately below say, with the steps saying it better
+              because they say it in order. Removed at the owner's
+              instruction. */}
           <h1 className="font-display max-w-2xl text-headline font-semibold text-ink lg:text-headline-lg">
             Upload your parcha. We&rsquo;ll organise the rest.
           </h1>
-          <p className="mt-3 max-w-xl text-body-lg leading-relaxed text-muted">
-            A materials list, priced against the catalogue line by line — so
-            you can see what a job costs before you order any of it.
-          </p>
         </header>
 
         <ul className="mt-8 grid gap-3 px-5 sm:grid-cols-3 lg:px-0">
