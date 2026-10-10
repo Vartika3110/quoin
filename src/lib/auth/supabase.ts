@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { env } from "@/lib/env";
+import { isWhatsAppOtpConfigured } from "@/lib/auth/whatsapp";
 
 /**
  * Supabase Auth clients.
@@ -48,19 +49,26 @@ export function isSupabaseAuthConfigured(): boolean {
  * "Send me a code" button that answered 500. Delivery has since moved to
  * a **native Supabase SMS provider**, configured in the Supabase
  * dashboard — so whether a message can actually leave is now Supabase's
- * business and is deliberately not knowable from here. Re-adding a
- * second condition would mean this app asserting something about a
- * provider it no longer talks to.
+ * business and is deliberately not knowable from here.
  *
- * The honest consequence: with the provider missing or out of credit,
- * the button appears and the request fails. That failure is handled
- * where it happens — `POST /api/v1/auth/otp/request` maps Supabase's
- * 422 "no provider" and `sms_send_failed` onto plain language, and the
- * panel offers Google instead. Guessing here would be worse, because the
- * guess would be wrong in both directions.
+ * **That reasoning has expired, and the second condition is back.**
+ * Delivery has moved again: codes now go over WhatsApp through this
+ * app's own Send SMS Hook (`/api/v1/auth/supabase/send-otp`), because
+ * SMS to an Indian handset needs a DLT-registered template and WhatsApp
+ * does not. So this app *is* the provider again, and asking whether it
+ * can send is no longer asserting something about somebody else's
+ * configuration — it is reading its own.
+ *
+ * Both halves are needed and neither is sufficient. Supabase mints,
+ * stores and checks the code; WhatsApp carries it. With Supabase
+ * configured and WhatsApp not, the button would appear, Supabase would
+ * call the hook, the hook would 500, and the customer would wait for a
+ * message that was never going to arrive — which is exactly the failure
+ * the MSG91 guard was written to prevent and then walked past, because
+ * it checked one variable where the sender needed two.
  */
 export function isPhoneSignInAvailable(): boolean {
-  return isSupabaseAuthConfigured();
+  return isSupabaseAuthConfigured() && isWhatsAppOtpConfigured();
 }
 
 function requireAuthConfig(): SupabaseAuthConfig {

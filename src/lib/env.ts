@@ -269,6 +269,37 @@ const schema = z.object({
    * the storefront, with the jobs reporting themselves unavailable —
    * the same shape as Razorpay and Supabase above.
    */
+  /**
+   * Supabase's Send SMS Hook, and the WhatsApp credentials behind it.
+   *
+   * `SUPABASE_SMS_HOOK_SECRET` signs the hook (Standard Webhooks). It
+   * was removed once, when delivery moved to Supabase's own provider,
+   * and is back because delivery has moved again — to WhatsApp, which
+   * Supabase cannot send itself. Unset means the hook refuses every
+   * caller rather than relaying: that endpoint messages an arbitrary
+   * number on request, and "send anyway" would be an open relay billed
+   * to the WhatsApp account.
+   *
+   * The three `WHATSAPP_*` values are Meta Cloud API credentials, and
+   * all three are needed before a code can leave — see
+   * `isWhatsAppOtpConfigured`. `WHATSAPP_OTP_TEMPLATE` is the name of
+   * the Authentication template approved in Meta's Business Manager;
+   * there is deliberately no default, because a template nobody
+   * registered fails at Meta with an error that reads like a
+   * credentials problem.
+   *
+   * All optional, and no production guard demanding them — the same
+   * reasoning as Razorpay and Supabase above. Unset, phone sign-in
+   * reports itself unavailable and Google remains, which is a correct
+   * state rather than a dangerous one.
+   */
+  SUPABASE_SMS_HOOK_SECRET: z.string().optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  WHATSAPP_OTP_TEMPLATE: z.string().optional(),
+  /** BCP-47 code of the approved template. Meta matches on this exactly. */
+  WHATSAPP_OTP_LANGUAGE: z.string().optional(),
+
   CRON_SECRET: z.string().optional(),
 });
 
@@ -315,6 +346,11 @@ function load(): Env {
         CF_STREAM_CUSTOMER_CODE: process.env.CF_STREAM_CUSTOMER_CODE,
         CF_ACCOUNT_ID: process.env.CF_ACCOUNT_ID,
         CF_STREAM_API_TOKEN: process.env.CF_STREAM_API_TOKEN,
+        SUPABASE_SMS_HOOK_SECRET: process.env.SUPABASE_SMS_HOOK_SECRET,
+        WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID,
+        WHATSAPP_ACCESS_TOKEN: process.env.WHATSAPP_ACCESS_TOKEN,
+        WHATSAPP_OTP_TEMPLATE: process.env.WHATSAPP_OTP_TEMPLATE,
+        WHATSAPP_OTP_LANGUAGE: process.env.WHATSAPP_OTP_LANGUAGE,
         CRON_SECRET: process.env.CRON_SECRET,
       };
     }
