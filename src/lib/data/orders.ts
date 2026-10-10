@@ -603,6 +603,12 @@ export type SettlementOutcome =
   /** Captured amount did not match the order total. Nothing was changed. */
   | "amount_mismatch"
   /**
+   * A refund settled, and the payment it belongs to has still had only
+   * part of itself back. The `Refund` row is now PROCESSED; the order is
+   * deliberately *not* REFUNDED, because it has not been.
+   */
+  | "partial_refund"
+  /**
    * A refund delivery that could not be tied to one row.
    *
    * Only reachable for a refund whose creating call timed out and so
@@ -1167,6 +1173,60 @@ export class RefundExceedsCaptureError extends Error {
 }
 
 /**
+ * Whether every paisa taken on a payment has actually gone back.
+ *
+ * PROCESSED refunds only, and that is the opposite of how `refundable`
+ * counts in `refundOrder` — deliberately. There, a PENDING refund counts
+ * against what may still be given back, because it may yet succeed and
+ * refunding the same money twice is unrecoverable. Here the question is
+ * whether the customer *has* their money, and a PENDING refund is money
+ * that has been asked for and not yet returned. Counting it would mark an
+ * order REFUNDED while the customer is still waiting for the bank.
+ *
+ * The arithmetic is `refundsCoverCapture` below, kept pure and exported
+ * so it can be tested; this is only the part that goes and gets the rows.
+ */
+async function isPaymentFullyRefunded(paymentId: string): Promise<boolean> {
+  const payment = await db.payment.findUnique({
+    where: { id: paymentId },
+    select: {
+      amountPaise: true,
+      /* The `where` is half the rule — see the comment above on why a
+         PENDING refund must not count towards "they have their money". */
+      refunds: { where: { status: "PROCESSED" }, select: { amountPaise: true } },
+    },
+  });
+  if (!payment) return false;
+
+  return refundsCoverCapture(
+    payment.amountPaise,
+    payment.refunds.map((r) => r.amountPaise),
+  );
+}
+
+/**
+ * Do these refunds add up to the whole of what was captured?
+ *
+ * `>=` rather than `===` because a refund can only ever be created for
+ * what is still outstanding, so a sum above the capture would be a bug
+ * elsewhere — and if one ever happens, the order should still end up
+ * REFUNDED rather than sit at REFUND_PENDING forever waiting for a
+ * paisa that is never coming.
+ *
+ * No refunds at all is not full, even for a payment of nothing: there is
+ * no such payment, and answering `true` for one would mark an order
+ * REFUNDED the moment anything asked.
+ */
+export function refundsCoverCapture(
+  capturedPaise: number,
+  refundedPaise: readonly number[],
+): boolean {
+  if (refundedPaise.length === 0) return false;
+  const returned = refundedPaise.reduce((sum, paise) => sum + paise, 0);
+  return returned >= capturedPaise;
+}
+
+/**
  * Gives a customer their money back.
  *
  * **The `Refund` row is written before the gateway is called**, and that
@@ -1185,12 +1245,18 @@ export class RefundExceedsCaptureError extends Error {
  * dashboard. The reverse order — call, then record — loses the money
  * entirely on a timeout: it has left the account and nothing here knows.
  *
- * The order moves to REFUND_PENDING before the call and REFUNDED only
- * once the gateway says `processed`. Razorpay refunds are frequently
- * asynchronous — `status: "pending"` is the normal answer for a
- * netbanking refund, not an error — so an order sitting at
- * REFUND_PENDING with a PENDING `Refund` row is a correct resting
- * state, and `refund.processed` on the webhook is what finishes it.
+ * For a refund of everything outstanding, the order moves to
+ * REFUND_PENDING before the call and REFUNDED only once the gateway says
+ * `processed`. Razorpay refunds are frequently asynchronous —
+ * `status: "pending"` is the normal answer for a netbanking refund, not
+ * an error — so an order sitting at REFUND_PENDING with a PENDING
+ * `Refund` row is a correct resting state, and `refund.processed` on the
+ * webhook is what finishes it.
+ *
+ * A **partial** refund does not touch the order's status at all. Both
+ * REFUND_PENDING and REFUNDED are claims about the whole of what was
+ * paid, and an order that has had part of its money back is still an
+ * order being fulfilled. Its money lives in the `Refund` rows.
  */
 export async function refundOrder(input: {
   reference: string;
@@ -1251,6 +1317,11 @@ export async function refundOrder(input: {
     );
   }
 
+  /* Whether this refund is for everything still outstanding. It decides
+     whether the *order's* status moves at all — see the note on the
+     update below. */
+  const refundsEverythingLeft = amountPaise >= refundable;
+
   /* Row first — see the note above. PENDING, because nothing has been
      sent yet and this row is what proves it was about to be. */
   const refund = await db.refund.create({
@@ -1261,15 +1332,27 @@ export async function refundOrder(input: {
   /* Only now does the order say a refund is under way. Before the row
      exists there is nothing to point at; after the gateway call there
      would be a window where money had moved and the order still read
-     PAID. */
-  /* Unconditional now: the state was checked above, so a `canTransition`
-     wrapper here could only ever hide a failure. Still a guarded
-     `updateMany` rather than an `update`, so a concurrent move by
+     PAID.
+
+     And only for a refund of everything that is left. REFUND_PENDING's
+     one onward edge is REFUNDED, so parking a part-refunded order there
+     ends its fulfilment: a Rs 500 goodwill refund on a dispatched
+     Rs 5,200 order would leave no way to say the rest of it was
+     delivered, and no way to refund the rest either, because
+     `canTransition` would then be asked to go REFUND_PENDING →
+     REFUND_PENDING. A partial therefore leaves the order where it is and
+     is carried entirely by its `Refund` row, which is the record of the
+     money in both cases. The state check above still applies to both —
+     an order that cannot hold a refund at all is refused before here.
+
+     Guarded `updateMany` rather than `update`, so a concurrent move by
      somebody else loses rather than being silently overwritten. */
-  await db.order.updateMany({
-    where: { id: order.id, status: order.status },
-    data: { status: "REFUND_PENDING" },
-  });
+  if (refundsEverythingLeft) {
+    await db.order.updateMany({
+      where: { id: order.id, status: order.status },
+      data: { status: "REFUND_PENDING" },
+    });
+  }
 
   let gateway;
   try {
@@ -1304,11 +1387,14 @@ export async function refundOrder(input: {
     data: { providerRefundId: gateway.id, status: settled ? "PROCESSED" : "PENDING" },
   });
 
-  /* REFUNDED means the money is back — all of it. A partial refund that
-     settles instantly leaves the order at REFUND_PENDING, which is
-     correct: some of what the customer paid is still held. */
-  const fullyRefunded = alreadyRefunded + amountPaise >= payment.amountPaise;
-  if (settled && fullyRefunded) {
+  /* REFUNDED means the money is back — all of it. Asked of the refunds
+     that have actually settled rather than of this one plus whatever was
+     outstanding: an earlier partial still PENDING at the bank is money
+     the customer has not had, and counting it here would close the order
+     while they are still waiting. A partial that settles instantly
+     leaves the order alone entirely, which is correct — some of what
+     they paid is still held, and the order is still being fulfilled. */
+  if (settled && (await isPaymentFullyRefunded(payment.id))) {
     await db.order.updateMany({
       where: { id: order.id, status: "REFUND_PENDING" },
       data: { status: "REFUNDED" },
@@ -1345,7 +1431,12 @@ export async function settleProcessedRefund(input: {
   providerRefundId: string;
   providerPaymentId: string;
 }): Promise<SettlementOutcome> {
-  const SELECT = { id: true, status: true, payment: { select: { orderId: true } } } as const;
+  const SELECT = {
+    id: true,
+    status: true,
+    paymentId: true,
+    payment: { select: { orderId: true } },
+  } as const;
 
   /* The ordinary path, and the only unambiguous one: this delivery names
      a refund whose id we recorded when we created it. */
@@ -1383,6 +1474,17 @@ export async function settleProcessedRefund(input: {
     data: { status: "PROCESSED", providerRefundId: input.providerRefundId },
   });
   if (claimed.count === 0) return "duplicate";
+
+  /* REFUNDED is a claim about all of the money; this delivery is about
+     one refund. Without this check a Rs 500 refund settling on a
+     Rs 5,200 order marked the whole order REFUNDED — which told the
+     customer they had been made whole, dropped the order out of
+     `moneyMoved` so a project stopped counting the Rs 4,700 it is still
+     out, and left the order in a terminal state from which the rest
+     could never be refunded. `refundOrder` already got this right on its
+     own instant-settle path; this is the asynchronous path, which is the
+     ordinary one for netbanking, and it did not. */
+  if (!(await isPaymentFullyRefunded(refund.paymentId))) return "partial_refund";
 
   /* Guarded on REFUND_PENDING rather than set outright: an order a
      person has already moved on is not dragged backwards by a late

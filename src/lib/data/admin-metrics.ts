@@ -250,7 +250,9 @@ export interface DashboardMetrics {
       started last night and paid this morning is this morning's revenue.
       Counts every status except `REFUNDED` — see `isRevenueStatus` — so
       this does not shrink as staff confirm, pack or dispatch a paid
-      order. */
+      order. Net of refunds that have actually settled, which is how a
+      part-refunded order is accounted for: it keeps its status and its
+      place in this sum, less what went back. */
   revenueTodayPaise: number;
   ordersAwaitingAction: number;
   /** Orders that promised the customer a phone call and have had none of
@@ -276,6 +278,7 @@ export async function getDashboardMetrics(now: Date = new Date()): Promise<Dashb
   const [
     ordersToday,
     revenueAgg,
+    refundedAgg,
     ordersAwaitingAction,
     ordersAwaitingCallback,
     totalCustomers,
@@ -289,6 +292,25 @@ export async function getDashboardMetrics(now: Date = new Date()): Promise<Dashb
          excluded and why a bare `status: "PAID"` here was the bug. */
       where: { paidAt: { gte: start, lt: end }, status: { not: "REFUNDED" } },
       _sum: { totalPaise: true },
+    }),
+    /* What has gone back on the orders counted above. Netting this off
+       is what keeps the figure honest now that a refund can be for part
+       of an order: a fully refunded order is REFUNDED and so is already
+       out of the sum above, but a Rs 500 refund on a Rs 5,200 order
+       leaves the order exactly where it was, and without this the
+       dashboard would still report the whole Rs 5,200 as received.
+
+       PROCESSED only, and the same window and the same order filter, so
+       the two cannot disagree: every order counted has subtracted from
+       it exactly what has actually been returned on it. A refund agreed
+       but not yet settled is money still held — the reasoning
+       `isRevenueStatus` gives for REFUND_PENDING counting at all. */
+    db.refund.aggregate({
+      where: {
+        status: "PROCESSED",
+        payment: { order: { paidAt: { gte: start, lt: end }, status: { not: "REFUNDED" } } },
+      },
+      _sum: { amountPaise: true },
     }),
     db.order.count({ where: { status: { in: [...AWAITING_ACTION_STATUSES] } } }),
     db.order.count({ where: callbackOrdersWhere() }),
@@ -319,7 +341,7 @@ export async function getDashboardMetrics(now: Date = new Date()): Promise<Dashb
 
   return {
     ordersToday,
-    revenueTodayPaise: revenueAgg._sum.totalPaise ?? 0,
+    revenueTodayPaise: (revenueAgg._sum.totalPaise ?? 0) - (refundedAgg._sum.amountPaise ?? 0),
     ordersAwaitingAction,
     ordersAwaitingCallback,
     lowStock: { tracked: inventoryRows.length, low: lowCount },
@@ -361,7 +383,11 @@ export interface MonthlyOrderStats {
       called `paidOnlinePaise` before offline settlement existed, but the
       query it ran was never online-only; every order with `paidAt` set
       counts, regardless of which `Payment.provider` put it there. See
-      `paidOnlinePaise`/`receivedOfflinePaise` below for the split. */
+      `paidOnlinePaise`/`receivedOfflinePaise` below for the split.
+
+      Net of refunds that have settled, so that a part-refunded order —
+      which keeps its status and so stays in this sum — is counted at
+      what the business actually kept. */
   totalReceivedPaise: number;
   /** The same money as `totalReceivedPaise`, restricted to orders whose
       `CAPTURED` payment has `provider: RAZORPAY` — summed from `Payment`,
@@ -373,7 +399,9 @@ export interface MonthlyOrderStats {
       payments sum to the same total its orders do. Grouping on `Payment`
       rather than `Order` is what lets this and `receivedOfflinePaise`
       partition `totalReceivedPaise` without a second query re-deriving
-      "which orders were online" by hand. */
+      "which orders were online" by hand. Carries the whole of the refund
+      deduction, since a gateway refund is the only kind this table can
+      hold. */
   paidOnlinePaise: number;
   /** `paidOnlinePaise`'s mirror for `provider: OFFLINE` — money the owner
       took by phone and staff recorded through `recordOfflinePayment`. */
@@ -402,8 +430,15 @@ async function computeMonthStats(year: number, month: number): Promise<MonthlyOr
      received this month" cannot drift between the three. */
   const receivedInMonth = { paidAt: { gte: start, lt: end }, status: { not: "REFUNDED" as const } };
 
-  const [ordersPlaced, valueAgg, deliveredCount, totalReceivedAgg, paidOnlineAgg, receivedOfflineAgg] =
-    await Promise.all([
+  const [
+    ordersPlaced,
+    valueAgg,
+    deliveredCount,
+    totalReceivedAgg,
+    paidOnlineAgg,
+    receivedOfflineAgg,
+    refundedAgg,
+  ] = await Promise.all([
       db.order.count({ where: { ...createdInMonth, NOT: abandonedCheckoutWhere() } }),
       db.order.aggregate({
         where: {
@@ -427,8 +462,20 @@ async function computeMonthStats(year: number, month: number): Promise<MonthlyOr
         where: { status: "CAPTURED", provider: "OFFLINE", order: receivedInMonth },
         _sum: { amountPaise: true },
       }),
+      /* Netted off both "Total received" and the online half of the
+         split — see the same aggregate in `getDashboardMetrics` for why
+         a part refund needs it. Only the online half, because
+         `refundOrder` refuses a payment with no gateway id and so cannot
+         produce a `Refund` row against an OFFLINE one; cash handed back
+         over a counter is not in this table, and the split must keep
+         adding up to the total. */
+      db.refund.aggregate({
+        where: { status: "PROCESSED", payment: { provider: "RAZORPAY", order: receivedInMonth } },
+        _sum: { amountPaise: true },
+      }),
     ]);
 
+  const refundedPaise = refundedAgg._sum.amountPaise ?? 0;
   const orderValuePaise = valueAgg._sum.totalPaise ?? 0;
   const averageDenominator = valueAgg._count._all;
 
@@ -437,8 +484,8 @@ async function computeMonthStats(year: number, month: number): Promise<MonthlyOr
     month,
     ordersPlaced,
     orderValuePaise,
-    totalReceivedPaise: totalReceivedAgg._sum.totalPaise ?? 0,
-    paidOnlinePaise: paidOnlineAgg._sum.amountPaise ?? 0,
+    totalReceivedPaise: (totalReceivedAgg._sum.totalPaise ?? 0) - refundedPaise,
+    paidOnlinePaise: (paidOnlineAgg._sum.amountPaise ?? 0) - refundedPaise,
     receivedOfflinePaise: receivedOfflineAgg._sum.amountPaise ?? 0,
     deliveredCount,
     averageOrderPaise: averageDenominator > 0 ? Math.round(orderValuePaise / averageDenominator) : null,

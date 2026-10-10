@@ -5,7 +5,7 @@ import { describe, it } from "node:test";
 process.env.DATABASE_URL ??= "postgresql://localhost:5432/quoin_test";
 process.env.AUTH_SECRET ??= "test-secret-at-least-32-characters-long!!";
 
-const { canTransition } = await import("@/lib/data/orders");
+const { canTransition, refundsCoverCapture } = await import("@/lib/data/orders");
 
 const ALL_STATUSES = [
   "PENDING_PAYMENT", "PAID", "FAILED", "CONFIRMED", "PROCESSING", "PACKED",
@@ -208,5 +208,57 @@ describe("the money states are not settable from the admin dropdown", () => {
        real thing to record. It stays settable. */
     assert.equal(isAdminTransitionAllowed("PAID", "REFUND_PENDING"), true);
     assert.equal(isAdminTransitionAllowed("DELIVERED", "REFUND_PENDING"), true);
+  });
+});
+
+/**
+ * When an order may say the customer has their money back.
+ *
+ * The bug this guards: `settleProcessedRefund` marked the whole order
+ * REFUNDED on any `refund.processed` delivery. A ₹500 goodwill refund on
+ * a ₹5,200 order therefore told the customer they had been made whole,
+ * took the order out of `moneyMoved` so a project stopped counting the
+ * ₹4,700 it is still out, and put the order in a terminal state from
+ * which the remaining ₹4,700 could never be refunded at all.
+ *
+ * `refundOrder` already had this right on its instant-settle path. The
+ * webhook path — the ordinary one, because a netbanking refund always
+ * comes back `pending` first — did not.
+ */
+describe("a part refund is not a refund", () => {
+  it("does not count a partial as covering the capture", () => {
+    assert.equal(refundsCoverCapture(520_000, [50_000]), false);
+  });
+
+  it("counts a refund of the whole amount", () => {
+    assert.equal(refundsCoverCapture(520_000, [520_000]), true);
+  });
+
+  it("counts two partials that between them give everything back", () => {
+    /* The case that has to work for a partial refund to be usable at
+       all: a damaged line refunded now and the rest refunded later. */
+    assert.equal(refundsCoverCapture(520_000, [50_000, 470_000]), true);
+    assert.equal(refundsCoverCapture(520_000, [50_000, 460_000]), false);
+  });
+
+  it("treats an over-refund as covered rather than hanging the order", () => {
+    assert.equal(refundsCoverCapture(520_000, [520_001]), true);
+  });
+
+  it("is not satisfied by no refunds at all", () => {
+    /* Asked of every settling refund, so answering `true` here would
+       mark an order REFUNDED on the strength of nothing. */
+    assert.equal(refundsCoverCapture(0, []), false);
+    assert.equal(refundsCoverCapture(520_000, []), false);
+  });
+
+  it("leaves a part-refunded order able to finish being delivered", () => {
+    /* Why a partial must not move the order to REFUND_PENDING: that
+       status has exactly one way out, and it is not delivery. */
+    assert.deepEqual(onwardFrom("REFUND_PENDING"), ["REFUNDED"]);
+    assert.equal(canTransition("REFUND_PENDING", "DISPATCHED"), false);
+    /* And the one way out is barred for a second refund, which is how a
+       part-refunded order would lose access to the rest of its money. */
+    assert.equal(canTransition("REFUND_PENDING", "REFUND_PENDING"), false);
   });
 });
