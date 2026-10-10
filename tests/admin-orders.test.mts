@@ -73,6 +73,11 @@ describe("admin transition boundary — PAID is refused regardless of the machin
   });
 });
 
+/* REFUND_PENDING -> REFUNDED was listed here as an allowed admin move.
+   It is a legal edge in the machine, but not one a person may take by
+   hand: REFUNDED claims the money is back, and only `refundOrder` or the
+   `refund.processed` webhook can make that true. See
+   RefundedNotAdminSettableError and tests/refunds.test.mts. */
 describe("admin transition boundary — everything else still goes through canTransition", () => {
   it("allows a representative set of legal, non-PAID moves", () => {
     const legal: [OrderStatus, OrderStatus][] = [
@@ -90,7 +95,6 @@ describe("admin transition boundary — everything else still goes through canTr
       ["PACKED", "DISPATCHED"],
       ["DISPATCHED", "OUT_FOR_DELIVERY"],
       ["OUT_FOR_DELIVERY", "DELIVERED"],
-      ["REFUND_PENDING", "REFUNDED"],
     ];
 
     for (const [from, to] of legal) {

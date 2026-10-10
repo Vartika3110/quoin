@@ -445,6 +445,28 @@ export class PaidNotAdminSettableError extends Error {
 
 
 /**
+ * Refused because `REFUNDED` means the money is back, and this endpoint
+ * cannot put it back.
+ *
+ * The mirror of `PaidNotAdminSettableError`, and refused for the same
+ * reason: both states are claims about money, and a dropdown is not
+ * evidence. Set from here, `REFUNDED` would say a customer has been
+ * repaid while no `Refund` row exists, nothing reached Razorpay and
+ * nothing can be reconciled against the dashboard.
+ *
+ * The way to actually refund is `POST /api/v1/admin/orders/{reference}/
+ * refund`, which calls the gateway and records what it did.
+ */
+export class RefundedNotAdminSettableError extends Error {
+  constructor() {
+    super(
+      'REFUNDED cannot be set here. Use "Refund" on the order page — it returns the money through Razorpay and records it. Marking an order refunded without that would say the customer has been repaid when they have not.',
+    );
+    this.name = "RefundedNotAdminSettableError";
+  }
+}
+
+/**
  * Refused a cancellation because money has already been captured.
  *
  * The transition table blocks PAID, CONFIRMED and PROCESSING from
@@ -488,15 +510,37 @@ const ALL_ORDER_STATUSES = Object.values(OrderStatus) as OrderStatus[];
  * the abstract — may move an order from `from` to `to` at all.
  *
  * `canTransition`'s table has no concept of *who* is asking, only whether
- * the two states connect; this narrows it by the one rule that is about
- * the asker, not the machine — see `PaidNotAdminSettableError`. Pure and
- * exported so the status form on the order detail page can compute which
- * buttons to show from the same rule `transitionOrderStatus` enforces,
- * rather than a second, hand-maintained list of "the ones that aren't
- * PAID" drifting from it.
+ * the two states connect; this narrows it by the rules that are about
+ * the asker, not the machine. Pure and exported so the status form on
+ * the order detail page computes its buttons from the same rule
+ * `transitionOrderStatus` enforces, rather than a second, hand-
+ * maintained list drifting from it.
+ *
+ * **Two states cannot be set here, and for one reason between them: both
+ * assert that money moved, and a dropdown is not evidence that it did.**
+ *
+ * `PAID` has been refused since this endpoint was written — see
+ * `PaidNotAdminSettableError`. It is reachable exactly two ways, each of
+ * which leaves proof: a signature-verified `payment.captured`, or
+ * `recordOfflinePayment` writing a CAPTURED row with an actor, a method
+ * and a reference.
+ *
+ * `REFUNDED` is refused for the identical reason and was not, which was
+ * an oversight. Marked from the dropdown it says a customer has their
+ * money back while no `Refund` row exists, nothing was sent to Razorpay
+ * and nothing can be reconciled against the dashboard — the same defect
+ * as cancelling a paid order, one state along, and arguably worse
+ * because `REFUNDED` reads as settled rather than as something
+ * outstanding. It is now reachable only through `refundOrder`, which
+ * calls the gateway, or `settleProcessedRefund`, which acts on
+ * `refund.processed`.
+ *
+ * `REFUND_PENDING` stays settable, deliberately. It means "a refund has
+ * been agreed and not yet sent", which is a human decision with no money
+ * attached and a real thing for staff to record.
  */
 export function isAdminTransitionAllowed(from: OrderStatus, to: OrderStatus): boolean {
-  return to !== "PAID" && canTransition(from, to);
+  return to !== "PAID" && to !== "REFUNDED" && canTransition(from, to);
 }
 
 /** Every status this endpoint could move `from` into right now. */
@@ -537,6 +581,9 @@ export async function transitionOrderStatus(
 ): Promise<AdminOrderDetail> {
   if (input.toStatus === "PAID") {
     throw new PaidNotAdminSettableError();
+  }
+  if (input.toStatus === "REFUNDED") {
+    throw new RefundedNotAdminSettableError();
   }
 
   const existing = await db.order.findUnique({

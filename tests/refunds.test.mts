@@ -169,3 +169,44 @@ describe("quantity snapping survives a malformed grid", () => {
     assert.equal(normalizeQty({ minQty: 3, stepQty: 1 }, Number.POSITIVE_INFINITY), 3);
   });
 });
+
+const { isAdminTransitionAllowed, legalNextStatuses } = await import("@/lib/data/admin-orders");
+
+/**
+ * What staff may set by hand.
+ *
+ * Two states are claims about money rather than about fulfilment, and a
+ * dropdown is not evidence that money moved. `PAID` has been refused
+ * since this endpoint was written; `REFUNDED` was not, which was an
+ * oversight — marked from the dropdown it says a customer has their
+ * money back while no `Refund` row exists, nothing reached Razorpay and
+ * nothing can be reconciled against the dashboard.
+ */
+describe("the money states are not settable from the admin dropdown", () => {
+  it("refuses PAID from anywhere", () => {
+    assert.equal(isAdminTransitionAllowed("PENDING_PAYMENT", "PAID"), false);
+  });
+
+  it("refuses REFUNDED from anywhere, including where the machine allows it", () => {
+    /* The lifecycle itself permits REFUND_PENDING -> REFUNDED; that edge
+       is how `refundOrder` and the `refund.processed` webhook finish a
+       refund. What must not happen is a person taking it by hand. */
+    assert.equal(canTransition("REFUND_PENDING", "REFUNDED"), true);
+    assert.equal(isAdminTransitionAllowed("REFUND_PENDING", "REFUNDED"), false);
+  });
+
+  it("never offers either as a button", () => {
+    for (const from of ["PENDING_PAYMENT", "PAID", "CONFIRMED", "REFUND_PENDING", "DELIVERED"] as const) {
+      const offered = legalNextStatuses(from);
+      assert.ok(!offered.includes("PAID"), `${from} must not offer PAID`);
+      assert.ok(!offered.includes("REFUNDED"), `${from} must not offer REFUNDED`);
+    }
+  });
+
+  it("still lets staff record that a refund has been agreed", () => {
+    /* REFUND_PENDING is a human decision with no money attached, and a
+       real thing to record. It stays settable. */
+    assert.equal(isAdminTransitionAllowed("PAID", "REFUND_PENDING"), true);
+    assert.equal(isAdminTransitionAllowed("DELIVERED", "REFUND_PENDING"), true);
+  });
+});

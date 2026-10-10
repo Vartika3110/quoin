@@ -4,7 +4,9 @@ import { IllegalOrderTransitionError } from "@/lib/data/orders";
 import {
   OrderNotFoundError,
   OrderStatusRaceError,
+  CapturedPaymentBlocksCancellationError,
   PaidNotAdminSettableError,
+  RefundedNotAdminSettableError,
   transitionOrderStatus,
 } from "@/lib/data/admin-orders";
 import { notifyOrderStatus } from "@/lib/data/order-notifications";
@@ -65,6 +67,12 @@ export const POST = handler(async (request, { params }: Ctx) => {
       throw new ApiError("not_found", "No such order");
     }
     if (error instanceof PaidNotAdminSettableError) {
+      throw new ApiError("conflict", error.message);
+    }
+    if (error instanceof RefundedNotAdminSettableError) {
+      throw new ApiError("conflict", error.message);
+    }
+    if (error instanceof CapturedPaymentBlocksCancellationError) {
       throw new ApiError("conflict", error.message);
     }
     if (error instanceof IllegalOrderTransitionError) {

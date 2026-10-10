@@ -1,8 +1,14 @@
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { orderLinesSchema } from "@/lib/cart/line-schema";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
-import { InvalidPhoneError, deliveryPhoneFor, normalizePhone } from "@/lib/auth/phone";
+import {
+  InvalidPhoneError,
+  deliveryPhoneFor,
+  maskPhone,
+  normalizePhone,
+} from "@/lib/auth/phone";
 import { resolveShipContact } from "@/lib/addresses/format";
 import {
   OrderNotPossibleError,
@@ -210,7 +216,20 @@ export const POST = handler(async (request) => {
         data: { deliveryPhone: shipPhone },
       });
     } catch (error) {
-      console.error("[checkout] failed to save delivery phone", error);
+      /* The error's identity, never the error itself. Prisma echoes the
+         arguments of a failed query back in its message — a validation
+         failure here would print `deliveryPhone: "+9198…"` straight into
+         the log, which is the one thing the comment above says this must
+         not do. The class name and Prisma's own code say which fault it
+         was without saying whose number it was about. */
+      console.error("[checkout] failed to save delivery phone", {
+        phone: maskPhone(shipPhone),
+        error: error instanceof Error ? error.name : "unknown",
+        code:
+          error instanceof Prisma.PrismaClientKnownRequestError
+            ? error.code
+            : undefined,
+      });
     }
   }
 
