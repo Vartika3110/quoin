@@ -332,6 +332,16 @@ export async function POST(request: Request) {
           providerRefundId: refundEntity.id,
           providerPaymentId: refundEntity.payment_id ?? providerPaymentId,
         });
+        if (outcome === "ambiguous") {
+          /* Loud, and answered 200. Retrying delivers the same
+             unresolvable set, so the retry is useless; what this needs
+             is a person, and the `PaymentWebhook` row written below is
+             the evidence they will want. */
+          console.error("[payments] refund delivery could not be tied to one refund row", {
+            providerRefundId: refundEntity.id,
+            providerPaymentId: refundEntity.payment_id ?? providerPaymentId,
+          });
+        }
         break;
       }
 

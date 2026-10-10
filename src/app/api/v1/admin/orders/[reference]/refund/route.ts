@@ -3,8 +3,9 @@ import { ApiError, handler, ok, parseBody, requireStaff } from "@/lib/http";
 import {
   NothingToRefundError,
   OrderNotFoundError,
+  OrderNotRefundableError,
   OrderNotPossibleError,
-  RefundAlreadyExistsError,
+  RefundExceedsCaptureError,
   refundOrder,
 } from "@/lib/data/orders";
 import { RazorpayError } from "@/lib/payments/razorpay";
@@ -12,7 +13,7 @@ import { RazorpayError } from "@/lib/payments/razorpay";
 type Ctx = { params: Promise<{ reference: string }> };
 
 const Body = z.object({
-  /** Omit to refund everything that was captured. */
+  /** Omit to refund whatever is still outstanding on the payment. */
   amountPaise: z.number().int().positive().max(100_000_000).optional(),
   reason: z.string().trim().max(400).optional(),
 });
@@ -59,11 +60,11 @@ export const POST = handler(async (request, { params }: Ctx) => {
         "There is no captured payment on this order to refund.",
       );
     }
-    if (error instanceof RefundAlreadyExistsError) {
-      throw new ApiError(
-        "conflict",
-        "A refund has already been started for this order.",
-      );
+    if (error instanceof OrderNotRefundableError) {
+      throw new ApiError("conflict", error.message);
+    }
+    if (error instanceof RefundExceedsCaptureError) {
+      throw new ApiError("conflict", error.message);
     }
     if (error instanceof OrderNotPossibleError) {
       throw new ApiError("bad_request", error.message);

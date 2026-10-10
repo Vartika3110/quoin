@@ -601,7 +601,16 @@ export type SettlementOutcome =
   /** No payment row matches — not ours, or a stale test event. */
   | "unknown"
   /** Captured amount did not match the order total. Nothing was changed. */
-  | "amount_mismatch";
+  | "amount_mismatch"
+  /**
+   * A refund delivery that could not be tied to one row.
+   *
+   * Only reachable for a refund whose creating call timed out and so
+   * never recorded its gateway id, on a payment carrying more than one
+   * such row. Nothing is changed: picking one arbitrarily would mark the
+   * wrong refund processed. Needs a person and the `PaymentWebhook` row.
+   */
+  | "ambiguous";
 
 /**
  * Marks a captured payment paid.
@@ -1107,11 +1116,53 @@ export class NothingToRefundError extends Error {
   }
 }
 
-/** A refund for this order has already been started or completed. */
-export class RefundAlreadyExistsError extends Error {
-  constructor(reference: string) {
-    super(`Order ${reference} already has a refund against it.`);
-    this.name = "RefundAlreadyExistsError";
+/**
+ * The order is in a state that cannot hold a refund.
+ *
+ * Thrown before anything is written or sent, which is the entire point.
+ * `refundOrder` used to wrap its status change in a `canTransition`
+ * check and carry on when it failed — so for an order the lifecycle
+ * cannot move to REFUND_PENDING, it skipped the update, called the
+ * gateway, and returned success. The customer's money went back and the
+ * order still read CANCELLED, or PENDING_PAYMENT, with nothing but a
+ * `Refund` row to say otherwise.
+ *
+ * That is the same defect the cancellation guard above exists to stop,
+ * one layer along: money moving with nothing recording that it moved.
+ *
+ * It bites hardest on CANCELLED, which is where an order lands if it was
+ * cancelled while holding captured money — the exact state QO-P8498W is
+ * in. Repairing that one is a deliberate, documented one-off, not
+ * something this function should do by accident.
+ */
+export class OrderNotRefundableError extends Error {
+  constructor(reference: string, status: OrderStatus) {
+    super(
+      `Order ${reference} is ${status} and cannot be refunded from there. Only an order that has been paid for can be.`,
+    );
+    this.name = "OrderNotRefundableError";
+  }
+}
+
+/**
+ * The order has already had back as much as was taken.
+ *
+ * Named for what it means rather than "a refund exists", because a
+ * refund existing is not by itself a reason to refuse: a damaged single
+ * line out of six is refunded on its own, and the remaining five may be
+ * refunded later. What cannot happen is giving back more than was
+ * captured.
+ *
+ * The first version of this did refuse on any existing refund, which
+ * made a partial refund a trap — refund Rs 500 of a Rs 5,200 order and
+ * the other Rs 4,700 could never be returned through this route at all.
+ */
+export class RefundExceedsCaptureError extends Error {
+  constructor(reference: string, alreadyPaise: number, capturedPaise: number) {
+    super(
+      `Order ${reference} has already been refunded ${alreadyPaise} of ${capturedPaise} paise. A further refund cannot take the total above what was captured.`,
+    );
+    this.name = "RefundExceedsCaptureError";
   }
 }
 
@@ -1155,7 +1206,12 @@ export async function refundOrder(input: {
       totalPaise: true,
       payments: {
         where: { status: "CAPTURED" },
-        select: { id: true, providerPaymentId: true, amountPaise: true, refunds: { select: { id: true } } },
+        select: {
+          id: true,
+          providerPaymentId: true,
+          amountPaise: true,
+          refunds: { select: { id: true, amountPaise: true, status: true } },
+        },
       },
     },
   });
@@ -1166,14 +1222,32 @@ export async function refundOrder(input: {
   if (!payment?.providerPaymentId) {
     throw new NothingToRefundError(input.reference);
   }
-  if (payment.refunds.length > 0) {
-    throw new RefundAlreadyExistsError(input.reference);
+  /* What is left to give back, not whether anything has been. Refunds
+     that failed outright do not count against the total; one still
+     PENDING does, because it may yet succeed and double-counting it is
+     how a customer is refunded twice. */
+  const alreadyRefunded = payment.refunds
+    .filter((r) => r.status !== "FAILED")
+    .reduce((sum, r) => sum + r.amountPaise, 0);
+  const refundable = payment.amountPaise - alreadyRefunded;
+
+  /* Before the row and before the gateway. An order that cannot reach
+     REFUND_PENDING cannot record having been refunded, and refunding
+     into a state that cannot hold the fact is how money moves with no
+     trace — see `OrderNotRefundableError`. */
+  if (!canTransition(order.status, "REFUND_PENDING")) {
+    throw new OrderNotRefundableError(input.reference, order.status);
   }
 
-  const amountPaise = input.amountPaise ?? payment.amountPaise;
-  if (amountPaise <= 0 || amountPaise > payment.amountPaise) {
-    throw new OrderNotPossibleError(
-      "A refund must be more than nothing and no more than what was captured.",
+  const amountPaise = input.amountPaise ?? refundable;
+  if (amountPaise <= 0) {
+    throw new OrderNotPossibleError("A refund must be more than nothing.");
+  }
+  if (amountPaise > refundable) {
+    throw new RefundExceedsCaptureError(
+      input.reference,
+      alreadyRefunded,
+      payment.amountPaise,
     );
   }
 
@@ -1188,12 +1262,14 @@ export async function refundOrder(input: {
      exists there is nothing to point at; after the gateway call there
      would be a window where money had moved and the order still read
      PAID. */
-  if (canTransition(order.status, "REFUND_PENDING")) {
-    await db.order.updateMany({
-      where: { id: order.id, status: order.status },
-      data: { status: "REFUND_PENDING" },
-    });
-  }
+  /* Unconditional now: the state was checked above, so a `canTransition`
+     wrapper here could only ever hide a failure. Still a guarded
+     `updateMany` rather than an `update`, so a concurrent move by
+     somebody else loses rather than being silently overwritten. */
+  await db.order.updateMany({
+    where: { id: order.id, status: order.status },
+    data: { status: "REFUND_PENDING" },
+  });
 
   let gateway;
   try {
@@ -1228,7 +1304,11 @@ export async function refundOrder(input: {
     data: { providerRefundId: gateway.id, status: settled ? "PROCESSED" : "PENDING" },
   });
 
-  if (settled) {
+  /* REFUNDED means the money is back — all of it. A partial refund that
+     settles instantly leaves the order at REFUND_PENDING, which is
+     correct: some of what the customer paid is still held. */
+  const fullyRefunded = alreadyRefunded + amountPaise >= payment.amountPaise;
+  if (settled && fullyRefunded) {
     await db.order.updateMany({
       where: { id: order.id, status: "REFUND_PENDING" },
       data: { status: "REFUNDED" },
@@ -1265,18 +1345,35 @@ export async function settleProcessedRefund(input: {
   providerRefundId: string;
   providerPaymentId: string;
 }): Promise<SettlementOutcome> {
-  const refund = await db.refund.findFirst({
-    where: {
-      OR: [
-        { providerRefundId: input.providerRefundId },
-        /* A refund whose creating call timed out never got its id
-           written — see `refundOrder`. The webhook is how it is
-           recovered, matched on the payment it belongs to. */
-        { providerRefundId: null, payment: { providerPaymentId: input.providerPaymentId } },
-      ],
-    },
-    select: { id: true, status: true, payment: { select: { orderId: true } } },
+  const SELECT = { id: true, status: true, payment: { select: { orderId: true } } } as const;
+
+  /* The ordinary path, and the only unambiguous one: this delivery names
+     a refund whose id we recorded when we created it. */
+  let refund = await db.refund.findUnique({
+    where: { providerRefundId: input.providerRefundId },
+    select: SELECT,
   });
+
+  if (!refund) {
+    /* Recovery, for a refund whose creating call timed out and so never
+       got its id written — see `refundOrder`. It can only be matched by
+       the payment it belongs to, and that is safe exactly when there is
+       one candidate.
+       
+       With partial refunds allowed, a payment can carry several rows, so
+       "the unidentified refund on this payment" stops being a single
+       thing: two timed-out partials and a settling third would have this
+       pick one of the two arbitrarily, mark it processed, and write the
+       third's gateway id onto it. Two candidates is therefore not a
+       guess to make — it is left alone and reported, which puts it in
+       front of a person with the `PaymentWebhook` row as evidence. */
+    const orphans = await db.refund.findMany({
+      where: { providerRefundId: null, payment: { providerPaymentId: input.providerPaymentId } },
+      select: SELECT,
+    });
+    if (orphans.length === 1) refund = orphans[0];
+    else if (orphans.length > 1) return "ambiguous";
+  }
 
   if (!refund) return "unknown";
   if (refund.status === "PROCESSED") return "duplicate";

@@ -89,3 +89,37 @@ describe("an order that has been paid cannot simply be cancelled", () => {
     }
   });
 });
+
+/**
+ * Which states a refund may be started from.
+ *
+ * `refundOrder` used to wrap its status change in
+ * `if (canTransition(status, "REFUND_PENDING"))` and carry on
+ * regardless — so for any state without that edge it skipped the
+ * update, called Razorpay, and returned success. The money went back
+ * and the order never said so.
+ *
+ * That is the same defect as the one this file's first suite covers,
+ * one layer along: money moving with nothing recording it. It is worse
+ * here, because the four states it affects include CANCELLED, which is
+ * exactly where QO-P8498W sits — the order that prompted all of this.
+ */
+describe("a refund can only start where the order can represent it", () => {
+  const REFUNDABLE = ["PAID", "CONFIRMED", "PROCESSING", "PACKED", "DISPATCHED", "OUT_FOR_DELIVERY", "DELIVERED"] as const;
+  const NOT_REFUNDABLE = ["PENDING_PAYMENT", "FAILED", "CANCELLED", "REFUNDED"] as const;
+
+  it("allows it from every state that has paid for something", () => {
+    for (const from of REFUNDABLE) {
+      assert.equal(canTransition(from, "REFUND_PENDING"), true, `${from} should be refundable`);
+    }
+  });
+
+  it("does not allow it from the states that cannot hold a refund", () => {
+    /* The assertion that matters is not this one — it is that
+       `refundOrder` *refuses* for these rather than refunding anyway.
+       See `OrderNotRefundableError`. */
+    for (const from of NOT_REFUNDABLE) {
+      assert.equal(canTransition(from, "REFUND_PENDING"), false, `${from} should not be refundable`);
+    }
+  });
+});
