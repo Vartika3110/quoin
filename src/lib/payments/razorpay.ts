@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
  * The official `razorpay` npm package is a thin wrapper over three REST
  * calls and pulls its own HTTP stack in with it. This app has four
  * runtime dependencies and hand-rolls MSG91 for the same reason — see
- * `src/lib/auth/sender.ts`. Two endpoints and one HMAC do not justify a
+ * `src/lib/auth/whatsapp.ts`. Two endpoints and one HMAC do not justify a
  * fifth.
  *
  * Razorpay was picked over Stripe because Stripe cannot settle domestic

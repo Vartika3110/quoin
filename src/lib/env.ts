@@ -23,22 +23,21 @@ const schema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
 
-  /**
-   * SMS delivery. Absent in development, where codes are written to the
-   * server log instead — see `sender.ts`. Required in production, and
-   * checked below rather than here so local setup stays frictionless.
-   */
-  MSG91_AUTH_KEY: z.string().optional(),
-  MSG91_TEMPLATE_ID: z.string().optional(),
-  MSG91_SENDER_ID: z.string().optional(),
+  /* There were three `MSG91_*` values here, for SMS delivery. Codes go
+     over WhatsApp now — `SUPABASE_SMS_HOOK_SECRET` and the three
+     `WHATSAPP_*` below — because an Indian transactional SMS needs a
+     DLT-registered header and template and WhatsApp needs neither. The
+     MSG91 sender is gone with them; git history has it if an SMS
+     fallback is ever wanted. */
 
   /**
-   * Razorpay. All three optional, and — unlike MSG91 — there is
-   * deliberately no production guard demanding them.
+   * Razorpay. All three optional, and there is deliberately no
+   * production guard demanding them.
    *
-   * The MSG91 guard exists because its fallback does something unsafe:
-   * printing login codes to the server log. Payments have no such
-   * fallback. With these unset the checkout simply reports that payment
+   * There used to be one for MSG91, because its fallback did something
+   * unsafe: printing login codes to the server log. It was removed, for
+   * the reasons recorded at the bottom of this file. Payments never had
+   * such a fallback. With these unset the checkout simply reports that payment
    * is unavailable and takes no money, which is a correct state, not a
    * dangerous one — and it is the state a deploy sits in for the days or
    * weeks that gateway KYC takes. Refusing to boot over it would take a
@@ -221,14 +220,6 @@ const schema = z.object({
    */
   SUPABASE_ANON_KEY: z.string().optional(),
 
-  /* There was a `SUPABASE_SMS_HOOK_SECRET` here, authenticating a Send
-     SMS Hook that handed delivery back to this app so MSG91 could do the
-     sending. Delivery now goes through a native Supabase SMS provider
-     configured in the dashboard, so the hook, its route and this secret
-     are gone — an unused public endpoint that sends SMS on request is
-     attack surface, not a spare tyre. It is in git history if MSG91 ever
-     becomes the cheaper route again. */
-
   /**
    * Cloudflare Stream — where Studio's clips are played from.
    *
@@ -323,9 +314,6 @@ function load(): Env {
         DATABASE_URL: process.env.DATABASE_URL ?? "",
         AUTH_SECRET: process.env.AUTH_SECRET ?? "",
         NODE_ENV: "production",
-        MSG91_AUTH_KEY: process.env.MSG91_AUTH_KEY,
-        MSG91_TEMPLATE_ID: process.env.MSG91_TEMPLATE_ID,
-        MSG91_SENDER_ID: process.env.MSG91_SENDER_ID,
         RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
         RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
         RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
@@ -389,10 +377,13 @@ function load(): Env {
      the app; checkout reports that payment is unavailable and takes no
      money, which is a correct state rather than a dangerous one. SMS is
      the same shape, so it gets the same treatment: the app boots, the
-     catalogue serves, and `isOtpDeliveryAvailable()` in
-     `src/lib/auth/sender.ts` makes sign-in report itself unavailable at
-     the point of use. `getOtpSender()` refuses outright to return the
-     console sender in production, so nothing can leak a code either way. */
+     catalogue serves, and `isPhoneSignInAvailable()`
+     (`src/lib/auth/supabase.ts`) makes sign-in report itself unavailable
+     at the point of use. `getWhatsAppSender()` refuses outright to
+     return the console sender in production, so nothing can leak a code
+     either way. The same shape now applies to WhatsApp, which replaced
+     MSG91 and is checked the same way: `isWhatsAppOtpConfigured()` wants
+     all three of its variables, not one. */
 
   return env;
 }

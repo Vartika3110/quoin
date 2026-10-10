@@ -52,8 +52,8 @@ export async function POST(request: Request) {
   /* Refuses rather than sending unauthenticated. This endpoint texts an
      arbitrary number on request; with no secret configured there is
      nothing separating Supabase from anyone who guessed the URL, and
-     "send anyway" would be an open SMS relay billed to the MSG91
-     account. */
+     "send anyway" would be an open relay for messaging strangers, billed
+     to the WhatsApp account. */
   if (!secret) {
     console.error("[auth] OTP hook called but SUPABASE_SMS_HOOK_SECRET is unset");
     return NextResponse.json(
@@ -68,7 +68,8 @@ export async function POST(request: Request) {
      differently depending on configuration. An unauthenticated caller
      probing this endpoint should learn one thing — "no" — and not be
      able to map which integrations are live by reading which 500 comes
-     back. The MSG91 check moved below this for that reason. */
+     back. The delivery-configured check below sits there for that
+     reason. */
   try {
     verifySmsHookSignature({ secret, rawBody, headers: request.headers });
   } catch (error) {

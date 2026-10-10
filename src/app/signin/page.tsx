@@ -56,9 +56,9 @@ export default async function SignInPage({
   const smsEnabled = isPhoneSignInAvailable();
 
   /* Truthful for whichever methods are actually live — never the fixed
-     "one number, one code" line when SMS is the one thing not working,
-     which is exactly the state this deploy sits in until MSG91's DLT
-     template clears. */
+     "one number, one code" line when codes are the one thing not
+     working, which is exactly the state this deploy sits in until Meta
+     approves the WhatsApp template. */
   const subtitle =
     googleEnabled && smsEnabled
       ? "Continue with Google, or use one number and one code. Quoin creates the account the first time you verify."

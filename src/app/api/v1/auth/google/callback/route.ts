@@ -83,8 +83,9 @@ export async function GET(request: Request) {
           grant_type: "authorization_code",
           code_verifier: savedState.verifier,
         }),
-        /* Same timeout as `sender.ts`'s MSG91 call: without one a hung
-           gateway holds this request open until the platform kills it. */
+        /* Same timeout as the WhatsApp send in `auth/whatsapp.ts`:
+           without one a hung gateway holds this request open until the
+           platform kills it. */
         signal: AbortSignal.timeout(10_000),
       });
       if (!tokenRes.ok) {

@@ -130,8 +130,24 @@ export async function GET(request: Request) {
       RAZORPAY_KEY_ID: describe("RAZORPAY_KEY_ID"),
       RAZORPAY_KEY_SECRET: describe("RAZORPAY_KEY_SECRET"),
       RAZORPAY_WEBHOOK_SECRET: describe("RAZORPAY_WEBHOOK_SECRET"),
-      MSG91_AUTH_KEY: describe("MSG91_AUTH_KEY"),
-      MSG91_TEMPLATE_ID: describe("MSG91_TEMPLATE_ID"),
+      /* Phone sign-in, which is five variables across two integrations
+         and so the easiest thing in this deploy to half-configure.
+         Supabase Auth generates and checks the code; the Send SMS Hook
+         secret is what lets Supabase call this app to deliver it; the
+         three `WHATSAPP_*` are what carry it to the handset. Any one of
+         them missing is a customer staring at a code box.
+
+         These replaced `MSG91_AUTH_KEY`/`MSG91_TEMPLATE_ID`, which this
+         route reported for weeks after MSG91 stopped being the delivery
+         path — a health check asking for credentials nobody needs, while
+         silent about the ones that had taken their place. Reporting the
+         wrong variables is worse than reporting none: it invites
+         somebody to go and register for DLT to satisfy it. */
+      SUPABASE_ANON_KEY: describe("SUPABASE_ANON_KEY"),
+      SUPABASE_SMS_HOOK_SECRET: describe("SUPABASE_SMS_HOOK_SECRET"),
+      WHATSAPP_PHONE_NUMBER_ID: describe("WHATSAPP_PHONE_NUMBER_ID"),
+      WHATSAPP_ACCESS_TOKEN: describe("WHATSAPP_ACCESS_TOKEN"),
+      WHATSAPP_OTP_TEMPLATE: describe("WHATSAPP_OTP_TEMPLATE"),
       GOOGLE_CLIENT_ID: describe("GOOGLE_CLIENT_ID"),
       GOOGLE_CLIENT_SECRET: describe("GOOGLE_CLIENT_SECRET"),
       OPENAI_API_KEY: describe("OPENAI_API_KEY"),

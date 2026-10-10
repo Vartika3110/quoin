@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ApiError, handler, ok, parseBody } from "@/lib/http";
 import { InvalidPhoneError, maskPhone, normalizePhone } from "@/lib/auth/phone";
 import {
-  isSupabaseAuthConfigured,
+  isPhoneSignInAvailable,
   supabaseRouteClient,
 } from "@/lib/auth/supabase";
 import { OTP_RESEND_COOLDOWN_MS } from "@/lib/auth/otp";
@@ -30,10 +30,20 @@ const Body = z.object({
  * for.
  */
 export const POST = handler(async (request) => {
-  /* Checked before anything else, exactly as the MSG91 version was: an
-     unconfigured deploy would otherwise leave the customer staring at a
-     code box waiting for an SMS nothing ever tried to send. */
-  if (!isSupabaseAuthConfigured()) {
+  /* Checked before anything else: an unconfigured deploy would
+     otherwise leave the customer staring at a code box waiting for a
+     message nothing ever tried to send.
+
+     `isPhoneSignInAvailable` and not `isSupabaseAuthConfigured`, because
+     generating the code and delivering it are now two different
+     integrations. Supabase can be configured while WhatsApp is not, and
+     in that state Supabase accepts the request, calls the Send SMS Hook,
+     and the hook refuses for want of a template — a round trip that
+     spends one of the customer's rate-limited attempts to arrive at the
+     answer this line already has. It is also the same function the
+     sign-in and checkout screens use to decide whether to offer phone
+     sign-in at all, so what the UI hides is exactly what this refuses. */
+  if (!isPhoneSignInAvailable()) {
     throw new ApiError(
       "conflict",
       "Sign-in by SMS is not available yet. Please try again later.",

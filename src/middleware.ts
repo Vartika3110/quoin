@@ -33,7 +33,7 @@ import { createServerClient } from "@supabase/ssr";
 /**
  * Hosts the browser genuinely has to reach.
  *
- * Everything else this app talks to — OpenAI, MSG91, Google's token
+ * Everything else this app talks to — OpenAI, WhatsApp, Google's token
  * endpoint, the Cloudflare API — is called from the server and must not
  * appear here. A `connect-src` entry is permission for *page* JavaScript
  * to reach a host, and listing a server-side API would hand that

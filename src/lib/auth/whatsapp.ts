@@ -141,9 +141,9 @@ class CloudApiSender implements WhatsAppSender {
  *
  * `getWhatsAppSender()` refuses to return this in production, so it
  * cannot become the active sender on a deployed instance — the same
- * guard, for the same reason, that `src/lib/auth/sender.ts` carried for
- * MSG91: a login code in a log anyone with dashboard access can read is
- * account takeover.
+ * guard, for the same reason, that the deleted `auth/sender.ts` carried
+ * for MSG91: a login code in a log anyone with dashboard access can read
+ * is account takeover.
  */
 class ConsoleSender implements WhatsAppSender {
   async send(phone: string, code: string): Promise<void> {

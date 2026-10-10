@@ -8,7 +8,7 @@ import { SupabaseStorageProvider } from "@/lib/storage/supabase";
  *
  * `StoredFile` (prisma/schema.prisma) is the index; this module is where
  * bytes actually go. Kept behind an interface — mirroring
- * `src/lib/payments/razorpay.ts` and `src/lib/auth/sender.ts` — so that a
+ * `src/lib/payments/razorpay.ts` and `src/lib/auth/whatsapp.ts` — so that a
  * second provider is a new file implementing `StorageProvider`, not a
  * rewrite of every caller. Supabase is the only implementation today,
  * because the database is already Supabase: one vendor, one account, one
@@ -91,7 +91,7 @@ let cachedProvider: StorageProvider | null = null;
  * The configured provider, cached for the life of the process.
  *
  * Always returns *something* — it does not throw when unconfigured,
- * matching `getOtpSender()`'s shape (`src/lib/auth/sender.ts`). Individual
+ * matching `getWhatsAppSender()`'s shape (`src/lib/auth/whatsapp.ts`). Individual
  * `StorageProvider` methods are what throw `StorageError` when the
  * underlying credentials are missing, so a route that forgets to check
  * `isStorageConfigured()` first still fails safely rather than silently

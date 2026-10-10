@@ -2,7 +2,7 @@
  * Product image generation.
  *
  * Behind an interface so the batch job never knows which provider is in
- * play, the same way `auth/sender.ts` hides the SMS gateway. Anthropic
+ * play, the same way `auth/whatsapp.ts` hides the message gateway. Anthropic
  * has no image model, so this is necessarily a third-party call; swapping
  * OpenAI for Replicate or Google is one class here and no change anywhere
  * else.
