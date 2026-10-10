@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { OfflinePaymentForm } from "@/components/admin/OfflinePaymentForm";
+import { RefundForm } from "@/components/admin/RefundForm";
 import { DeliveryDateForm } from "@/components/admin/DeliveryDateForm";
 import { requireStaffPage } from "@/lib/auth/staff";
 import { db } from "@/lib/db";
@@ -21,7 +22,11 @@ import {
   getAdminOrder,
   legalNextStatuses,
 } from "@/lib/data/admin-orders";
-import { OFFLINE_METHOD_LABEL, type OfflinePaymentMethod } from "@/lib/data/orders";
+import {
+  OFFLINE_METHOD_LABEL,
+  canTransition,
+  type OfflinePaymentMethod,
+} from "@/lib/data/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +83,33 @@ export default async function AdminOrderPage({ params }: Ctx) {
   const canRecordOfflinePayment =
     order.status === "PENDING_PAYMENT" &&
     !order.payments.some((payment) => payment.status === "CAPTURED");
+
+  /* What is left to give back, worked out exactly as `refundOrder` works
+     it out (`src/lib/data/orders.ts`): the captured gateway payment, less
+     every refund against it that has not failed. A PENDING refund counts
+     — it may yet succeed, and offering its money a second time is how a
+     customer gets refunded twice.
+
+     The card is shown only where a refund could actually happen, which is
+     three conditions and not one: there is a captured payment with a
+     gateway id (an OFFLINE payment has nothing to call, and money taken
+     in cash goes back in cash), something is still outstanding on it, and
+     the order is in a state the lifecycle can move to REFUND_PENDING.
+     Every one of those is re-checked by `refundOrder` itself — this
+     decides whether a person is shown a control, not whether the refund
+     is allowed. */
+  const gatewayPayment = order.payments.find(
+    (payment) => payment.status === "CAPTURED" && payment.providerPaymentId,
+  );
+  const alreadyRefundedPaise =
+    gatewayPayment?.refunds
+      .filter((refund) => refund.status !== "FAILED")
+      .reduce((sum, refund) => sum + refund.amountPaise, 0) ?? 0;
+  const refundablePaise = (gatewayPayment?.amountPaise ?? 0) - alreadyRefundedPaise;
+  const canRefund =
+    Boolean(gatewayPayment) &&
+    refundablePaise > 0 &&
+    canTransition(order.status, "REFUND_PENDING");
 
   return (
     <AdminShell
@@ -248,6 +280,22 @@ export default async function AdminOrderPage({ params }: Ctx) {
             <CardHeader title="Change status" />
             <OrderStatusForm reference={order.reference} options={nextStatusOptions} />
           </Card>
+
+          {canRefund && (
+            <div id="refund">
+              <Card tone="sunk">
+                <CardHeader
+                  title="Refund"
+                  subtitle="Sends the money back through Razorpay"
+                />
+                <RefundForm
+                  reference={order.reference}
+                  refundablePaise={refundablePaise}
+                  alreadyRefundedPaise={alreadyRefundedPaise}
+                />
+              </Card>
+            </div>
+          )}
 
           <Card tone="sunk">
             <CardHeader title="Delivery" />
