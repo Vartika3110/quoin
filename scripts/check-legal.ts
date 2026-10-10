@@ -31,6 +31,7 @@ import path from "node:path";
  */
 
 const LEGAL_DIR = path.join("src", "app", "(legal)");
+const COMPANY_FILE = path.join("src", "lib", "company.ts");
 
 /* The literal the component renders, matched on the source rather than
    on rendered HTML so this needs no browser and no running server. */
@@ -72,27 +73,62 @@ async function main() {
     }
   }
 
-  if (outstanding.length === 0) {
+  /**
+   * The second half of the check, and the reason it exists.
+   *
+   * The pages used to mark every unsupplied fact with `<ToConfirm>`, so
+   * counting those markers counted the whole problem. They now read from
+   * `src/lib/company.ts` instead, which is a better arrangement and a
+   * worse thing to grep: a sampled GSTIN rendered in an ordinary
+   * sentence looks exactly like a real one, and a marker count alone
+   * would have reported "1 outstanding" while every registered detail on
+   * the site was still placeholder text.
+   *
+   * So the flags in that file are part of the check. Read as source
+   * rather than imported, because this script runs outside Next and the
+   * module pulls in nothing it needs to evaluate.
+   */
+  const companySource = await readFile(COMPANY_FILE, "utf8");
+  const flags = [
+    { name: "COMPANY_DETAILS_ARE_SAMPLE", who: "registered name, address, GSTIN, support and grievance contacts" },
+    { name: "POLICY_IS_SAMPLE", who: "refund, damage, cancellation and data-retention periods" },
+  ].filter((f) => new RegExp(`export const ${f.name} = true`).test(companySource));
+
+  if (outstanding.length === 0 && flags.length === 0) {
     console.log(`[legal] ${files.length} pages checked. Nothing outstanding.`);
     return;
   }
 
-  const byPage = new Map<string, string[]>();
-  for (const { page, item } of outstanding) {
-    byPage.set(page, [...(byPage.get(page) ?? []), item]);
+  if (flags.length > 0) {
+    console.error("[legal] src/lib/company.ts is still carrying sample values.\n");
+    for (const f of flags) {
+      console.error(`  ${f.name} = true`);
+      console.error(`      ${f.who}`);
+    }
+    console.error(
+      "\n        Every legal page prints these. Replace the values and set the\n" +
+        "        flag to false in the same commit.\n",
+    );
   }
 
-  console.error(
-    `[legal] ${outstanding.length} placeholders are still live across ${byPage.size} pages.\n`,
-  );
-  for (const [page, items] of [...byPage].sort()) {
-    console.error(`  /${page}`);
-    for (const item of items) console.error(`      ${item}`);
+  if (outstanding.length > 0) {
+    const byPage = new Map<string, string[]>();
+    for (const { page, item } of outstanding) {
+      byPage.set(page, [...(byPage.get(page) ?? []), item]);
+    }
+
+    console.error(
+      `[legal] ${outstanding.length} clause${outstanding.length === 1 ? "" : "s"} still marked in the pages themselves.\n`,
+    );
+    for (const [page, items] of [...byPage].sort()) {
+      console.error(`  /${page}`);
+      for (const item of items) console.error(`      ${item}`);
+    }
+    console.error(
+      "\n        These are not values to fill in -- they need drafting.\n",
+    );
   }
-  console.error(
-    "\n[legal] These render to customers as [LEGAL TO CONFIRM] and block" +
-      "\n        payment-gateway activation. Fill them in src/app/(legal).",
-  );
+
   process.exitCode = 1;
 }
 

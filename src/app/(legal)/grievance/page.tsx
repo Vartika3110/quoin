@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Clause, LegalPage, ToConfirm } from "../legal-ui";
+import { Clause, LegalPage } from "../legal-ui";
+import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Grievance officer — Quoin",
@@ -36,7 +37,7 @@ export default function GrievancePage() {
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Name</dt>
               <dd className="text-ink">
-                <ToConfirm>grievance officer name</ToConfirm>
+                {COMPANY.grievanceOfficer.name}
               </dd>
             </div>
             <div className="flex gap-3">
@@ -46,19 +47,19 @@ export default function GrievancePage() {
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Email</dt>
               <dd className="text-ink">
-                <ToConfirm>grievance email address</ToConfirm>
+                {COMPANY.grievanceOfficer.email}
               </dd>
             </div>
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Phone</dt>
               <dd className="text-ink">
-                <ToConfirm>grievance phone number</ToConfirm>
+                {COMPANY.grievanceOfficer.phone}
               </dd>
             </div>
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Address</dt>
               <dd className="text-ink">
-                <ToConfirm>registered address</ToConfirm>
+                {COMPANY.registeredAddress}
               </dd>
             </div>
           </dl>

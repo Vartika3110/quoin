@@ -68,3 +68,65 @@ export const COMPANY: CompanyDetails = {
     phone: "+91 00000 00000",
   },
 };
+
+/**
+ * The periods the policy pages quote.
+ *
+ * Here for the same reason the details above are: a return window stated
+ * as seven days on a product page and left blank on `/refunds` is the
+ * kind of disagreement a customer notices and a gateway's reviewer asks
+ * about. One source, five pages.
+ *
+ * **`returnWindowDays` is not a guess.** Every product page already
+ * tells customers "Unopened and unfitted goods can be returned within 7
+ * days" — see the `After you buy` panel in `src/app/p/[slug]/page.tsx`.
+ * The promise has been published to customers for months; the refunds
+ * page simply never repeated it. Writing 7 here states what the site
+ * already commits to rather than inventing a term.
+ *
+ * The rest are marked SAMPLE because nobody has decided them. They are
+ * shaped like the real thing so the pages lay out and read correctly,
+ * and `POLICY_IS_SAMPLE` keeps them visibly flagged until they are.
+ */
+export interface PolicyTerms {
+  /** Days after delivery a customer may start a return. */
+  returnWindowDays: number;
+  /** Days after delivery to report damage or a short delivery. */
+  damageReportDays: number;
+  /** Days from an accepted return to the refund being initiated. */
+  refundInitiationDays: number;
+  /** How money taken offline (UPI, cash, bank transfer) is returned. */
+  offlineRefundMethod: string;
+  /** Hours before a booked slot that a service may be cancelled free. */
+  serviceCancellationHours: number;
+  /** How long records are kept, and why. */
+  dataRetention: string;
+  /** Days to answer a privacy request. */
+  privacyResponseDays: number;
+  /** Where privacy requests go. */
+  privacyEmail: string;
+}
+
+/**
+ * True while any value below is still a placeholder.
+ *
+ * Separate from `COMPANY_DETAILS_ARE_SAMPLE` because the two are filled
+ * by different people: the entity details come off an incorporation
+ * certificate, these are decisions the business makes. Either being
+ * unresolved should flag the pages, and knowing which is unresolved is
+ * what tells you whom to ask.
+ */
+export const POLICY_IS_SAMPLE = true;
+
+export const POLICY: PolicyTerms = {
+  /* Published already — see the note above. Not a placeholder. */
+  returnWindowDays: 7,
+
+  damageReportDays: 2,
+  refundInitiationDays: 7,
+  offlineRefundMethod: "SAMPLE — bank transfer to the account you nominate",
+  serviceCancellationHours: 24,
+  dataRetention: "SAMPLE — eight years, as the Income-tax Act requires of invoices",
+  privacyResponseDays: 30,
+  privacyEmail: "sample-privacy@quoin.co.in",
+};

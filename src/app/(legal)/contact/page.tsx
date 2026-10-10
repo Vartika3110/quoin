@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Clause, LegalPage, ToConfirm } from "../legal-ui";
+import { Clause, LegalPage } from "../legal-ui";
+import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Contact us — Quoin",
@@ -40,19 +41,19 @@ export default function ContactPage() {
           <div className="flex gap-3">
             <dt className="w-28 shrink-0 text-faint">Email</dt>
             <dd className="text-ink">
-              <ToConfirm>support email address</ToConfirm>
+              {COMPANY.supportEmail}
             </dd>
           </div>
           <div className="flex gap-3">
             <dt className="w-28 shrink-0 text-faint">Phone</dt>
             <dd className="text-ink">
-              <ToConfirm>support phone number and hours</ToConfirm>
+              {`${COMPANY.supportPhone} · ${COMPANY.supportHours}`}
             </dd>
           </div>
           <div className="flex gap-3">
             <dt className="w-28 shrink-0 text-faint">Address</dt>
             <dd className="text-ink">
-              <ToConfirm>registered address</ToConfirm>
+              {COMPANY.registeredAddress}
             </dd>
           </div>
         </dl>
