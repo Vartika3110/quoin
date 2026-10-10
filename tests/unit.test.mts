@@ -876,6 +876,11 @@ describe("GST on an order line", () => {
 });
 
 describe("order lifecycle transitions", () => {
+  /* PAID/CONFIRMED/PROCESSING -> CANCELLED were listed here as legal
+     edges and have been removed from the machine: once money is
+     captured, an order is refunded rather than cancelled. See
+     tests/refunds.test.mts, which asserts their absence and the order
+     QO-P8498W that made the case. */
   it("allows every legal edge in the machine", () => {
     const edges: [OrderStatus, OrderStatus][] = [
       ["PENDING_PAYMENT", "PAID"],
@@ -884,13 +889,10 @@ describe("order lifecycle transitions", () => {
       ["FAILED", "PENDING_PAYMENT"],
       ["FAILED", "CANCELLED"],
       ["PAID", "CONFIRMED"],
-      ["PAID", "CANCELLED"],
       ["PAID", "REFUND_PENDING"],
       ["CONFIRMED", "PROCESSING"],
-      ["CONFIRMED", "CANCELLED"],
       ["CONFIRMED", "REFUND_PENDING"],
       ["PROCESSING", "PACKED"],
-      ["PROCESSING", "CANCELLED"],
       ["PROCESSING", "REFUND_PENDING"],
       ["PACKED", "DISPATCHED"],
       ["PACKED", "REFUND_PENDING"],

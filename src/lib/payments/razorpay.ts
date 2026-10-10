@@ -288,3 +288,97 @@ export async function fetchGatewayPayments(
   }
   return out;
 }
+
+/** ---- Refunds ------------------------------------------------------------ */
+
+export interface GatewayRefund {
+  /** Razorpay's `rfnd_XXXXXXXX`. */
+  id: string;
+  amountPaise: number;
+  /** `pending` | `processed` | `failed`. */
+  status: string;
+}
+
+/**
+ * Sends money back for a captured payment.
+ *
+ * **Idempotent by `speed: "normal"` and an explicit key.** Razorpay
+ * honours an `Idempotency-Key` header on refunds, and this is the one
+ * call in the app where a retry without it is unambiguously bad: a
+ * timeout that is actually a success, retried, refunds the customer
+ * twice. The caller passes the `Refund` row's own id, which exists
+ * before the call is made precisely so there is a stable key to send.
+ *
+ * `speed: "normal"` rather than `"optimum"` — optimum costs more and
+ * buys a faster-looking refund for the customer, which is a commercial
+ * decision nobody has made. Normal is the default and the honest one to
+ * start with.
+ *
+ * A partial refund is possible (`amountPaise` below the captured total)
+ * and is passed through, because a damaged single line out of six is a
+ * real case. Omitting it refunds the lot, which is Razorpay's own
+ * default and not something to re-implement here.
+ */
+export async function createGatewayRefund(input: {
+  providerPaymentId: string;
+  /** Omit to refund the whole captured amount. */
+  amountPaise?: number;
+  /** The `Refund` row's id — see the note on idempotency above. */
+  idempotencyKey: string;
+  notes?: Record<string, string>;
+}): Promise<GatewayRefund> {
+  if (!isRazorpayConfigured()) {
+    throw new RazorpayError("Razorpay is not configured");
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(
+      `${API}/payments/${encodeURIComponent(input.providerPaymentId)}/refund`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader(),
+          "Idempotency-Key": input.idempotencyKey,
+        },
+        body: JSON.stringify({
+          ...(input.amountPaise != null ? { amount: input.amountPaise } : {}),
+          speed: "normal",
+          notes: input.notes ?? {},
+        }),
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      },
+    );
+  } catch (error) {
+    /* Unlike `createGatewayOrder`, a timeout here is **not** safe to read
+       as "nothing happened". The request may well have been received and
+       the refund created, and the caller must leave its `Refund` row
+       PENDING and reconcile rather than retry blindly — which is why
+       this throws a typed error the caller can tell apart from a
+       rejection. */
+    throw new RazorpayError(
+      `Could not reach Razorpay: ${error instanceof Error ? error.message : "unknown"}`,
+    );
+  }
+
+  const body: unknown = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const description =
+      (body as { error?: { description?: string } } | null)?.error?.description ??
+      "unknown error";
+    throw new RazorpayError(`Razorpay rejected the refund: ${description}`, res.status);
+  }
+
+  const refund = body as { id?: unknown; amount?: unknown; status?: unknown } | null;
+  if (
+    typeof refund?.id !== "string" ||
+    typeof refund.amount !== "number" ||
+    typeof refund.status !== "string"
+  ) {
+    throw new RazorpayError("Razorpay returned a refund in an unexpected shape");
+  }
+
+  return { id: refund.id, amountPaise: refund.amount, status: refund.status };
+}

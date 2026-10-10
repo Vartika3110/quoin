@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
-import type { OrderStatus } from "@prisma/client";
+import type { OrderStatus, RefundStatus } from "@prisma/client";
 import { db } from "@/lib/db";
+import { RazorpayError, createGatewayRefund } from "@/lib/payments/razorpay";
 import { REFERENCE_ATTEMPTS, generateReference } from "@/lib/reference";
 import { quoteCart, type Quote } from "@/lib/data/checkout";
 import {
@@ -103,6 +104,22 @@ export class IllegalOrderTransitionError extends Error {
  * `admin-orders.ts` would be circular. `admin-orders.ts` re-exports this
  * so `transitionOrderStatus` and its callers see no change.
  */
+/**
+ * No order matches the reference this was asked to act on.
+ *
+ * Lives here rather than in `src/lib/data/admin-orders.ts` where it was
+ * written, for the reason `OrderStatusRaceError` directly below records:
+ * `refundOrder` in this module needs to throw it, and that module
+ * already imports from this one, so importing back would be circular.
+ * `admin-orders.ts` re-exports it and its callers see no change.
+ */
+export class OrderNotFoundError extends Error {
+  constructor(reference: string) {
+    super(`No such order: ${reference}`);
+    this.name = "OrderNotFoundError";
+  }
+}
+
 export class OrderStatusRaceError extends Error {
   constructor() {
     super("This order's status changed before this update could be applied. Reload and try again.");
@@ -124,9 +141,23 @@ export class OrderStatusRaceError extends Error {
 const ORDER_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   PENDING_PAYMENT: ["PAID", "FAILED", "CANCELLED"],
   FAILED: ["PENDING_PAYMENT", "CANCELLED"],
-  PAID: ["CONFIRMED", "CANCELLED", "REFUND_PENDING"],
-  CONFIRMED: ["PROCESSING", "CANCELLED", "REFUND_PENDING"],
-  PROCESSING: ["PACKED", "CANCELLED", "REFUND_PENDING"],
+  /* No edge to CANCELLED from here down, and that is the point.
+     Money has been captured by the time an order is PAID, so
+     "cancelled" is not a state it can honestly reach: the customer has
+     paid and either gets the goods or gets the money back. The route
+     out is REFUND_PENDING → REFUNDED, which says what actually has to
+     happen and leaves a `Refund` row behind saying it did.
+
+     These three edges existed and were used. Order QO-P8498W went
+     PAID → CANCELLED ninety-four seconds after ₹5,200 was captured by
+     netbanking, and the only trace is an `OrderStatusChange` row; the
+     refunds table is empty and no gateway refund was ever called. In
+     test mode that is a tidy-up. On a live order it is a customer
+     charged for something nobody is going to send them, with nothing
+     in the system that knows they are owed anything. */
+  PAID: ["CONFIRMED", "REFUND_PENDING"],
+  CONFIRMED: ["PROCESSING", "REFUND_PENDING"],
+  PROCESSING: ["PACKED", "REFUND_PENDING"],
   PACKED: ["DISPATCHED", "REFUND_PENDING"],
   DISPATCHED: ["OUT_FOR_DELIVERY", "REFUND_PENDING"],
   OUT_FOR_DELIVERY: ["DELIVERED", "REFUND_PENDING"],
@@ -1064,4 +1095,206 @@ export async function recordOfflinePayment(
   });
 
   return { reference: input.reference, status: "CONFIRMED" };
+}
+
+/** ---- Refunds ------------------------------------------------------------ */
+
+/** The order has no captured payment, so there is nothing to give back. */
+export class NothingToRefundError extends Error {
+  constructor(reference: string) {
+    super(`Order ${reference} has no captured payment to refund.`);
+    this.name = "NothingToRefundError";
+  }
+}
+
+/** A refund for this order has already been started or completed. */
+export class RefundAlreadyExistsError extends Error {
+  constructor(reference: string) {
+    super(`Order ${reference} already has a refund against it.`);
+    this.name = "RefundAlreadyExistsError";
+  }
+}
+
+/**
+ * Gives a customer their money back.
+ *
+ * **The `Refund` row is written before the gateway is called**, and that
+ * ordering is the whole design rather than an accident of sequencing.
+ * It buys two things that cannot be had the other way round.
+ *
+ * It is the idempotency key. Razorpay honours an `Idempotency-Key` on
+ * refunds, and this is the one call in the app where retrying without
+ * one is unambiguously harmful — a timeout that was actually a success,
+ * retried, pays the customer twice. The row's own id exists before the
+ * call so there is a stable key to send.
+ *
+ * And it survives the call failing. A refund that was sent and whose
+ * response was lost leaves a PENDING row naming the payment it was for,
+ * which is a thing a person can reconcile against the Razorpay
+ * dashboard. The reverse order — call, then record — loses the money
+ * entirely on a timeout: it has left the account and nothing here knows.
+ *
+ * The order moves to REFUND_PENDING before the call and REFUNDED only
+ * once the gateway says `processed`. Razorpay refunds are frequently
+ * asynchronous — `status: "pending"` is the normal answer for a
+ * netbanking refund, not an error — so an order sitting at
+ * REFUND_PENDING with a PENDING `Refund` row is a correct resting
+ * state, and `refund.processed` on the webhook is what finishes it.
+ */
+export async function refundOrder(input: {
+  reference: string;
+  /** Omit to refund the full captured amount. */
+  amountPaise?: number;
+  reason?: string;
+}): Promise<{ refundId: string; status: RefundStatus; orderStatus: OrderStatus }> {
+  const order = await db.order.findUnique({
+    where: { reference: input.reference },
+    select: {
+      id: true,
+      status: true,
+      totalPaise: true,
+      payments: {
+        where: { status: "CAPTURED" },
+        select: { id: true, providerPaymentId: true, amountPaise: true, refunds: { select: { id: true } } },
+      },
+    },
+  });
+
+  if (!order) throw new OrderNotFoundError(input.reference);
+
+  const payment = order.payments[0];
+  if (!payment?.providerPaymentId) {
+    throw new NothingToRefundError(input.reference);
+  }
+  if (payment.refunds.length > 0) {
+    throw new RefundAlreadyExistsError(input.reference);
+  }
+
+  const amountPaise = input.amountPaise ?? payment.amountPaise;
+  if (amountPaise <= 0 || amountPaise > payment.amountPaise) {
+    throw new OrderNotPossibleError(
+      "A refund must be more than nothing and no more than what was captured.",
+    );
+  }
+
+  /* Row first — see the note above. PENDING, because nothing has been
+     sent yet and this row is what proves it was about to be. */
+  const refund = await db.refund.create({
+    data: { paymentId: payment.id, amountPaise, reason: input.reason, status: "PENDING" },
+    select: { id: true },
+  });
+
+  /* Only now does the order say a refund is under way. Before the row
+     exists there is nothing to point at; after the gateway call there
+     would be a window where money had moved and the order still read
+     PAID. */
+  if (canTransition(order.status, "REFUND_PENDING")) {
+    await db.order.updateMany({
+      where: { id: order.id, status: order.status },
+      data: { status: "REFUND_PENDING" },
+    });
+  }
+
+  let gateway;
+  try {
+    gateway = await createGatewayRefund({
+      providerPaymentId: payment.providerPaymentId,
+      amountPaise,
+      idempotencyKey: refund.id,
+      notes: { quoinOrderReference: input.reference },
+    });
+  } catch (error) {
+    /* Deliberately **not** marked FAILED. A rejection and a timeout are
+       indistinguishable from here, and a timed-out refund may well have
+       been created at the gateway — writing FAILED would invite somebody
+       to retry it and pay twice. It stays PENDING, which reads as
+       "started, outcome unknown", and that is the truth. The gateway's
+       own message goes to the log and never to a customer. */
+    console.error("[payments] refund call failed", {
+      reference: input.reference,
+      refundId: refund.id,
+      message: error instanceof RazorpayError ? error.message : "unexpected error",
+    });
+    throw error;
+  }
+
+  /* Razorpay answers `processed` for an instantly-settled refund and
+     `pending` for one still in flight. Only the first finishes the
+     order; the second waits for `refund.processed` on the webhook. */
+  const settled = gateway.status === "processed";
+
+  await db.refund.update({
+    where: { id: refund.id },
+    data: { providerRefundId: gateway.id, status: settled ? "PROCESSED" : "PENDING" },
+  });
+
+  if (settled) {
+    await db.order.updateMany({
+      where: { id: order.id, status: "REFUND_PENDING" },
+      data: { status: "REFUNDED" },
+    });
+  }
+
+  const after = await db.order.findUniqueOrThrow({
+    where: { id: order.id },
+    select: { status: true },
+  });
+
+  return {
+    refundId: refund.id,
+    status: settled ? "PROCESSED" : "PENDING",
+    orderStatus: after.status,
+  };
+}
+
+/**
+ * Finishes a refund the gateway has now actually settled.
+ *
+ * Called from the Razorpay webhook on `refund.processed`. Most refunds
+ * need this: `createGatewayRefund` answers `pending` for anything that
+ * is not instant, so the ordinary netbanking refund leaves an order at
+ * REFUND_PENDING for days with a PENDING `Refund` row, and this is what
+ * closes it.
+ *
+ * Idempotent on `providerRefundId`, which carries a unique index, and
+ * written as a guarded `updateMany` for the same reason
+ * `settleCapturedPayment` is: Razorpay redelivers, and two deliveries
+ * arriving together would both pass a read-then-branch.
+ */
+export async function settleProcessedRefund(input: {
+  providerRefundId: string;
+  providerPaymentId: string;
+}): Promise<SettlementOutcome> {
+  const refund = await db.refund.findFirst({
+    where: {
+      OR: [
+        { providerRefundId: input.providerRefundId },
+        /* A refund whose creating call timed out never got its id
+           written — see `refundOrder`. The webhook is how it is
+           recovered, matched on the payment it belongs to. */
+        { providerRefundId: null, payment: { providerPaymentId: input.providerPaymentId } },
+      ],
+    },
+    select: { id: true, status: true, payment: { select: { orderId: true } } },
+  });
+
+  if (!refund) return "unknown";
+  if (refund.status === "PROCESSED") return "duplicate";
+
+  const claimed = await db.refund.updateMany({
+    where: { id: refund.id, status: { not: "PROCESSED" } },
+    data: { status: "PROCESSED", providerRefundId: input.providerRefundId },
+  });
+  if (claimed.count === 0) return "duplicate";
+
+  /* Guarded on REFUND_PENDING rather than set outright: an order a
+     person has already moved on is not dragged backwards by a late
+     delivery, which is the same reasoning `recordFailedPayment` uses
+     about a capture outranking a stale failure. */
+  await db.order.updateMany({
+    where: { id: refund.payment.orderId, status: "REFUND_PENDING" },
+    data: { status: "REFUNDED" },
+  });
+
+  return "recorded";
 }

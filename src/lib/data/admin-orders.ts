@@ -2,7 +2,12 @@ import { OrderStatus, Prisma } from "@prisma/client";
 import type { Fulfilment, PaymentProvider, PaymentStatus, RefundStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { resolveAdminPage } from "@/lib/data/admin-metrics";
-import { canTransition, IllegalOrderTransitionError, OrderStatusRaceError } from "@/lib/data/orders";
+import {
+  canTransition,
+  IllegalOrderTransitionError,
+  OrderNotFoundError,
+  OrderStatusRaceError,
+} from "@/lib/data/orders";
 import { releaseStockForOrder } from "@/lib/data/inventory";
 import type { Paise } from "@/lib/types/catalog";
 
@@ -409,13 +414,6 @@ export async function getAdminOrder(reference: string): Promise<AdminOrderDetail
 
 /** ---- Status transitions --------------------------------------------------- */
 
-/** No order matches the reference this was asked to move. */
-export class OrderNotFoundError extends Error {
-  constructor(reference: string) {
-    super(`No such order: ${reference}`);
-    this.name = "OrderNotFoundError";
-  }
-}
 
 /**
  * Thrown when this endpoint — the generic status mover — is asked to set
@@ -445,11 +443,43 @@ export class PaidNotAdminSettableError extends Error {
   }
 }
 
+
+/**
+ * Refused a cancellation because money has already been captured.
+ *
+ * The transition table blocks PAID, CONFIRMED and PROCESSING from
+ * reaching CANCELLED, which covers the ordinary case. This covers the
+ * one the table cannot see: an order still sitting PENDING_PAYMENT
+ * whose payment *has* been captured, because the webhook has not landed
+ * yet. `PENDING_PAYMENT → CANCELLED` is a legal and necessary edge — it
+ * is how an abandoned checkout is cleared — so the table has to keep
+ * it, and a cancellation issued during that window would otherwise take
+ * real money with it and then be settled afterwards by the webhook or
+ * the reconciler, leaving a CANCELLED order with a CAPTURED payment
+ * against it.
+ *
+ * That window is not hypothetical: it is exactly the gap
+ * `/api/v1/cron/reconcile-payments` exists to close, and it was wide
+ * open for three weeks while the webhook secret was wrong.
+ *
+ * Same shape as `PaidNotAdminSettableError`: refused before the state
+ * machine is consulted, because the question is not whether the move is
+ * legal but whether the money allows it.
+ */
+export class CapturedPaymentBlocksCancellationError extends Error {
+  constructor() {
+    super(
+      "This order cannot be cancelled: a payment has already been captured against it. Refund it instead — cancelling would keep the customer's money with no record that they are owed it.",
+    );
+    this.name = "CapturedPaymentBlocksCancellationError";
+  }
+}
+
 /** Another request already moved this order between the read and the write.
     Defined in `src/lib/data/orders.ts` — `recordOfflinePayment` needs to
     throw the same error, and re-exported here so nothing importing it from
     this module has to change. */
-export { OrderStatusRaceError } from "@/lib/data/orders";
+export { OrderNotFoundError, OrderStatusRaceError } from "@/lib/data/orders";
 
 const ALL_ORDER_STATUSES = Object.values(OrderStatus) as OrderStatus[];
 
@@ -511,9 +541,22 @@ export async function transitionOrderStatus(
 
   const existing = await db.order.findUnique({
     where: { reference: input.reference },
-    select: { id: true, status: true },
+    select: {
+      id: true,
+      status: true,
+      payments: { where: { status: "CAPTURED" }, select: { id: true }, take: 1 },
+    },
   });
   if (!existing) throw new OrderNotFoundError(input.reference);
+
+  /* Asked before `canTransition`, and about the money rather than the
+     state — see `CapturedPaymentBlocksCancellationError`. The table
+     already refuses CANCELLED from PAID onward; this catches the order
+     still reading PENDING_PAYMENT whose payment has in fact been
+     captured and whose webhook has not arrived yet. */
+  if (input.toStatus === "CANCELLED" && existing.payments.length > 0) {
+    throw new CapturedPaymentBlocksCancellationError();
+  }
 
   const from = existing.status;
   if (!canTransition(from, input.toStatus)) {

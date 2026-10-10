@@ -2,7 +2,11 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { recordFailedPayment, settleCapturedPayment } from "@/lib/data/orders";
+import {
+  recordFailedPayment,
+  settleCapturedPayment,
+  settleProcessedRefund,
+} from "@/lib/data/orders";
 import { verifyWebhookSignature } from "@/lib/payments/razorpay";
 import { notifyPaymentSettled } from "@/lib/data/order-notifications";
 
@@ -50,6 +54,17 @@ import { notifyPaymentSettled } from "@/lib/data/order-notifications";
 interface WebhookPayload {
   event?: string;
   payload?: {
+    /* Refund events carry their own entity alongside the payment one.
+       Both are optional on the same payload because Razorpay sends one
+       shape per event type and this interface describes all of them. */
+    refund?: {
+      entity?: {
+        id?: string;
+        payment_id?: string;
+        amount?: number;
+        status?: string;
+      };
+    };
     payment?: {
       entity?: {
         id?: string;
@@ -299,6 +314,23 @@ export async function POST(request: Request) {
           providerPaymentId,
           method: entity.method,
           reason: entity.error_description ?? entity.error_reason,
+        });
+        break;
+      }
+
+      case "refund.processed": {
+        /* The other half of `refundOrder`. A refund that is not instant
+           comes back `pending` from the create call and settles later;
+           without this the order sits at REFUND_PENDING forever even
+           though the customer has their money. */
+        const refundEntity = body.payload?.refund?.entity;
+        if (!refundEntity?.id) {
+          outcome = "no_entity";
+          break;
+        }
+        outcome = await settleProcessedRefund({
+          providerRefundId: refundEntity.id,
+          providerPaymentId: refundEntity.payment_id ?? providerPaymentId,
         });
         break;
       }

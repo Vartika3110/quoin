@@ -81,7 +81,10 @@ describe("admin transition boundary — everything else still goes through canTr
       ["FAILED", "PENDING_PAYMENT"],
       ["FAILED", "CANCELLED"],
       ["PAID", "CONFIRMED"],
-      ["PAID", "CANCELLED"],
+      /* ["PAID", "CANCELLED"] was here. It is no longer a legal move:
+         money captured means the way out is a refund, not a
+         cancellation. See tests/refunds.test.mts. */
+      ["PAID", "REFUND_PENDING"],
       ["CONFIRMED", "PROCESSING"],
       ["PROCESSING", "PACKED"],
       ["PACKED", "DISPATCHED"],
