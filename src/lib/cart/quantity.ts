@@ -24,7 +24,18 @@ export function normalizeQty(
   variant: Pick<Variant, "minQty" | "stepQty">,
   requested: number,
 ): number {
-  const { minQty, stepQty } = variant;
+  const { minQty } = variant;
+
+  /* A grid of zero is not a grid. `stepQty` defaults to 1 in the schema
+     and nothing today sets it otherwise, but nothing *stops* it either —
+     there is no check constraint, and both the importer and the admin
+     price form write it. At zero the arithmetic below divides by zero,
+     gives Infinity, multiplies it by zero and returns NaN: a NaN
+     quantity, a NaN line total, and an order whose maths is silently
+     missing. Falling back to a step of one keeps a bad row sellable at
+     its minimum instead of corrupting the basket it lands in. */
+  const stepQty = variant.stepQty > 0 ? variant.stepQty : 1;
+
   if (!Number.isFinite(requested) || requested <= minQty) return minQty;
   const stepsAbove = Math.ceil((requested - minQty) / stepQty);
   return minQty + stepsAbove * stepQty;

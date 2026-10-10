@@ -123,3 +123,49 @@ describe("a refund can only start where the order can represent it", () => {
     }
   });
 });
+
+const { normalizeQty, lineTotal } = await import("@/lib/cart/quantity");
+
+/**
+ * The sellable grid, at its edges.
+ *
+ * `normalizeQty` runs in the browser for the optimistic line total and
+ * on the server when the order is priced, so anything it gets wrong is
+ * wrong in both places at once and agrees with itself while doing it.
+ */
+describe("quantity snapping survives a malformed grid", () => {
+  it("rounds up onto the step, never down", () => {
+    /* Marble in 20 sq.ft. minimums stepping by 5: a request for 23 is
+       25, because a customer silently sold 20 is short on site. */
+    assert.equal(normalizeQty({ minQty: 20, stepQty: 5 }, 23), 25);
+    assert.equal(normalizeQty({ minQty: 20, stepQty: 5 }, 25), 25);
+    assert.equal(normalizeQty({ minQty: 1, stepQty: 1 }, 7), 7);
+  });
+
+  it("never returns less than the minimum", () => {
+    assert.equal(normalizeQty({ minQty: 20, stepQty: 5 }, 1), 20);
+    assert.equal(normalizeQty({ minQty: 20, stepQty: 5 }, 0), 20);
+    assert.equal(normalizeQty({ minQty: 20, stepQty: 5 }, -5), 20);
+  });
+
+  it("does not return NaN when the step is zero", () => {
+    /* The regression. A zero step divided into the remainder gives
+       Infinity, times zero gives NaN, and a NaN quantity prices a line
+       at NaN. Nothing in the database has a zero step today and nothing
+       prevents one either. */
+    const q = normalizeQty({ minQty: 2, stepQty: 0 }, 7);
+    assert.ok(Number.isFinite(q), `expected a finite quantity, got ${q}`);
+    assert.equal(q, 7);
+    assert.ok(Number.isFinite(lineTotal(41500, q)));
+  });
+
+  it("does not return NaN for a negative step either", () => {
+    const q = normalizeQty({ minQty: 2, stepQty: -5 }, 7);
+    assert.ok(Number.isFinite(q), `expected a finite quantity, got ${q}`);
+  });
+
+  it("refuses to be knocked over by a non-finite request", () => {
+    assert.equal(normalizeQty({ minQty: 3, stepQty: 1 }, Number.NaN), 3);
+    assert.equal(normalizeQty({ minQty: 3, stepQty: 1 }, Number.POSITIVE_INFINITY), 3);
+  });
+});
