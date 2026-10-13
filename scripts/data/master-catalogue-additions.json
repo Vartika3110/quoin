@@ -1,0 +1,110 @@
+{
+ "source": "quoin_master_catalog_with_prices.xlsx, sheet \"Quoin Master Catalog\", supplied 13 Oct 2026",
+ "note": "The rows of the master list that had no product in the catalogue. Prices are integer paise, converted from the sheet's rupee figures by shifting the decimal, never by multiplying a float.",
+ "products": [
+  {
+   "ref": "73",
+   "name": "TruCare Yellow Metal Primer",
+   "brand": "Asian Paints",
+   "model": "",
+   "categorySlug": "paints-finishes",
+   "pricePaise": 24000
+  },
+  {
+   "ref": "MKI16SO",
+   "name": "16A Socket",
+   "brand": "Impact",
+   "model": "IW424WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 7500
+  },
+  {
+   "ref": "MKI16SW",
+   "name": "16A Switch",
+   "brand": "Impact",
+   "model": "IW411WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 3400
+  },
+  {
+   "ref": "MKI1M",
+   "name": "1M Plate (3\" x 3\")",
+   "brand": "Impact",
+   "model": "IW101WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 3500
+  },
+  {
+   "ref": "MKI2M",
+   "name": "2M Plate (3\" x 3\")",
+   "brand": "Impact",
+   "model": "IW102WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 3500
+  },
+  {
+   "ref": "MKI3M",
+   "name": "3M Plate (4\" x 3\")",
+   "brand": "Impact",
+   "model": "IW103WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 3700
+  },
+  {
+   "ref": "MKI6BP",
+   "name": "6A Bell Push 1W",
+   "brand": "Impact",
+   "model": "IW505WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 3200
+  },
+  {
+   "ref": "MKI6M",
+   "name": "6M Plate (8\" x 3\")",
+   "brand": "Impact",
+   "model": "IW106WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 6000
+  },
+  {
+   "ref": "MKI6SW",
+   "name": "6A Switch",
+   "brand": "Impact",
+   "model": "IW501WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 2400
+  },
+  {
+   "ref": "MKI6T",
+   "name": "6A 3 Pin Top ISI",
+   "brand": "Impact",
+   "model": "IW301WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 3700
+  },
+  {
+   "ref": "MKI8MH",
+   "name": "8MH Plate (9\" x 3\")",
+   "brand": "Impact",
+   "model": "IW18HWHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 7700
+  },
+  {
+   "ref": "MKIC",
+   "name": "Ceiling Rose",
+   "brand": "Impact",
+   "model": "IW305WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 3000
+  },
+  {
+   "ref": "MKIFR2M",
+   "name": "Fan Reg 2M",
+   "brand": "Impact",
+   "model": "IW472WHI",
+   "categorySlug": "electricals-lighting",
+   "pricePaise": 2500
+  }
+ ]
+}
