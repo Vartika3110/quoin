@@ -257,7 +257,16 @@ export async function suggest(
           ...(synonymSlugs.length ? [{ slug: { in: synonymSlugs } }] : []),
         ],
       },
-      select: { id: true, slug: true, name: true, _count: { select: { products: true } } },
+      /* Counted the same way the department suggestion further down
+         counts, and the same way the category page lists: a suggestion
+         reading "412 products" that opens onto 162 is worse than no
+         count at all. */
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        _count: { select: { products: { where: SELLABLE } } },
+      },
       orderBy: { name: "asc" },
       take: limit,
     }),

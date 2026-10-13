@@ -45,7 +45,11 @@ export const TABS: CatalogTab[] = [
  * here as a type error rather than as a silently mis-rendered chip.
  */
 
-const FULFILMENT: Record<DbFulfilment, FulfilmentType> = {
+/* Exported for the same reason `PRICING_UNIT` is: callers that select
+   raw columns rather than hydrating a whole `Product` still need the one
+   agreed mapping, and a second copy of it is a second thing to keep in
+   step with the schema. */
+export const FULFILMENT: Record<DbFulfilment, FulfilmentType> = {
   INSTANT: "instant",
   SCHEDULED: "scheduled",
   BOOKABLE: "bookable",
@@ -225,7 +229,18 @@ export async function getCategories(): Promise<Category[]> {
   const rows = await db.category.findMany({
     where: { isActive: true, parentId: null },
     orderBy: [{ position: "asc" }, { name: "asc" }],
-    include: { _count: { select: { children: true, products: true } } },
+    /* Counted through `SELLABLE_PRODUCT`, not bare. The tile says
+       "N products" and that has to be the number the category page will
+       actually list. An unfiltered count includes every deactivated row,
+       and the catalogue now holds far more of those than live ones —
+       cutting the shelf to the owner's master list
+       (`scripts/restrict-to-master-list.ts`) deactivated 1,952 products
+       against 510 kept, so these tiles were about to claim six times
+       what they could show. One definition of "in the shop", the same
+       one the page itself queries. */
+    include: {
+      _count: { select: { children: true, products: { where: SELLABLE_PRODUCT } } },
+    },
   });
 
   return rows.map((row) => {
@@ -875,7 +890,10 @@ export { brandKey };
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
   const row = await db.category.findFirst({
     where: { slug, isActive: true },
-    include: { _count: { select: { children: true, products: true } } },
+    /* Filtered for the reason given on `getCategories` above. */
+    include: {
+      _count: { select: { children: true, products: { where: SELLABLE_PRODUCT } } },
+    },
   });
   if (!row) return null;
 
