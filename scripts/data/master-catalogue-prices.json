@@ -1,0 +1,3198 @@
+{
+ "source": "quoin_master_catalog_with_prices.xlsx, sheet \"Quoin Master Catalog\", column \"Price (INR)\", supplied 13 Oct 2026",
+ "note": "Rupee figures converted to integer paise by shifting the decimal, never by multiplying a float: 6186.74 x 100 is 618673.9999999999 in IEEE 754. One master row (Putty / Sakarni) carries neither a reference nor a price and is absent here.",
+ "products": [
+  {
+   "ref": "SHOJAQAQUKKCHR",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Kubix Prime)",
+   "brand": "Jaquar",
+   "pricePaise": 532300
+  },
+  {
+   "ref": "MKI6SW",
+   "name": "6A Switch",
+   "brand": "Impact",
+   "pricePaise": 2400
+  },
+  {
+   "ref": "MKI6T",
+   "name": "6A 3 Pin Top ISI",
+   "brand": "Impact",
+   "pricePaise": 3700
+  },
+  {
+   "ref": "MKI16SO",
+   "name": "16A Socket",
+   "brand": "Impact",
+   "pricePaise": 7500
+  },
+  {
+   "ref": "MKI16SW",
+   "name": "16A Switch",
+   "brand": "Impact",
+   "pricePaise": 3400
+  },
+  {
+   "ref": "MKI6BP",
+   "name": "6A Bell Push 1W",
+   "brand": "Impact",
+   "pricePaise": 3200
+  },
+  {
+   "ref": "MKIFR2M",
+   "name": "Fan Reg 2M",
+   "brand": "Impact",
+   "pricePaise": 2500
+  },
+  {
+   "ref": "MKIC",
+   "name": "Ceiling Rose",
+   "brand": "Impact",
+   "pricePaise": 3000
+  },
+  {
+   "ref": "MKI1M",
+   "name": "1M Plate (3\" x 3\")",
+   "brand": "Impact",
+   "pricePaise": 3500
+  },
+  {
+   "ref": "MKI2M",
+   "name": "2M Plate (3\" x 3\")",
+   "brand": "Impact",
+   "pricePaise": 3500
+  },
+  {
+   "ref": "MKI3M",
+   "name": "3M Plate (4\" x 3\")",
+   "brand": "Impact",
+   "pricePaise": 3700
+  },
+  {
+   "ref": "MKI6M",
+   "name": "6M Plate (8\" x 3\")",
+   "brand": "Impact",
+   "pricePaise": 6000
+  },
+  {
+   "ref": "MKI8MH",
+   "name": "8MH Plate (9\" x 3\")",
+   "brand": "Impact",
+   "pricePaise": 7700
+  },
+  {
+   "ref": "SHOJAQCON125HW",
+   "name": "Aquamax Concealed Body",
+   "brand": "Jaquar",
+   "pricePaise": 513700
+  },
+  {
+   "ref": "TAPJAQCENB1OOD",
+   "name": "Center Hole Basin Mixture",
+   "brand": "Jaquar",
+   "pricePaise": 487700
+  },
+  {
+   "ref": "TAPJAQPIL226AC",
+   "name": "Pillar Cock",
+   "brand": "Jaquar",
+   "pricePaise": 402900
+  },
+  {
+   "ref": "SHOJAQCONOQVLI",
+   "name": "Concealed Cistern Body",
+   "brand": "Jaquar",
+   "pricePaise": 399300
+  },
+  {
+   "ref": "SHOJAQSHO1PJP5",
+   "name": "Concealed Body for Single Lever High Flow Diverter",
+   "brand": "Jaquar",
+   "pricePaise": 381600
+  },
+  {
+   "ref": "SHOJAQAQUA3PK6",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Ornamix Prime)",
+   "brand": "Jaquar",
+   "pricePaise": 354900
+  },
+  {
+   "ref": "SHOJAQAQUUQO6L",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Opal Prime)",
+   "brand": "Jaquar",
+   "pricePaise": 354900
+  },
+  {
+   "ref": "SHOJAQAQU0K7DR",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Vignette Prime)",
+   "brand": "Jaquar",
+   "pricePaise": 354900
+  },
+  {
+   "ref": "SHOJAQOVEQAGEZ",
+   "name": "Overhead Shower",
+   "brand": "Jaquar",
+   "pricePaise": 351900
+  },
+  {
+   "ref": "SHOJAQSHOB9U9O",
+   "name": "Shower Head",
+   "brand": "Jaquar",
+   "pricePaise": 348100
+  },
+  {
+   "ref": "SHOJAQAQU17U0F",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Alive)",
+   "brand": "Jaquar",
+   "pricePaise": 342800
+  },
+  {
+   "ref": "SHOJAQWASV4ZWQ",
+   "name": "Washbasin Diverter",
+   "brand": "Jaquar",
+   "pricePaise": 332500
+  },
+  {
+   "ref": "SHOKOHTOWWDZ3K",
+   "name": "Towel Rack",
+   "brand": "Kohler",
+   "pricePaise": 325700
+  },
+  {
+   "ref": "SHOJAQAQUBKKK5",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Aria)",
+   "brand": "Jaquar",
+   "pricePaise": 322600
+  },
+  {
+   "ref": "SHOJAQAQU1TOD9",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Lyric)",
+   "brand": "Jaquar",
+   "pricePaise": 322600
+  },
+  {
+   "ref": "SHOJAQAQU52WIP",
+   "name": "Aquamax Exposed Part Kit of Single Lever Shower Mixer (Fusion)",
+   "brand": "Jaquar",
+   "pricePaise": 314600
+  },
+  {
+   "ref": "TAPJAQSPOSXYFR",
+   "name": "Spout",
+   "brand": "Jaquar",
+   "pricePaise": 257100
+  },
+  {
+   "ref": "SHOJAQSHOD1BB2",
+   "name": "Aquamax Diverter",
+   "brand": "Jaquar",
+   "pricePaise": 209900
+  },
+  {
+   "ref": "TAPJAQBIBFIMOK",
+   "name": "Bib Cock Long Body",
+   "brand": "Jaquar",
+   "pricePaise": 159600
+  },
+  {
+   "ref": "PIPASTPIP2B1EZ",
+   "name": "Pipe 20ft PVC",
+   "brand": "Astral",
+   "pricePaise": 147500
+  },
+  {
+   "ref": "HEAJAQCONMNRG5",
+   "name": "Concealed Stop Cock",
+   "brand": "Jaquar",
+   "pricePaise": 143100
+  },
+  {
+   "ref": "TAPSOMWAY7TLLO",
+   "name": "2 Way Angle Valve",
+   "brand": "Somany",
+   "pricePaise": 140000
+  },
+  {
+   "ref": "HEAJAQHEA1I9GA",
+   "name": "Health Faucet",
+   "brand": "Jaquar",
+   "pricePaise": 139700
+  },
+  {
+   "ref": "TANSUPSIPUHBVG",
+   "name": "Siphon Set",
+   "brand": "Superflo",
+   "pricePaise": 132000
+  },
+  {
+   "ref": "ACCKOHGLAWWEON",
+   "name": "Glass Shelf",
+   "brand": "Kohler",
+   "pricePaise": 131800
+  },
+  {
+   "ref": "SANJAQCISC0K7E",
+   "name": "Cistern Plate",
+   "brand": "Jaquar",
+   "pricePaise": 125300
+  },
+  {
+   "ref": "HEAJAQHEAAN296",
+   "name": "Shower Tube",
+   "brand": "Jaquar",
+   "pricePaise": 94700
+  },
+  {
+   "ref": "TAPONTCON6WWJ8",
+   "name": "Concealed Stop Cock",
+   "brand": "MARS",
+   "pricePaise": 93100
+  },
+  {
+   "ref": "PIPASTPIPNCHX7",
+   "name": "Pipe 10ft PVC",
+   "brand": "Astral",
+   "pricePaise": 91700
+  },
+  {
+   "ref": "FLOLOCSINHBI4H",
+   "name": "Sink Basin SS",
+   "brand": "MARS",
+   "pricePaise": 85900
+  },
+  {
+   "ref": "PIPASTNRVZIHB0",
+   "name": "NRV CPVC",
+   "brand": "Astral",
+   "pricePaise": 85600
+  },
+  {
+   "ref": "SANLOCSEAWHQWW",
+   "name": "WC Seat Cover",
+   "brand": "MARS",
+   "pricePaise": 85000
+  },
+  {
+   "ref": "TAPORV2INURC3H",
+   "name": "2 Way Angle Valve",
+   "brand": "MARS",
+   "pricePaise": 79500
+  },
+  {
+   "ref": "TANLOCBOTMHUB7",
+   "name": "Bottle Trap",
+   "brand": "MARS",
+   "pricePaise": 77400
+  },
+  {
+   "ref": "TAPLOCROF52B2D",
+   "name": "RO Faucet",
+   "brand": "MARS",
+   "pricePaise": 68900
+  },
+  {
+   "ref": "TAPORBWASHFA2G",
+   "name": "Washing Machine Tap",
+   "brand": "MARS",
+   "pricePaise": 61600
+  },
+  {
+   "ref": "HEAJAQANGH6PXX",
+   "name": "Angle Valve",
+   "brand": "Jaquar",
+   "pricePaise": 59500
+  },
+  {
+   "ref": "TAPONTBIBX6TGC",
+   "name": "Nozzle Bib Cock",
+   "brand": "MARS",
+   "pricePaise": 55400
+  },
+  {
+   "ref": "SHOGENROU2FE8C",
+   "name": "Shower Head Round",
+   "brand": "MARS",
+   "pricePaise": 55000
+  },
+  {
+   "ref": "TAPORBHEAGV4R6",
+   "name": "Health Faucet",
+   "brand": "MARS",
+   "pricePaise": 37700
+  },
+  {
+   "ref": "PIPASTCLAJ526V",
+   "name": "Clamp CPVC",
+   "brand": "Astral",
+   "pricePaise": 30600
+  },
+  {
+   "ref": "TAPLOCFASSSDIY",
+   "name": "Fastener SS",
+   "brand": "MARS",
+   "pricePaise": 29400
+  },
+  {
+   "ref": "WASORBRACRDOVA",
+   "name": "Rack Bolt / Fastener",
+   "brand": "MARS",
+   "pricePaise": 27900
+  },
+  {
+   "ref": "PIPASTPIP0SQUV",
+   "name": "Pipe 10ft CPVC",
+   "brand": "Astral",
+   "pricePaise": 26900
+  },
+  {
+   "ref": "PIPSUPDOO54MFG",
+   "name": "Door Bend PVC",
+   "brand": "Supreme",
+   "pricePaise": 26000
+  },
+  {
+   "ref": "PIPSUPPTRL1PHA",
+   "name": "P Trap PVC",
+   "brand": "Supreme",
+   "pricePaise": 25000
+  },
+  {
+   "ref": "TAPZEBANGWX0ZQ",
+   "name": "Angle Valve",
+   "brand": "MARS",
+   "pricePaise": 25000
+  },
+  {
+   "ref": "HEAORBHEAJEDON",
+   "name": "Health Faucet Tube",
+   "brand": "MARS",
+   "pricePaise": 23300
+  },
+  {
+   "ref": "FLOLOCWASVIQG4",
+   "name": "Waste Coupling",
+   "brand": "MARS",
+   "pricePaise": 22100
+  },
+  {
+   "ref": "PIPASTTEEC8ZL3",
+   "name": "Tee PVC",
+   "brand": "Astral",
+   "pricePaise": 21000
+  },
+  {
+   "ref": "PIPASTFTA54E49",
+   "name": "FTA Brass CPVC",
+   "brand": "Astral",
+   "pricePaise": 18900
+  },
+  {
+   "ref": "PIPSUPYTELWOUU",
+   "name": "Y Tee PVC",
+   "brand": "Supreme",
+   "pricePaise": 18800
+  },
+  {
+   "ref": "PIPASTSOLON40D",
+   "name": "Solvent CPVC",
+   "brand": "Astral",
+   "pricePaise": 16900
+  },
+  {
+   "ref": "WCCLOCWCC18TS1",
+   "name": "WC Connector 6x4",
+   "brand": "MARS",
+   "pricePaise": 16500
+  },
+  {
+   "ref": "PIPASTDOO83ROO",
+   "name": "Door Bend PVC",
+   "brand": "Astral",
+   "pricePaise": 16100
+  },
+  {
+   "ref": "PIPASTREDO9CCP",
+   "name": "Reducing MTA Brass CPVC",
+   "brand": "Astral",
+   "pricePaise": 15500
+  },
+  {
+   "ref": "PIPASTMTARA1LU",
+   "name": "MTA Brass CPVC",
+   "brand": "Astral",
+   "pricePaise": 15300
+  },
+  {
+   "ref": "FLEGENMIX4WUH8",
+   "name": "Mixture Connection Pipe",
+   "brand": "MARS",
+   "pricePaise": 14700
+  },
+  {
+   "ref": "FLOLOCSINZ1JRK",
+   "name": "Sink Bracket",
+   "brand": "MARS",
+   "pricePaise": 14700
+  },
+  {
+   "ref": "TAPLOCBAS89Z4B",
+   "name": "Basin Mixer Chand Set",
+   "brand": "MARS",
+   "pricePaise": 14700
+  },
+  {
+   "ref": "TANASTBALWRM8R",
+   "name": "Ball Valve Long Handle CPVC",
+   "brand": "Astral",
+   "pricePaise": 14200
+  },
+  {
+   "ref": "SHOORBSHOAPKDZ",
+   "name": "Shower Arm",
+   "brand": "MARS",
+   "pricePaise": 13700
+  },
+  {
+   "ref": "FLELOCWASCOZ2Y",
+   "name": "Washing Machine Outlet Pipe",
+   "brand": "MARS",
+   "pricePaise": 13000
+  },
+  {
+   "ref": "TAPGENWAS4E1FZ",
+   "name": "Washing Machine Adapter",
+   "brand": "MARS",
+   "pricePaise": 5600
+  },
+  {
+   "ref": "FLOORBGRA34MJI",
+   "name": "Grating Vent",
+   "brand": "MARS",
+   "pricePaise": 5000
+  },
+  {
+   "ref": "FLEJINCOLGKUPT",
+   "name": "Collapsible Waste Pipe",
+   "brand": "MARS",
+   "pricePaise": 4900
+  },
+  {
+   "ref": "PIPSUPTEEXGR2V",
+   "name": "Tee PVC",
+   "brand": "Supreme",
+   "pricePaise": 4700
+  },
+  {
+   "ref": "PIPASTREDZ69Q3",
+   "name": "Reducing Tee CPVC",
+   "brand": "Astral",
+   "pricePaise": 4700
+  },
+  {
+   "ref": "WASORBEXTZV4G4",
+   "name": "Extension Nipple SS",
+   "brand": "MARS",
+   "pricePaise": 4300
+  },
+  {
+   "ref": "PIPSUPPIP41TBM",
+   "name": "Pipe 1ft PVC",
+   "brand": "Supreme",
+   "pricePaise": 3300
+  },
+  {
+   "ref": "PIPASTELB1J3CL",
+   "name": "Elbow Reducer CPVC",
+   "brand": "Astral",
+   "pricePaise": 2700
+  },
+  {
+   "ref": "PIPSUPRED64BKP",
+   "name": "Reducing Bush PVC",
+   "brand": "Supreme",
+   "pricePaise": 2600
+  },
+  {
+   "ref": "SANLOCSIPATX6S",
+   "name": "Siphon Washer",
+   "brand": "MARS",
+   "pricePaise": 2500
+  },
+  {
+   "ref": "PIPASTBENYX18J",
+   "name": "Bend 45 CPVC",
+   "brand": "Astral",
+   "pricePaise": 2200
+  },
+  {
+   "ref": "PIPLOCNIP8JG9O",
+   "name": "Extension Nipple GI",
+   "brand": "MARS",
+   "pricePaise": 2200
+  },
+  {
+   "ref": "PIPSUPSOCT289X",
+   "name": "Socket Coupler PVC",
+   "brand": "Supreme",
+   "pricePaise": 2000
+  },
+  {
+   "ref": "PIPASTTEEC6TNT",
+   "name": "Tee CPVC",
+   "brand": "Astral",
+   "pricePaise": 2000
+  },
+  {
+   "ref": "PIPASTREDASPVF",
+   "name": "Reducer CPVC",
+   "brand": "Astral",
+   "pricePaise": 1900
+  },
+  {
+   "ref": "FLELOCROPE2NV8",
+   "name": "RO Pipe",
+   "brand": "MARS",
+   "pricePaise": 1900
+  },
+  {
+   "ref": "PIPSUPBENT71OC",
+   "name": "Bend 45 PVC",
+   "brand": "Supreme",
+   "pricePaise": 1900
+  },
+  {
+   "ref": "PIPLOCDEA94CN3",
+   "name": "End Plug GI",
+   "brand": "MARS",
+   "pricePaise": 1900
+  },
+  {
+   "ref": "PIPASTELBN8UB2",
+   "name": "Elbow CPVC",
+   "brand": "Astral",
+   "pricePaise": 1800
+  },
+  {
+   "ref": "PIPASTSOCWUT74",
+   "name": "Socket Coupler CPVC",
+   "brand": "Astral",
+   "pricePaise": 1500
+  },
+  {
+   "ref": "PIPORBTEFKPVB4",
+   "name": "Teflon Tape",
+   "brand": "MARS",
+   "pricePaise": 1500
+  },
+  {
+   "ref": "PIPASTENDM83BN",
+   "name": "End Cap CPVC",
+   "brand": "Astral",
+   "pricePaise": 1400
+  },
+  {
+   "ref": "PIPSUPELBGZOL0",
+   "name": "Elbow PVC",
+   "brand": "Supreme",
+   "pricePaise": 1300
+  },
+  {
+   "ref": "PIPASTREDCBHB9",
+   "name": "Reducing Bush CPVC",
+   "brand": "Astral",
+   "pricePaise": 1300
+  },
+  {
+   "ref": "PIPASTHEXYVFBP",
+   "name": "Hexa Blade",
+   "brand": "MARS",
+   "pricePaise": 1300
+  },
+  {
+   "ref": "TAPORBCPCTQS3E",
+   "name": "CP Cap",
+   "brand": "MARS",
+   "pricePaise": 1200
+  },
+  {
+   "ref": "PIPASTENDCW2KL",
+   "name": "End Cap PVC",
+   "brand": "Supreme",
+   "pricePaise": 1100
+  },
+  {
+   "ref": "PIPLOCCLAC24G0",
+   "name": "Saddle Clamp",
+   "brand": "MARS",
+   "pricePaise": 400
+  },
+  {
+   "ref": "TMTRATTMTLEMDG",
+   "name": "TMT Bars (1 bundle)",
+   "brand": "Rathi",
+   "pricePaise": 527900
+  },
+  {
+   "ref": "CEMAMBCEMN50G7",
+   "name": "Cement 50kg",
+   "brand": "Ambuja",
+   "pricePaise": 36300
+  },
+  {
+   "ref": "CEMULTCEM97EMS",
+   "name": "Cement 50kg",
+   "brand": "UltraTech",
+   "pricePaise": 36000
+  },
+  {
+   "ref": "GREJKCJKSVN1JA",
+   "name": "JK Super Cement 50kg",
+   "brand": "JK Cement",
+   "pricePaise": 34000
+  },
+  {
+   "ref": "ADHBIRWHI8T2QR",
+   "name": "White Cement",
+   "brand": "Birla White",
+   "pricePaise": 4100
+  },
+  {
+   "ref": "INVSUKLEA07HWF",
+   "name": "Lead Acid Battery",
+   "brand": "Su-Kam",
+   "pricePaise": 1405600
+  },
+  {
+   "ref": "APPHAVROOFWJRV",
+   "name": "Room Heater (Oil Filled)",
+   "brand": "Havells",
+   "pricePaise": 1264500
+  },
+  {
+   "ref": "ELERACGEY3MZCI",
+   "name": "Geyser",
+   "brand": "Racold",
+   "pricePaise": 865000
+  },
+  {
+   "ref": "INVSUKHOMCFXLA",
+   "name": "Home UPS",
+   "brand": "Su-Kam",
+   "pricePaise": 495000
+  },
+  {
+   "ref": "LIGHALROPBW1I8",
+   "name": "Rope Light",
+   "brand": "Halonix",
+   "pricePaise": 427800
+  },
+  {
+   "ref": "WIRHAVLIFCC3F0",
+   "name": "Lifeline",
+   "brand": "Havells",
+   "pricePaise": 310600
+  },
+  {
+   "ref": "APPHAVHALSIKVJ",
+   "name": "Half HP Motor",
+   "brand": "Havells",
+   "pricePaise": 308000
+  },
+  {
+   "ref": "APPCROGEYNL7N7",
+   "name": "Geyser",
+   "brand": "Crompton",
+   "pricePaise": 240000
+  },
+  {
+   "ref": "FANANCWALOVYAN",
+   "name": "Wall Fans",
+   "brand": "Anchor",
+   "pricePaise": 231000
+  },
+  {
+   "ref": "LIGHALFLOHM1ZR",
+   "name": "Flood Light",
+   "brand": "Halonix",
+   "pricePaise": 230800
+  },
+  {
+   "ref": "MCBSCHTPNT0Z1Z",
+   "name": "MCB TPN",
+   "brand": "Schneider",
+   "pricePaise": 192500
+  },
+  {
+   "ref": "LIGPHISUR9J73R",
+   "name": "Surface Light",
+   "brand": "Philips",
+   "pricePaise": 187000
+  },
+  {
+   "ref": "WIRPOLETIA28QR",
+   "name": "Etira Wire Bundle (90m)",
+   "brand": "Polycab",
+   "pricePaise": 175400
+  },
+  {
+   "ref": "WIRPOLOPT20UGR",
+   "name": "Optima Wire Bundle (90m)",
+   "brand": "Polycab",
+   "pricePaise": 172700
+  },
+  {
+   "ref": "MCBHAVTPN1AXC3",
+   "name": "MCB TPN",
+   "brand": "Havells",
+   "pricePaise": 170900
+  },
+  {
+   "ref": "MCBPOLTPNCNZFQ",
+   "name": "MCB TPN",
+   "brand": "Polycab",
+   "pricePaise": 146700
+  },
+  {
+   "ref": "ELECROCEIKBOPR",
+   "name": "Ceiling Fan",
+   "brand": "Crompton",
+   "pricePaise": 145000
+  },
+  {
+   "ref": "APPHAVEXHFECET",
+   "name": "Exhaust Fan",
+   "brand": "Crompton",
+   "pricePaise": 137500
+  },
+  {
+   "ref": "WIRPOLCOPUZHAP",
+   "name": "Wire Bundle (FR)",
+   "brand": "Polycab",
+   "pricePaise": 130100
+  },
+  {
+   "ref": "APPCROVEN0OXU5",
+   "name": "Ventilation Fan SS",
+   "brand": "Crompton",
+   "pricePaise": 130000
+  },
+  {
+   "ref": "SWIANCTPN3GX26",
+   "name": "MCB TPN",
+   "brand": "Anchor",
+   "pricePaise": 121000
+  },
+  {
+   "ref": "APPANCEXHQVUZQ",
+   "name": "Exhaust Fan",
+   "brand": "Anchor",
+   "pricePaise": 115500
+  },
+  {
+   "ref": "FANORIEXHR8OA3",
+   "name": "Exhaust Fan",
+   "brand": "Orient",
+   "pricePaise": 110000
+  },
+  {
+   "ref": "FANCROEXH900OE",
+   "name": "Exhaust Fan Round Back",
+   "brand": "Crompton",
+   "pricePaise": 106500
+  },
+  {
+   "ref": "MCBHAVDPI2NBLA",
+   "name": "DP ISO",
+   "brand": "Havells",
+   "pricePaise": 104400
+  },
+  {
+   "ref": "MCBSCHFOU3ONJG",
+   "name": "MCB DP",
+   "brand": "Schneider",
+   "pricePaise": 103900
+  },
+  {
+   "ref": "LIGCROSTREEN3O",
+   "name": "Strip Light",
+   "brand": "Crompton",
+   "pricePaise": 87800
+  },
+  {
+   "ref": "LIGCROSTRV60MS",
+   "name": "Strip Light Driver",
+   "brand": "Crompton",
+   "pricePaise": 64800
+  },
+  {
+   "ref": "ELERACELEV1USU",
+   "name": "Element",
+   "brand": "Racold",
+   "pricePaise": 60500
+  },
+  {
+   "ref": "WIRPOLOPEBK9I6",
+   "name": "Open Wire (3 Core)",
+   "brand": "Polycab",
+   "pricePaise": 60500
+  },
+  {
+   "ref": "INDBENSUB5G16Y",
+   "name": "Sub Meter",
+   "brand": "Bentex",
+   "pricePaise": 56300
+  },
+  {
+   "ref": "LIGPOLSTRNYO1U",
+   "name": "Strip Light Driver",
+   "brand": "Polycab",
+   "pricePaise": 51000
+  },
+  {
+   "ref": "LIGJAQSURGSOCY",
+   "name": "Surface Light",
+   "brand": "Jaquar",
+   "pricePaise": 42500
+  },
+  {
+   "ref": "SWIHAVFAN8S6WB",
+   "name": "Fan Regulator",
+   "brand": "Havells",
+   "pricePaise": 36100
+  },
+  {
+   "ref": "LIGORISUR1A7RA",
+   "name": "Surface Light",
+   "brand": "Orient",
+   "pricePaise": 35500
+  },
+  {
+   "ref": "APPHPLEXT11B8V",
+   "name": "Extension Cable",
+   "brand": "HPL",
+   "pricePaise": 30500
+  },
+  {
+   "ref": "SWIFYBAMP2FB7W",
+   "name": "Dual Combined Box",
+   "brand": "Cona",
+   "pricePaise": 30300
+  },
+  {
+   "ref": "SWISCHSOCJN1OU",
+   "name": "Socket",
+   "brand": "Schneider",
+   "pricePaise": 28900
+  },
+  {
+   "ref": "LIGCROBULQSNU3",
+   "name": "Bulb",
+   "brand": "Crompton",
+   "pricePaise": 24500
+  },
+  {
+   "ref": "MCBANCMCB6Y74R",
+   "name": "MCB SP",
+   "brand": "Anchor",
+   "pricePaise": 23900
+  },
+  {
+   "ref": "SWIANCMIN3ZQYW",
+   "name": "Mini MCB",
+   "brand": "Anchor",
+   "pricePaise": 22000
+  },
+  {
+   "ref": "LIGPOLSPOZXVGW",
+   "name": "Spot Light",
+   "brand": "Polycab",
+   "pricePaise": 21600
+  },
+  {
+   "ref": "LIGPOLPANM6UIN",
+   "name": "Surface Light",
+   "brand": "Polycab",
+   "pricePaise": 21400
+  },
+  {
+   "ref": "SWILEGSOC5YT58",
+   "name": "Socket",
+   "brand": "Legrand",
+   "pricePaise": 19900
+  },
+  {
+   "ref": "ACCGENCABVS8JF",
+   "name": "Cable Tie",
+   "brand": "MARS",
+   "pricePaise": 18900
+  },
+  {
+   "ref": "LIGCRODOW3KFRR",
+   "name": "Concealed Downlight",
+   "brand": "Crompton",
+   "pricePaise": 18400
+  },
+  {
+   "ref": "WIRANCFAN75VTA",
+   "name": "Fan Regulator",
+   "brand": "Anchor",
+   "pricePaise": 17900
+  },
+  {
+   "ref": "SWISCHSWIXEOO9",
+   "name": "Switch",
+   "brand": "Schneider",
+   "pricePaise": 17600
+  },
+  {
+   "ref": "SWIMKXSOCDOJ9I",
+   "name": "Socket",
+   "brand": "North-West",
+   "pricePaise": 16700
+  },
+  {
+   "ref": "LIGPHIBATADI1M",
+   "name": "Batten",
+   "brand": "Philips",
+   "pricePaise": 15900
+  },
+  {
+   "ref": "SWILEGPLABC0M2",
+   "name": "Plate",
+   "brand": "Legrand",
+   "pricePaise": 14700
+  },
+  {
+   "ref": "ELEGENSUB8M8WI",
+   "name": "Submersible Cooler Pump",
+   "brand": "MARS",
+   "pricePaise": 14700
+  },
+  {
+   "ref": "WIRGREDINPTF1V",
+   "name": "Ding Dong Bell",
+   "brand": "Anchor",
+   "pricePaise": 14300
+  },
+  {
+   "ref": "SWINORSWIVC509",
+   "name": "Switch",
+   "brand": "North-West",
+   "pricePaise": 13700
+  },
+  {
+   "ref": "ELELTXPANUMAT1",
+   "name": "Panel Indicator",
+   "brand": "L&T",
+   "pricePaise": 13500
+  },
+  {
+   "ref": "LIGPOLBATU7ZNE",
+   "name": "Batten",
+   "brand": "Polycab",
+   "pricePaise": 13300
+  },
+  {
+   "ref": "MCBCBSMCBNRQAG",
+   "name": "MCB SP",
+   "brand": "Havells",
+   "pricePaise": 13000
+  },
+  {
+   "ref": "SWIHAVAMPW66OC",
+   "name": "Top Plug",
+   "brand": "Havells",
+   "pricePaise": 12600
+  },
+  {
+   "ref": "LIGHALBAT9FW78",
+   "name": "Batten",
+   "brand": "Halonix",
+   "pricePaise": 12100
+  },
+  {
+   "ref": "LIGORIBATHJNX6",
+   "name": "Batten",
+   "brand": "Orient",
+   "pricePaise": 11500
+  },
+  {
+   "ref": "SWIANCCOMBXPNI",
+   "name": "Combined Box",
+   "brand": "Anchor",
+   "pricePaise": 11100
+  },
+  {
+   "ref": "SWILOCFAN1F78N",
+   "name": "Fan Regulator",
+   "brand": "MARS",
+   "pricePaise": 11100
+  },
+  {
+   "ref": "LIGPOLDOWPSV30",
+   "name": "Concealed Downlight",
+   "brand": "Polycab",
+   "pricePaise": 10400
+  },
+  {
+   "ref": "SWINORSOCZSK2Z",
+   "name": "Multi Plug",
+   "brand": "Anchor",
+   "pricePaise": 9100
+  },
+  {
+   "ref": "HINDOOHINBM5UH",
+   "name": "Hinge",
+   "brand": "Dorset",
+   "pricePaise": 17600
+  },
+  {
+   "ref": "CLECOAFAUWK1D3",
+   "name": "Faucet Cleaner",
+   "brand": "MARS",
+   "pricePaise": 17200
+  },
+  {
+   "ref": "ACCLOCMIXMK0RU",
+   "name": "Mixture Leg",
+   "brand": "MARS",
+   "pricePaise": 12300
+  },
+  {
+   "ref": "HINHETHINRKZHY",
+   "name": "Hinge",
+   "brand": "Hettich",
+   "pricePaise": 8000
+  },
+  {
+   "ref": "ACCLOCTAPXCMUB",
+   "name": "Tape",
+   "brand": "MARS",
+   "pricePaise": 4300
+  },
+  {
+   "ref": "MFALOCMFAMSBOB",
+   "name": "M8 Fastener",
+   "brand": "MARS",
+   "pricePaise": 1300
+  },
+  {
+   "ref": "FURLOCGYP176CW",
+   "name": "Gypsum Keel",
+   "brand": "MARS",
+   "pricePaise": 100
+  },
+  {
+   "ref": "INTASIROYMFTTU",
+   "name": "Royale Glitz",
+   "brand": "Asian Paints",
+   "pricePaise": 70700
+  },
+  {
+   "ref": "INTASIROYBYAPD",
+   "name": "Royale Shyne Luxury Emulsion",
+   "brand": "Asian Paints",
+   "pricePaise": 66500
+  },
+  {
+   "ref": "INTASIROYUWEWK",
+   "name": "Royale Matt",
+   "brand": "Asian Paints",
+   "pricePaise": 65700
+  },
+  {
+   "ref": "INTASIAPCVURZD",
+   "name": "Apcolite All Protek Matt",
+   "brand": "Asian Paints",
+   "pricePaise": 42000
+  },
+  {
+   "ref": "INTASIAPC07MV8",
+   "name": "Apcolite Premium Emulsion",
+   "brand": "Asian Paints",
+   "pricePaise": 36400
+  },
+  {
+   "ref": "PAIASITRAX87UZ",
+   "name": "Tractor Emulsion",
+   "brand": "Asian Paints",
+   "pricePaise": 21000
+  },
+  {
+   "ref": "INTASIROYGZCI8",
+   "name": "Royale Luxury Emulsion",
+   "brand": "Asian Paints",
+   "pricePaise": 16600
+  },
+  {
+   "ref": "PUTBIRPUT93PEK",
+   "name": "Putty",
+   "brand": "Birla White",
+   "pricePaise": 5000
+  },
+  {
+   "ref": "SWIGIRMCBDNWF0",
+   "name": "Dhoti (Paint Cloth)",
+   "brand": "MARS",
+   "pricePaise": 2000
+  },
+  {
+   "ref": "LAMGREMDFE4RQ8",
+   "name": "MDF",
+   "brand": "Greenply",
+   "pricePaise": 187600
+  },
+  {
+   "ref": "HDHACTHDH8TB1A",
+   "name": "HDHMR",
+   "brand": "Action Tesa",
+   "pricePaise": 128400
+  },
+  {
+   "ref": "WATDRFPID7KJKP",
+   "name": "Pidicrete URP 301",
+   "brand": "Dr Fixit",
+   "pricePaise": 494500
+  },
+  {
+   "ref": "WOOFEVHIP54936",
+   "name": "HI-PER STAR High Performance Woodworking Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 240200
+  },
+  {
+   "ref": "TILMYKMYKV2KK3",
+   "name": "MYK Laticrete PUA 212 PU Tile & Stone Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 220200
+  },
+  {
+   "ref": "WATASISMA2JL8G",
+   "name": "SmartCare Hydro Loc Extreme",
+   "brand": "Asian Paints",
+   "pricePaise": 213900
+  },
+  {
+   "ref": "ADHFEVHIPUFOJ2",
+   "name": "HI-PER",
+   "brand": "Fevicol",
+   "pricePaise": 202100
+  },
+  {
+   "ref": "ADHARAARAYIKZV",
+   "name": "Araldite Klad X Epoxy Resin Adhesive",
+   "brand": "Araldite",
+   "pricePaise": 166900
+  },
+  {
+   "ref": "TILROFROF0OCZO",
+   "name": "Roff T20 Extrofix Ultra Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 147600
+  },
+  {
+   "ref": "ADHARAAER5ORHB",
+   "name": "Aerolite Mix",
+   "brand": "Araldite",
+   "pricePaise": 140600
+  },
+  {
+   "ref": "TILMYKLATXKPML",
+   "name": "Laticrete 335 Tile Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 108800
+  },
+  {
+   "ref": "TILROFROFJ7ITL",
+   "name": "Roff T07 Extrofix Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 98200
+  },
+  {
+   "ref": "TILROFROF4NJG6",
+   "name": "Roff T06 Vitrofix Ultra Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 94600
+  },
+  {
+   "ref": "ADHARASTAQ5QQ3",
+   "name": "Standard Epoxy Adhesive Set AW 106 + HV 953 IN",
+   "brand": "Araldite",
+   "pricePaise": 93900
+  },
+  {
+   "ref": "FLOMYKTILQP1VE",
+   "name": "Laticrete 325 Tile Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 84900
+  },
+  {
+   "ref": "TILROFROFO25K2",
+   "name": "Roff T05 Vitrofix Ultra Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 83000
+  },
+  {
+   "ref": "ADHFEVFEVW65W0",
+   "name": "Fevicol Marinekoat Water Resistant Plywood Coating",
+   "brand": "Fevicol",
+   "pricePaise": 77700
+  },
+  {
+   "ref": "TILROFROFDYL6V",
+   "name": "Roff T04 Vitrofix (VFA) Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 73900
+  },
+  {
+   "ref": "TILROFROF3GI8Y",
+   "name": "Roff T13 Rainbow Tile Mate Epoxy Grout Joint Filler",
+   "brand": "Roff",
+   "pricePaise": 73300
+  },
+  {
+   "ref": "TILROFROFGY7AK",
+   "name": "Roff T03 Vitrofix (VFA) Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 62600
+  },
+  {
+   "ref": "TILMYKMYKZS1Y2",
+   "name": "MYK Laticrete SP 100 Epoxy Tile Grout Resin + Hardener (Part A & B)",
+   "brand": "MYK Laticrete",
+   "pricePaise": 62300
+  },
+  {
+   "ref": "ADHFEVSHXIF62D",
+   "name": "SH",
+   "brand": "Fevicol",
+   "pricePaise": 61200
+  },
+  {
+   "ref": "FLOMYKTIL9TZDU",
+   "name": "Laticrete 315 Tile Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 51400
+  },
+  {
+   "ref": "TILROFROFT5YB8",
+   "name": "Roff T02 Non Skid (NSA) Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 49200
+  },
+  {
+   "ref": "ADHFEVHIPYUELL",
+   "name": "HI-PER D3 Waterproof Wood Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 44700
+  },
+  {
+   "ref": "PESTERANTEIAIZ",
+   "name": "Anti Termite EC Structure Preservative",
+   "brand": "Terminator",
+   "pricePaise": 43400
+  },
+  {
+   "ref": "WATDRFSUP14WQP",
+   "name": "302 Super Latex Bonding Agent",
+   "brand": "Dr Fixit",
+   "pricePaise": 41600
+  },
+  {
+   "ref": "FLOMYKTILB4NUW",
+   "name": "Laticrete 307 Tile Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 41200
+  },
+  {
+   "ref": "SEAFEVNAIWYNF6",
+   "name": "Nail Free Ultra Adhesive Sealant",
+   "brand": "Fevicol",
+   "pricePaise": 40400
+  },
+  {
+   "ref": "SEAFEVREL845V1",
+   "name": "RELAM Laminate Adhesive Sealant",
+   "brand": "Fevicol",
+   "pricePaise": 40400
+  },
+  {
+   "ref": "WATDRFPID6J8Z4",
+   "name": "Pidicrete URP 301 Bonding Agent",
+   "brand": "Dr Fixit",
+   "pricePaise": 39500
+  },
+  {
+   "ref": "ADHHARARAEYR51",
+   "name": "Araldite Standard Epoxy Adhesive",
+   "brand": "Harald",
+   "pricePaise": 38700
+  },
+  {
+   "ref": "TILFEVFEVTY8ZK",
+   "name": "Fevicol Marine Waterproof Wood Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 37000
+  },
+  {
+   "ref": "GLAASTBON7XNVP",
+   "name": "Bond Tite",
+   "brand": "Astral",
+   "pricePaise": 33000
+  },
+  {
+   "ref": "TILMYKLAT89N3B",
+   "name": "Laticrete 305 Tile Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 31700
+  },
+  {
+   "ref": "ADHFEVHEAYKCR4",
+   "name": "HeatX",
+   "brand": "Fevicol",
+   "pricePaise": 30200
+  },
+  {
+   "ref": "TILROFROF5F84G",
+   "name": "Roff T01 New Construction Adhesive (NCA) Cement Base Tile Adhesive",
+   "brand": "Roff",
+   "pricePaise": 27800
+  },
+  {
+   "ref": "ADHFEVFEV8ULTD",
+   "name": "Fevicol ProBond Special Adhesive for PVC Sheets & Tapes",
+   "brand": "Fevicol",
+   "pricePaise": 25500
+  },
+  {
+   "ref": "WATDRFCRAUDRLO",
+   "name": "201 Crack-X Paste",
+   "brand": "Dr Fixit",
+   "pricePaise": 24400
+  },
+  {
+   "ref": "INSPOLWPCJAITS",
+   "name": "WPC/PVC Instant Glue HV",
+   "brand": "Polyfix",
+   "pricePaise": 23300
+  },
+  {
+   "ref": "ADHARAARAJDE82",
+   "name": "Araldite Standard Epoxy Adhesive",
+   "brand": "Araldite",
+   "pricePaise": 22300
+  },
+  {
+   "ref": "SEAFEVFEV2DUI1",
+   "name": "Feviseal Neutral Pro Silicone Sealant",
+   "brand": "Fevicol; Pidilite",
+   "pricePaise": 21400
+  },
+  {
+   "ref": "TILMYKMYKPGJ5L",
+   "name": "MYK Laticrete SP 100 Epoxy Tile Grout Color Powder (Part C)",
+   "brand": "MYK Laticrete",
+   "pricePaise": 19200
+  },
+  {
+   "ref": "WATDRFDRFA9SQR",
+   "name": "Dr Fixit 101 Pidiproof LW+ Waterproofing Liquid",
+   "brand": "Dr Fixit",
+   "pricePaise": 17200
+  },
+  {
+   "ref": "TILMYKMYK6JFDU",
+   "name": "MYK Laticrete Clenza TC Advanced Tile Cleaner",
+   "brand": "MYK Laticrete",
+   "pricePaise": 16700
+  },
+  {
+   "ref": "ADHFEVFEV8GXGO",
+   "name": "Fevicol SH Synthetic Resin Woodworking Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 16700
+  },
+  {
+   "ref": "TILMYKMYKRWD5C",
+   "name": "MYK Laticrete 1776 Grout Admix Plus",
+   "brand": "MYK Laticrete",
+   "pricePaise": 11200
+  },
+  {
+   "ref": "PESTERCLEUNIAO",
+   "name": "Clear Wood Preservative",
+   "brand": "Terminator",
+   "pricePaise": 11200
+  },
+  {
+   "ref": "TILROFROF55CFM",
+   "name": "Roff Cera Tile, Floor & Ceramic Cleaner",
+   "brand": "Roff",
+   "pricePaise": 10900
+  },
+  {
+   "ref": "TILROFROFKVO9D",
+   "name": "Roff T11 Rainbow Tile Mate Cement Tile Joint Filler",
+   "brand": "Roff",
+   "pricePaise": 10600
+  },
+  {
+   "ref": "WATMSEMSEUT421",
+   "name": "M-Seal",
+   "brand": "M-Seal",
+   "pricePaise": 9200
+  },
+  {
+   "ref": "TILROFROFQ3655",
+   "name": "Roff T32 Tile Spacer (Pack of 100)",
+   "brand": "Roff",
+   "pricePaise": 7900
+  },
+  {
+   "ref": "ADHASIMAS70QH0",
+   "name": "Masking Tape",
+   "brand": "Asian Paints",
+   "pricePaise": 4000
+  },
+  {
+   "ref": "TILMYKTILYF6X9",
+   "name": "Tile Cleaner",
+   "brand": "MYK Laticrete",
+   "pricePaise": 52500
+  },
+  {
+   "ref": "USG9V",
+   "name": "Jaquar Water Closet Set (Laguna Series)",
+   "brand": "Jaquar",
+   "pricePaise": 2841900
+  },
+  {
+   "ref": "K6KCM",
+   "name": "Jaquar Shower Set with 3-Way Thermostatic Diverter (Kubix Prime)",
+   "brand": "Jaquar",
+   "pricePaise": 2679600
+  },
+  {
+   "ref": "PMJ86",
+   "name": "Hettich Larder 6-Tier Frame with Baskets for 600mm Cabinet Pantry Unit, 50kg",
+   "brand": "Hettich",
+   "pricePaise": 2390900
+  },
+  {
+   "ref": "QXG3V",
+   "name": "Hettich Duo 6-Tier Frame with Baskets (Pantry Unit), 50kg",
+   "brand": "Hettich",
+   "pricePaise": 2320000
+  },
+  {
+   "ref": "CDDHY",
+   "name": "Jaquar Water Closet Set (Continental Series)",
+   "brand": "Jaquar",
+   "pricePaise": 2082900
+  },
+  {
+   "ref": "UDDC9",
+   "name": "Hettich Universal Magic Corner Double Pullout, 9346281",
+   "brand": "Hettich",
+   "pricePaise": 1836500
+  },
+  {
+   "ref": "V9HHV",
+   "name": "Jaquar Wash Basin Set (Laguna) + Wall-Mounted Basin Mixer",
+   "brand": "Jaquar",
+   "pricePaise": 1672600
+  },
+  {
+   "ref": "8FHU5",
+   "name": "Jaquar Shower Set with Single-Lever Diverter (Opal Prime)",
+   "brand": "Jaquar",
+   "pricePaise": 1579600
+  },
+  {
+   "ref": "PR8VR",
+   "name": "Jaquar Rimless Blind Installation Wall-Hung WC, Laguna, LAS-WHT-91953BIUFSM",
+   "brand": "Jaquar",
+   "pricePaise": 1527200
+  },
+  {
+   "ref": "KBFL9",
+   "name": "Parryware Cruz C8675 Wall-Mounted White Closet WC",
+   "brand": "Parryware",
+   "pricePaise": 1486000
+  },
+  {
+   "ref": "69CFP",
+   "name": "Jaquar Wash Basin Set + Wall-Mounted Basin Mixer",
+   "brand": "Jaquar",
+   "pricePaise": 1369000
+  },
+  {
+   "ref": "RZF2R",
+   "name": "Jaquar Rimless Blind Installation Wall-Hung WC, Kubix Prime",
+   "brand": "Jaquar",
+   "pricePaise": 1269600
+  },
+  {
+   "ref": "5LZG4",
+   "name": "D-Link CAT6 Cable 305m",
+   "brand": "D-Link",
+   "pricePaise": 1224900
+  },
+  {
+   "ref": "9PJ3T",
+   "name": "Havells CAT6 LAN Cable 305m",
+   "brand": "Havells",
+   "pricePaise": 1218000
+  },
+  {
+   "ref": "XFRPZ",
+   "name": "Jaquar Accessories Collection Set",
+   "brand": "Jaquar",
+   "pricePaise": 1205800
+  },
+  {
+   "ref": "MYKUD",
+   "name": "Hettich Leather Classification Box Wardrobe Accessory",
+   "brand": "Hettich",
+   "pricePaise": 1092200
+  },
+  {
+   "ref": "7BSBN",
+   "name": "Jaquar Aquamax Concealed Body Shower Mixer",
+   "brand": "Jaquar",
+   "pricePaise": 981600
+  },
+  {
+   "ref": "NTLR6",
+   "name": "Fevicol WoodLok Pro Moisture-Resistant Synthetic Resin Adhesive, 60kg",
+   "brand": "Fevicol",
+   "pricePaise": 920000
+  },
+  {
+   "ref": "3YJUJ",
+   "name": "Finolex 3-Core Flexible Wire, 100m Coil",
+   "brand": "Finolex",
+   "pricePaise": 904000
+  },
+  {
+   "ref": "VK7N4",
+   "name": "Jaquar Single-Piece Slim Concealed Cistern, S-Type",
+   "brand": "Jaquar",
+   "pricePaise": 897000
+  },
+  {
+   "ref": "HVS7M",
+   "name": "Jaquar Rimless Wall-Hung WC with UF Soft Close, Continental, CNS-WHT-963UFSM",
+   "brand": "Jaquar",
+   "pricePaise": 828000
+  },
+  {
+   "ref": "593ZA",
+   "name": "Parryware Cardiff C022K1C Wall-Hung White Closet WC",
+   "brand": "Parryware",
+   "pricePaise": 825100
+  },
+  {
+   "ref": "BPVH7",
+   "name": "Ashirvad 3-Layer Overhead Tank, White",
+   "brand": "Ashirvad",
+   "pricePaise": 825000
+  },
+  {
+   "ref": "22R5S",
+   "name": "Jaquar Florentine Prime Wall Mixer with Shower Provision, Chrome, FLP-CHR-5273PM",
+   "brand": "Jaquar",
+   "pricePaise": 690000
+  },
+  {
+   "ref": "B4QJ9",
+   "name": "Jaquar White Tabletop Washbasin, Laguna, LAS-WHT-91905",
+   "brand": "Jaquar",
+   "pricePaise": 671600
+  },
+  {
+   "ref": "X44VK",
+   "name": "Pidilite Masterlok Synthetic Wood Adhesive, 50kg, FPA84260500013",
+   "brand": "Pidilite",
+   "pricePaise": 630000
+  },
+  {
+   "ref": "YJFZ6",
+   "name": "Parryware Primo C023H1C Wall-Mounted White Closet WC",
+   "brand": "Parryware",
+   "pricePaise": 618674
+  },
+  {
+   "ref": "CG64T",
+   "name": "Asian Paints SmartCare Damp Proof Terracotta, 20L",
+   "brand": "Asian Paints",
+   "pricePaise": 610000
+  },
+  {
+   "ref": "JZV45",
+   "name": "FR (Flame-Retardant) Wire (200/300 meter)",
+   "brand": "Finolex",
+   "pricePaise": 534100
+  },
+  {
+   "ref": "LPHV5",
+   "name": "Aquamax Thermostatic Shower Mixer",
+   "brand": "Jaquar",
+   "pricePaise": 531000
+  },
+  {
+   "ref": "SXJBK",
+   "name": "AvanTech Tandem Box Anthracite, 500mm, 30Kg, Full Set",
+   "brand": "Hettich",
+   "pricePaise": 517100
+  },
+  {
+   "ref": "RC5CB",
+   "name": "Grippo WG, Synthetic Resin Adhesive, 50 Kg",
+   "brand": "Fevicol",
+   "pricePaise": 504900
+  },
+  {
+   "ref": "UCPQ4",
+   "name": "Florentine Prime Basin Mixer",
+   "brand": "Jaquar",
+   "pricePaise": 455400
+  },
+  {
+   "ref": "U7C9K",
+   "name": "Main Door Lock Hexabolt H341 AB/SN, Single Door",
+   "brand": "Europa",
+   "pricePaise": 428200
+  },
+  {
+   "ref": "4UN55",
+   "name": "CAT 6 Lite LAN Cable, 100m Coil",
+   "brand": "Finolex",
+   "pricePaise": 424900
+  },
+  {
+   "ref": "MUURA",
+   "name": "Centaur Ultra+ 1CK Latchbolt",
+   "brand": "Godrej",
+   "pricePaise": 423700
+  },
+  {
+   "ref": "AYKRC",
+   "name": "Renesa Halo Smart 1200mm BLDC Ceiling Fan with IoT & Remote",
+   "brand": "Atomberg",
+   "pricePaise": 419900
+  },
+  {
+   "ref": "8F9H6",
+   "name": "Powder Coated 5 Shelf Slotted Angle Storage Rack, 6ft x 3ft x 1ft, Mild Steel, Orange & White, 30 kg per Shelf",
+   "brand": "Quoin",
+   "pricePaise": 397900
+  },
+  {
+   "ref": "HCDUE",
+   "name": "Speaker Cable, 100m Coil",
+   "brand": "Finolex",
+   "pricePaise": 389300
+  },
+  {
+   "ref": "XR8PZ",
+   "name": "SmartCare Damp Sheath Exterior Advanced Waterproofing Primer, 20L",
+   "brand": "Asian Paints",
+   "pricePaise": 375000
+  },
+  {
+   "ref": "2MY47",
+   "name": "Boilo Board, Plain, 8'x4'",
+   "brand": "Action Tesa",
+   "pricePaise": 370700
+  },
+  {
+   "ref": "B9V37",
+   "name": "Parma V321 Main Door Lock – 14-Pin Dimple Key, 3 Deadbolts, Single and Double Door",
+   "brand": "Europa",
+   "pricePaise": 364800
+  },
+  {
+   "ref": "EZ5DF",
+   "name": "TruCare Exterior Wall Primer, Water Thinnable, 20 Litre Bucket",
+   "brand": "Asian Paints",
+   "pricePaise": 360000
+  },
+  {
+   "ref": "4UGRX",
+   "name": "Lifeline FR Wire, 180m",
+   "brand": "Havells",
+   "pricePaise": 356900
+  },
+  {
+   "ref": "749J9",
+   "name": "Duraprotector-xf Floor Protection Sheet, 2mm Thick x 4.3ft Wide x 30m/98.5ft Long Roll",
+   "brand": "Supreme",
+   "pricePaise": 350000
+  },
+  {
+   "ref": "4RDB4",
+   "name": "Tribolt Ultra Locks",
+   "brand": "Godrej",
+   "pricePaise": 347400
+  },
+  {
+   "ref": "8STP6",
+   "name": "Panasonic Fireguard FR-LSH Wire 180 Meters",
+   "brand": "Anchor",
+   "pricePaise": 333900
+  },
+  {
+   "ref": "GQZ4W",
+   "name": "Wicker Basket with 19mm wide Beech Runners, 500mm Depth",
+   "brand": "Hettich",
+   "pricePaise": 332400
+  },
+  {
+   "ref": "JC8T8",
+   "name": "Concealed Body for Wall Mounted Basin Mixer - Valve Only, ALD-CHR-233N",
+   "brand": "Jaquar",
+   "pricePaise": 325700
+  },
+  {
+   "ref": "N9EKD",
+   "name": "TruCare Interior Wall Primer, Water Thinnable, 20 Litre Bucket",
+   "brand": "Asian Paints",
+   "pricePaise": 325000
+  },
+  {
+   "ref": "SQW2A",
+   "name": "SmartCare Damp Sheath Interior Advanced Waterproofing Primer, 20L",
+   "brand": "Asian Paints",
+   "pricePaise": 325000
+  },
+  {
+   "ref": "RLU3X",
+   "name": "InnoTech Tandem Box, Silver, 470mm, 30Kg, Full Set",
+   "brand": "Hettich",
+   "pricePaise": 306500
+  },
+  {
+   "ref": "75LHR",
+   "name": "Cargo Dish Drainer Set",
+   "brand": "Hettich",
+   "pricePaise": 299400
+  },
+  {
+   "ref": "TXTYV",
+   "name": "Concealed Body for Single Lever Diverter",
+   "brand": "Jaquar",
+   "pricePaise": 298100
+  },
+  {
+   "ref": "V2PTB",
+   "name": "Wall Mounted Single Lever Basin Mixer",
+   "brand": "Jaquar",
+   "pricePaise": 294400
+  },
+  {
+   "ref": "MB8PY",
+   "name": "Fusion Prime Sink Cock, Wall Mount, FUP-CHR-29347PM",
+   "brand": "Jaquar",
+   "pricePaise": 290700
+  },
+  {
+   "ref": "JXREL",
+   "name": "Solarium Neo, 3000W Instant Water Heater",
+   "brand": "Crompton",
+   "pricePaise": 289900
+  },
+  {
+   "ref": "CL8MJ",
+   "name": "Absolute Calibrated, 16mm, Plywood, 8 x 4",
+   "brand": "Greenply",
+   "pricePaise": 286900
+  },
+  {
+   "ref": "ZVXMR",
+   "name": "TruCare Economy Multipurpose Putty Mixer M02, 800W High-Torque Rotary Tool",
+   "brand": "Asian Paints",
+   "pricePaise": 280000
+  },
+  {
+   "ref": "4WLMJ",
+   "name": "Main Door Lock Antique Brass/Nickel Steel, Single Door Lock",
+   "brand": "Europa",
+   "pricePaise": 271400
+  },
+  {
+   "ref": "TV29C",
+   "name": "Waste-Bin.It Classic, 13 Litres Capacity, 9343581",
+   "brand": "Hettich",
+   "pricePaise": 271000
+  },
+  {
+   "ref": "8DLET",
+   "name": "Florentine Prime Sink Cock, FLP-CHR-5347PMD, Wall Mount",
+   "brand": "Jaquar",
+   "pricePaise": 270500
+  },
+  {
+   "ref": "3FU76",
+   "name": "Bath Tub Spout with Button attachment for Hand Shower with Wall Flange",
+   "brand": "Jaquar",
+   "pricePaise": 253000
+  },
+  {
+   "ref": "GFMBD",
+   "name": "Energion Elevate 1200mm BLDC Ceiling Fan",
+   "brand": "Crompton",
+   "pricePaise": 244900
+  },
+  {
+   "ref": "YSP85",
+   "name": "Cargo IQ 300 Bottle Pull Out, 2 Tier",
+   "brand": "Hettich",
+   "pricePaise": 239400
+  },
+  {
+   "ref": "Y2DXG",
+   "name": "Florentine Prime Kitchen Sink Cock, Chrome",
+   "brand": "Jaquar",
+   "pricePaise": 236400
+  },
+  {
+   "ref": "TM2MX",
+   "name": "High-Flow Single Lever Diverter Exposed Parts Kit",
+   "brand": "Jaquar",
+   "pricePaise": 230900
+  },
+  {
+   "ref": "VPQJ9",
+   "name": "Florentine Prime 2 Way Bib Cock with Wall Flange, FLP-CHR-5041PM",
+   "brand": "Jaquar",
+   "pricePaise": 229900
+  },
+  {
+   "ref": "4ARE2",
+   "name": "Gold 710 BWP Plywood",
+   "brand": "Greenply",
+   "pricePaise": 225800
+  },
+  {
+   "ref": "4GV94",
+   "name": "Ornamix Prime Bath Tub Spout with Wall Flange, SPJ-CHR-10429PM",
+   "brand": "Jaquar",
+   "pricePaise": 225400
+  },
+  {
+   "ref": "LZA9V",
+   "name": "Club Prime BWP Marine Plywood",
+   "brand": "Century",
+   "pricePaise": 225100
+  },
+  {
+   "ref": "HPW58",
+   "name": "Activcoat Exterior Primer, 20 Litre Bucket",
+   "brand": "Birla White",
+   "pricePaise": 225000
+  },
+  {
+   "ref": "787UW",
+   "name": "Maxima+ Green Wire HR FR-LSH LF",
+   "brand": "Polycab",
+   "pricePaise": 222200
+  },
+  {
+   "ref": "6TVBS",
+   "name": "Acti9 Residual Current Circuit Breaker, RCCB",
+   "brand": "Schneider",
+   "pricePaise": 221900
+  },
+  {
+   "ref": "6XVJG",
+   "name": "Life Guard FR-LSH Wire",
+   "brand": "Havells",
+   "pricePaise": 219900
+  },
+  {
+   "ref": "DMVW7",
+   "name": "Premium Tabletop Ceramic Bowl Basin",
+   "brand": "Parryware",
+   "pricePaise": 214760
+  },
+  {
+   "ref": "NMN2W",
+   "name": "Gen Z (3+1) CCTV Cable, 90m",
+   "brand": "Finolex",
+   "pricePaise": 212900
+  },
+  {
+   "ref": "NW632",
+   "name": "Life Line Plus S3 FR Wire, 90m",
+   "brand": "Havells",
+   "pricePaise": 212900
+  },
+  {
+   "ref": "YP8ZM",
+   "name": "Continental Table Top Basin | White, 425x340x175mm | CNS-WHT-903",
+   "brand": "Jaquar",
+   "pricePaise": 211600
+  },
+  {
+   "ref": "L8QZC",
+   "name": "Optima+ Wire LF FR",
+   "brand": "Polycab",
+   "pricePaise": 211200
+  },
+  {
+   "ref": "683EL",
+   "name": "Jemmy Proof Lock – J320, 14-Pin Dimple Key, 2 Deadbolts, Single, Double and Sliding Doors",
+   "brand": "Europa",
+   "pricePaise": 206300
+  },
+  {
+   "ref": "29ZVW",
+   "name": "DWA 215 Tile Adhesive, 10 Kg",
+   "brand": "MYK Laticrete",
+   "pricePaise": 202500
+  },
+  {
+   "ref": "3WHUT",
+   "name": "Panasonic Advance FR Wire 90 Meters",
+   "brand": "Anchor",
+   "pricePaise": 194500
+  },
+  {
+   "ref": "4TRD9",
+   "name": "Lyric Sink Cock, LYR-CHR-38347S, Wall Mount",
+   "brand": "Jaquar",
+   "pricePaise": 194100
+  },
+  {
+   "ref": "ER66G",
+   "name": "Bottle Trap, ALD-CHR-769L300X190",
+   "brand": "Jaquar",
+   "pricePaise": 194000
+  },
+  {
+   "ref": "JKDB4",
+   "name": "Sink Cock with Pipe Swinging Spout (Wall Mounted Model) with Wall Flange",
+   "brand": "Jaquar",
+   "pricePaise": 192300
+  },
+  {
+   "ref": "PFBAG",
+   "name": "Club Flexiply BWP Marine Plywood",
+   "brand": "Greenply",
+   "pricePaise": 189900
+  },
+  {
+   "ref": "5YPV8",
+   "name": "HI-PER Anti-Bubble Waterproof Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 187000
+  },
+  {
+   "ref": "2SPMZ",
+   "name": "Flamegard FR-LSH Wire",
+   "brand": "Finolex",
+   "pricePaise": 181200
+  },
+  {
+   "ref": "USQMS",
+   "name": "Silver FR Wire",
+   "brand": "Finolex",
+   "pricePaise": 176400
+  },
+  {
+   "ref": "YE5SE",
+   "name": "ABS Hand Shower",
+   "brand": "Jaquar",
+   "pricePaise": 176000
+  },
+  {
+   "ref": "HH5JR",
+   "name": "Ecotec 710 BWP Plywood",
+   "brand": "Greenply",
+   "pricePaise": 172600
+  },
+  {
+   "ref": "ZENAC",
+   "name": "PUA 212 Modified PU Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 168000
+  },
+  {
+   "ref": "5PQ83",
+   "name": "Diverter Plate",
+   "brand": "Jaquar",
+   "pricePaise": 167400
+  },
+  {
+   "ref": "9V2BV",
+   "name": "RG-6 CCS Axial Cable, 100m",
+   "brand": "Finolex",
+   "pricePaise": 166500
+  },
+  {
+   "ref": "MHHQU",
+   "name": "Sainik 710 BWP Marine Plywood",
+   "brand": "Century",
+   "pricePaise": 164000
+  },
+  {
+   "ref": "RPJMQ",
+   "name": "ABS Hand Shower (Health Faucet), ALD-CHR-573",
+   "brand": "Jaquar",
+   "pricePaise": 159100
+  },
+  {
+   "ref": "PPCFJ",
+   "name": "Surebreeze Star Drift 1200mm Ceiling Fan",
+   "brand": "Crompton",
+   "pricePaise": 154900
+  },
+  {
+   "ref": "VWU9E",
+   "name": "Sainik MR 303 Plywood",
+   "brand": "Century",
+   "pricePaise": 146900
+  },
+  {
+   "ref": "C3AVE",
+   "name": "Acti9 SPN DB, Double Door",
+   "brand": "Schneider",
+   "pricePaise": 146900
+  },
+  {
+   "ref": "2WX8J",
+   "name": "Quadro-V6 Drawer Runners, Full Extension, 30 Kgs Capacity, Silent System",
+   "brand": "Hettich",
+   "pricePaise": 146300
+  },
+  {
+   "ref": "66X75-1",
+   "name": "ABS Overhead Shower",
+   "brand": "Jaquar",
+   "pricePaise": 146300
+  },
+  {
+   "ref": "BQV7U",
+   "name": "Ecotec MR 303 Plywood",
+   "brand": "Greenply",
+   "pricePaise": 143200
+  },
+  {
+   "ref": "HDBSL",
+   "name": "Activcoat Interior Primer, 20 Litre Bucket",
+   "brand": "Birla White",
+   "pricePaise": 140000
+  },
+  {
+   "ref": "VSE36",
+   "name": "T20 Extrofix Ultra Tile Adhesive, White, 20 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 138000
+  },
+  {
+   "ref": "B9RAF",
+   "name": "Premium Concealed Cistern Control Flush Plate, Chrome",
+   "brand": "Jaquar",
+   "pricePaise": 136200
+  },
+  {
+   "ref": "T8DP9",
+   "name": "335 Super Flex Tile & Stone Adhesive, White, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 136000
+  },
+  {
+   "ref": "9354Q",
+   "name": "Continental Single Towel Rail 600mm Long, ACN-CHR-1111SM",
+   "brand": "Jaquar",
+   "pricePaise": 133400
+  },
+  {
+   "ref": "5VCH5",
+   "name": "SmartCare Damp Proof Advanced",
+   "brand": "Asian Paints",
+   "pricePaise": 129900
+  },
+  {
+   "ref": "SMNBZ",
+   "name": "Florentine Prime Waste Coupling",
+   "brand": "Jaquar",
+   "pricePaise": 126100
+  },
+  {
+   "ref": "R5TWD",
+   "name": "Cargo Detergent Holder Kitchen Accessory, 10.25 x 14 x 8 in (9197058)",
+   "brand": "Hettich",
+   "pricePaise": 125000
+  },
+  {
+   "ref": "ZKX5Y",
+   "name": "Brisk Air Plus Exhaust Fan",
+   "brand": "Crompton",
+   "pricePaise": 124900
+  },
+  {
+   "ref": "V7FCZ",
+   "name": "Sensys 8657i Corner 165° Zero Protrusion Soft Close Hinges, 0 Crank, 1 Set (2 Nos), 9243040",
+   "brand": "Hettich",
+   "pricePaise": 122500
+  },
+  {
+   "ref": "MLGYM",
+   "name": "Florentine Prime Angular Stop Cock",
+   "brand": "Jaquar",
+   "pricePaise": 120300
+  },
+  {
+   "ref": "UVJQ9",
+   "name": "White Cement",
+   "brand": "Birla White",
+   "pricePaise": 120000
+  },
+  {
+   "ref": "H9N6S",
+   "name": "Laticrete 335 Super Flex Tile & Stone Adhesive, Grey, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 118000
+  },
+  {
+   "ref": "8VBDF",
+   "name": "Astraspot 3-In-1 COB Light, Tunable, White",
+   "brand": "Philips",
+   "pricePaise": 115200
+  },
+  {
+   "ref": "U5YBX",
+   "name": "WallSeal Waterproof Putty, 30 Kg Bag",
+   "brand": "Birla White",
+   "pricePaise": 108000
+  },
+  {
+   "ref": "9H8SC",
+   "name": "KA 4532 German Telescopic Channel, Soft Close, 35kg, Zinc",
+   "brand": "Hettich",
+   "pricePaise": 105800
+  },
+  {
+   "ref": "Z257Y",
+   "name": "Laticrete 325 High Flex Tile & Stone Adhesive, White, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 105000
+  },
+  {
+   "ref": "CZGZG",
+   "name": "Continental Towel Ring Round, ACN-CHR-1121BN",
+   "brand": "Jaquar",
+   "pricePaise": 104900
+  },
+  {
+   "ref": "TT796",
+   "name": "T07 Extrofix Tile Adhesive, Grey, 20 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 102000
+  },
+  {
+   "ref": "6LFPR",
+   "name": "Shower Arm",
+   "brand": "Jaquar",
+   "pricePaise": 98900
+  },
+  {
+   "ref": "FV8P5",
+   "name": "Garnet 264 LEDs/Meter Profile & Cove LED Strip Light, 5m",
+   "brand": "Wipro",
+   "pricePaise": 98900
+  },
+  {
+   "ref": "9Y5E4",
+   "name": "Tractor Uno Acrylic Distemper Paint, White, 20kg",
+   "brand": "Asian Paints",
+   "pricePaise": 98000
+  },
+  {
+   "ref": "CB2V2",
+   "name": "Wardrobe Oval Cabinet Rail, 2m Length, Chrome Gloss, 9341248",
+   "brand": "Hettich",
+   "pricePaise": 97700
+  },
+  {
+   "ref": "PWNRG",
+   "name": "Full Glow 3-in-1 Surface Light (Tunable), Round",
+   "brand": "Philips",
+   "pricePaise": 96200
+  },
+  {
+   "ref": "DD3G8",
+   "name": "Laticrete 325 High Flex Tile & Stone Adhesive, Grey, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 96000
+  },
+  {
+   "ref": "UT85B",
+   "name": "T06 VFA Tile Adhesive, White, 20 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 94000
+  },
+  {
+   "ref": "4AUUJ",
+   "name": "WoodTech PU Exterior Glossy",
+   "brand": "Asian Paints",
+   "pricePaise": 92000
+  },
+  {
+   "ref": "U54DA",
+   "name": "Shower Flexible Tube",
+   "brand": "Jaquar",
+   "pricePaise": 91200
+  },
+  {
+   "ref": "X7P3F",
+   "name": "WoodTech PU Exterior Matt",
+   "brand": "Asian Paints",
+   "pricePaise": 90000
+  },
+  {
+   "ref": "69AGB",
+   "name": "WoodTech PU Exterior Sealer",
+   "brand": "Asian Paints",
+   "pricePaise": 88000
+  },
+  {
+   "ref": "HER83",
+   "name": "Klear5 Epoxy Adhesive",
+   "brand": "Araldite",
+   "pricePaise": 87000
+  },
+  {
+   "ref": "YAPCH",
+   "name": "Cylindrical Locks Feather Touch",
+   "brand": "Europa",
+   "pricePaise": 82300
+  },
+  {
+   "ref": "5NWJ2",
+   "name": "WoodTech PU Interior Matt",
+   "brand": "Asian Paints",
+   "pricePaise": 82000
+  },
+  {
+   "ref": "CL6M4",
+   "name": "T34 Starlike Epoxy Tile Grout",
+   "brand": "Roff",
+   "pricePaise": 81000
+  },
+  {
+   "ref": "Q3X5V",
+   "name": "WoodTech PU Interior Sealer",
+   "brand": "Asian Paints",
+   "pricePaise": 81000
+  },
+  {
+   "ref": "HNSU2",
+   "name": "Cylindrical Locks SS",
+   "brand": "Godrej",
+   "pricePaise": 80100
+  },
+  {
+   "ref": "Z4YGS",
+   "name": "WoodTech PU Interior Glossy",
+   "brand": "Asian Paints",
+   "pricePaise": 80000
+  },
+  {
+   "ref": "PV2RT",
+   "name": "Alpha Trimless COB CCT (3 in 1)",
+   "brand": "Wipro",
+   "pricePaise": 79900
+  },
+  {
+   "ref": "C6X8V",
+   "name": "Intermat 9956 Corner 165° Zero Protrusion Regular Close Hinges, 0 Crank, 1 Set (2 Nos), 9242890",
+   "brand": "Hettich",
+   "pricePaise": 79400
+  },
+  {
+   "ref": "XP5EV",
+   "name": "LATAPOXY Fast & Clear Epoxy Adhesive",
+   "brand": "MYK Laticrete",
+   "pricePaise": 79000
+  },
+  {
+   "ref": "6WZ8M",
+   "name": "TruCare Wall Putty, 40 Kg Bag",
+   "brand": "Asian Paints",
+   "pricePaise": 78000
+  },
+  {
+   "ref": "GBACW",
+   "name": "Laticrete 315 Plus Tile Adhesive, White, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 77500
+  },
+  {
+   "ref": "G3TUK",
+   "name": "Continental Soap Dish Holder, ACN-CHR-1131N",
+   "brand": "Jaquar",
+   "pricePaise": 75700
+  },
+  {
+   "ref": "7W35Z",
+   "name": "T04 VFA Tile Adhesive, White, 20 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 75500
+  },
+  {
+   "ref": "E2ZPL",
+   "name": "T02 NSA Tile Adhesive, Grey, 30 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 74000
+  },
+  {
+   "ref": "EB2JT",
+   "name": "Standard Epoxy Adhesive",
+   "brand": "Araldite",
+   "pricePaise": 73500
+  },
+  {
+   "ref": "7R6JL",
+   "name": "WallCare Putty, 30 Kg Bag",
+   "brand": "Birla White",
+   "pricePaise": 71500
+  },
+  {
+   "ref": "7G97R",
+   "name": "AstraSpot Next LED COB Light",
+   "brand": "Philips",
+   "pricePaise": 69900
+  },
+  {
+   "ref": "8N9QB",
+   "name": "T03 VFA Tile Adhesive, Grey, 20 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 65000
+  },
+  {
+   "ref": "4MFST",
+   "name": "Angular Stop Cock (Regulating Valve), AQT-CHR-3057",
+   "brand": "Jaquar",
+   "pricePaise": 65000
+  },
+  {
+   "ref": "DLKPD",
+   "name": "Royale Luxury Emulsion, Colour",
+   "brand": "Asian Paints",
+   "pricePaise": 64700
+  },
+  {
+   "ref": "7DNGM",
+   "name": "Apex Ultima Protek, Colour",
+   "brand": "Asian Paints",
+   "pricePaise": 64700
+  },
+  {
+   "ref": "WSRXV",
+   "name": "Cylindrical Locks SS/AB",
+   "brand": "Europa",
+   "pricePaise": 64600
+  },
+  {
+   "ref": "4MYMU",
+   "name": "Garnet 120 LEDs/Meter Profile & Cove LED Strip Light, 5m",
+   "brand": "Wipro",
+   "pricePaise": 63900
+  },
+  {
+   "ref": "Y8QFJ",
+   "name": "Myrius NextGen Fan Regulator, 100 Watts, 360° Regulator, 2 Mod",
+   "brand": "Legrand",
+   "pricePaise": 63200
+  },
+  {
+   "ref": "URPHW",
+   "name": "EvenGlow 120 LEDs/Meter Strip Light, 5m",
+   "brand": "Philips",
+   "pricePaise": 63000
+  },
+  {
+   "ref": "495AG",
+   "name": "Alpha Trimless COB LED Spotlight (2 Years Warranty)",
+   "brand": "Wipro",
+   "pricePaise": 62900
+  },
+  {
+   "ref": "2K88T",
+   "name": "Apex Ultima Protek, Base White",
+   "brand": "Asian Paints",
+   "pricePaise": 62600
+  },
+  {
+   "ref": "XQLUC",
+   "name": "Laticrete 315 Plus Tile Adhesive, Grey, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 62500
+  },
+  {
+   "ref": "6EVN5",
+   "name": "Royale Luxury Emulsion, Base White",
+   "brand": "Asian Paints",
+   "pricePaise": 61800
+  },
+  {
+   "ref": "R574J",
+   "name": "T09 NSA Tile Adhesive, White, 20 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 61500
+  },
+  {
+   "ref": "UWAT2",
+   "name": "KA 4732 Telescopic Channel, Soft Close, 35 kg Capacity, Zinc",
+   "brand": "Hettich",
+   "pricePaise": 61000
+  },
+  {
+   "ref": "T75CL",
+   "name": "Laticrete SP-100 Epoxy Tile Grout, Resin + Hardener Bucket (Part A & Part B)",
+   "brand": "MYK Laticrete",
+   "pricePaise": 61000
+  },
+  {
+   "ref": "D5768",
+   "name": "Myrius NextGen DP Switch, 32A, 2 Mod, With Indicator",
+   "brand": "Legrand",
+   "pricePaise": 60500
+  },
+  {
+   "ref": "MJPPV",
+   "name": "Ultra Glow 3-in-1 LED Downlight, Round",
+   "brand": "Philips",
+   "pricePaise": 58900
+  },
+  {
+   "ref": "U7TYU",
+   "name": "OrgaTray 440 Trimmable (Fixed Partition) Cutlery Insert, Silver",
+   "brand": "Hettich",
+   "pricePaise": 58600
+  },
+  {
+   "ref": "YCGAE",
+   "name": "LED Strip Light Driver",
+   "brand": "Philips",
+   "pricePaise": 58000
+  },
+  {
+   "ref": "QYJ97",
+   "name": "Laticrete 307 Ceramic Tile Adhesive, White, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 57500
+  },
+  {
+   "ref": "5EWBA",
+   "name": "Florentine Prime Stop Cock & Flush Cock, FLP-CHR-5083KPM",
+   "brand": "Jaquar",
+   "pricePaise": 57000
+  },
+  {
+   "ref": "N5AS8",
+   "name": "Garnet 12V Constant Voltage LED Strip Driver",
+   "brand": "Wipro",
+   "pricePaise": 56900
+  },
+  {
+   "ref": "LWCHF",
+   "name": "Apex Ultima, Colour",
+   "brand": "Asian Paints",
+   "pricePaise": 55800
+  },
+  {
+   "ref": "2MEPU",
+   "name": "Apex Ultima, Base White",
+   "brand": "Asian Paints",
+   "pricePaise": 54500
+  },
+  {
+   "ref": "4NPSJ",
+   "name": "Garnet Rimless 3-in-1 CCT Surface Mounted LED Panel (2 Years Warranty)",
+   "brand": "Wipro",
+   "pricePaise": 53900
+  },
+  {
+   "ref": "K27DZ",
+   "name": "Full Glow LED Surface Light, Round",
+   "brand": "Philips",
+   "pricePaise": 52900
+  },
+  {
+   "ref": "TXQ7R",
+   "name": "Garnet LED Batten CCT 3 in 1, 22W",
+   "brand": "Wipro",
+   "pricePaise": 52900
+  },
+  {
+   "ref": "B3G3X",
+   "name": "Wall Bracket for Hand Shower, SHA-CHR-555",
+   "brand": "Jaquar",
+   "pricePaise": 52400
+  },
+  {
+   "ref": "XZ5QR",
+   "name": "HDHMR Board, Plain, 8 ft x 4 ft",
+   "brand": "Action Tesa",
+   "pricePaise": 51400
+  },
+  {
+   "ref": "FK924",
+   "name": "TX2 Tile Adhesive, White, 20 Kg Bag",
+   "brand": "Birla White",
+   "pricePaise": 51000
+  },
+  {
+   "ref": "3PDUS",
+   "name": "Sensys 8645i Soft Close Hinges, 1 Set (2 Nos)",
+   "brand": "Hettich",
+   "pricePaise": 50000
+  },
+  {
+   "ref": "2R8CG",
+   "name": "Laticrete 307 Ceramic Tile Adhesive, Grey, 20 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 49500
+  },
+  {
+   "ref": "ZFZFS",
+   "name": "Plain Exterior Grade MDF, 8 ft x 4 ft",
+   "brand": "Action Tesa",
+   "pricePaise": 47400
+  },
+  {
+   "ref": "N85L6",
+   "name": "Super OPC 53 Grade Cement, 50 Kg Bag",
+   "brand": "Birla Super",
+   "pricePaise": 46000
+  },
+  {
+   "ref": "3NPNU",
+   "name": "T01 NCA Tile Adhesive, Grey, 30 Kg Bag",
+   "brand": "Roff",
+   "pricePaise": 43000
+  },
+  {
+   "ref": "5FSYX",
+   "name": "Fevicol Probond Special Adhesive for PVC Sheets & Tapes",
+   "brand": "Pidilite",
+   "pricePaise": 42600
+  },
+  {
+   "ref": "9R5VC",
+   "name": "Garnet Wave Infinity 3-in-1 LED Panel, Round",
+   "brand": "Wipro",
+   "pricePaise": 42300
+  },
+  {
+   "ref": "64LE6",
+   "name": "Laticrete 305 Tile Adhesive, Grey, 30 Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 42000
+  },
+  {
+   "ref": "PZ6YZ",
+   "name": "3M Mirror Mount Tape, Double Side, 5m",
+   "brand": "Quoin",
+   "pricePaise": 42000
+  },
+  {
+   "ref": "EEUDY",
+   "name": "Nail Free Ultra High Strength Adhesive & Sealant, 435g",
+   "brand": "Fevicol",
+   "pricePaise": 42000
+  },
+  {
+   "ref": "FSGGD",
+   "name": "Raincoat WPC Waterproof Coating",
+   "brand": "Dr. Fixit",
+   "pricePaise": 39900
+  },
+  {
+   "ref": "M2GQK",
+   "name": "WoodTech Melamyne Matt",
+   "brand": "Asian Paints",
+   "pricePaise": 39000
+  },
+  {
+   "ref": "6NCZL",
+   "name": "WoodTech Melamyne Sealer",
+   "brand": "Asian Paints",
+   "pricePaise": 39000
+  },
+  {
+   "ref": "KZXQZ",
+   "name": "Roma Fan Regulator, 5 Step, 100W, White, 2 Module",
+   "brand": "Anchor",
+   "pricePaise": 38000
+  },
+  {
+   "ref": "9KXFQ",
+   "name": "Premium Emulsion Paints, Colour",
+   "brand": "Asian Paints",
+   "pricePaise": 37800
+  },
+  {
+   "ref": "Z49HF",
+   "name": "Apex, Colour",
+   "brand": "Asian Paints",
+   "pricePaise": 37800
+  },
+  {
+   "ref": "AB6SF",
+   "name": "301 Pidicrete URP SBR Latex",
+   "brand": "Dr. Fixit",
+   "pricePaise": 37600
+  },
+  {
+   "ref": "YPZYH",
+   "name": "Plain Interior Grade MDF, 8' X 4'",
+   "brand": "Action Tesa",
+   "pricePaise": 37300
+  },
+  {
+   "ref": "YL663",
+   "name": "SmartCare Tile Adhesive, Grey, 30 Kg Bag",
+   "brand": "Asian Paints",
+   "pricePaise": 37000
+  },
+  {
+   "ref": "DJSHS",
+   "name": "WoodTech Melamyne Glossy",
+   "brand": "Asian Paints",
+   "pricePaise": 37000
+  },
+  {
+   "ref": "PL8CH",
+   "name": "Gyproc Xpert+ Gypsum Punning Plaster, 25 Kg",
+   "brand": "Gyproc",
+   "pricePaise": 36500
+  },
+  {
+   "ref": "E59GG",
+   "name": "Marine Waterproof Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 36400
+  },
+  {
+   "ref": "ET9RL",
+   "name": "Apex, Base White",
+   "brand": "Asian Paints",
+   "pricePaise": 35700
+  },
+  {
+   "ref": "Q87VE",
+   "name": "Premium Emulsion Paints, Base White",
+   "brand": "Asian Paints",
+   "pricePaise": 35300
+  },
+  {
+   "ref": "YNTBR",
+   "name": "Apcolite Premium Glossy Enamel",
+   "brand": "Asian Paints",
+   "pricePaise": 33000
+  },
+  {
+   "ref": "VE85F",
+   "name": "Chicken Wire Mesh, 20 Gauge, 3ft Wide, 2Kg",
+   "brand": "MARS",
+   "pricePaise": 32000
+  },
+  {
+   "ref": "SLTPK",
+   "name": "Flowguard Plus CPVC Pipe, SDR-11, 5m Length",
+   "brand": "Ashirvad",
+   "pricePaise": 31600
+  },
+  {
+   "ref": "GSEYG",
+   "name": "Enduro Plast Ready Mix Plaster, 40 Kg Bag",
+   "brand": "JSW",
+   "pricePaise": 30500
+  },
+  {
+   "ref": "7NCPM",
+   "name": "HeatX Heatproof Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 30000
+  },
+  {
+   "ref": "E3MPF",
+   "name": "LATAPOXY 310 Epoxy Chemical Anchor",
+   "brand": "MYK Laticrete",
+   "pricePaise": 30000
+  },
+  {
+   "ref": "AJUSL",
+   "name": "KA 5632 Telescopic Channel, Regular Close, 45 kg Capacity, Zinc, 200mm to 700mm",
+   "brand": "Hettich",
+   "pricePaise": 29500
+  },
+  {
+   "ref": "JSYLA",
+   "name": "Ultra Glow LED Downlight, Round",
+   "brand": "Philips",
+   "pricePaise": 29300
+  },
+  {
+   "ref": "3ARHP",
+   "name": "SH Adhesive",
+   "brand": "Fevicol",
+   "pricePaise": 29200
+  },
+  {
+   "ref": "VPU9V",
+   "name": "Magnetic Door Stopper/Catcher",
+   "brand": "Quoin",
+   "pricePaise": 28600
+  },
+  {
+   "ref": "S48GA",
+   "name": "Flexible PVC Electrical Conduit Pipe, 25m (82 ft) Roll",
+   "brand": "Quoin",
+   "pricePaise": 28000
+  },
+  {
+   "ref": "Q7BYQ",
+   "name": "Fall protection Safety Harness Belt with Hooks",
+   "brand": "Quoin",
+   "pricePaise": 28000
+  },
+  {
+   "ref": "577AW",
+   "name": "Myrius NextGen 6A Bell Push Switch with Indicator, 2 Module",
+   "brand": "Legrand",
+   "pricePaise": 27200
+  },
+  {
+   "ref": "K5X6X",
+   "name": "Laticrete 303 Grey Tile Adhesive, 20Kg Bag",
+   "brand": "MYK Laticrete",
+   "pricePaise": 25500
+  },
+  {
+   "ref": "FFNV6",
+   "name": "TruCare White Wood Primer",
+   "brand": "Asian Paints",
+   "pricePaise": 24900
+  },
+  {
+   "ref": "73",
+   "name": "TruCare Yellow Metal Primer",
+   "brand": "Asian Paints",
+   "pricePaise": 24000
+  },
+  {
+   "ref": "ZNB7D",
+   "name": "Ace, Colour",
+   "brand": "Asian Paints",
+   "pricePaise": 24000
+  },
+  {
+   "ref": "RXCLN",
+   "name": "Roma 32A DP Power Switch with Indicator, 1 Way, White, 2 Module",
+   "brand": "Anchor",
+   "pricePaise": 22800
+  },
+  {
+   "ref": "WCEAU",
+   "name": "Onsys 4447i Soft Close Hinges, 1 Set (2 Nos)",
+   "brand": "Hettich",
+   "pricePaise": 22200
+  },
+  {
+   "ref": "47YBJ",
+   "name": "Ace, Base White",
+   "brand": "Asian Paints",
+   "pricePaise": 22000
+  },
+  {
+   "ref": "G44YV",
+   "name": "201 Crack-X Paste",
+   "brand": "Dr. Fixit",
+   "pricePaise": 21700
+  },
+  {
+   "ref": "77HVD",
+   "name": "Tractor Emulsion, Colour",
+   "brand": "Asian Paints",
+   "pricePaise": 21500
+  },
+  {
+   "ref": "A827U",
+   "name": "Garnet IP65 LED Strip Light Driver, 220-240V AC",
+   "brand": "Quoin",
+   "pricePaise": 20900
+  },
+  {
+   "ref": "68V7T",
+   "name": "Laticrete Tile Levelling Clips with Wedges - Pack of 50",
+   "brand": "MYK Laticrete",
+   "pricePaise": 20500
+  },
+  {
+   "ref": "F84TL",
+   "name": "Flowguard Plus CPVC Brass Female Extension 90° Elbow, 3/4 x 1/2 inch (Brass Elbow Long)",
+   "brand": "Ashirvad",
+   "pricePaise": 19700
+  },
+  {
+   "ref": "3VV8F",
+   "name": "Tractor Emulsion, Base White",
+   "brand": "Asian Paints",
+   "pricePaise": 19000
+  },
+  {
+   "ref": "R83C2",
+   "name": "Miniature circuit breaker MCB - C60H - C curve",
+   "brand": "Schneider",
+   "pricePaise": 19000
+  },
+  {
+   "ref": "5BJF9",
+   "name": "Myrius NextGen Switch, 16A, 1 Mod, 1 Way",
+   "brand": "Legrand",
+   "pricePaise": 18200
+  },
+  {
+   "ref": "78UU7",
+   "name": "Laticrete Notch Trowel",
+   "brand": "MYK Laticrete",
+   "pricePaise": 16500
+  },
+  {
+   "ref": "2ZJN6",
+   "name": "101 Pidiproof LW+",
+   "brand": "Dr. Fixit",
+   "pricePaise": 16000
+  },
+  {
+   "ref": "8T9NS",
+   "name": "Flowguard Plus Male Adapter Brass Threaded - MABT",
+   "brand": "Ashirvad",
+   "pricePaise": 16000
+  },
+  {
+   "ref": "HB8FZ",
+   "name": "Electrical Spring",
+   "brand": "Quoin",
+   "pricePaise": 16000
+  },
+  {
+   "ref": "MFXAN",
+   "name": "WOODTECH General Purpose Thinner (Turpentile Oil)",
+   "brand": "Asian Paints",
+   "pricePaise": 16000
+  },
+  {
+   "ref": "32C3R",
+   "name": "Slimline Ultra LED Tube Light, 20W",
+   "brand": "Philips",
+   "pricePaise": 16000
+  },
+  {
+   "ref": "HMDDY",
+   "name": "CPVC Brass Female Threaded Adaptor FABT",
+   "brand": "Ashirvad",
+   "pricePaise": 15400
+  },
+  {
+   "ref": "WGZRA",
+   "name": "T16 Cera Tile & Ceramic Cleaner",
+   "brand": "Roff",
+   "pricePaise": 14000
+  },
+  {
+   "ref": "H56YJ",
+   "name": "Expert 110mm (4 inch) Segmented Diamond Cutting Blade",
+   "brand": "Quoin",
+   "pricePaise": 14000
+  },
+  {
+   "ref": "6KCPK",
+   "name": "Myrius NextGen 3 Pin Socket, 2 Module",
+   "brand": "Legrand",
+   "pricePaise": 13100
+  },
+  {
+   "ref": "7Q8UJ",
+   "name": "Laticrete SP-100 Epoxy Tile Grout, Colour Powder (Part C)",
+   "brand": "MYK Laticrete",
+   "pricePaise": 13000
+  },
+  {
+   "ref": "U82X6",
+   "name": "Flowguard Plus Reducing Male Adapter Brass Threaded - MABT",
+   "brand": "Ashirvad",
+   "pricePaise": 12700
+  },
+  {
+   "ref": "5QYV2",
+   "name": "Myrius NextGen Plate with Frame",
+   "brand": "Legrand",
+   "pricePaise": 12200
+  },
+  {
+   "ref": "PLESU",
+   "name": "Laticrete Clenza TC Tile Cleaner, 1 L",
+   "brand": "MYK Laticrete",
+   "pricePaise": 12000
+  },
+  {
+   "ref": "J7ZMU",
+   "name": "Flowguard Plus CPVC Brass Tee - MABT 3/4 x 3/4 x 1/2 inch",
+   "brand": "Ashirvad",
+   "pricePaise": 11700
+  },
+  {
+   "ref": "ZCDZN",
+   "name": "Roma Switch, 20A, 1 Module, 1 Way, White",
+   "brand": "Anchor",
+   "pricePaise": 11500
+  },
+  {
+   "ref": "JBMRH",
+   "name": "Roma Bell Push Switch, 10A, 2 Module, White",
+   "brand": "Anchor",
+   "pricePaise": 10900
+  },
+  {
+   "ref": "K825K",
+   "name": "Roma 3 Pin Socket, 2 Module, White",
+   "brand": "Anchor",
+   "pricePaise": 10100
+  },
+  {
+   "ref": "PRPD5",
+   "name": "Flowguard Plus CPVC Ball Valve",
+   "brand": "Ashirvad",
+   "pricePaise": 9700
+  },
+  {
+   "ref": "Z8EUR",
+   "name": "Flowguard Plus 1 Step CPVC Yellow Medium Solvent Cement",
+   "brand": "Ashirvad",
+   "pricePaise": 9000
+  },
+  {
+   "ref": "8D3HZ",
+   "name": "Flowguard Plus Reducing Female Adapter Brass Threaded - FABT",
+   "brand": "Ashirvad",
+   "pricePaise": 8800
+  },
+  {
+   "ref": "JGAPC",
+   "name": "Flowguard Plus Brass Threaded Tee",
+   "brand": "Ashirvad",
+   "pricePaise": 8700
+  },
+  {
+   "ref": "SJY9N",
+   "name": "TruCare Acrylic Wall Putty",
+   "brand": "Asian Paints",
+   "pricePaise": 8500
+  },
+  {
+   "ref": "RRD2A",
+   "name": "Tresa Plate with Frame, White",
+   "brand": "Anchor",
+   "pricePaise": 8400
+  },
+  {
+   "ref": "2L7F6",
+   "name": "Myrius NextGen Switch, 6A, 1 Module",
+   "brand": "Legrand",
+   "pricePaise": 7300
+  },
+  {
+   "ref": "VJKP5",
+   "name": "TruCare Roller",
+   "brand": "Asian Paints",
+   "pricePaise": 7000
+  },
+  {
+   "ref": "WLGLC",
+   "name": "Flowguard Plus CPVC 90° Elbow Brass",
+   "brand": "Ashirvad",
+   "pricePaise": 6900
+  },
+  {
+   "ref": "L5YD5",
+   "name": "Flowguard Plus CPVC Step Over Bend",
+   "brand": "Ashirvad",
+   "pricePaise": 6200
+  },
+  {
+   "ref": "ACLDT",
+   "name": "Roff Tiles Spacer, 100 Nos/Pack",
+   "brand": "Roff",
+   "pricePaise": 6000
+  },
+  {
+   "ref": "EVTE7",
+   "name": "TruCare Roller Refill",
+   "brand": "Asian Paints",
+   "pricePaise": 5500
+  },
+  {
+   "ref": "XW3NG",
+   "name": "Fevi Kwik 203 Super Glue, Instant Bond, 20gm",
+   "brand": "Quoin",
+   "pricePaise": 5500
+  },
+  {
+   "ref": "ZWVL8",
+   "name": "Flowguard Plus CPVC Union",
+   "brand": "Ashirvad",
+   "pricePaise": 5400
+  },
+  {
+   "ref": "86D5W",
+   "name": "Flowguard Plus CPVC Threaded Tank Nipple",
+   "brand": "Ashirvad",
+   "pricePaise": 5200
+  },
+  {
+   "ref": "QEJZS",
+   "name": "Roma Blank Plate, White, 1 Module, 1 Packet (2 nos)",
+   "brand": "Anchor",
+   "pricePaise": 4900
+  },
+  {
+   "ref": "QCE39",
+   "name": "FlowGuard Plus CPVC Reducer Tee",
+   "brand": "Ashirvad",
+   "pricePaise": 4800
+  },
+  {
+   "ref": "SSQY4",
+   "name": "Flowguard Plus CPVC Sweep Bend (Long Radius Bend)",
+   "brand": "Ashirvad",
+   "pricePaise": 4600
+  },
+  {
+   "ref": "AVS3K",
+   "name": "Roma Switch, 10A, 1 Module, White",
+   "brand": "Anchor",
+   "pricePaise": 4400
+  },
+  {
+   "ref": "BE78H",
+   "name": "GI Metal Back Box",
+   "brand": "Anchor",
+   "pricePaise": 4200
+  },
+  {
+   "ref": "UZ6RS",
+   "name": "PVC Surface Box, White",
+   "brand": "Anchor",
+   "pricePaise": 4200
+  },
+  {
+   "ref": "KZ5ZQ",
+   "name": "Clamps for KA Channels",
+   "brand": "Hettich",
+   "pricePaise": 4100
+  },
+  {
+   "ref": "A6L85",
+   "name": "Flowguard Plus CPVC Reducer 90° Elbow",
+   "brand": "Ashirvad",
+   "pricePaise": 3200
+  },
+  {
+   "ref": "TX7UU",
+   "name": "Flowguard Plus CPVC Reducing Male Adapter Plastic Threaded - MAPT",
+   "brand": "Ashirvad",
+   "pricePaise": 3100
+  },
+  {
+   "ref": "VXC77",
+   "name": "Wardrobe Cabinet Rail Support SL 322, 9343727",
+   "brand": "Hettich",
+   "pricePaise": 3000
+  },
+  {
+   "ref": "3CDSX",
+   "name": "Trugrip Super Masking Tape (Abro Tape), 3/4 inch",
+   "brand": "Asian Paints",
+   "pricePaise": 3000
+  },
+  {
+   "ref": "WCGY9",
+   "name": "M-Seal Phataphat 90g, Multi-Purpose Waterproof Sealant Putty",
+   "brand": "Pidilite",
+   "pricePaise": 3000
+  },
+  {
+   "ref": "H85RB",
+   "name": "Flowguard Plus Cross Tee",
+   "brand": "Ashirvad",
+   "pricePaise": 2900
+  },
+  {
+   "ref": "TWNSJ",
+   "name": "Myrius NextGen Blank Plate, 1 Module",
+   "brand": "Legrand",
+   "pricePaise": 2900
+  },
+  {
+   "ref": "94LKQ",
+   "name": "Flowguard Plus CPVC Reducer Coupler",
+   "brand": "Ashirvad",
+   "pricePaise": 2400
+  },
+  {
+   "ref": "ZKYRX",
+   "name": "Flowguard Plus CPVC Tee",
+   "brand": "Ashirvad",
+   "pricePaise": 2300
+  },
+  {
+   "ref": "ECDXG",
+   "name": "Flowguard Plus CPVC Male Adapter Plastic Threaded - MAPT",
+   "brand": "Ashirvad",
+   "pricePaise": 2300
+  },
+  {
+   "ref": "TUU3S",
+   "name": "Flowguard Plus CPVC Female Adapter Plastic Threaded - FAPT",
+   "brand": "Ashirvad",
+   "pricePaise": 2000
+  },
+  {
+   "ref": "RGB6G",
+   "name": "TruCare Brush",
+   "brand": "Asian Paints",
+   "pricePaise": 2000
+  },
+  {
+   "ref": "AW5N5",
+   "name": "Flowguard Plus CPVC 45° Elbow",
+   "brand": "Ashirvad",
+   "pricePaise": 1900
+  },
+  {
+   "ref": "A2AD2",
+   "name": "Flowguard Plus CPVC 90° Elbow",
+   "brand": "Ashirvad",
+   "pricePaise": 1600
+  },
+  {
+   "ref": "MZFEV",
+   "name": "Flowguard Plus CPVC Coupler",
+   "brand": "Ashirvad",
+   "pricePaise": 1300
+  },
+  {
+   "ref": "7253J",
+   "name": "TruStar Sanding Paper",
+   "brand": "Asian Paints",
+   "pricePaise": 1200
+  }
+ ]
+}
