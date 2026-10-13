@@ -1,0 +1,3558 @@
+{
+ "ranAt": "2026-10-13T16:39:36.813Z",
+ "applied": true,
+ "before": [
+  {
+   "sku": "29ZVW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/29ZVW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/29ZVW.jpg"
+  },
+  {
+   "sku": "2K88T",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2K88T.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2K88T.jpg"
+  },
+  {
+   "sku": "2L7F6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2L7F6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2L7F6.jpg"
+  },
+  {
+   "sku": "2MEPU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2MEPU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2MEPU.jpg"
+  },
+  {
+   "sku": "2MY47",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2MY47.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2MY47.jpg"
+  },
+  {
+   "sku": "2R8CG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2R8CG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2R8CG.jpg"
+  },
+  {
+   "sku": "2SPMZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2SPMZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2SPMZ.jpg"
+  },
+  {
+   "sku": "2WX8J",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2WX8J.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2WX8J.jpg"
+  },
+  {
+   "sku": "2ZJN6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/2ZJN6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/2ZJN6.jpg"
+  },
+  {
+   "sku": "32C3R",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/32C3R.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/32C3R.jpg"
+  },
+  {
+   "sku": "3ARHP",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/3ARHP.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/3ARHP.jpg"
+  },
+  {
+   "sku": "3CDSX",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/3CDSX.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/3CDSX.jpg"
+  },
+  {
+   "sku": "3NPNU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/3NPNU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/3NPNU.jpg"
+  },
+  {
+   "sku": "3PDUS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/3PDUS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/3PDUS.jpg"
+  },
+  {
+   "sku": "3VV8F",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/3VV8F.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/3VV8F.jpg"
+  },
+  {
+   "sku": "3WHUT",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/3WHUT.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/3WHUT.jpg"
+  },
+  {
+   "sku": "3YJUJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/3YJUJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/3YJUJ.jpg"
+  },
+  {
+   "sku": "47YBJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/47YBJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/47YBJ.jpg"
+  },
+  {
+   "sku": "495AG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/495AG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/495AG.jpg"
+  },
+  {
+   "sku": "4ARE2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/4ARE2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/4ARE2.jpg"
+  },
+  {
+   "sku": "4AUUJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/4AUUJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/4AUUJ.jpg"
+  },
+  {
+   "sku": "4MYMU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/4MYMU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/4MYMU.jpg"
+  },
+  {
+   "sku": "4NPSJ",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/4NPSJ.jpg"
+  },
+  {
+   "sku": "4RDB4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/4RDB4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/4RDB4.jpg"
+  },
+  {
+   "sku": "4UGRX",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/4UGRX.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/4UGRX.jpg"
+  },
+  {
+   "sku": "4UN55",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/4UN55.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/4UN55.jpg"
+  },
+  {
+   "sku": "4WLMJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/4WLMJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/4WLMJ.jpg"
+  },
+  {
+   "sku": "577AW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/577AW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/577AW.jpg"
+  },
+  {
+   "sku": "593ZA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/593ZA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/593ZA.jpg"
+  },
+  {
+   "sku": "5BJF9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/5BJF9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/5BJF9.jpg"
+  },
+  {
+   "sku": "5FSYX",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/5FSYX.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/5FSYX.jpg"
+  },
+  {
+   "sku": "5LZG4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/5LZG4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/5LZG4.jpg"
+  },
+  {
+   "sku": "5NWJ2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/5NWJ2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/5NWJ2.jpg"
+  },
+  {
+   "sku": "5QYV2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/5QYV2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/5QYV2.jpg"
+  },
+  {
+   "sku": "5VCH5",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/5VCH5.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/5VCH5.jpg"
+  },
+  {
+   "sku": "5YPV8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/5YPV8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/5YPV8.jpg"
+  },
+  {
+   "sku": "64LE6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/64LE6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/64LE6.jpg"
+  },
+  {
+   "sku": "683EL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/683EL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/683EL.jpg"
+  },
+  {
+   "sku": "68V7T",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/68V7T.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/68V7T.jpg"
+  },
+  {
+   "sku": "69AGB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/69AGB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/69AGB.jpg"
+  },
+  {
+   "sku": "6EVN5",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/6EVN5.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/6EVN5.jpg"
+  },
+  {
+   "sku": "6KCPK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/6KCPK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/6KCPK.jpg"
+  },
+  {
+   "sku": "6NCZL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/6NCZL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/6NCZL.jpg"
+  },
+  {
+   "sku": "6TVBS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/6TVBS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/6TVBS.jpg"
+  },
+  {
+   "sku": "6WZ8M",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/6WZ8M.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/6WZ8M.jpg"
+  },
+  {
+   "sku": "6XVJG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/6XVJG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/6XVJG.jpg"
+  },
+  {
+   "sku": "7253J",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/7253J.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/7253J.jpg"
+  },
+  {
+   "sku": "749J9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/749J9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/749J9.jpg"
+  },
+  {
+   "sku": "75LHR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/75LHR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/75LHR.jpg"
+  },
+  {
+   "sku": "77HVD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/77HVD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/77HVD.jpg"
+  },
+  {
+   "sku": "787UW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/787UW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/787UW.jpg"
+  },
+  {
+   "sku": "78UU7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/78UU7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/78UU7.jpg"
+  },
+  {
+   "sku": "7DNGM",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/7DNGM.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/7DNGM.jpg"
+  },
+  {
+   "sku": "7G97R",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/7G97R.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/7G97R.jpg"
+  },
+  {
+   "sku": "7NCPM",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/7NCPM.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/7NCPM.jpg"
+  },
+  {
+   "sku": "7Q8UJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/7Q8UJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/7Q8UJ.jpg"
+  },
+  {
+   "sku": "7R6JL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/7R6JL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/7R6JL.jpg"
+  },
+  {
+   "sku": "7W35Z",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/7W35Z.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/7W35Z.jpg"
+  },
+  {
+   "sku": "86D5W",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/86D5W.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/86D5W.jpg"
+  },
+  {
+   "sku": "8D3HZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/8D3HZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/8D3HZ.jpg"
+  },
+  {
+   "sku": "8F9H6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/8F9H6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/8F9H6.jpg"
+  },
+  {
+   "sku": "8N9QB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/8N9QB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/8N9QB.jpg"
+  },
+  {
+   "sku": "8STP6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/8STP6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/8STP6.jpg"
+  },
+  {
+   "sku": "8T9NS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/8T9NS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/8T9NS.jpg"
+  },
+  {
+   "sku": "8VBDF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/8VBDF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/8VBDF.jpg"
+  },
+  {
+   "sku": "94LKQ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/94LKQ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/94LKQ.jpg"
+  },
+  {
+   "sku": "9H8SC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/9H8SC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/9H8SC.jpg"
+  },
+  {
+   "sku": "9KXFQ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/9KXFQ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/9KXFQ.jpg"
+  },
+  {
+   "sku": "9PJ3T",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/9PJ3T.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/9PJ3T.jpg"
+  },
+  {
+   "sku": "9R5VC",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/9R5VC.jpg"
+  },
+  {
+   "sku": "9V2BV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/9V2BV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/9V2BV.jpg"
+  },
+  {
+   "sku": "9Y5E4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/9Y5E4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/9Y5E4.jpg"
+  },
+  {
+   "sku": "A2AD2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/A2AD2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/A2AD2.jpg"
+  },
+  {
+   "sku": "A6L85",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/A6L85.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/A6L85.jpg"
+  },
+  {
+   "sku": "A827U",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/A827U.jpg"
+  },
+  {
+   "sku": "AB6SF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/AB6SF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/AB6SF.jpg"
+  },
+  {
+   "sku": "ACCGENCABVS8JF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ACCGENCABVS8JF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ACCGENCABVS8JF.jpg"
+  },
+  {
+   "sku": "ACCKOHGLAWWEON",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ACCKOHGLAWWEON.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ACCKOHGLAWWEON.jpg"
+  },
+  {
+   "sku": "ACCLOCMIXMK0RU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ACCLOCMIXMK0RU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ACCLOCMIXMK0RU.jpg"
+  },
+  {
+   "sku": "ACCLOCTAPXCMUB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ACCLOCTAPXCMUB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ACCLOCTAPXCMUB.jpg"
+  },
+  {
+   "sku": "ACLDT",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ACLDT.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ACLDT.jpg"
+  },
+  {
+   "sku": "ADHARAAER5ORHB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHARAAER5ORHB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHARAAER5ORHB.jpg"
+  },
+  {
+   "sku": "ADHARAARAJDE82",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHARAARAJDE82.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHARAARAJDE82.jpg"
+  },
+  {
+   "sku": "ADHARAARAYIKZV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHARAARAYIKZV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHARAARAYIKZV.jpg"
+  },
+  {
+   "sku": "ADHARASTAQ5QQ3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHARASTAQ5QQ3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHARASTAQ5QQ3.jpg"
+  },
+  {
+   "sku": "ADHASIMAS70QH0",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHASIMAS70QH0.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHASIMAS70QH0.jpg"
+  },
+  {
+   "sku": "ADHBIRWHI8T2QR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHBIRWHI8T2QR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHBIRWHI8T2QR.jpg"
+  },
+  {
+   "sku": "ADHFEVFEV8GXGO",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHFEVFEV8GXGO.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHFEVFEV8GXGO.jpg"
+  },
+  {
+   "sku": "ADHFEVFEV8ULTD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHFEVFEV8ULTD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHFEVFEV8ULTD.jpg"
+  },
+  {
+   "sku": "ADHFEVFEVW65W0",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHFEVFEVW65W0.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHFEVFEVW65W0.jpg"
+  },
+  {
+   "sku": "ADHFEVHEAYKCR4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHFEVHEAYKCR4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHFEVHEAYKCR4.jpg"
+  },
+  {
+   "sku": "ADHFEVHIPUFOJ2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHFEVHIPUFOJ2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHFEVHIPUFOJ2.jpg"
+  },
+  {
+   "sku": "ADHFEVHIPYUELL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHFEVHIPYUELL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHFEVHIPYUELL.jpg"
+  },
+  {
+   "sku": "ADHFEVSHXIF62D",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHFEVSHXIF62D.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/ADHFEVSHXIF62D.jpg"
+  },
+  {
+   "sku": "ADHHARARAEYR51",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ADHHARARAEYR51.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ADHHARARAEYR51.jpg"
+  },
+  {
+   "sku": "AJUSL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/AJUSL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/AJUSL.jpg"
+  },
+  {
+   "sku": "APPANCEXHQVUZQ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/APPANCEXHQVUZQ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/APPANCEXHQVUZQ.jpg"
+  },
+  {
+   "sku": "APPCROGEYNL7N7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/APPCROGEYNL7N7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/APPCROGEYNL7N7.jpg"
+  },
+  {
+   "sku": "APPCROVEN0OXU5",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/APPCROVEN0OXU5.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/APPCROVEN0OXU5.jpg"
+  },
+  {
+   "sku": "APPHAVEXHFECET",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/APPHAVEXHFECET.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/APPHAVEXHFECET.jpg"
+  },
+  {
+   "sku": "APPHAVHALSIKVJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/APPHAVHALSIKVJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/APPHAVHALSIKVJ.jpg"
+  },
+  {
+   "sku": "APPHAVROOFWJRV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/APPHAVROOFWJRV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/APPHAVROOFWJRV.jpg"
+  },
+  {
+   "sku": "APPHPLEXT11B8V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/APPHPLEXT11B8V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/APPHPLEXT11B8V.jpg"
+  },
+  {
+   "sku": "AVS3K",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/AVS3K.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/AVS3K.jpg"
+  },
+  {
+   "sku": "AW5N5",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/AW5N5.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/AW5N5.jpg"
+  },
+  {
+   "sku": "AYKRC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/AYKRC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/AYKRC.jpg"
+  },
+  {
+   "sku": "B9V37",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/B9V37.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/B9V37.jpg"
+  },
+  {
+   "sku": "BE78H",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/BE78H.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/BE78H.jpg"
+  },
+  {
+   "sku": "BPVH7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/BPVH7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/BPVH7.jpg"
+  },
+  {
+   "sku": "BQV7U",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/BQV7U.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/BQV7U.jpg"
+  },
+  {
+   "sku": "C3AVE",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/C3AVE.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/C3AVE.jpg"
+  },
+  {
+   "sku": "C6X8V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/C6X8V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/C6X8V.jpg"
+  },
+  {
+   "sku": "CB2V2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/CB2V2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/CB2V2.jpg"
+  },
+  {
+   "sku": "CEMAMBCEMN50G7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/CEMAMBCEMN50G7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/CEMAMBCEMN50G7.jpg"
+  },
+  {
+   "sku": "CEMULTCEM97EMS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/CEMULTCEM97EMS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/CEMULTCEM97EMS.jpg"
+  },
+  {
+   "sku": "CG64T",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/CG64T.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/CG64T.jpg"
+  },
+  {
+   "sku": "CL6M4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/CL6M4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/CL6M4.jpg"
+  },
+  {
+   "sku": "CL8MJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/CL8MJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/CL8MJ.jpg"
+  },
+  {
+   "sku": "CLECOAFAUWK1D3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/CLECOAFAUWK1D3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/CLECOAFAUWK1D3.jpg"
+  },
+  {
+   "sku": "D5768",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/D5768.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/D5768.jpg"
+  },
+  {
+   "sku": "DD3G8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/DD3G8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/DD3G8.jpg"
+  },
+  {
+   "sku": "DJSHS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/DJSHS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/DJSHS.jpg"
+  },
+  {
+   "sku": "DLKPD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/DLKPD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/DLKPD.jpg"
+  },
+  {
+   "sku": "DMVW7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/DMVW7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/DMVW7.jpg"
+  },
+  {
+   "sku": "E2ZPL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/E2ZPL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/E2ZPL.jpg"
+  },
+  {
+   "sku": "E3MPF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/E3MPF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/E3MPF.jpg"
+  },
+  {
+   "sku": "E59GG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/E59GG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/E59GG.jpg"
+  },
+  {
+   "sku": "EB2JT",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/EB2JT.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/EB2JT.jpg"
+  },
+  {
+   "sku": "ECDXG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ECDXG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ECDXG.jpg"
+  },
+  {
+   "sku": "EEUDY",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/EEUDY.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/EEUDY.jpg"
+  },
+  {
+   "sku": "ELECROCEIKBOPR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ELECROCEIKBOPR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ELECROCEIKBOPR.jpg"
+  },
+  {
+   "sku": "ELEGENSUB8M8WI",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ELEGENSUB8M8WI.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ELEGENSUB8M8WI.jpg"
+  },
+  {
+   "sku": "ELELTXPANUMAT1",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ELELTXPANUMAT1.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ELELTXPANUMAT1.jpg"
+  },
+  {
+   "sku": "ELERACELEV1USU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ELERACELEV1USU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ELERACELEV1USU.jpg"
+  },
+  {
+   "sku": "ELERACGEY3MZCI",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ELERACGEY3MZCI.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ELERACGEY3MZCI.jpg"
+  },
+  {
+   "sku": "ET9RL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ET9RL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ET9RL.jpg"
+  },
+  {
+   "sku": "EVTE7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/EVTE7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/EVTE7.jpg"
+  },
+  {
+   "sku": "EZ5DF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/EZ5DF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/EZ5DF.jpg"
+  },
+  {
+   "sku": "F84TL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/F84TL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/F84TL.jpg"
+  },
+  {
+   "sku": "FANANCWALOVYAN",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FANANCWALOVYAN.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FANANCWALOVYAN.jpg"
+  },
+  {
+   "sku": "FANCROEXH900OE",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FANCROEXH900OE.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FANCROEXH900OE.jpg"
+  },
+  {
+   "sku": "FANORIEXHR8OA3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FANORIEXHR8OA3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FANORIEXHR8OA3.jpg"
+  },
+  {
+   "sku": "FFNV6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FFNV6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FFNV6.jpg"
+  },
+  {
+   "sku": "FK924",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FK924.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FK924.jpg"
+  },
+  {
+   "sku": "FLEGENMIX4WUH8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLEGENMIX4WUH8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLEGENMIX4WUH8.jpg"
+  },
+  {
+   "sku": "FLEJINCOLGKUPT",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLEJINCOLGKUPT.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLEJINCOLGKUPT.jpg"
+  },
+  {
+   "sku": "FLELOCROPE2NV8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLELOCROPE2NV8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLELOCROPE2NV8.jpg"
+  },
+  {
+   "sku": "FLELOCWASCOZ2Y",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLELOCWASCOZ2Y.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLELOCWASCOZ2Y.jpg"
+  },
+  {
+   "sku": "FLOLOCSINHBI4H",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLOLOCSINHBI4H.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLOLOCSINHBI4H.jpg"
+  },
+  {
+   "sku": "FLOLOCSINZ1JRK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLOLOCSINZ1JRK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLOLOCSINZ1JRK.jpg"
+  },
+  {
+   "sku": "FLOLOCWASVIQG4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLOLOCWASVIQG4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLOLOCWASVIQG4.jpg"
+  },
+  {
+   "sku": "FLOMYKTIL9TZDU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLOMYKTIL9TZDU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLOMYKTIL9TZDU.jpg"
+  },
+  {
+   "sku": "FLOMYKTILB4NUW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLOMYKTILB4NUW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLOMYKTILB4NUW.jpg"
+  },
+  {
+   "sku": "FLOMYKTILQP1VE",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLOMYKTILQP1VE.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLOMYKTILQP1VE.jpg"
+  },
+  {
+   "sku": "FLOORBGRA34MJI",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FLOORBGRA34MJI.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FLOORBGRA34MJI.jpg"
+  },
+  {
+   "sku": "FSGGD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FSGGD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FSGGD.jpg"
+  },
+  {
+   "sku": "FURLOCGYP176CW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/FURLOCGYP176CW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/FURLOCGYP176CW.jpg"
+  },
+  {
+   "sku": "FV8P5",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/FV8P5.jpg"
+  },
+  {
+   "sku": "G44YV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/G44YV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/G44YV.jpg"
+  },
+  {
+   "sku": "GBACW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/GBACW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/GBACW.jpg"
+  },
+  {
+   "sku": "GFMBD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/GFMBD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/GFMBD.jpg"
+  },
+  {
+   "sku": "GLAASTBON7XNVP",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/GLAASTBON7XNVP.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/GLAASTBON7XNVP.jpg"
+  },
+  {
+   "sku": "GQZ4W",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/GQZ4W.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/GQZ4W.jpg"
+  },
+  {
+   "sku": "GREJKCJKSVN1JA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/GREJKCJKSVN1JA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/GREJKCJKSVN1JA.jpg"
+  },
+  {
+   "sku": "GSEYG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/GSEYG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/GSEYG.jpg"
+  },
+  {
+   "sku": "H56YJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/H56YJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/H56YJ.jpg"
+  },
+  {
+   "sku": "H85RB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/H85RB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/H85RB.jpg"
+  },
+  {
+   "sku": "H9N6S",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/H9N6S.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/H9N6S.jpg"
+  },
+  {
+   "sku": "HB8FZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HB8FZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HB8FZ.jpg"
+  },
+  {
+   "sku": "HCDUE",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HCDUE.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HCDUE.jpg"
+  },
+  {
+   "sku": "HDBSL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HDBSL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HDBSL.jpg"
+  },
+  {
+   "sku": "HDHACTHDH8TB1A",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HDHACTHDH8TB1A.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HDHACTHDH8TB1A.jpg"
+  },
+  {
+   "sku": "HEAORBHEAJEDON",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HEAORBHEAJEDON.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HEAORBHEAJEDON.jpg"
+  },
+  {
+   "sku": "HER83",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HER83.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HER83.jpg"
+  },
+  {
+   "sku": "HH5JR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HH5JR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HH5JR.jpg"
+  },
+  {
+   "sku": "HINDOOHINBM5UH",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HINDOOHINBM5UH.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HINDOOHINBM5UH.jpg"
+  },
+  {
+   "sku": "HINHETHINRKZHY",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HINHETHINRKZHY.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HINHETHINRKZHY.jpg"
+  },
+  {
+   "sku": "HMDDY",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HMDDY.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HMDDY.jpg"
+  },
+  {
+   "sku": "HNSU2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HNSU2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HNSU2.jpg"
+  },
+  {
+   "sku": "HPW58",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/HPW58.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/HPW58.jpg"
+  },
+  {
+   "sku": "INDBENSUB5G16Y",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INDBENSUB5G16Y.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INDBENSUB5G16Y.jpg"
+  },
+  {
+   "sku": "INSPOLWPCJAITS",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/INSPOLWPCJAITS.jpg"
+  },
+  {
+   "sku": "INTASIAPC07MV8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INTASIAPC07MV8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INTASIAPC07MV8.jpg"
+  },
+  {
+   "sku": "INTASIAPCVURZD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INTASIAPCVURZD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INTASIAPCVURZD.jpg"
+  },
+  {
+   "sku": "INTASIROYBYAPD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INTASIROYBYAPD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INTASIROYBYAPD.jpg"
+  },
+  {
+   "sku": "INTASIROYGZCI8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INTASIROYGZCI8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INTASIROYGZCI8.jpg"
+  },
+  {
+   "sku": "INTASIROYMFTTU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INTASIROYMFTTU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INTASIROYMFTTU.jpg"
+  },
+  {
+   "sku": "INTASIROYUWEWK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INTASIROYUWEWK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INTASIROYUWEWK.jpg"
+  },
+  {
+   "sku": "INVSUKHOMCFXLA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INVSUKHOMCFXLA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INVSUKHOMCFXLA.jpg"
+  },
+  {
+   "sku": "INVSUKLEA07HWF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/INVSUKLEA07HWF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/INVSUKLEA07HWF.jpg"
+  },
+  {
+   "sku": "J7ZMU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/J7ZMU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/J7ZMU.jpg"
+  },
+  {
+   "sku": "JBMRH",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/JBMRH.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/JBMRH.jpg"
+  },
+  {
+   "sku": "JGAPC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/JGAPC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/JGAPC.jpg"
+  },
+  {
+   "sku": "JSYLA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/JSYLA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/JSYLA.jpg"
+  },
+  {
+   "sku": "JXREL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/JXREL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/JXREL.jpg"
+  },
+  {
+   "sku": "JZV45",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/JZV45.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/JZV45.jpg"
+  },
+  {
+   "sku": "K27DZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/K27DZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/K27DZ.jpg"
+  },
+  {
+   "sku": "K5X6X",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/K5X6X.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/K5X6X.jpg"
+  },
+  {
+   "sku": "K825K",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/K825K.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/K825K.jpg"
+  },
+  {
+   "sku": "KBFL9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/KBFL9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/KBFL9.jpg"
+  },
+  {
+   "sku": "KZ5ZQ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/KZ5ZQ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/KZ5ZQ.jpg"
+  },
+  {
+   "sku": "KZXQZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/KZXQZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/KZXQZ.jpg"
+  },
+  {
+   "sku": "L5YD5",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/L5YD5.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/L5YD5.jpg"
+  },
+  {
+   "sku": "L8QZC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/L8QZC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/L8QZC.jpg"
+  },
+  {
+   "sku": "LAMGREMDFE4RQ8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LAMGREMDFE4RQ8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LAMGREMDFE4RQ8.jpg"
+  },
+  {
+   "sku": "LIGCROBULQSNU3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGCROBULQSNU3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGCROBULQSNU3.jpg"
+  },
+  {
+   "sku": "LIGCRODOW3KFRR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGCRODOW3KFRR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGCRODOW3KFRR.jpg"
+  },
+  {
+   "sku": "LIGCROSTREEN3O",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGCROSTREEN3O.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGCROSTREEN3O.jpg"
+  },
+  {
+   "sku": "LIGCROSTRV60MS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGCROSTRV60MS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGCROSTRV60MS.jpg"
+  },
+  {
+   "sku": "LIGHALBAT9FW78",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGHALBAT9FW78.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGHALBAT9FW78.jpg"
+  },
+  {
+   "sku": "LIGHALFLOHM1ZR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGHALFLOHM1ZR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGHALFLOHM1ZR.jpg"
+  },
+  {
+   "sku": "LIGHALROPBW1I8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGHALROPBW1I8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGHALROPBW1I8.jpg"
+  },
+  {
+   "sku": "LIGORIBATHJNX6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGORIBATHJNX6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGORIBATHJNX6.jpg"
+  },
+  {
+   "sku": "LIGORISUR1A7RA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGORISUR1A7RA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGORISUR1A7RA.jpg"
+  },
+  {
+   "sku": "LIGPHIBATADI1M",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGPHIBATADI1M.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGPHIBATADI1M.jpg"
+  },
+  {
+   "sku": "LIGPHISUR9J73R",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGPHISUR9J73R.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGPHISUR9J73R.jpg"
+  },
+  {
+   "sku": "LIGPOLBATU7ZNE",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGPOLBATU7ZNE.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGPOLBATU7ZNE.jpg"
+  },
+  {
+   "sku": "LIGPOLDOWPSV30",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGPOLDOWPSV30.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGPOLDOWPSV30.jpg"
+  },
+  {
+   "sku": "LIGPOLPANM6UIN",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGPOLPANM6UIN.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGPOLPANM6UIN.jpg"
+  },
+  {
+   "sku": "LIGPOLSPOZXVGW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGPOLSPOZXVGW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGPOLSPOZXVGW.jpg"
+  },
+  {
+   "sku": "LIGPOLSTRNYO1U",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LIGPOLSTRNYO1U.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LIGPOLSTRNYO1U.jpg"
+  },
+  {
+   "sku": "LWCHF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LWCHF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LWCHF.jpg"
+  },
+  {
+   "sku": "LZA9V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/LZA9V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/LZA9V.jpg"
+  },
+  {
+   "sku": "M2GQK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/M2GQK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/M2GQK.jpg"
+  },
+  {
+   "sku": "MCBANCMCB6Y74R",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MCBANCMCB6Y74R.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MCBANCMCB6Y74R.jpg"
+  },
+  {
+   "sku": "MCBCBSMCBNRQAG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MCBCBSMCBNRQAG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MCBCBSMCBNRQAG.jpg"
+  },
+  {
+   "sku": "MCBHAVDPI2NBLA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MCBHAVDPI2NBLA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MCBHAVDPI2NBLA.jpg"
+  },
+  {
+   "sku": "MCBHAVTPN1AXC3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MCBHAVTPN1AXC3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MCBHAVTPN1AXC3.jpg"
+  },
+  {
+   "sku": "MCBPOLTPNCNZFQ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MCBPOLTPNCNZFQ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MCBPOLTPNCNZFQ.jpg"
+  },
+  {
+   "sku": "MCBSCHFOU3ONJG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MCBSCHFOU3ONJG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MCBSCHFOU3ONJG.jpg"
+  },
+  {
+   "sku": "MCBSCHTPNT0Z1Z",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MCBSCHTPNT0Z1Z.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MCBSCHTPNT0Z1Z.jpg"
+  },
+  {
+   "sku": "MFALOCMFAMSBOB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MFALOCMFAMSBOB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MFALOCMFAMSBOB.jpg"
+  },
+  {
+   "sku": "MFXAN",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MFXAN.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MFXAN.jpg"
+  },
+  {
+   "sku": "MHHQU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MHHQU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MHHQU.jpg"
+  },
+  {
+   "sku": "MJPPV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MJPPV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MJPPV.jpg"
+  },
+  {
+   "sku": "MUURA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MUURA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MUURA.jpg"
+  },
+  {
+   "sku": "MYKUD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MYKUD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MYKUD.jpg"
+  },
+  {
+   "sku": "MZFEV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/MZFEV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/MZFEV.jpg"
+  },
+  {
+   "sku": "N5AS8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/N5AS8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/N5AS8.jpg"
+  },
+  {
+   "sku": "N85L6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/N85L6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/N85L6.jpg"
+  },
+  {
+   "sku": "N9EKD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/N9EKD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/N9EKD.jpg"
+  },
+  {
+   "sku": "NMN2W",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/NMN2W.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/NMN2W.jpg"
+  },
+  {
+   "sku": "NTLR6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/NTLR6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/NTLR6.jpg"
+  },
+  {
+   "sku": "NW632",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/NW632.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/NW632.jpg"
+  },
+  {
+   "sku": "PAIASITRAX87UZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PAIASITRAX87UZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PAIASITRAX87UZ.jpg"
+  },
+  {
+   "sku": "PESTERANTEIAIZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PESTERANTEIAIZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PESTERANTEIAIZ.jpg"
+  },
+  {
+   "sku": "PESTERCLEUNIAO",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PESTERCLEUNIAO.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PESTERCLEUNIAO.jpg"
+  },
+  {
+   "sku": "PFBAG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PFBAG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PFBAG.jpg"
+  },
+  {
+   "sku": "PIPASTBENYX18J",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTBENYX18J.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTBENYX18J.jpg"
+  },
+  {
+   "sku": "PIPASTCLAJ526V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTCLAJ526V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTCLAJ526V.jpg"
+  },
+  {
+   "sku": "PIPASTDOO83ROO",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTDOO83ROO.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTDOO83ROO.jpg"
+  },
+  {
+   "sku": "PIPASTELB1J3CL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTELB1J3CL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTELB1J3CL.jpg"
+  },
+  {
+   "sku": "PIPASTELBN8UB2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTELBN8UB2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTELBN8UB2.jpg"
+  },
+  {
+   "sku": "PIPASTENDCW2KL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTENDCW2KL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTENDCW2KL.jpg"
+  },
+  {
+   "sku": "PIPASTENDM83BN",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTENDM83BN.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTENDM83BN.jpg"
+  },
+  {
+   "sku": "PIPASTFTA54E49",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTFTA54E49.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTFTA54E49.jpg"
+  },
+  {
+   "sku": "PIPASTHEXYVFBP",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTHEXYVFBP.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTHEXYVFBP.jpg"
+  },
+  {
+   "sku": "PIPASTNRVZIHB0",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTNRVZIHB0.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTNRVZIHB0.jpg"
+  },
+  {
+   "sku": "PIPASTPIP0SQUV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTPIP0SQUV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTPIP0SQUV.jpg"
+  },
+  {
+   "sku": "PIPASTPIP2B1EZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTPIP2B1EZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTPIP2B1EZ.jpg"
+  },
+  {
+   "sku": "PIPASTPIPNCHX7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTPIPNCHX7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTPIPNCHX7.jpg"
+  },
+  {
+   "sku": "PIPASTREDASPVF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTREDASPVF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTREDASPVF.jpg"
+  },
+  {
+   "sku": "PIPASTREDCBHB9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTREDCBHB9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTREDCBHB9.jpg"
+  },
+  {
+   "sku": "PIPASTREDZ69Q3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTREDZ69Q3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTREDZ69Q3.jpg"
+  },
+  {
+   "sku": "PIPASTSOCWUT74",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTSOCWUT74.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTSOCWUT74.jpg"
+  },
+  {
+   "sku": "PIPASTTEEC6TNT",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTTEEC6TNT.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTTEEC6TNT.jpg"
+  },
+  {
+   "sku": "PIPASTTEEC8ZL3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPASTTEEC8ZL3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPASTTEEC8ZL3.jpg"
+  },
+  {
+   "sku": "PIPLOCCLAC24G0",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPLOCCLAC24G0.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPLOCCLAC24G0.jpg"
+  },
+  {
+   "sku": "PIPLOCDEA94CN3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPLOCDEA94CN3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPLOCDEA94CN3.jpg"
+  },
+  {
+   "sku": "PIPLOCNIP8JG9O",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPLOCNIP8JG9O.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPLOCNIP8JG9O.jpg"
+  },
+  {
+   "sku": "PIPORBTEFKPVB4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPORBTEFKPVB4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPORBTEFKPVB4.jpg"
+  },
+  {
+   "sku": "PIPSUPBENT71OC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPBENT71OC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPBENT71OC.jpg"
+  },
+  {
+   "sku": "PIPSUPDOO54MFG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPDOO54MFG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPDOO54MFG.jpg"
+  },
+  {
+   "sku": "PIPSUPELBGZOL0",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPELBGZOL0.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPELBGZOL0.jpg"
+  },
+  {
+   "sku": "PIPSUPPIP41TBM",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPPIP41TBM.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPPIP41TBM.jpg"
+  },
+  {
+   "sku": "PIPSUPPTRL1PHA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPPTRL1PHA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPPTRL1PHA.jpg"
+  },
+  {
+   "sku": "PIPSUPRED64BKP",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPRED64BKP.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPRED64BKP.jpg"
+  },
+  {
+   "sku": "PIPSUPSOCT289X",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPSOCT289X.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPSOCT289X.jpg"
+  },
+  {
+   "sku": "PIPSUPTEEXGR2V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PIPSUPTEEXGR2V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PIPSUPTEEXGR2V.jpg"
+  },
+  {
+   "sku": "PIPSUPYTELWOUU",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/PIPSUPYTELWOUU.jpg"
+  },
+  {
+   "sku": "PL8CH",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PL8CH.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PL8CH.jpg"
+  },
+  {
+   "sku": "PLESU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PLESU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PLESU.jpg"
+  },
+  {
+   "sku": "PMJ86",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PMJ86.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PMJ86.jpg"
+  },
+  {
+   "sku": "PPCFJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PPCFJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PPCFJ.jpg"
+  },
+  {
+   "sku": "PRPD5",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PRPD5.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PRPD5.jpg"
+  },
+  {
+   "sku": "PUTBIRPUT93PEK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PUTBIRPUT93PEK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PUTBIRPUT93PEK.jpg"
+  },
+  {
+   "sku": "PV2RT",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PV2RT.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PV2RT.jpg"
+  },
+  {
+   "sku": "PWNRG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PWNRG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PWNRG.jpg"
+  },
+  {
+   "sku": "PZ6YZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/PZ6YZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/PZ6YZ.jpg"
+  },
+  {
+   "sku": "Q3X5V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/Q3X5V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/Q3X5V.jpg"
+  },
+  {
+   "sku": "Q7BYQ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/Q7BYQ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/Q7BYQ.jpg"
+  },
+  {
+   "sku": "Q87VE",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/Q87VE.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/Q87VE.jpg"
+  },
+  {
+   "sku": "QCE39",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/QCE39.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/QCE39.jpg"
+  },
+  {
+   "sku": "QEJZS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/QEJZS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/QEJZS.jpg"
+  },
+  {
+   "sku": "QXG3V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/QXG3V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/QXG3V.jpg"
+  },
+  {
+   "sku": "QYJ97",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/QYJ97.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/QYJ97.jpg"
+  },
+  {
+   "sku": "R574J",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/R574J.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/R574J.jpg"
+  },
+  {
+   "sku": "R5TWD",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/R5TWD.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/R5TWD.jpg"
+  },
+  {
+   "sku": "R83C2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/R83C2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/R83C2.jpg"
+  },
+  {
+   "sku": "RC5CB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/RC5CB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/RC5CB.jpg"
+  },
+  {
+   "sku": "RGB6G",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/RGB6G.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/RGB6G.jpg"
+  },
+  {
+   "sku": "RLU3X",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/RLU3X.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/RLU3X.jpg"
+  },
+  {
+   "sku": "RRD2A",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/RRD2A.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/RRD2A.jpg"
+  },
+  {
+   "sku": "RXCLN",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/RXCLN.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/RXCLN.jpg"
+  },
+  {
+   "sku": "S48GA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/S48GA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/S48GA.jpg"
+  },
+  {
+   "sku": "SANLOCSEAWHQWW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SANLOCSEAWHQWW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SANLOCSEAWHQWW.jpg"
+  },
+  {
+   "sku": "SANLOCSIPATX6S",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SANLOCSIPATX6S.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SANLOCSIPATX6S.jpg"
+  },
+  {
+   "sku": "SEAFEVFEV2DUI1",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SEAFEVFEV2DUI1.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SEAFEVFEV2DUI1.jpg"
+  },
+  {
+   "sku": "SEAFEVNAIWYNF6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SEAFEVNAIWYNF6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SEAFEVNAIWYNF6.jpg"
+  },
+  {
+   "sku": "SEAFEVREL845V1",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SEAFEVREL845V1.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SEAFEVREL845V1.jpg"
+  },
+  {
+   "sku": "SHOGENROU2FE8C",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SHOGENROU2FE8C.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SHOGENROU2FE8C.jpg"
+  },
+  {
+   "sku": "SHOKOHTOWWDZ3K",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SHOKOHTOWWDZ3K.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SHOKOHTOWWDZ3K.jpg"
+  },
+  {
+   "sku": "SHOORBSHOAPKDZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SHOORBSHOAPKDZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SHOORBSHOAPKDZ.jpg"
+  },
+  {
+   "sku": "SJY9N",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SJY9N.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SJY9N.jpg"
+  },
+  {
+   "sku": "SLTPK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SLTPK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SLTPK.jpg"
+  },
+  {
+   "sku": "SQW2A",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SQW2A.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SQW2A.jpg"
+  },
+  {
+   "sku": "SSQY4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SSQY4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SSQY4.jpg"
+  },
+  {
+   "sku": "SWIANCCOMBXPNI",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIANCCOMBXPNI.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIANCCOMBXPNI.jpg"
+  },
+  {
+   "sku": "SWIANCMIN3ZQYW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIANCMIN3ZQYW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIANCMIN3ZQYW.jpg"
+  },
+  {
+   "sku": "SWIANCTPN3GX26",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIANCTPN3GX26.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIANCTPN3GX26.jpg"
+  },
+  {
+   "sku": "SWIFYBAMP2FB7W",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIFYBAMP2FB7W.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIFYBAMP2FB7W.jpg"
+  },
+  {
+   "sku": "SWIGIRMCBDNWF0",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIGIRMCBDNWF0.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIGIRMCBDNWF0.jpg"
+  },
+  {
+   "sku": "SWIHAVAMPW66OC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIHAVAMPW66OC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIHAVAMPW66OC.jpg"
+  },
+  {
+   "sku": "SWIHAVFAN8S6WB",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIHAVFAN8S6WB.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIHAVFAN8S6WB.jpg"
+  },
+  {
+   "sku": "SWILEGPLABC0M2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWILEGPLABC0M2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWILEGPLABC0M2.jpg"
+  },
+  {
+   "sku": "SWILEGSOC5YT58",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWILEGSOC5YT58.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWILEGSOC5YT58.jpg"
+  },
+  {
+   "sku": "SWILOCFAN1F78N",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWILOCFAN1F78N.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWILOCFAN1F78N.jpg"
+  },
+  {
+   "sku": "SWIMKXSOCDOJ9I",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWIMKXSOCDOJ9I.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWIMKXSOCDOJ9I.jpg"
+  },
+  {
+   "sku": "SWINORSOCZSK2Z",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWINORSOCZSK2Z.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWINORSOCZSK2Z.jpg"
+  },
+  {
+   "sku": "SWINORSWIVC509",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWINORSWIVC509.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWINORSWIVC509.jpg"
+  },
+  {
+   "sku": "SWISCHSOCJN1OU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWISCHSOCJN1OU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWISCHSOCJN1OU.jpg"
+  },
+  {
+   "sku": "SWISCHSWIXEOO9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SWISCHSWIXEOO9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SWISCHSWIXEOO9.jpg"
+  },
+  {
+   "sku": "SXJBK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/SXJBK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/SXJBK.jpg"
+  },
+  {
+   "sku": "T75CL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/T75CL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/T75CL.jpg"
+  },
+  {
+   "sku": "T8DP9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/T8DP9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/T8DP9.jpg"
+  },
+  {
+   "sku": "TANLOCBOTMHUB7",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TANLOCBOTMHUB7.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TANLOCBOTMHUB7.jpg"
+  },
+  {
+   "sku": "TANSUPSIPUHBVG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TANSUPSIPUHBVG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TANSUPSIPUHBVG.jpg"
+  },
+  {
+   "sku": "TAPGENWAS4E1FZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPGENWAS4E1FZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPGENWAS4E1FZ.jpg"
+  },
+  {
+   "sku": "TAPLOCBAS89Z4B",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPLOCBAS89Z4B.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPLOCBAS89Z4B.jpg"
+  },
+  {
+   "sku": "TAPLOCFASSSDIY",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPLOCFASSSDIY.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPLOCFASSSDIY.jpg"
+  },
+  {
+   "sku": "TAPLOCROF52B2D",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPLOCROF52B2D.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPLOCROF52B2D.jpg"
+  },
+  {
+   "sku": "TAPONTBIBX6TGC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPONTBIBX6TGC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPONTBIBX6TGC.jpg"
+  },
+  {
+   "sku": "TAPONTCON6WWJ8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPONTCON6WWJ8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPONTCON6WWJ8.jpg"
+  },
+  {
+   "sku": "TAPORBCPCTQS3E",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPORBCPCTQS3E.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPORBCPCTQS3E.jpg"
+  },
+  {
+   "sku": "TAPORBHEAGV4R6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPORBHEAGV4R6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPORBHEAGV4R6.jpg"
+  },
+  {
+   "sku": "TAPORBWASHFA2G",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPORBWASHFA2G.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPORBWASHFA2G.jpg"
+  },
+  {
+   "sku": "TAPORV2INURC3H",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPORV2INURC3H.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPORV2INURC3H.jpg"
+  },
+  {
+   "sku": "TAPSOMWAY7TLLO",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPSOMWAY7TLLO.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPSOMWAY7TLLO.jpg"
+  },
+  {
+   "sku": "TAPZEBANGWX0ZQ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TAPZEBANGWX0ZQ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TAPZEBANGWX0ZQ.jpg"
+  },
+  {
+   "sku": "TILFEVFEVTY8ZK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILFEVFEVTY8ZK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILFEVFEVTY8ZK.jpg"
+  },
+  {
+   "sku": "TILMYKLAT89N3B",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKLAT89N3B.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKLAT89N3B.jpg"
+  },
+  {
+   "sku": "TILMYKLATXKPML",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKLATXKPML.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKLATXKPML.jpg"
+  },
+  {
+   "sku": "TILMYKMYK6JFDU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKMYK6JFDU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKMYK6JFDU.jpg"
+  },
+  {
+   "sku": "TILMYKMYKPGJ5L",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKMYKPGJ5L.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKMYKPGJ5L.jpg"
+  },
+  {
+   "sku": "TILMYKMYKRWD5C",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKMYKRWD5C.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKMYKRWD5C.jpg"
+  },
+  {
+   "sku": "TILMYKMYKV2KK3",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKMYKV2KK3.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKMYKV2KK3.jpg"
+  },
+  {
+   "sku": "TILMYKMYKZS1Y2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKMYKZS1Y2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKMYKZS1Y2.jpg"
+  },
+  {
+   "sku": "TILMYKTILYF6X9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILMYKTILYF6X9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILMYKTILYF6X9.jpg"
+  },
+  {
+   "sku": "TILROFROF0OCZO",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROF0OCZO.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROF0OCZO.jpg"
+  },
+  {
+   "sku": "TILROFROF3GI8Y",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROF3GI8Y.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROF3GI8Y.jpg"
+  },
+  {
+   "sku": "TILROFROF4NJG6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROF4NJG6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROF4NJG6.jpg"
+  },
+  {
+   "sku": "TILROFROF55CFM",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROF55CFM.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROF55CFM.jpg"
+  },
+  {
+   "sku": "TILROFROF5F84G",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROF5F84G.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROF5F84G.jpg"
+  },
+  {
+   "sku": "TILROFROFDYL6V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROFDYL6V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROFDYL6V.jpg"
+  },
+  {
+   "sku": "TILROFROFGY7AK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROFGY7AK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROFGY7AK.jpg"
+  },
+  {
+   "sku": "TILROFROFJ7ITL",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROFJ7ITL.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROFJ7ITL.jpg"
+  },
+  {
+   "sku": "TILROFROFKVO9D",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROFKVO9D.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROFKVO9D.jpg"
+  },
+  {
+   "sku": "TILROFROFO25K2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROFO25K2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROFO25K2.jpg"
+  },
+  {
+   "sku": "TILROFROFQ3655",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROFQ3655.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROFQ3655.jpg"
+  },
+  {
+   "sku": "TILROFROFT5YB8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TILROFROFT5YB8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TILROFROFT5YB8.jpg"
+  },
+  {
+   "sku": "TMTRATTMTLEMDG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TMTRATTMTLEMDG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TMTRATTMTLEMDG.jpg"
+  },
+  {
+   "sku": "TT796",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TT796.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TT796.jpg"
+  },
+  {
+   "sku": "TUU3S",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TUU3S.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TUU3S.jpg"
+  },
+  {
+   "sku": "TV29C",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TV29C.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TV29C.jpg"
+  },
+  {
+   "sku": "TWNSJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TWNSJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TWNSJ.jpg"
+  },
+  {
+   "sku": "TX7UU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/TX7UU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/TX7UU.jpg"
+  },
+  {
+   "sku": "TXQ7R",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/TXQ7R.jpg"
+  },
+  {
+   "sku": "U5YBX",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/U5YBX.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/U5YBX.jpg"
+  },
+  {
+   "sku": "U7C9K",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/U7C9K.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/U7C9K.jpg"
+  },
+  {
+   "sku": "U7TYU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/U7TYU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/U7TYU.jpg"
+  },
+  {
+   "sku": "U82X6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/U82X6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/U82X6.jpg"
+  },
+  {
+   "sku": "UDDC9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/UDDC9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/UDDC9.jpg"
+  },
+  {
+   "sku": "URPHW",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/URPHW.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/URPHW.jpg"
+  },
+  {
+   "sku": "USQMS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/USQMS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/USQMS.jpg"
+  },
+  {
+   "sku": "UT85B",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/UT85B.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/UT85B.jpg"
+  },
+  {
+   "sku": "UVJQ9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/UVJQ9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/UVJQ9.jpg"
+  },
+  {
+   "sku": "UWAT2",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/UWAT2.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/UWAT2.jpg"
+  },
+  {
+   "sku": "UZ6RS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/UZ6RS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/UZ6RS.jpg"
+  },
+  {
+   "sku": "V7FCZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/V7FCZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/V7FCZ.jpg"
+  },
+  {
+   "sku": "VE85F",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/VE85F.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/VE85F.jpg"
+  },
+  {
+   "sku": "VJKP5",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/VJKP5.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/VJKP5.jpg"
+  },
+  {
+   "sku": "VPU9V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/VPU9V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/VPU9V.jpg"
+  },
+  {
+   "sku": "VSE36",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/VSE36.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/VSE36.jpg"
+  },
+  {
+   "sku": "VWU9E",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/VWU9E.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/VWU9E.jpg"
+  },
+  {
+   "sku": "VXC77",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/VXC77.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/VXC77.jpg"
+  },
+  {
+   "sku": "WASORBEXTZV4G4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WASORBEXTZV4G4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WASORBEXTZV4G4.jpg"
+  },
+  {
+   "sku": "WASORBRACRDOVA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WASORBRACRDOVA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WASORBRACRDOVA.jpg"
+  },
+  {
+   "sku": "WATASISMA2JL8G",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WATASISMA2JL8G.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WATASISMA2JL8G.jpg"
+  },
+  {
+   "sku": "WATDRFCRAUDRLO",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WATDRFCRAUDRLO.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WATDRFCRAUDRLO.jpg"
+  },
+  {
+   "sku": "WATDRFDRFA9SQR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WATDRFDRFA9SQR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WATDRFDRFA9SQR.jpg"
+  },
+  {
+   "sku": "WATDRFPID6J8Z4",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WATDRFPID6J8Z4.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WATDRFPID6J8Z4.jpg"
+  },
+  {
+   "sku": "WATDRFPID7KJKP",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WATDRFPID7KJKP.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WATDRFPID7KJKP.jpg"
+  },
+  {
+   "sku": "WATDRFSUP14WQP",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WATDRFSUP14WQP.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WATDRFSUP14WQP.jpg"
+  },
+  {
+   "sku": "WATMSEMSEUT421",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WATMSEMSEUT421.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WATMSEMSEUT421.jpg"
+  },
+  {
+   "sku": "WCCLOCWCC18TS1",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WCCLOCWCC18TS1.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WCCLOCWCC18TS1.jpg"
+  },
+  {
+   "sku": "WCEAU",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WCEAU.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WCEAU.jpg"
+  },
+  {
+   "sku": "WCGY9",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WCGY9.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WCGY9.jpg"
+  },
+  {
+   "sku": "WGZRA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WGZRA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WGZRA.jpg"
+  },
+  {
+   "sku": "WIRANCFAN75VTA",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WIRANCFAN75VTA.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WIRANCFAN75VTA.jpg"
+  },
+  {
+   "sku": "WIRGREDINPTF1V",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WIRGREDINPTF1V.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WIRGREDINPTF1V.jpg"
+  },
+  {
+   "sku": "WIRHAVLIFCC3F0",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WIRHAVLIFCC3F0.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WIRHAVLIFCC3F0.jpg"
+  },
+  {
+   "sku": "WIRPOLCOPUZHAP",
+   "image": "",
+   "imageIsGenerated": false,
+   "imageQuality": null,
+   "isActive": false,
+   "photographUsed": "/catalogue/imported/WIRPOLCOPUZHAP.jpg"
+  },
+  {
+   "sku": "WIRPOLETIA28QR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WIRPOLETIA28QR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WIRPOLETIA28QR.jpg"
+  },
+  {
+   "sku": "WIRPOLOPEBK9I6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WIRPOLOPEBK9I6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WIRPOLOPEBK9I6.jpg"
+  },
+  {
+   "sku": "WIRPOLOPT20UGR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WIRPOLOPT20UGR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WIRPOLOPT20UGR.jpg"
+  },
+  {
+   "sku": "WLGLC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WLGLC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WLGLC.jpg"
+  },
+  {
+   "sku": "WOOFEVHIP54936",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WOOFEVHIP54936.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WOOFEVHIP54936.jpg"
+  },
+  {
+   "sku": "WSRXV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/WSRXV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/WSRXV.jpg"
+  },
+  {
+   "sku": "X44VK",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/X44VK.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/X44VK.jpg"
+  },
+  {
+   "sku": "X7P3F",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/X7P3F.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/X7P3F.jpg"
+  },
+  {
+   "sku": "XP5EV",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/XP5EV.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/XP5EV.jpg"
+  },
+  {
+   "sku": "XQLUC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/XQLUC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/XQLUC.jpg"
+  },
+  {
+   "sku": "XR8PZ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/XR8PZ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/XR8PZ.jpg"
+  },
+  {
+   "sku": "XW3NG",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/XW3NG.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/XW3NG.jpg"
+  },
+  {
+   "sku": "XZ5QR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/XZ5QR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/XZ5QR.jpg"
+  },
+  {
+   "sku": "Y8QFJ",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/Y8QFJ.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/Y8QFJ.jpg"
+  },
+  {
+   "sku": "YAPCH",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/YAPCH.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/YAPCH.jpg"
+  },
+  {
+   "sku": "YCGAE",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/YCGAE.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/YCGAE.jpg"
+  },
+  {
+   "sku": "YJFZ6",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/YJFZ6.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/YJFZ6.jpg"
+  },
+  {
+   "sku": "YL663",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/YL663.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/YL663.jpg"
+  },
+  {
+   "sku": "YNTBR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/YNTBR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/YNTBR.jpg"
+  },
+  {
+   "sku": "YPZYH",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/YPZYH.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/YPZYH.jpg"
+  },
+  {
+   "sku": "YSP85",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/YSP85.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/YSP85.jpg"
+  },
+  {
+   "sku": "Z257Y",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/Z257Y.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/Z257Y.jpg"
+  },
+  {
+   "sku": "Z49HF",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/Z49HF.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/Z49HF.jpg"
+  },
+  {
+   "sku": "Z4YGS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/Z4YGS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/Z4YGS.jpg"
+  },
+  {
+   "sku": "ZCDZN",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZCDZN.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZCDZN.jpg"
+  },
+  {
+   "sku": "ZENAC",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZENAC.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZENAC.jpg"
+  },
+  {
+   "sku": "ZFZFS",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZFZFS.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "MEDIUM",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZFZFS.jpg"
+  },
+  {
+   "sku": "ZKX5Y",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZKX5Y.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZKX5Y.jpg"
+  },
+  {
+   "sku": "ZKYRX",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZKYRX.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZKYRX.jpg"
+  },
+  {
+   "sku": "ZNB7D",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZNB7D.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZNB7D.jpg"
+  },
+  {
+   "sku": "ZVXMR",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZVXMR.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZVXMR.jpg"
+  },
+  {
+   "sku": "ZWVL8",
+   "image": "https://oeyhvzfphuykyvnxwhhu.supabase.co/storage/v1/object/public/quoin-catalogue/generated/ZWVL8.webp",
+   "imageIsGenerated": true,
+   "imageQuality": "LOW",
+   "isActive": true,
+   "photographUsed": "/catalogue/imported/ZWVL8.jpg"
+  }
+ ]
+}
