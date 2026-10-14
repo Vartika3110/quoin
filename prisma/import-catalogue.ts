@@ -13,11 +13,19 @@
  *
  *   npx tsx prisma/import-catalogue.ts --dry-run
  *   npx tsx prisma/import-catalogue.ts research/data/all-products.csv
+ *
+ * Quoin's own list (`research/data/quoin-final-list.csv`, rows with
+ * `source` = `quoin`) is different from a competitor export: its price IS
+ * Quoin's price, so no competitor provenance is recorded for it. Pass
+ * `--replace` to retire every product that is not in the file being
+ * imported (they are hidden with `isActive = false`, never deleted):
+ *
+ *   npx tsx prisma/import-catalogue.ts --replace research/data/quoin-final-list.csv
  */
 /* Must be first: populates process.env before Prisma is constructed. */
 import "../src/lib/load-env-file";
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { Fulfilment, PricingUnit, PrismaClient } from "@prisma/client";
@@ -29,6 +37,16 @@ const db = new PrismaClient();
 
 const DEFAULT_CSV = path.join("research", "data", "all-products.csv");
 const UNCATEGORISED = "Uncategorised";
+
+/**
+ * Quoin's own product image, only if the file has actually been supplied.
+ * Convention: `public/products/images/<SKU>.webp`. Nothing is invented or
+ * borrowed — no file, no image, and the storefront draws its swatch.
+ */
+function ownImageFor(sku: string): string {
+  const file = path.join("public", "products", "images", `${sku}.webp`);
+  return existsSync(file) ? `/products/images/${encodeURIComponent(sku)}.webp` : "";
+}
 
 /**
  * GST slabs by category. Cement and sanitaryware sit at 28%, most other
@@ -184,6 +202,7 @@ function parseCsv(text: string): Record<string, string>[] {
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
+  const replace = args.includes("--replace");
   const file = args.find((a) => !a.startsWith("--")) ?? DEFAULT_CSV;
 
   const rows = parseCsv(readFileSync(file, "utf8"));
@@ -194,6 +213,7 @@ async function main() {
   let noCategory = 0;
   let reclassified = 0;
   let noPrice = 0;
+  const listedSkus: string[] = [];
 
   /* Slug uniqueness is decided against what is already stored plus what
      this run has assigned, so a single pass cannot collide with itself. */
@@ -269,6 +289,9 @@ async function main() {
       }
     }
 
+    const ownList = (row.source ?? "").toLowerCase() === "quoin";
+    listedSkus.push(sku);
+
     const unit = guessUnit(name);
     const key = rawCategory.toLowerCase();
     const gstRatePct =
@@ -295,14 +318,19 @@ async function main() {
       pricingUnit: unit,
       fulfilment: guessFulfilment(unit),
       gstRatePct,
-      /* Quoin's own image stays empty; the storefront draws a swatch
-         rather than borrowing someone else's photograph. */
-      image: "",
-      sourceName: row.source || null,
-      sourceUrl: row.url || null,
-      sourceImageUrl: row.image || null,
-      sourceAvailability: row.availability || null,
-      sourcePricePaise: price,
+      /* Quoin's own image stays empty unless the file exists (and an
+         existing image is never wiped by Quoin's own list); the storefront
+         draws a swatch rather than borrowing someone else's photograph. */
+      ...(ownList
+        ? { isActive: true, ...(ownImageFor(sku) ? { image: ownImageFor(sku), imageIsGenerated: false } : {}) }
+        : { image: "" }),
+      /* A competitor row records what they listed. Quoin's own list has
+         no competitor behind it, so there is nothing to quarantine. */
+      sourceName: ownList ? null : row.source || null,
+      sourceUrl: ownList ? null : row.url || null,
+      sourceImageUrl: ownList ? null : row.image || null,
+      sourceAvailability: ownList ? null : row.availability || null,
+      sourcePricePaise: ownList ? null : price,
     };
 
     const product = existing
@@ -344,6 +372,14 @@ async function main() {
 
     if (existing) updated++;
     else created++;
+  }
+
+  if (replace && !dryRun) {
+    const retired = await db.product.updateMany({
+      where: { sku: { notIn: listedSkus }, isActive: true },
+      data: { isActive: false },
+    });
+    console.info(`  retired ${retired.count} products that are not in this file`);
   }
 
   console.info(`created ${created}, updated ${updated}, skipped ${skipped}`);

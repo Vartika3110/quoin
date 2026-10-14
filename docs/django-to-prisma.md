@@ -45,6 +45,29 @@ The port kept every decision the Django models had encoded:
 - **Foreign keys to `Brand` and `Category` are `onDelete: Restrict`**, matching
   Django's `PROTECT`. Deleting a category must not silently delete products.
 
+## Quoin's own product list
+
+`research/data/quoin-final-list.csv` is Quoin's final product list (616
+products, `source` = `quoin`). Unlike the competitor export it is
+Quoin's own pricing, so its rows record **no** `source*` provenance and
+the price is written as the variant's price directly.
+
+```bash
+npm run db:import -- --dry-run research/data/quoin-final-list.csv
+npm run db:import -- --replace research/data/quoin-final-list.csv
+```
+
+- `--replace` hides (`isActive = false`) every product that is not in the
+  file. Nothing is deleted, so a slug that has been indexed keeps resolving.
+- Its categories are already the storefront's existing ones
+  (`Bathware & plumbing`, `Electricals & lighting`, ...), so category URLs,
+  footer links and category photos keep working.
+- **Images:** `image` is set only when `public/products/images/<SKU>.webp`
+  exists in the repo, and an existing image is never wiped by this list.
+  No file, no image: the swatch is drawn. Do not drop AI-generated or
+  catalogue-crop files in as if they were product photos — confirm the
+  exact product and the right to use the image first.
+
 ## Enum spelling
 
 Prisma uses `SCREAMING_SNAKE`; the wire contract and the UI use lower snake
