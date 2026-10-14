@@ -16,3 +16,9 @@ the card renders that title itself, so the two collided.
 No build script: the masters are not in this repo, so anything here would
 only run on the machine that happened to hold them. Re-cut by hand with the
 settings above if a master is replaced.
+
+`waterproofing`, `tiling-adhesives`, `plywood-laminates`, `paints-finishes`
+and `cement-steel` were replaced with owner-supplied renders (1536x1024
+masters, cut to 4:3 with the settings above). They are generated pictures
+of product groups, not photographs of catalogue SKUs, and they show
+third-party brand marks — keep them to category cards, never a product page.
