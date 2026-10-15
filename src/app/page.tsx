@@ -10,6 +10,7 @@ import { WishlistRow } from "@/components/storefront/home/WishlistRow";
 import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
 import { ServiceIconRail } from "@/components/storefront/home/ServiceIconRail";
 import { StudioRow } from "@/components/storefront/home/StudioRow";
+import { DesignBuild } from "@/components/storefront/home/DesignBuild";
 import { BrandRail, BrandWall } from "@/components/storefront/home/BrandWall";
 import { PageSections, SectionHead, hasEnough } from "@/components/ui/Section";
 import {
@@ -63,6 +64,13 @@ const HOME_PROFESSIONALS = 8;
 const CATEGORY_RAILS = [
   { slug: "bathware-plumbing", title: "Bathware & sanitary" },
   { slug: "tiling-adhesives", title: "Tiling & adhesives" },
+  /* Third because the design reference carries it and the shelf can
+     fill it: electricals is the second-largest department on the live
+     catalogue — 120 sellable lines against bathware's 163 — and it was
+     the one big department a reader could only reach through the
+     category menu. The rails below take only what the rows above did
+     not, so a third shelf costs one query and repeats nothing. */
+  { slug: "electricals-lighting", title: "Electricals & lighting" },
 ] as const;
 
 /**
@@ -382,6 +390,22 @@ export default async function HomePage() {
               <StudioRow rooms={rooms} />
             </section>
           )}
+
+          {/* Straight after the rooms, and that order is the argument.
+              A reader who has just looked at six finished interiors is
+              the one reader on this page already thinking about the
+              whole room rather than the next bag of cement — and the
+              question Studio leaves them with is who would build it.
+              This answers it in the same breath.
+
+              The only place on the site that says Quoin designs and
+              builds. It is not a category, not in the header and not in
+              the tab bar; `/consult` is the single route in, and a page
+              that never mentions it hides half the business. See
+              `DesignBuild` for what it does and does not claim. */}
+          <section>
+            <DesignBuild />
+          </section>
 
           {/* The same cut as /premium, from the same constant, so the rail
               and the page behind its "View all" are one listing. */}
