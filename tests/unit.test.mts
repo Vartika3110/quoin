@@ -1756,20 +1756,24 @@ describe("saved-product stock state (productStockState)", () => {
   });
 });
 
-const { estimateFor, BULK_DELIVERY_HOURS } = await import(
+const { estimateFor, SCHEDULED_DELIVERY_MINUTES } = await import(
   "@/lib/orders/delivery-estimate"
 );
 
 describe("delivery estimate (estimateFor)", () => {
   it("promises the owner's three hours for bulk goods", () => {
-    assert.equal(BULK_DELIVERY_HOURS, 3);
-    assert.equal(estimateFor(["SCHEDULED"]), "Within about 3 hours");
+    /* 45 minutes, same day, at the owner's instruction on 15 October:
+       Quoin holds no stock, so an order is collected from the vendor
+       who has it rather than waiting on a warehouse run. This replaced
+       a three-hour bulk promise. */
+    assert.equal(SCHEDULED_DELIVERY_MINUTES, 45);
+    assert.equal(estimateFor(["SCHEDULED"]), "Today — usually within 45 minutes");
   });
 
   it("is the same promise however many bulk lines there are", () => {
     assert.equal(
       estimateFor(["SCHEDULED", "SCHEDULED", "SCHEDULED"]),
-      "Within about 3 hours",
+      "Today — usually within 45 minutes",
     );
   });
 
@@ -1787,7 +1791,10 @@ describe("delivery estimate (estimateFor)", () => {
       estimateFor(["INSTANT", "SCHEDULED", "MADE_TO_ORDER"]),
       "Confirmed on call",
     );
-    assert.equal(estimateFor(["INSTANT", "SCHEDULED"]), "Within about 3 hours");
+    assert.equal(
+      estimateFor(["INSTANT", "SCHEDULED"]),
+      "Today — usually within 45 minutes",
+    );
   });
 
   it("does not promise a delivery window for a professional's slot", () => {

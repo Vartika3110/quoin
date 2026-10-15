@@ -183,6 +183,63 @@ export const Sparkle = (p: IconProps) => (
   </Svg>
 );
 
+/**
+ * The five the design reference draws inside Design & Renovate.
+ *
+ * Traced from the reference rather than redrawn in this file's own
+ * hand, at the owner's instruction that the section use the same icons:
+ * a key that is nearly our key reads as a mistake next to a reference
+ * somebody is holding up against the screen. They go through the same
+ * `Svg` wrapper as everything else, so they inherit the 24px grid,
+ * `currentColor` and round caps — only the paths differ.
+ */
+export const Sparkles = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    <path d="M20 3v4" />
+    <path d="M22 5h-4" />
+    <path d="M4 17v2" />
+    <path d="M5 18H3" />
+  </Svg>
+);
+
+/** A brief, spoken. Step 01. */
+export const Chat = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+  </Svg>
+);
+
+/** Drawing and measuring. Step 02. */
+export const PencilRuler = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m15 5 4 4" />
+    <path d="M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13" />
+    <path d="m8 6 2-2" />
+    <path d="m2 22 5.5-1.5L21.17 6.83a2.82 2.82 0 0 0-4-4L3.5 16.5Z" />
+    <path d="m18 16 2-2" />
+    <path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17" />
+  </Svg>
+);
+
+/** The crew on site. Step 03 — distinct from `Wrench`, which is the
+    services glyph and is drawn in this file's own hand. */
+export const Spanner = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9" />
+    <path d="m18 15 4-4" />
+    <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5" />
+  </Svg>
+);
+
+/** Keys handed over. Step 04. */
+export const Key = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M2 18v3c0 .6.4 1 1 1h4v-3h3v-3h2l1.4-1.4a6.5 6.5 0 1 0-4-4Z" />
+    <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" />
+  </Svg>
+);
+
 export const Clock = (p: IconProps) => (
   <Svg {...p}>
     <circle cx="12" cy="12" r="8.5" />

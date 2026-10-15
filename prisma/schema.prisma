@@ -126,8 +126,69 @@ model User {
   notifications               Notification[]
   supportRequests             SupportRequest[]
   wishlistItems               WishlistItem[]
+  walletEntries               WalletEntry[]
 
   @@map("users")
+}
+
+/// What is in a customer's Quoin wallet, as a ledger rather than a
+/// balance.
+///
+/// There is deliberately no `balancePaise` column on `User`. A stored
+/// balance is a number two writers can disagree about and nobody can
+/// audit: when it drifts — a refund credited twice, a spend that failed
+/// after the deduction — there is no way to tell what it should have
+/// been. A ledger cannot drift, because the balance is not stored at
+/// all. It is `SUM(amount_paise)`, and every paisa of it has a row
+/// saying where it came from.
+///
+/// Signed amounts, one convention: **positive credits the customer,
+/// negative spends**. A refund is positive, paying for an order is
+/// negative, and a correction is whichever direction it corrects.
+/// Nothing is ever updated or deleted — a mistake is a second row
+/// pointing the other way, which is what an audit trail is.
+model WalletEntry {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Integer paise, signed. See the note above on the convention.
+  amountPaise Int
+
+  kind WalletEntryKind
+
+  /// What caused this entry, and the reason it can only happen once:
+  /// `refund:<refundId>`, `order:<reference>`, `topup:<paymentId>`. The
+  /// unique index is the idempotency guard — a webhook delivered twice
+  /// writes one row, because the second insert collides rather than
+  /// quietly doubling somebody's money.
+  reference String @unique
+
+  /// Shown to the customer in their wallet history, so it is written
+  /// for them: "Refund for QO-P8498W", not "adj. 4821".
+  note String @default("")
+
+  createdAt DateTime @default(now())
+
+  /// The history page reads one account newest-first; nothing reads the
+  /// whole table.
+  @@index([userId, createdAt])
+  @@map("wallet_entries")
+}
+
+enum WalletEntryKind {
+  /// Money back from an order, credited here instead of to the card.
+  REFUND
+  /// Credit a person at Quoin decided to give. Always has a note.
+  GOODWILL
+  /// The customer put money in. Nothing does this yet — adding money
+  /// needs a gateway payment of its own, which is a separate build.
+  TOPUP
+  /// Spent on an order. Negative, always.
+  ORDER_PAYMENT
+  /// A correction. Either direction, and the note says why.
+  ADJUSTMENT
 }
 
 enum AddressLabel {

@@ -34,6 +34,10 @@ import {
 } from "@/lib/data/catalog";
 import { listServiceAreas } from "@/lib/data/service-areas";
 import { BADGE_LABEL, type FulfilmentType } from "@/lib/types/catalog";
+import {
+  SCHEDULED_DELIVERY_BODY,
+  SCHEDULED_DELIVERY_TITLE,
+} from "@/lib/orders/delivery-estimate";
 
 /** Priced from the database on every request — see the note in page.tsx. */
 export const dynamic = "force-dynamic";
@@ -50,8 +54,11 @@ const PROMISE: Record<
   },
   scheduled: {
     Icon: Truck,
-    title: (d) => `Delivered in about ${d ?? 2} days`,
-    body: "Bulk item — dispatched from the regional warehouse on your chosen date.",
+    /* The catalogue-wide promise, from `delivery-estimate.ts`, which is
+       where it is written down once. A line with its own
+       `leadTimeDays` still says its own number. */
+    title: (d) => (d && d > 0 ? `Delivered in about ${d} days` : SCHEDULED_DELIVERY_TITLE),
+    body: SCHEDULED_DELIVERY_BODY,
   },
   bookable: {
     Icon: Calendar,

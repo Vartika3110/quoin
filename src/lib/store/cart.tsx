@@ -13,6 +13,7 @@ import {
 } from "@/lib/store/persistent";
 import { useHydrated } from "@/lib/store/hydrated";
 import { normalizeQty } from "@/lib/cart/quantity";
+import { SCHEDULED_DELIVERY_BODY } from "@/lib/orders/delivery-estimate";
 import type {
   FulfilmentType,
   Paise,
@@ -279,8 +280,11 @@ export const GROUP_PROMISE: Record<
     detail: () => "From your nearest Quoin store.",
   },
   scheduled: {
-    title: "Scheduled delivery",
-    detail: (d) => `Dispatched from the regional warehouse — about ${d ?? 2} days.`,
+    title: "Delivered today",
+    detail: (d) =>
+      d && d > 0
+        ? `Dispatched on your chosen date — about ${d} days.`
+        : SCHEDULED_DELIVERY_BODY,
   },
   made_to_order: {
     title: "Made to order",

@@ -8,9 +8,15 @@
  * you" is a poor answer when the business already knows the shape of its
  * own promise.
  *
- * The owner's instruction is that a bulk order lands in about three
- * hours. `BULK_DELIVERY_HOURS` is that number and the only place it is
- * written down; changing the promise is an edit to this one constant.
+ * The owner's instruction, 15 October, is that a scheduled order lands
+ * **the same day, usually within 45 minutes**. That supersedes the
+ * earlier three-hour figure for bulk goods, and the reason it can is
+ * that Quoin holds no stock: an order is picked up from the vendor who
+ * has it rather than waiting on a warehouse run. The constants below
+ * are the only place the promise is written down, and every surface
+ * that quotes it — the product card's chip, the product page's promise
+ * block, the cart's group heading and the order confirmation — reads
+ * them, so changing the promise is an edit to this one file.
  *
  * ## Why fulfilment, and not a weight or a line count
  *
@@ -46,8 +52,16 @@
  * paying.
  */
 
-/** The owner's promise for bulk goods, in hours. See above. */
-export const BULK_DELIVERY_HOURS = 3;
+/** The quick case, in minutes, and the figure the card chip shows. */
+export const SCHEDULED_DELIVERY_MINUTES = 45;
+
+/** The card chip. Short because it sits in a 60px pill over a picture. */
+export const SCHEDULED_DELIVERY_SHORT = `${SCHEDULED_DELIVERY_MINUTES} mins`;
+
+/** The product page's promise, where there is room for the whole of it. */
+export const SCHEDULED_DELIVERY_TITLE = "Delivered today";
+export const SCHEDULED_DELIVERY_BODY =
+  `Collected from the vendor who stocks it and delivered the same day — usually within ${SCHEDULED_DELIVERY_MINUTES} minutes.`;
 
 /**
  * Least certain first. The order is the whole rule: `estimateFor` walks
@@ -62,8 +76,12 @@ const BY_CONFIDENCE = [
   { fulfilment: "MADE_TO_ORDER", label: "Confirmed on call" },
   /* A professional's time slot, not a delivery at all. */
   { fulfilment: "BOOKABLE", label: "Scheduled with the professional" },
-  /* Heavy or bulk goods — the owner's three hours. */
-  { fulfilment: "SCHEDULED", label: `Within about ${BULK_DELIVERY_HOURS} hours` },
+  /* Everything in the catalogue. Same day, because nothing is held in
+     a warehouse waiting for a run — see the note at the top. */
+  {
+    fulfilment: "SCHEDULED",
+    label: `Today — usually within ${SCHEDULED_DELIVERY_MINUTES} minutes`,
+  },
   /* Dark-store stock. The per-store figure lives on `Store.baseEtaMinutes`
      and is quoted against an address; this is the catalogue-wide promise
      the home page makes, and no product is INSTANT today. */

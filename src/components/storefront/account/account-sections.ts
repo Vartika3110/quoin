@@ -10,6 +10,7 @@ import {
   Pin,
   Settings,
   User,
+  Wallet,
 } from "@/components/icons";
 
 /**
@@ -29,6 +30,10 @@ export const ACCOUNT_SECTIONS = [
   { href: "/account/documents", label: "Documents", Icon: Document },
   { href: "/account/addresses", label: "Addresses", Icon: Pin },
   { href: "/account/payments", label: "Payments", Icon: CreditCard },
+  /* Beside Payments rather than near the top: a wallet is how an order
+     gets paid for, so it belongs with the card a customer pays with
+     and not with the things they bought. */
+  { href: "/account/wallet", label: "Wallet", Icon: Wallet },
   { href: "/pro", label: "Quoin Pro", Icon: Crown },
   { href: "/account/settings", label: "Settings", Icon: Settings },
   { href: "/account/support", label: "Help & Support", Icon: Headset },

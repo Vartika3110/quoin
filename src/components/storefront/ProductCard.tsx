@@ -20,6 +20,7 @@ import {
   Trash,
   Truck,
 } from "@/components/icons";
+import { SCHEDULED_DELIVERY_SHORT } from "@/lib/orders/delivery-estimate";
 import { useCart } from "@/lib/store/cart";
 import { useWishlist } from "@/lib/store/wishlist";
 import {
@@ -72,7 +73,15 @@ const FULFILMENT: Record<
   { label: (d?: number) => string; Icon: typeof Clock }
 > = {
   instant: { label: () => "18 min", Icon: Clock },
-  scheduled: { label: (d) => `${d ?? 2} days`, Icon: Truck },
+  scheduled: {
+    /* From the one place the promise is written down — see
+       `delivery-estimate.ts`. A line that carries its own
+       `leadTimeDays` still wins: nothing does today, but the field
+       exists so a genuinely slow product can say so rather than inherit
+       the catalogue-wide promise. */
+    label: (d) => (d && d > 0 ? `${d} days` : SCHEDULED_DELIVERY_SHORT),
+    Icon: Truck,
+  },
   bookable: { label: () => "Book a slot", Icon: Calendar },
   made_to_order: { label: (d) => `Made to order · ${d ?? 7}d`, Icon: Ruler },
 };
@@ -84,6 +93,7 @@ export function ProductCard({
   /** Rating average, when the product has one. Today: nothing does. */
   rating,
   ratingCount,
+  inStock = true,
 }: {
   product: Product;
   isPro?: boolean;
@@ -98,6 +108,12 @@ export function ProductCard({
   fill?: boolean;
   rating?: number | null;
   ratingCount?: number;
+  /**
+   * Whether the line can be ordered. True for everything today — see
+   * the note where it renders — and a prop so that inventory, when it
+   * arrives, has somewhere to say otherwise.
+   */
+  inStock?: boolean;
 }) {
   const price = resolvePrice(product, isPro);
   const badge = product.badges[0];
@@ -249,6 +265,20 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col pt-5">
         <Link href={`/p/${product.slug}`} className="flex flex-1 flex-col gap-1">
+          {/* Availability, stated as the owner states it: Quoin holds no
+              inventory and buys from the vendor who has the line, so
+              everything in the catalogue can be ordered. It is a fact
+              about how the business works, not a reading of a stock
+              count — there is no stock count.
+
+              A prop rather than a literal so it cannot quietly become
+              one. `stockTracked` is false on every product today; on the
+              day a line is counted in, the caller passes the real answer
+              and this badge stops being able to lie. */}
+          {inStock && (
+            <span className="text-micro font-semibold text-success">In stock</span>
+          )}
+
           {product.brand && (
             <span className="truncate text-micro uppercase tracking-wide text-muted">
               {product.brand}

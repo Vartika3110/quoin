@@ -7,6 +7,7 @@ import { LocationPicker } from "@/components/storefront/LocationPicker";
 import { ThemeToggle } from "@/components/storefront/ThemeToggle";
 import { CartDrawer } from "@/components/storefront/nav/CartDrawer";
 import { NotificationBell } from "@/components/storefront/nav/NotificationBell";
+import { WalletPill } from "@/components/storefront/nav/WalletPill";
 import { useSearch } from "@/components/storefront/nav/SearchContext";
 import { VoiceSearch } from "@/components/storefront/nav/VoiceSearch";
 import { useScrolled } from "@/components/storefront/nav/useScrolled";
@@ -215,6 +216,7 @@ function DesktopBar({
         <WishlistButton />
         <CartButton onClick={onOpenCart} />
         {signedIn && <NotificationBell buttonClassName="size-10 rounded-lg border-0" />}
+        {signedIn && <WalletPill />}
         <ThemeToggle className="size-10 border-0" />
         <Link
           href="/account"
@@ -432,6 +434,11 @@ function MobileBar({
             accident. Hover goes to the accent rather than back to ink,
             so there is still somewhere for the state to move. */}
         <ThemeToggle className="tap-target relative" />
+
+        {/* The balance, where the reference puts it. Renders nothing
+            for a signed-out reader or an empty wallet — see
+            `WalletPill`. */}
+        {signedIn && <WalletPill />}
 
         {/* Saved, then basket. Two halves of the same habit — the things
             you are considering and the things you have chosen — so they
