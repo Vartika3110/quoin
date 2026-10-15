@@ -428,6 +428,12 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Expert services"
+                /* The reference carries a line under this heading, and
+                   the gap it opens is part of the section's rhythm. Not
+                   the reference's own words: "booked in minutes" is a
+                   claim about a flow that takes a request and a call
+                   back, so this says what actually happens. */
+                subtitle="Quoin's own roster, booked from here"
                 href="/services"
                 linkLabel="View all"
               />

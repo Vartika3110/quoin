@@ -36,8 +36,13 @@ export function ServiceIconRail({ services }: { services: Service[] }) {
     /* A rail on a phone, an even row from `lg`. `.rail` children refuse
        to shrink, so each cell carries its own width there and `flex-1`
        takes it back above — ten trades divide the content width rather
-       than scrolling on a screen with room for all of them. */
-    <div className="rail gap-2.5 px-5 pb-1 scroll-pl-5 lg:gap-3 lg:overflow-visible lg:px-0 lg:scroll-pl-0">
+       than scrolling on a screen with room for all of them.
+
+       16px apart with a 12px foot, measured off the design reference
+       rather than chosen: at 10px the glyphs read as one strip of
+       icons, and the 4px foot put the people cards hard against the
+       labels. */
+    <div className="rail gap-4 px-5 pb-3 scroll-pl-5 lg:gap-3 lg:overflow-visible lg:px-0 lg:scroll-pl-0">
       {services.map((service) => {
         const Icon = SERVICE_ICON[service.icon];
 
@@ -45,7 +50,7 @@ export function ServiceIconRail({ services }: { services: Service[] }) {
           <Link
             key={service.slug}
             href={`/services/${service.slug}`}
-            className="group flex w-16 shrink-0 flex-col items-center gap-1.5 lg:w-auto lg:flex-1"
+            className="group flex w-16 shrink-0 flex-col items-center gap-2 lg:w-auto lg:flex-1"
           >
             {/* A fixed square, not `aspect-square w-full`. Filling the
                 column meant ten trades across a 1100px page gave each one

@@ -78,10 +78,15 @@ export function ProfessionalRail({
           <article
             key={person.id}
             className={cn(
-              "flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-4",
+              "flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-3 lg:p-4",
               /* A fixed width only in the rail, where nothing else sets
                  one. In the list the grid column is the width. */
-              layout === "list" ? "w-auto" : "w-72 shrink-0 lg:w-auto",
+              /* 190px in the rail, from the design reference: at `w-72`
+                 one card and a sliver filled a 375px screen, which reads
+                 as a page that has run out rather than a row to swipe.
+                 Two and a peek is what the reference shows. The grid
+                 from `lg` still takes the width back. */
+              layout === "list" ? "w-auto" : "w-[190px] shrink-0 lg:w-auto",
             )}
           >
             <div className="flex items-center gap-3">
@@ -156,7 +161,14 @@ export function ProfessionalRail({
             </div>
             )}
 
-            <div className="mt-auto flex items-center justify-between gap-3 pt-0.5">
+            {/* Stacked in the rail, side by side everywhere else. The
+                reference's card puts a four-character fee next to the
+                button; this one often carries "Quoted after the visit"
+                instead, which at the rail's 190px wrapped to two lines
+                and ran into the button. Where the fee is a number it
+                still sits on one line, because the row only wraps when
+                it has to. */}
+            <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-0.5">
               {/* No invented fee. Where the owner has not set one the card
                   says how the fee is arrived at, which is how this trade
                   actually works — see `pricing` on each service. */}
@@ -168,7 +180,10 @@ export function ProfessionalRail({
               <Button
                 href={`/services/book?service=${person.serviceSlug}`}
                 size="sm"
-                className="px-5"
+                /* `grow` so that when the fee line wraps above it, the
+                    button takes the row rather than sitting as a stub
+                    against the left edge. */
+                className="grow px-5 sm:grow-0"
               >
                 Book
               </Button>

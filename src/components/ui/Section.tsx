@@ -46,7 +46,16 @@ export function SectionHead({
            the thing that names it. 12px was doing neither job: too wide
            to be a caption, too tight to be a break. */
         "mb-4 flex items-end justify-between gap-4 px-5 lg:px-0",
-        subtitle && "mb-5",
+        /* A subtitled heading needs more room under it than a bare
+           one — but how much depends on which heading. A page title
+           (`lg`, used by `AccountShell`) keeps its 20px; a section
+           heading inside the page takes 12px, which is what the design
+           reference measures under "Expert Services". Written as one
+           expression rather than passed in by the caller because `cn`
+           here is not `tailwind-merge`: a `mb-3` handed in as
+           `className` would sit alongside this class and lose on
+           stylesheet order, which is the trap `StickyBar` documents. */
+        subtitle && (size === "lg" ? "mb-5" : "mb-3"),
         className,
       )}
     >
