@@ -1,6 +1,6 @@
 import Script from "next/script";
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Serif } from "next/font/google";
+import { Fraunces, IBM_Plex_Sans } from "next/font/google";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { getSession } from "@/lib/auth/session";
 import { siteOrigin } from "@/lib/env";
@@ -41,24 +41,30 @@ const plexSans = IBM_Plex_Sans({
 });
 
 /**
- * The wordmark and page titles only — never body copy, never a section
- * heading inside a page.
+ * The display face: the wordmark, the hero and every section heading.
  *
- * Fraunces was here and carried the brand, but it is a display face with
- * opinions: its own variable axes are named SOFT and WONK. Set plainly it
- * is still a magazine serif, and a magazine serif on every section
- * heading is what makes a storefront read as a landing page rather than
- * a place to buy a bag of cement.
+ * **Fraunces, again.** It was here, was replaced by Plex's own serif on
+ * the argument that a magazine serif on every section heading makes a
+ * storefront read as a landing page rather than a place to buy a bag of
+ * cement, and is now back at the owner's instruction, because it is
+ * what the design reference sets. That argument was a good one and it
+ * lost to a simpler fact: the reference *is* the brand the owner wants,
+ * and a near-match reads as a mistake beside it.
  *
- * The serif stays because the wordmark is a serif and the brand should
- * survive a type change. It is now Plex's own serif, so the two faces are
- * one superfamily drawn by one hand — which is the cheapest way to make
- * an interface feel like a single product rather than a set of screens.
+ * Loaded as the variable font rather than at named weights. Fraunces
+ * carries a `wght` axis and `next/font` ships the whole range in one
+ * file, so 400 through 700 costs what a single static weight would
+ * have, and the type scale can use any of them. Italic is a separate
+ * file and is requested because the hero's standfirst is set in it.
+ *
+ * Its other axes — the ones actually named SOFT and WONK — are left at
+ * their defaults. Plainly set is the point: the reference's headings
+ * are a serif, not a performance.
  */
-const plexSerif = IBM_Plex_Serif({
+const fraunces = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "600"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -128,7 +134,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plexSans.variable} ${plexSerif.variable} h-full`}
+      className={`${plexSans.variable} ${fraunces.variable} h-full`}
       /* The script below sets data-theme before React hydrates, so the
          server's markup and the client's genuinely differ here — on
          purpose, and only on this element. */
