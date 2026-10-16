@@ -95,9 +95,12 @@ export function ConsultBubble() {
            A page with its own action bar *and* a cart bar still stacks,
            so the bubble lifts clear of both — there is no room beside
            two bars. */
+        /* Above the tab bar, not beside it. The bar went full width to
+           match the design reference, so there is no lane left to park
+           in: 63px of bar plus the safe area, plus 12px of air. */
         liftedOverOwnBar
-          ? "bottom-[max(4.75rem,calc(4.25rem_+_env(safe-area-inset-bottom)))]"
-          : "bottom-[calc(0.625rem_+_env(safe-area-inset-bottom))]",
+          ? "bottom-[max(8.5rem,calc(8rem_+_env(safe-area-inset-bottom)))]"
+          : "bottom-[calc(4.7rem_+_env(safe-area-inset-bottom))]",
       )}
     >
       <Headset className="size-6" />
