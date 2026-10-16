@@ -20,10 +20,13 @@ import { formatPrice } from "@/lib/types/catalog";
  * **Renders nothing until it has a number.** A chip that says ₹0 for a
  * moment and then changes to ₹2,400 is worse than a chip that appears
  * once — the first thing a customer reads about their own money should
- * not be a value that was never true. It also renders nothing when the
- * balance is zero and nothing has ever been in it: an empty wallet is
- * not a feature to advertise in the header of every page, and the
- * account menu carries the link regardless.
+ * not be a value that was never true.
+ *
+ * An empty wallet *does* show, at the owner's instruction and as the
+ * reference draws it. The argument against was that an empty wallet is
+ * not a feature to advertise in the header of every page; the argument
+ * for is that a wallet nobody can see is a wallet nobody knows they
+ * have, and ₹0 is the honest reading of it.
  */
 export function WalletPill({ className }: { className?: string }) {
   const [balancePaise, setBalance] = useState<number | null>(null);
@@ -49,7 +52,10 @@ export function WalletPill({ className }: { className?: string }) {
     return () => abort.abort();
   }, []);
 
-  if (balancePaise === null || balancePaise === 0) return null;
+  /* `null` is "not read yet", which is not the same as zero — see the
+     note above on why a chip must not flash a value that was never
+     true. Zero itself renders. */
+  if (balancePaise === null) return null;
 
   return (
     <Link

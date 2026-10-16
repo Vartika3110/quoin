@@ -19,6 +19,7 @@ import {
   Chevron,
   ChevronDown,
   Clock,
+  Headset,
   Heart,
   Search,
   User,
@@ -484,14 +485,19 @@ function MobileBar({
               knows what they want types it, and the cards are for
               somebody who does not.
 
-              **Full width**, because the Consult card that used to sit
-              beside it is gone. `ConsultBubble` floats over every phone
-              page already, so the header was offering the same
-              destination a second time on the same screen, and paying
-              120px of the search field's measure for it. */}
+              **The Consult card is back beside it**, at the owner's
+              instruction and as the reference draws it. It was cut on
+              the argument that `ConsultBubble` already floats over every
+              phone page, so the header was offering the same destination
+              twice on one screen and paying 120px of the search field's
+              measure for it. That argument was right about the
+              duplication and wrong about which one carries the offer: a
+              floating headset says "help", and this says what the help
+              is. */}
           {showSearch && (
-            <div className="pb-1.5 pt-2">
-              <MobileSearchField />
+            <div className="flex items-stretch gap-2 pb-1.5 pt-2">
+              <MobileSearchField className="min-w-0 flex-1" />
+              <ConsultCard />
             </div>
           )}
 
@@ -519,6 +525,38 @@ function MobileBar({
  * does not have. It is the same gesture — photograph the thing, get
  * prices — pointed at the feature that actually exists.
  */
+/**
+ * Consult, beside the search field.
+ *
+ * Two lines rather than one, as the reference draws it: the label says
+ * what the thing is and the line under it says what happens, which is
+ * the difference between a button somebody presses and a button
+ * somebody wonders about. Fixed-width and `shrink-0` so it cannot eat
+ * the search field's measure as the screen narrows — below 340px the
+ * field is the one that must survive.
+ */
+function ConsultCard() {
+  return (
+    <Link
+      href="/consult"
+      /* Trimmed to the pixel the reference leaves it: the search field
+         beside it has to hold `Search for "Flooring"` without
+         truncating, and at a 134px card it did not. */
+      className="flex h-13 shrink-0 items-center gap-1.5 rounded-full border border-line bg-surface pl-1.5 pr-3 transition-colors hover:border-accent-edge"
+    >
+      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-wash text-accent">
+        <Headset className="size-4" />
+      </span>
+      <span className="leading-tight">
+        <span className="block text-micro font-bold uppercase tracking-wide text-ink">
+          Consult
+        </span>
+        <span className="block text-[0.5625rem] text-muted">Talk to experts</span>
+      </span>
+    </Link>
+  );
+}
+
 function MobileSearchField({ className }: { className?: string }) {
   const { open } = useSearch();
   const router = useRouter();
@@ -539,8 +577,12 @@ function MobileSearchField({ className }: { className?: string }) {
         className="flex min-w-0 flex-1 items-center gap-2 self-stretch text-left"
       >
         <Search className="size-4.5 shrink-0 text-muted" aria-hidden />
+        {/* Shorter by two words than it was. The Consult card beside
+            this field takes 117px of a 375px screen, and at the width
+            that leaves, "Search for "Flooring"" truncated mid-word —
+            which reads as a broken field rather than as a hint. */}
         <span className="min-w-0 flex-1 truncate text-caption text-faint">
-          Search for &ldquo;Flooring&rdquo;
+          Search &ldquo;Flooring&rdquo;
         </span>
       </button>
 

@@ -138,13 +138,34 @@ export default async function HomePage() {
     getBestsellers(10),
   ]);
 
-  const [rooms, services, people] = await Promise.all([
-    /* Six: five for the row and one spare, so a room that loses its
-       photograph does not leave a gap. */
-    listTopRooms(6),
+  const [topRooms, services, people] = await Promise.all([
+    /* Twelve, to pick four *different* rooms out of. The block is a
+       two-by-two grid now and the four most-saved rooms are three
+       bedrooms and a home office — which reads as a bug in the data
+       rather than as a choice of rooms. See `rooms` below. */
+    listTopRooms(12),
     listServices(),
     listProfessionals(),
   ]);
+
+  /* One room per kind, most-saved first, then whatever is left to fill
+     the grid. Studio's saves cluster — bedrooms are what people save —
+     so taking the top four gave a two-by-two of three bedrooms. A grid
+     of four rooms is read as a choice between kinds of room, and that
+     only works if they are four kinds. */
+  const rooms: typeof topRooms = [];
+  const kinds = new Set<string>();
+  for (const room of topRooms) {
+    const kind = room.room ?? room.slug;
+    if (kinds.has(kind)) continue;
+    kinds.add(kind);
+    rooms.push(room);
+    if (rooms.length === 4) break;
+  }
+  for (const room of topRooms) {
+    if (rooms.length === 4) break;
+    if (!rooms.includes(room)) rooms.push(room);
+  }
 
   /* Architectural Selects, in a round of its own. */
   /* Not `sort: "newest"`. The most recently imported premium products
@@ -424,6 +445,10 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Inspired by Studio"
+                /* The reference's own line, kept because it is true:
+                   these are rooms, they are Studio's, and the point of
+                   the row is that a reader can build one. */
+                subtitle="Rooms worth building, from Quoin Studio"
                 href="/studio"
                 linkLabel="Open Studio"
               />
@@ -453,6 +478,9 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="Architectural Selects"
+                /* The reference's line. True of the cut: `/premium` is
+                   everything over the premium floor. */
+                subtitle="Designer and statement pieces"
                 href="/premium"
                 linkLabel="View all"
               />
@@ -526,6 +554,10 @@ export default async function HomePage() {
             <section>
               <SectionHead
                 title="More to explore"
+                /* The reference's line, and the round-robin above is
+                   what makes it true of the first screen rather than
+                   only of the whole grid. */
+                subtitle="Picked across every category"
                 href="/products"
                 linkLabel="View all"
               />
