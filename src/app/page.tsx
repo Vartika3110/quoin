@@ -62,15 +62,33 @@ export const dynamic = "force-dynamic";
 const HOME_PROFESSIONALS = 8;
 
 const CATEGORY_RAILS = [
-  { slug: "bathware-plumbing", title: "Bathware & sanitary" },
-  { slug: "tiling-adhesives", title: "Tiling & adhesives" },
-  /* Third because the design reference carries it and the shelf can
-     fill it: electricals is the second-largest department on the live
-     catalogue — 120 sellable lines against bathware's 163 — and it was
-     the one big department a reader could only reach through the
-     category menu. The rails below take only what the rows above did
-     not, so a third shelf costs one query and repeats nothing. */
-  { slug: "electricals-lighting", title: "Electricals & lighting" },
+  /* **A shelf for every department that can fill one**, at the owner's
+     instruction that the page have more to scroll. It was three, which
+     left ten departments reachable only through the category menu and a
+     catch-all grid at the foot.
+
+     In order of what the shop actually holds — the sellable count beside
+     each is live at the time of writing, and the order is deliberate:
+     the shelves a reader meets first should be the ones with enough
+     behind them to be worth swiping, and a department with nine lines
+     makes a short rail that reads as a gap.
+
+     Three departments are deliberately absent. `home-appliances-security`
+     has three sellable lines and `gypsum-false-ceiling` one, which is
+     below `hasEnough`'s four and would render as a heading over a stub;
+     `services` has none and is not a shelf at all. They keep their place
+     in "More to explore", which exists for exactly this. */
+  { slug: "bathware-plumbing", title: "Bathware & sanitary" },        // 163
+  { slug: "electricals-lighting", title: "Electricals & lighting" },  // 126
+  { slug: "tiling-adhesives", title: "Tiling & adhesives" },          //  95
+  { slug: "paints-finishes", title: "Paints & finishes" },            //  40
+  { slug: "kitchen-wardrobe-fittings", title: "Kitchen & wardrobe fittings" }, // 23
+  { slug: "hardware-locks", title: "Hardware & locks" },              //  16
+  { slug: "cement-steel", title: "Cement & steel" },                  //  14
+  { slug: "plywood-laminates", title: "Plywood & laminates" },        //  14
+  { slug: "tools-safety", title: "Tools & safety" },                  //  10
+  { slug: "waterproofing", title: "Waterproofing" },                  //   9
+  { slug: "kitchen-sinks-faucets", title: "Kitchen sinks & faucets" },//   4
 ] as const;
 
 /**
@@ -150,16 +168,32 @@ export default async function HomePage() {
      of 2,513 sellable lines — so filtering a general page left this row
      with nothing and it disappeared. */
   const railedSlugs = CATEGORY_RAILS.map((rail) => rail.slug);
-  const otherSlugs = categories
-    .map((c) => c.slug)
-    .filter((slug) => !railedSlugs.includes(slug as (typeof railedSlugs)[number]));
+  /* Every department, not only the unshelved ones. When three
+     departments had rails this was "the rest"; now that eleven do, "the
+     rest" is two tiny departments and a services row, and the grid at
+     the foot came back with four products. The `shown` set already
+     keeps a product from appearing twice, so asking for all of them and
+     filtering is both simpler and what makes the row live up to "picked
+     across every category". */
+  const otherSlugs = categories.map((c) => c.slug);
 
   /* Two calls, four queries — each `listRailProducts` is a window
      function and a hydrate. Sequential, because they are the heaviest
      reads on the page and the round above has only just let go of its
      connections. */
-  const railProducts = await listRailProducts(railedSlugs, 12);
-  const otherProducts = await listRailProducts(otherSlugs, 4);
+  /* 24 per department rather than 12. Each rail shows up to twenty and
+     the de-duplication below eats into that, so a department whose best
+     dozen all appeared in Project essentials or Bestsellers would
+     otherwise come back with four. */
+  const railProducts = await listRailProducts(railedSlugs, 24);
+  /* Deeper than the rails consume, which is the whole trick. Each
+     department shelf above takes twenty, and this draws from the same
+     ordering — so asking for eight returned eight products that were
+     all already on screen, every pool filtered to empty, and "More to
+     explore" disappeared from the page altogether. Twenty-eight leaves
+     eight per department below the shelf line for the grid to pick
+     from. */
+  const otherProducts = await listRailProducts(otherSlugs, 28);
 
   /* Three product rails on one page can show the same thing three times.
      They cut the catalogue on different axes — a recent photographed line,
@@ -188,7 +222,10 @@ export default async function HomePage() {
   const railSections = CATEGORY_RAILS.map((rail) => {
     const items = (railProducts.get(rail.slug) ?? [])
       .filter((p) => !shown.has(p.id))
-      .slice(0, 10);
+      /* Twenty, not ten: a rail is swiped, and ten cards at 150px is
+         three swipes before it runs out. The grid from `lg` wraps them
+         into rows rather than growing sideways. */
+      .slice(0, 20);
     items.forEach((p) => shown.add(p.id));
     return { ...rail, items };
   });
@@ -200,14 +237,16 @@ export default async function HomePage() {
      a mixed shelf. Taking one from each in turn is what makes "picked
      across every category" true of the first screen, not just the whole.
 
-     Twelve, which is six rows two-up on a phone. Twenty-four was twelve
-     rows and turned the foot of the page into a listing; this row is an
-     invitation to keep browsing, and `/products` is where the listing
-     actually lives. */
+     Twenty-four, which is twelve rows two-up on a phone. It was twelve,
+     cut from twenty-four on the argument that a longer grid turns the
+     foot of the page into a listing — and it is back at the owner's
+     instruction that the page have more to scroll, which is the same
+     argument answered the other way. `/products` is still where the
+     real listing lives, and "View all" still goes there. */
   const pools = [...otherProducts.values()].map((list) =>
     list.filter((p) => !shown.has(p.id)),
   );
-  const MORE_TO_EXPLORE = 12;
+  const MORE_TO_EXPLORE = 24;
   const more: typeof picks = [];
   for (let depth = 0; more.length < MORE_TO_EXPLORE; depth += 1) {
     const before = more.length;
@@ -287,6 +326,7 @@ export default async function HomePage() {
             <BrandRail />
             <BrandWall />
           </section>
+
 
 
 
