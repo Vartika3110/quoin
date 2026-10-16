@@ -123,10 +123,19 @@ export function Gutter({
  * without the page feeling padded out, and it is still tighter than the
  * gap between the hero and the first section.
  *
- * The phone figure moves less, deliberately: vertical space is the
- * scarcest thing on a 375px screen, and every pixel added here is a
- * pixel of scrolling between a customer and the next row. 48px is one
- * notch, not a redesign.
+ * **The phone figure is now 24px, measured off the design reference**,
+ * and that reverses the "add a little negative space" pass that took it
+ * to 48. Worth stating rather than quietly halving: 48px was a
+ * deliberate loosening at the owner's request, and 24px is what the
+ * reference actually draws — every one of its thirteen sections sits
+ * 24px below the one before it, with no exceptions. On a 375px screen
+ * the difference is about 300px of scrolling across the home page,
+ * which is most of a screen.
+ *
+ * The desktop figure does not move. The reference is a phone design and
+ * says nothing about 1280px, and the argument above for 72px there was
+ * made on desktop grounds — a category grid, a Studio rail and a
+ * product row that ran together into one wall of cards.
  */
 export function PageSections({
   children,
@@ -136,7 +145,7 @@ export function PageSections({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-12 pt-4 lg:space-y-18 lg:pt-0", className)}>
+    <div className={cn("space-y-6 pt-4 lg:space-y-18 lg:pt-0", className)}>
       {children}
     </div>
   );
