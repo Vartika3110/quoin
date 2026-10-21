@@ -41,6 +41,12 @@ import { PrismaClient } from "@prisma/client";
  * Every run writes a backup of the previous values first, and --restore
  * puts them back. This edits live catalogue rows; it should be possible
  * to undo it without a database restore.
+ *
+ * `.backups/` is ignored, so the backup from the run that was actually
+ * applied — 2026-10-21, the four spellings and the Feviseal row — is
+ * committed alongside this script as
+ * `reports/merge-duplicate-brands-backup-2026-10-21.json`. An undo path
+ * that exists only on the laptop that ran the script is not one.
  */
 const db = new PrismaClient();
 

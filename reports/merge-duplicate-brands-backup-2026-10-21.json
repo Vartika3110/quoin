@@ -1,0 +1,195 @@
+{
+  "products": [
+    {
+      "id": "cmty2rso8027cidme6apoxn3h",
+      "sku": "FSGGD",
+      "brandId": "cmty2rlih025nidmexoi3lx47"
+    },
+    {
+      "id": "cmty2shhp02eqidmebetnnejr",
+      "sku": "G44YV",
+      "brandId": "cmty2rlih025nidmexoi3lx47"
+    },
+    {
+      "id": "cmty2rw3h028didmeoh5tqg29",
+      "sku": "AB6SF",
+      "brandId": "cmty2rlih025nidmexoi3lx47"
+    },
+    {
+      "id": "cmty2sn8m02gcidmegzhvpvth",
+      "sku": "2ZJN6",
+      "brandId": "cmty2rlih025nidmexoi3lx47"
+    },
+    {
+      "id": "cmty2rlrf025pidme3486p000",
+      "sku": "Q478K",
+      "brandId": "cmty2rlih025nidmexoi3lx47"
+    },
+    {
+      "id": "cmty2swoh02j4idmebel6gt2j",
+      "sku": "PLESU",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2qaf001tfidmeb8qiy02x",
+      "sku": "T8DP9",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2qih801vvidmeb18ph05k",
+      "sku": "Z257Y",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2qr1301wzidmemkb96b3u",
+      "sku": "DD3G8",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2r07k01z7idme80w5045y",
+      "sku": "GBACW",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2r9dj021zidmedx20ty7s",
+      "sku": "XQLUC",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2rdbw0237idmewuny6f38",
+      "sku": "QYJ97",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2riss024vidmey0w297ty",
+      "sku": "2R8CG",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2rp62026hidmeft38c3xn",
+      "sku": "64LE6",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2sekz02duidmetdeg7ix0",
+      "sku": "K5X6X",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2pt3t01o6idmeg3w8jm1j",
+      "sku": "29ZVW",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2q23e01qyidmenrozjc9d",
+      "sku": "ZENAC",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2qxl801yvidme8cuxklll",
+      "sku": "XP5EV",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2rb75022jidme1hwqctu0",
+      "sku": "T75CL",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2s7uc02btidme19z9u743",
+      "sku": "E3MPF",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2smu102g8idmeh9uvb83o",
+      "sku": "78UU7",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2stgh02i4idmesn3pk75s",
+      "sku": "7Q8UJ",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2sikq02f2idmesouii34c",
+      "sku": "68V7T",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2qgcd01v7idmezd6ddqv0",
+      "sku": "H9N6S",
+      "brandId": "cmty2psv901o4idmed0k581ar"
+    },
+    {
+      "id": "cmty2smgn02g4idme4rdqwn30",
+      "sku": "AP3AH",
+      "brandId": "cmty2sm7f02g2idmemxjz6clh"
+    },
+    {
+      "id": "cmty2rsbl0278idmezap7oph3",
+      "sku": "GMRBU",
+      "brandId": "cmty2rruv0276idmeh7d31y2o"
+    },
+    {
+      "id": "cmty2nrir011qidmel9i7iwxz",
+      "sku": "SEAFEVFEV2DUI1",
+      "brandId": "cmty2nrah011oidmeng098alc"
+    }
+  ],
+  "brands": [
+    {
+      "id": "cmty2rlih025nidmexoi3lx47",
+      "name": "Dr. Fixit",
+      "slug": "dr-fixit-2",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nbei00x3idmerje1uog5",
+      "name": "Dr Fixit",
+      "slug": "dr-fixit",
+      "isActive": true
+    },
+    {
+      "id": "cmty2psv901o4idmed0k581ar",
+      "name": "Myk Laticrete",
+      "slug": "myk-laticrete-2",
+      "isActive": true
+    },
+    {
+      "id": "cmty2ncrv00xeidmemcumtk0a",
+      "name": "MYK Laticrete",
+      "slug": "myk-laticrete",
+      "isActive": true
+    },
+    {
+      "id": "cmty2sm7f02g2idmemxjz6clh",
+      "name": "L&t",
+      "slug": "l-t-2",
+      "isActive": true
+    },
+    {
+      "id": "cmty2mcrj00mwidmey5hesdn2",
+      "name": "L&T",
+      "slug": "l-t",
+      "isActive": true
+    },
+    {
+      "id": "cmty2rruv0276idmeh7d31y2o",
+      "name": "Ultratech",
+      "slug": "ultratech-2",
+      "isActive": true
+    },
+    {
+      "id": "cmty2lfvx00eqidmeu4776mdn",
+      "name": "UltraTech",
+      "slug": "ultratech",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nrah011oidmeng098alc",
+      "name": "Fevicol ; Pidilite",
+      "slug": "fevicol-pidilite",
+      "isActive": true
+    }
+  ]
+}
