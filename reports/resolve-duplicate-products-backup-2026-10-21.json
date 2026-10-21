@@ -1,0 +1,31 @@
+{
+  "deactivated": [
+    {
+      "id": "cmty2nj7m00zaidmed4rtuuff",
+      "sku": "TILMYKMYKZS1Y2",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nrv0011uidmewiva6gs9",
+      "sku": "TILMYKMYKPGJ5L",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nntl010oidmefiifeyh0",
+      "sku": "TILFEVFEVTY8ZK",
+      "isActive": true
+    }
+  ],
+  "renamed": [
+    {
+      "id": "cmty2nqsc011lidme55cu664w",
+      "sku": "ADHARAARAJDE82",
+      "name": "Araldite Standard Epoxy Adhesive"
+    },
+    {
+      "id": "cmty2r2cd01zvidme7uqgw9bj",
+      "sku": "EB2JT",
+      "name": "Araldite Standard Epoxy Adhesive"
+    }
+  ]
+}
