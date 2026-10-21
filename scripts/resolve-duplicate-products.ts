@@ -28,10 +28,14 @@ import { PrismaClient } from "@prisma/client";
  * bottle set at Rs 735, which is why their prices differ by 3.3x. An
  * automated merge on name would have deleted a real product.
  *
- * The three below were each confirmed against the product photography,
- * not the strings: same pack, same net quantity on the label, two stock
+ * The four below were each confirmed against the product photography,
+ * not the strings: same pack, same designations on the label, two stock
  * photos of it. They are listed one by one for that reason — the rule
  * that found them was a scan, the decision was a look.
+ *
+ * The fourth arrived only after the renames at the bottom of this file
+ * had run, which is the useful thing to know about scanning for these:
+ * a vague name hides its own duplicate. See the note on that entry.
  *
  * ## Deactivate, never delete
  *
@@ -86,6 +90,20 @@ const DUPLICATES: Duplicate[] = [
     dropSku: "TILFEVFEVTY8ZK",
     keepSku: "E59GG",
     note: "Fevicol Marine: same woodworking adhesive, Rs 370 -> Rs 364. Neither label states a net quantity, so this is the least certain of the three — and the reason this is a deactivation rather than a delete.",
+  },
+  /* Found on a second pass, and only because of the rename below.
+     While EB2JT was still called the generic "Araldite Standard Epoxy
+     Adhesive" it shared ~30% of its words with this row — under any
+     sensible threshold — and the scan could not see the pair at all.
+     Naming it for the set it actually is took the overlap to 90%.
+
+     The lesson is in the ordering: a duplicate scan is only as good as
+     the names it reads, so the vaguest rows are exactly the ones whose
+     twins stay hidden. Renaming first, scanning second. */
+  {
+    dropSku: "ADHARASTAQ5QQ3",
+    keepSku: "EB2JT",
+    note: "Araldite Standard set: both photographs are the same twin-bottle pack, AW 106 IN resin and HV 953 IN hardener read off both labels. Rs 939 -> Rs 735. The 28% gap is wider than the others here and neither label prints a net quantity, so this is a deactivation on the strength of the labels matching, not a certainty.",
   },
 ];
 
