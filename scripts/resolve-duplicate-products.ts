@@ -139,6 +139,65 @@ const DUPLICATES: Duplicate[] = [
     keepSku: "TT796",
     note: "Roff T07 Extrofix: the dropped row's bag is labelled Grey, matching the kept row. Rs 982 -> Rs 1020, and the kept row is the one that states colour and 20 Kg bag.",
   },
+  /* The rest of the Roff and MYK Laticrete families, each read off the
+     bag in the dropped row's own photograph and matched to the kept
+     row's stated colour and weight:
+
+       T03 Grey, T04 White, T06 White, T20 White,
+       307 White 20 kg, 315 White 20 kg, 325 White 20 kg, 335 White 20 kg
+
+     Every one of these keeps the DEARER row, which inverts the rule the
+     first four pairs follow, and the inversion is deliberate. There the
+     two rows were equally well described and 2-13% apart, so price was
+     the only thing to choose on. Here the gap runs 4-34% and runs one
+     way every time — the scrape side is always cheaper — which says the
+     two imports were priced on different bases rather than that one row
+     happens to be a better deal. Keeping a competitor-scraped price on
+     a line Quoin buys from a supplier is how you sell under cost, and
+     the scrape rows are also the ones whose names state neither colour
+     nor bag weight. The price deltas are listed in the summary; they
+     are a repricing decision for someone who knows what Quoin pays, not
+     something to settle by picking the smaller number. */
+  {
+    dropSku: "TILROFROFGY7AK",
+    keepSku: "8N9QB",
+    note: "Roff T03 Vitrofix: dropped bag reads Grey, kept row is Grey 20 Kg. Rs 626 -> Rs 650.",
+  },
+  {
+    dropSku: "TILROFROFDYL6V",
+    keepSku: "7W35Z",
+    note: "Roff T04 Vitrofix: dropped bag reads White, kept row is White 20 Kg. Rs 739 -> Rs 755.",
+  },
+  {
+    dropSku: "TILROFROF4NJG6",
+    keepSku: "UT85B",
+    note: "Roff T06 Vitrofix Ultra: dropped bag reads White, kept row is White 20 Kg. Rs 946 -> Rs 940.",
+  },
+  {
+    dropSku: "TILROFROF0OCZO",
+    keepSku: "VSE36",
+    note: "Roff T20 Extrofix Ultra: dropped bag reads White, kept row is White 20 Kg. Rs 1476 -> Rs 1380.",
+  },
+  {
+    dropSku: "FLOMYKTILB4NUW",
+    keepSku: "QYJ97",
+    note: "MYK Laticrete 307: dropped bag reads WHITE, Net Quantity 20 kg. Rs 412 -> Rs 575.",
+  },
+  {
+    dropSku: "FLOMYKTIL9TZDU",
+    keepSku: "GBACW",
+    note: "MYK Laticrete 315 Plus: dropped bag reads WHITE, Net Quantity 20 kg. Rs 514 -> Rs 775.",
+  },
+  {
+    dropSku: "FLOMYKTILQP1VE",
+    keepSku: "Z257Y",
+    note: "MYK Laticrete 325 High Flex: dropped bag reads WHITE, Net Quantity 20 kg. Rs 849 -> Rs 1050.",
+  },
+  {
+    dropSku: "TILMYKLATXKPML",
+    keepSku: "T8DP9",
+    note: "MYK Laticrete 335 Super Flex: dropped bag reads WHITE, Net Quantity 20 kg. Rs 1088 -> Rs 1360.",
+  },
 ];
 
 /**
@@ -192,6 +251,21 @@ const RENAMES: { sku: string; from: string; to: string; note: string }[] = [
     from: "Birla White Cement",
     to: "Birla White Portland Cement, 50 kg",
     note: "Rs 1200 — NET QUANTITY 50kg on the sack.",
+  },
+  /* The one member of the MYK Laticrete family that is NOT a duplicate,
+     and it reads exactly like the eight that are.
+
+     Its bag is Grey 20 kg; the row it pairs with on code 305 is Grey
+     *30 kg*. Had the pair been judged on the strength of the code match
+     and the 25% price gap, as the others reasonably could be, this
+     would have deactivated a real pack size. The photograph is the only
+     thing that separates it from its neighbours, which is the argument
+     for looking at all of them. */
+  {
+    sku: "TILMYKLAT89N3B",
+    from: "Laticrete 305 Tile Adhesive",
+    to: "MYK Laticrete 305 Tile Adhesive, Grey, 20 Kg Bag",
+    note: "Rs 317 — GREY and Net Quantity 20 kg on the bag; the 30 Kg row stays separate.",
   },
 ];
 
