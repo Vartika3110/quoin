@@ -1,0 +1,26 @@
+{
+  "deactivated": [
+    {
+      "id": "cmty2nbuo00x6idme1h9xlegx",
+      "sku": "WATDRFPID7KJKP",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nmx8010fidmeqlbh11ee",
+      "sku": "WATDRFPID6J8Z4",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nd0500xgidmen1wencn1",
+      "sku": "TILMYKMYKV2KK3",
+      "isActive": true
+    }
+  ],
+  "renamed": [
+    {
+      "id": "cmty2rw3h028didmeoh5tqg29",
+      "sku": "AB6SF",
+      "name": "Dr. Fixit 301 Pidicrete URP SBR Latex"
+    }
+  ]
+}

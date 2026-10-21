@@ -198,6 +198,33 @@ const DUPLICATES: Duplicate[] = [
     keepSku: "T8DP9",
     note: "MYK Laticrete 335 Super Flex: dropped bag reads WHITE, Net Quantity 20 kg. Rs 1088 -> Rs 1360.",
   },
+  /* Dr. Fixit 301 Pidicrete URP was on the shelf three times.
+
+     All three photographs show the same bottle reading 1 kg, and two of
+     them are the same photograph — the scrape imported one product
+     twice over. The third is an older packaging revision with an orange
+     cap, same contents, same weight.
+
+     One of the three is priced Rs 4,945 against Rs 376 for the identical
+     bottle: a thirteenfold error that has been quotable on the
+     storefront this whole time. It is worth noting that no duplicate
+     scan found that — the row looked unremarkable until its twin turned
+     up beside it. Finding the duplicate is what surfaced the bad price. */
+  {
+    dropSku: "WATDRFPID7KJKP",
+    keepSku: "AB6SF",
+    note: "Dr. Fixit 301 Pidicrete URP: same 1 kg bottle, and priced Rs 4945 against Rs 376 for it. A pricing error, not a product.",
+  },
+  {
+    dropSku: "WATDRFPID6J8Z4",
+    keepSku: "AB6SF",
+    note: "Dr. Fixit 301 Pidicrete URP: the same photograph as WATDRFPID7KJKP, same 1 kg bottle. Rs 395 -> Rs 376.",
+  },
+  {
+    dropSku: "TILMYKMYKV2KK3",
+    keepSku: "ZENAC",
+    note: "MYK Laticrete PUA 212: both buckets read 4 kg. Rs 2202 -> Rs 1680, and here the kept row is also the cheaper one.",
+  },
 ];
 
 /**
@@ -266,6 +293,14 @@ const RENAMES: { sku: string; from: string; to: string; note: string }[] = [
     from: "Laticrete 305 Tile Adhesive",
     to: "MYK Laticrete 305 Tile Adhesive, Grey, 20 Kg Bag",
     note: "Rs 317 — GREY and Net Quantity 20 kg on the bag; the 30 Kg row stays separate.",
+  },
+  /* The surviving 301, now that its two copies are gone: the weight was
+     the thing none of the three names carried, and it is on the bottle. */
+  {
+    sku: "AB6SF",
+    from: "Dr. Fixit 301 Pidicrete URP SBR Latex",
+    to: "Dr. Fixit 301 Pidicrete URP SBR Latex, 1 kg",
+    note: "Rs 376 — 1 kg on the bottle.",
   },
 ];
 
