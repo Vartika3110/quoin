@@ -105,6 +105,40 @@ const DUPLICATES: Duplicate[] = [
     keepSku: "EB2JT",
     note: "Araldite Standard set: both photographs are the same twin-bottle pack, AW 106 IN resin and HV 953 IN hardener read off both labels. Rs 939 -> Rs 735. The 28% gap is wider than the others here and neither label prints a net quantity, so this is a deactivation on the strength of the labels matching, not a certainty.",
   },
+  /* Found by `audit-duplicate-products.ts` once it matched on the
+     manufacturer's model code rather than on words. Each was then
+     confirmed against the photography like the rest. */
+  {
+    dropSku: "WATDRFCRAUDRLO",
+    keepSku: "G44YV",
+    note: "Dr. Fixit 201 Crack-X Paste: both photographs are the same 500 g tub, net quantity printed on each. Rs 244 -> Rs 217.",
+  },
+  {
+    dropSku: "SEAFEVNAIWYNF6",
+    keepSku: "EEUDY",
+    note: "Fevicol Nail Free Ultra: the same cartridge in two packaging revisions. Rs 380 -> Rs 364.",
+  },
+  /* The one Roff pair confirmed by photograph. Its scrape-side label
+     reads "EXTROFIX / T07 / Grey", which is exactly what the kept row's
+     name spells out and what the dropped row's name left off.
+
+     Here the kept row is the dearer of the two, which breaks the rule
+     the pairs above follow. It is the right way round: Rs 38 is a 4%
+     difference, while a tile adhesive listed without its colour or its
+     bag weight cannot be bought with any confidence at all. The price
+     is worth a second look by someone who knows what Quoin pays — see
+     the note in the summary — but the unusable listing is not the one
+     to keep.
+
+     Its five siblings (T03, T04, T06, T20, and the MYK Laticrete 305
+     through 335 family) match on code with gaps of 1-34% and are NOT
+     here: they are in `reports/duplicate-products.csv` awaiting the
+     same look at the photographs. */
+  {
+    dropSku: "TILROFROFJ7ITL",
+    keepSku: "TT796",
+    note: "Roff T07 Extrofix: the dropped row's bag is labelled Grey, matching the kept row. Rs 982 -> Rs 1020, and the kept row is the one that states colour and 20 Kg bag.",
+  },
 ];
 
 /**
@@ -132,6 +166,32 @@ const RENAMES: { sku: string; from: string; to: string; note: string }[] = [
     from: "Araldite Standard Epoxy Adhesive",
     to: "Araldite Standard Epoxy Adhesive Set, AW 106 + HV 953 IN",
     note: "Rs 735 — resin and hardener bottles, designations read off the labels.",
+  },
+  /* Birla White, and the reason this kind of name has to be fixed
+     rather than tolerated.
+
+     These two rows reported as a perfect duplicate — a score of 1.00,
+     no word telling them apart — and they are nothing of the sort: one
+     is a 1 kg pouch at Rs 41 and the other a 50 kg sack at Rs 1200,
+     both weights printed plainly on the bags. Neither name said so, and
+     the brand being "Birla White" meant that stripping the brand from
+     "White cement" left only "cement".
+
+     A name that omits the one thing distinguishing it from its
+     neighbour is not merely unhelpful on the page; it manufactures
+     false positives in every scan run against it. Both weights come
+     off the photographs, so nothing here is inferred from price. */
+  {
+    sku: "ADHBIRWHI8T2QR",
+    from: "White cement",
+    to: "Birla White Portland Cement, 1 kg",
+    note: "Rs 41 — NET QUANTITY 1kg on the pouch.",
+  },
+  {
+    sku: "UVJQ9",
+    from: "Birla White Cement",
+    to: "Birla White Portland Cement, 50 kg",
+    note: "Rs 1200 — NET QUANTITY 50kg on the sack.",
   },
 ];
 
