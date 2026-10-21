@@ -302,6 +302,30 @@ const RENAMES: { sku: string; from: string; to: string; note: string }[] = [
     to: "Dr. Fixit 301 Pidicrete URP SBR Latex, 1 kg",
     note: "Rs 376 — 1 kg on the bottle.",
   },
+  /* Dr. Fixit 101 Pidiproof LW+, which is not a duplicate after all.
+
+     Neither label prints a volume, so the photographs could not settle
+     it and it sat unresolved through three passes. The answer was in
+     the repo: `research/data/homerun-products.json` records this row's
+     source image as `Dr._Fixit_101_Pidiproof_LW_20l.jpg`. Twenty
+     litres. Its twin is a moulded jerry can badged "FOR 25 BAGS OF
+     CEMENT ONLY", which at the product's 200 ml per bag is five
+     litres — a different pack, so both rows stay.
+
+     Only this one is renamed. The 20 L is a fact recorded by the
+     supplier; the 5 L is arithmetic off a dosage badge, and an inferred
+     volume has no business in a product title. Stating the volume on
+     one row is enough to tell the pair apart, which was the point.
+
+     Their prices cannot both be right: Rs 160 for twenty litres sits
+     below Rs 172 for five. That is flagged, not fixed — repricing is
+     not this script's business. */
+  {
+    sku: "2ZJN6",
+    from: "Dr. Fixit 101 Pidiproof LW+",
+    to: "Dr. Fixit 101 Pidiproof LW+, 20 L",
+    note: "Rs 160 — 20 L from the supplier's own image filename. Cheaper than the 5 L row at Rs 172, which cannot be right.",
+  },
 ];
 
 interface Backup {

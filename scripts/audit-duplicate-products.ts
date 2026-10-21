@@ -59,6 +59,35 @@ const db = new PrismaClient();
 const DEFAULT_THRESHOLD = 0.8;
 const REPORT = path.join("reports", "duplicate-products.csv");
 
+/**
+ * Pairs that have been looked at and cannot be settled here.
+ *
+ * Not a suppression list. These stay in the report and stay on the
+ * shelf; the flag only records that someone has already spent the
+ * photographs on them, so a later run is not re-opened as though it
+ * were a fresh find.
+ *
+ * Both entries are the same question — whether an unlabelled bag is the
+ * 30 Kg pack its twin names or a 20 Kg one. Dividing price by weight
+ * implies about 20 kg for each, but that arithmetic was wrong about MYK
+ * Laticrete 307 through 335, where it implied 13-18 kg packs and every
+ * bag in fact read 20 kg. The fronts of these bags print no weight, the
+ * two scrape sources carry none, and the owner's own image audit
+ * records "No match found in supplied PDFs" for all four rows.
+ *
+ * Deactivating on the arithmetic would delete a real pack size if it is
+ * wrong, and leaving a duplicate is the cheaper mistake. It needs the
+ * Roff price list.
+ */
+const PENDING_EXTERNAL: Record<string, string> = {
+  "3NPNU|TILROFROF5F84G": "Roff T01: unlabelled bag, 30 Kg twin. Needs the Roff price list.",
+  "E2ZPL|TILROFROFT5YB8": "Roff T02: unlabelled bag, 30 Kg twin. Needs the Roff price list.",
+};
+
+function pendingNote(a: string, b: string): string | undefined {
+  return PENDING_EXTERNAL[`${a}|${b}`] ?? PENDING_EXTERNAL[`${b}|${a}`];
+}
+
 /** Observed in this catalogue, each from a confirmed pair. */
 const SYNONYMS: [RegExp, string][] = [
   [/\bcolour\b/g, "color"],
@@ -220,7 +249,7 @@ async function main() {
 
   const esc = (s: string) => `"${String(s ?? "").replace(/"/g, '""')}"`;
   const lines = [
-    "score,shared_codes,brand,category,sku_a,name_a,price_a,sku_b,name_b,price_b,differing_words,price_gap_pct",
+    "score,shared_codes,pending,brand,category,sku_a,name_a,price_a,sku_b,name_b,price_b,differing_words,price_gap_pct",
   ];
   for (const pr of pairs) {
     const pa = Number(price(pr.a));
@@ -230,6 +259,7 @@ async function main() {
       [
         pr.score.toFixed(2),
         esc(pr.sharedCodes.join(" ")),
+        esc(pendingNote(pr.a.sku, pr.b.sku) ?? ""),
         esc(pr.brand),
         esc(pr.a.category?.name ?? ""),
         esc(pr.a.sku),
@@ -247,7 +277,10 @@ async function main() {
   mkdirSync(path.join(process.cwd(), "reports"), { recursive: true });
   writeFileSync(REPORT, lines.join("\n") + "\n");
 
-  const identical = pairs.filter((p) => p.differing.length === 0);
+  const pending = pairs.filter((p) => pendingNote(p.a.sku, p.b.sku));
+  const identical = pairs.filter(
+    (p) => p.differing.length === 0 && !pendingNote(p.a.sku, p.b.sku),
+  );
   console.info(
     `${products.length} live products, ${pairs.length} candidate pair(s) at >=${threshold}\n`,
   );
@@ -257,6 +290,14 @@ async function main() {
     console.info(`    ${pr.a.sku.padEnd(16)} Rs ${price(pr.a).padEnd(9)} ${pr.a.name}`);
     console.info(`    ${pr.b.sku.padEnd(16)} Rs ${price(pr.b).padEnd(9)} ${pr.b.name}\n`);
   }
+  if (pending.length) {
+    console.info(`${pending.length} pair(s) already reviewed and awaiting outside information:\n`);
+    for (const pr of pending) {
+      console.info(`  ${pr.a.sku} / ${pr.b.sku}`);
+      console.info(`    ${pendingNote(pr.a.sku, pr.b.sku)}\n`);
+    }
+  }
+
   console.info(`Full candidate list with evidence: ${REPORT}`);
 }
 
