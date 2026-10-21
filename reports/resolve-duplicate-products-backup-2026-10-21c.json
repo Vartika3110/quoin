@@ -1,0 +1,76 @@
+{
+  "deactivated": [
+    {
+      "id": "cmty2npv6011cidmenklr932n",
+      "sku": "WATDRFCRAUDRLO",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nm500107idmep23jtfde",
+      "sku": "SEAFEVNAIWYNF6",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nfzo00yaidmek72notol",
+      "sku": "TILROFROFJ7ITL",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nive00z6idmecab9pj69",
+      "sku": "TILROFROFGY7AK",
+      "isActive": true
+    },
+    {
+      "id": "cmty2ni6q00yyidmedke4p8vi",
+      "sku": "TILROFROFDYL6V",
+      "isActive": true
+    },
+    {
+      "id": "cmty2ngc100yeidme8olvuu4p",
+      "sku": "TILROFROF4NJG6",
+      "isActive": true
+    },
+    {
+      "id": "cmty2neyq00xyidmefq417x7j",
+      "sku": "TILROFROF0OCZO",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nlsy0103idmevveu5w52",
+      "sku": "FLOMYKTILB4NUW",
+      "isActive": true
+    },
+    {
+      "id": "cmty2njw100ziidme2shhttwh",
+      "sku": "FLOMYKTIL9TZDU",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nh0p00ymidmes1zknxmt",
+      "sku": "FLOMYKTILQP1VE",
+      "isActive": true
+    },
+    {
+      "id": "cmty2nfn400y6idme5bvi8tvz",
+      "sku": "TILMYKLATXKPML",
+      "isActive": true
+    }
+  ],
+  "renamed": [
+    {
+      "id": "cmty2li7g00f4idme257kc5z5",
+      "sku": "ADHBIRWHI8T2QR",
+      "name": "White cement"
+    },
+    {
+      "id": "cmty2qfzh01v3idmexcz5ehov",
+      "sku": "UVJQ9",
+      "name": "Birla White Cement"
+    },
+    {
+      "id": "cmty2nohz010widmelougsyue",
+      "sku": "TILMYKLAT89N3B",
+      "name": "Laticrete 305 Tile Adhesive"
+    }
+  ]
+}
