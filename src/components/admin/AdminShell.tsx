@@ -7,6 +7,7 @@ import {
   Grid,
   Headset,
   Package,
+  Partners,
   People,
   Rupee,
   Sparkle,
@@ -42,6 +43,10 @@ export const ADMIN_SECTIONS = [
   { href: "/admin/products", label: "Products", Icon: Tag },
   { href: "/admin/inventory", label: "Inventory", Icon: Box },
   { href: "/admin/customers", label: "Customers", Icon: People },
+  /* Beside Customers, because they are the same kind of thing from the
+     other side of the counter: the people money comes from, and the
+     people it goes to. */
+  { href: "/admin/vendors", label: "Vendors", Icon: Partners },
   { href: "/admin/pricing", label: "Pricing", Icon: Rupee },
   { href: "/admin/images", label: "Images", Icon: Sparkle },
 ] as const;

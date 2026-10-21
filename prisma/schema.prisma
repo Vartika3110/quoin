@@ -417,6 +417,100 @@ model Brand {
   @@map("brands")
 }
 
+/// Somebody Quoin buys from.
+///
+/// Not a brand. A brand is whose name is on the box — Jaquar, Asian
+/// Paints — and the catalogue has carried those since the first import.
+/// A vendor is who Quoin hands money to, and one vendor usually supplies
+/// several brands. Keeping them apart is what lets a weekly payout be
+/// computed at all: the question "what do we owe this week" is a
+/// question about vendors, and no amount of brand data answers it.
+///
+/// Quoin holds no stock, so every line sold is bought from one of these.
+/// `Product.vendorId` is that link and `ProductVariant.costPaise` is
+/// what the line costs; the two together are the whole basis of a
+/// payout, which is why neither has a default and a product with
+/// neither simply cannot appear on a statement.
+model Vendor {
+  id String @id @default(cuid())
+
+  /// As printed on the PAN and the GST certificate — the name a payment
+  /// has to match. Kept apart from `tradeName` because they routinely
+  /// differ ("Sharma Enterprises" trading as "Sharma Sanitary"), and it
+  /// is the legal one a penny-drop check compares against.
+  legalName String
+  /// What staff call them. Empty means "same as the legal name".
+  tradeName String @default("")
+
+  /// Fifteen characters, and the checksum is verified before this is
+  /// stored — see `src/lib/vendors/identifiers.ts`. Nullable because a
+  /// supplier below the registration threshold has none, and refusing to
+  /// record them would push that trade off the books entirely.
+  gstin String? @unique
+  /// Ten characters. Nullable for the same reason, and because a GSTIN
+  /// already contains the PAN at positions 3–12.
+  pan   String?
+
+  phone String
+  email String?
+
+  addressLine String @default("")
+  city        String @default("")
+  state       String @default("")
+  pincode     String @default("")
+
+  /// ---- Where money reaches them ------------------------------------
+  /// The name the *bank* holds for the account, which is what a
+  /// penny-drop returns and what has to be compared to `legalName`. It
+  /// is stored rather than assumed: they disagree often enough that
+  /// re-deriving it would mean re-running a paid check.
+  bankAccountName   String @default("")
+  bankAccountNumber String @default("")
+  bankIfsc          String @default("")
+  /// An alternative to the account, not a supplement. Small suppliers
+  /// are often paid by UPI and have no interest in giving out an
+  /// account number.
+  upiVpa            String @default("")
+
+  /// ---- Verification, recorded rather than implied -------------------
+  status           VendorStatus @default(DRAFT)
+  /// When the checks last passed, and what they found. A vendor is paid
+  /// on the strength of this, so "verified" without a date and a note is
+  /// not something this table lets you say.
+  verifiedAt       DateTime?
+  /// Free text from whoever ran or overrode the checks: which checks
+  /// passed, and the reason for any override. A near-miss on a name is
+  /// a judgement, and the judgement belongs next to the record.
+  verificationNote String       @default("")
+
+  /// ---- Terms --------------------------------------------------------
+  /// Days between settlements. Seven is the weekly cycle; the field
+  /// exists so a vendor on different terms does not need a code change.
+  paymentTermsDays Int    @default(7)
+  notes            String @default("")
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@map("vendors")
+}
+
+enum VendorStatus {
+  /// Entered by hand, nothing checked. Cannot be paid.
+  DRAFT
+  /// Checked, and something needs a person — a name that nearly matches,
+  /// a GSTIN that is valid but cancelled. Cannot be paid.
+  PENDING
+  /// Verified. The only status a payout may be filed against.
+  ACTIVE
+  /// No longer bought from. Kept, because their past purchases are not
+  /// undone by the relationship ending.
+  SUSPENDED
+}
+
 model Category {
   id   String @id @default(cuid())
   name String
@@ -458,6 +552,14 @@ model Product {
 
   categoryId String?
   category   Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict, onUpdate: NoAction)
+
+  /// Who Quoin buys this from. Nullable, and will be for a while: 519
+  /// products were imported long before there was a vendor to point at.
+  /// A line with no vendor can still be sold — it simply cannot appear
+  /// on anybody's statement, which is the honest consequence of not
+  /// knowing where it came from.
+  vendorId String?
+  vendor   Vendor? @relation(fields: [vendorId], references: [id], onDelete: Restrict, onUpdate: NoAction)
 
   description String @default("")
 
@@ -519,6 +621,7 @@ model Product {
 
   @@index([categoryId, isActive])
   @@index([brandId])
+  @@index([vendorId])
   @@map("products")
 }
 
@@ -538,6 +641,15 @@ model ProductVariant {
   mrpPaise      Int
   /// Sell price for a standard customer.
   pricePaise    Int
+  /// What Quoin pays its vendor for one of these, GST inclusive like
+  /// every other figure here.
+  ///
+  /// On the variant and not the product, because it is the counterpart
+  /// of `pricePaise` and has to move with it: a 20kg bag and a 50kg bag
+  /// are one product with two costs. Nullable, and the absence is
+  /// meaningful — margin is unknown rather than zero, and a payout
+  /// cannot be computed for a line that has never been costed.
+  costPaise     Int?
   /// Quoin Pro trade rate. Null means Pro pays `pricePaise`.
   proPricePaise Int?
 
