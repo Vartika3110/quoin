@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { StudioShell } from "@/components/storefront/studio/StudioShell";
 import { SpaceWorkspace } from "@/components/storefront/studio/SpaceWorkspace";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { getSession } from "@/lib/auth/session";
 import { getOrCreateMoodboard, getSpace } from "@/lib/data/studio";
 
@@ -62,16 +61,6 @@ export default async function SpacePage({ params }: Props) {
 
   return (
     <StudioShell>
-      <div className="mb-4 px-5 lg:px-0">
-        <Breadcrumb
-          items={[
-            { label: "Studio", href: "/studio" },
-            { label: "Spaces", href: "/studio/spaces" },
-            { label: space.name },
-          ]}
-        />
-      </div>
-
       <SpaceWorkspace space={space} moodboard={moodboard} />
     </StudioShell>
   );

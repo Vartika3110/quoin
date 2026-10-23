@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Gutter, PageSections } from "@/components/ui/Section";
 import { ConsultBand } from "@/components/storefront/ConsultBand";
 import { listProfessionals } from "@/lib/data/professionals";
@@ -54,11 +53,6 @@ export default async function ServicesPage() {
             <section>
               <RosterSearch
                 people={people}
-                leading={
-                  <Breadcrumb
-                    items={[{ label: "Home", href: "/" }, { label: "Services" }]}
-                  />
-                }
                 banner={
                   <Gutter>
                     <ConsultBand

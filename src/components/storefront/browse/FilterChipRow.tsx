@@ -17,14 +17,19 @@ import {
 /**
  * The design prototype's chip row, on a phone.
  *
- * Three chips, not the prototype's four. The fourth — "Type", a
- * sub-category facet — has nothing behind it: `Category.parentId` is null
- * on every row in the catalogue (the import files a flat list; see
- * `docs/django-to-prisma.md`), so there is no "type" to narrow within a
- * category, not sometimes but always. A chip that opens a sheet reading
- * "No options available" on every single tap is not a disabled control,
- * it is a broken one — so it is omitted rather than rendered inert. It
- * returns the moment a category gets children.
+ * Three chips, not the prototype's four. The fourth is "Type", and it is
+ * not missing for the old reason — the sub-categories exist now, derived
+ * from product names in `src/lib/product-types.ts`, where before
+ * `Category.parentId` was null on every row and the chip had nothing at
+ * all behind it. It is absent because `TypeSidebar` puts the same list
+ * down the left edge of the same screen, permanently visible, and a chip
+ * that opens a sheet of options already on display is a second control
+ * for one parameter.
+ *
+ * The Type sheet that briefly sat here went with the chip rather than
+ * being left behind unreferenced: `FilterPanel` still carries a Type
+ * group for the desktop sidebar, so nothing is lost, and dead code with
+ * a comment explaining why it is dead is still dead code.
  *
  * Each chip is a thin view over the same `BrowseParams` the sidebar
  * `FilterPanel` and the URL already carry — a `Link` per option, exactly
@@ -90,7 +95,6 @@ export function FilterChipRow({
         options={facets.brands.map((b) => ({
           href: withParams(basePath, params, { brand: b.slug }),
           label: b.name,
-          count: b.count,
           selected: params.brand === b.slug,
         }))}
       />
@@ -104,7 +108,6 @@ export function FilterChipRow({
         options={facets.pricingUnits.map((u) => ({
           href: withParams(basePath, params, { unit: u.id }),
           label: PRICING_UNIT_LABEL[u.id],
-          count: u.count,
           selected: params.unit === u.id,
         }))}
       />
@@ -147,7 +150,11 @@ function Chip({
         /* Matches `Cell` in BrowseActionBar exactly — same height, same
            stack, same weight, same active colour — because they are the
            same row. */
-        "flex h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-micro font-medium transition-colors active:bg-hover disabled:opacity-40",
+        /* `min-w-0` so the label truncates instead of widening the cell:
+           a flex item will not shrink below its content without it, and
+           "Showers & fittings" is a real chip label that would otherwise
+           push Size and Price off a 375px bar. */
+        "flex h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 text-micro font-medium transition-colors active:bg-hover disabled:opacity-40",
         active ? "text-accent" : "text-ink",
       )}
     >
@@ -179,7 +186,7 @@ function FacetSheet({
   onClose: () => void;
   clearHref: string;
   cleared: boolean;
-  options: { href: string; label: string; count?: number; selected: boolean }[];
+  options: { href: string; label: string; selected: boolean }[];
 }) {
   return (
     <Drawer open={open} onClose={onClose} title={title} side="bottom">
@@ -210,12 +217,7 @@ function FacetSheet({
               )}
             >
               <span className="min-w-0 flex-1 truncate">{option.label}</span>
-              <span className="flex shrink-0 items-center gap-2">
-                {option.count != null && (
-                  <span className="nums text-micro text-faint">{option.count}</span>
-                )}
-                {option.selected && <Check className="size-4.5 shrink-0" />}
-              </span>
+              {option.selected && <Check className="size-4.5 shrink-0" />}
             </Link>
           </li>
         ))}

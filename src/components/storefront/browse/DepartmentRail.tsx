@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/components/ui/cn";
+import { useActiveChipIntoView } from "@/components/storefront/browse/useActiveChipIntoView";
 
 /**
  * Switch department without going back to the directory.
@@ -19,6 +22,11 @@ import { cn } from "@/components/ui/cn";
  * price ceiling chosen inside Bathware almost never has a counterpart in
  * Cement — carrying it across is how a listing arrives empty for reasons
  * the reader cannot see.
+ *
+ * A client component for one reason: scrolling the current department
+ * into view. Every link here still renders and works server-side with
+ * JavaScript off — see `useActiveChipIntoView` for why the row needs it
+ * now that it sits on the department pages themselves.
  */
 export function DepartmentRail({
   categories,
@@ -30,20 +38,26 @@ export function DepartmentRail({
   activeSlug?: string;
   className?: string;
 }) {
+  const activeRef = useActiveChipIntoView<HTMLAnchorElement>(activeSlug);
+
   return (
     <nav
       aria-label="Departments"
       className={cn("rail gap-2 px-5 scroll-pl-5 lg:hidden", className)}
     >
       <Chip href="/products" label="All" active={activeSlug == null} />
-      {categories.map((category) => (
-        <Chip
-          key={category.id}
-          href={`/c/${category.slug}`}
-          label={category.title}
-          active={category.slug === activeSlug}
-        />
-      ))}
+      {categories.map((category) => {
+        const active = category.slug === activeSlug;
+        return (
+          <Chip
+            key={category.id}
+            ref={active ? activeRef : undefined}
+            href={`/c/${category.slug}`}
+            label={category.title}
+            active={active}
+          />
+        );
+      })}
     </nav>
   );
 }
@@ -52,13 +66,16 @@ function Chip({
   href,
   label,
   active,
+  ref,
 }: {
   href: string;
   label: string;
   active: boolean;
+  ref?: React.Ref<HTMLAnchorElement>;
 }) {
   return (
     <Link
+      ref={ref}
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(

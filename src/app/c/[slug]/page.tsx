@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/storefront/AppShell";
 import { Browse } from "@/components/storefront/browse/Browse";
 import { CATEGORY_DESCRIPTOR } from "@/components/storefront/CategoryTile";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import {
+  getCategories,
   getCategoryBySlug,
   getProductFacets,
   listProducts,
@@ -57,23 +57,29 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
   const browseParams = readBrowseParams(await searchParams);
   const query = { ...toProductQuery(browseParams), categorySlug: slug };
 
-  const [result, facets] = await Promise.all([
+  const [result, facets, departments] = await Promise.all([
     listProducts(query),
     getProductFacets(query),
+    getCategories(),
   ]);
 
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Categories", href: "/categories" },
-              { label: category.title },
-            ]}
-          />
-        </div>
+        {/* No breadcrumb.
+
+            "Home › Categories › Bathware & plumbing" sat above the
+            department rail, which already has Bathware & plumbing lit in
+            it, directly under a header carrying the wordmark that goes
+            home. It was a third answer to "where am I" stacked on two
+            that were already on screen, and it cost a line at the top of
+            a phone — where the last several rounds of this have all been
+            about getting the goods further up the page.
+
+            Nothing is lost structurally: `Breadcrumb` is presentational,
+            with no `BreadcrumbList` JSON-LD behind it, so this is not a
+            rich result going away. The `h1` below still names the page
+            for a crawler and a screen reader. */}
 
         {/* The department's name is in the breadcrumb directly above, in
             the browser tab, and in the chip the filter bar lights when a
@@ -99,23 +105,25 @@ export default async function CategoryPage({ params, searchParams }: Ctx) {
           facets={facets}
           basePath={`/c/${slug}`}
           params={browseParams}
-          /* No department rail here, deliberately.
- 
-             It is a phone-only row of every *other* department, and this
-             page opens with the department's name in display type and its
-             description underneath. A reader who has just arrived at
-             Bathware & plumbing does not need thirteen chips offering to
-             take them somewhere else before they have seen a tap — it
-             answers "where am I" a second time, in a worse voice, and
-             pushes the first product further down the screen.
- 
-             Switching department is still one tap: the header's Categories
-             menu carries all fourteen at every width, which is where
-             somebody goes when they want a different one. The rail stays
-             on /products, where it is doing the opposite job — there is no
-             department in the path there and the filter panel has no
-             category facet, so it is the only way to narrow from inside
-             the page. */
+          /* The department rail is back, at the owner's instruction that
+             the app match the design reference, which carries it on this
+             screen. The argument for cutting it was that a reader who has
+             just arrived at Bathware does not need thirteen chips
+             offering to take them somewhere else before they have seen a
+             tap — and that argument was answered rather than overruled:
+             the row underneath is now the one that narrows *this*
+             department, so the two together read as "which department,
+             then which shelf" instead of a row that only ever leaves.
+
+             It also costs less than it did. The display heading and the
+             descriptor that used to sit above the grid are gone, so the
+             chips occupy space the page was already spending on saying
+             where it was. */
+          departments={departments}
+          activeDepartment={slug}
+          /* Turns on the sub-category row under the rail, and names its
+             "All …" chip. */
+          departmentTitle={category.title}
           /* The department is in the path, not the query string, so the
              grid has to be told about it to fetch its own next page. */
           scope={{ category: slug }}

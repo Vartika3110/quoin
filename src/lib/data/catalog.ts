@@ -11,6 +11,13 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { MONEY_MOVED_STATUSES } from "@/lib/orders/status-groups";
+import { CATEGORY_PHOTOS } from "@/lib/category-photos";
+import {
+  classifyProductType,
+  productTypeTerms,
+  productTypesFor,
+  type ProductType,
+} from "@/lib/product-types";
 import type {
   BadgeKind as DbBadge,
   Fulfilment as DbFulfilment,
@@ -37,7 +44,6 @@ export const TABS: CatalogTab[] = [
   { id: "interiors", label: "Interiors", icon: "sofa" },
   { id: "lighting", label: "Lighting", icon: "lamp" },
 ];
-
 
 /** ---- Mapping ------------------------------------------------------------
  * Prisma spells enums in SCREAMING_SNAKE; the wire contract and the UI use
@@ -96,10 +102,16 @@ export const SELLABLE_PRODUCT = {
 
 const PRODUCT_QUERY = {
   where: SELLABLE_PRODUCT,
-  include: { brand: true, category: { select: { slug: true } }, variants: VARIANT_QUERY },
+  include: {
+    brand: true,
+    category: { select: { slug: true } },
+    variants: VARIANT_QUERY,
+  },
 } as const;
 
-type ProductRow = Awaited<ReturnType<typeof db.product.findMany<typeof PRODUCT_QUERY>>>[number];
+type ProductRow = Awaited<
+  ReturnType<typeof db.product.findMany<typeof PRODUCT_QUERY>>
+>[number];
 type VariantRow = ProductRow["variants"][number];
 
 function toVariant(row: VariantRow): Variant {
@@ -176,6 +188,7 @@ function toProduct(row: ProductRow): Product {
 const CATEGORY_SWATCHES: Record<string, string[]> = {
   "electricals-lighting": ["switch", "bulb", "pendant"],
   "bathware-plumbing": ["basin", "faucet"],
+  "plumbing-fittings": ["faucet", "steel"],
   "kitchen-wardrobe-fittings": ["steel", "sofa"],
   "kitchen-sinks-faucets": ["faucet", "basin"],
   "tools-safety": ["helmet", "steel"],
@@ -203,6 +216,7 @@ const CATEGORY_SWATCHES: Record<string, string[]> = {
  */
 export const PRODUCT_SWATCH_BY_CATEGORY: Record<string, string> = {
   "bathware-plumbing": "basin",
+  "plumbing-fittings": "faucet",
   "kitchen-sinks-faucets": "faucet",
   "electricals-lighting": "bulb",
   "home-appliances-security": "switch",
@@ -213,7 +227,7 @@ export const PRODUCT_SWATCH_BY_CATEGORY: Record<string, string> = {
   "paints-finishes": "paint",
   "cement-steel": "cement",
   "plywood-laminates": "sofa",
-  "waterproofing": "paint",
+  waterproofing: "paint",
   "gypsum-false-ceiling": "pendant",
   services: "helmet",
 };
@@ -224,10 +238,32 @@ export async function getTabs(): Promise<CatalogTab[]> {
   return TABS;
 }
 
+/**
+ * Departments that are not part of the materials catalogue.
+ *
+ * `services` is a `Category` because the schema needed somewhere to file
+ * a bookable visit, and it has never held a sellable product — so on the
+ * directory it rendered as a tile reading COMING SOON, and on the
+ * department rail as a chip leading to an empty grid. Services are not
+ * coming soon; they are live, at `/services`, with their own section in
+ * the nav, their own booking flow and their own professionals. A tile in
+ * the materials grid is the wrong door to them and, while empty, an
+ * actively misleading one.
+ *
+ * Here rather than `isActive: false` on the row: the category still has
+ * to exist for `ConsultRequest` and for the service bookings that point
+ * at it. This is about which departments the storefront *shops*.
+ */
+const NOT_A_DEPARTMENT = ["services"];
+
 /** Top-level categories only; children render inside a category page. */
 export async function getCategories(): Promise<Category[]> {
   const rows = await db.category.findMany({
-    where: { isActive: true, parentId: null },
+    where: {
+      isActive: true,
+      parentId: null,
+      slug: { notIn: NOT_A_DEPARTMENT },
+    },
     orderBy: [{ position: "asc" }, { name: "asc" }],
     /* Counted through `SELLABLE_PRODUCT`, not bare. The tile says
        "N products" and that has to be the number the category page will
@@ -239,17 +275,41 @@ export async function getCategories(): Promise<Category[]> {
        what they could show. One definition of "in the shop", the same
        one the page itself queries. */
     include: {
-      _count: { select: { children: true, products: { where: SELLABLE_PRODUCT } } },
+      _count: {
+        select: { children: true, products: { where: SELLABLE_PRODUCT } },
+      },
     },
   });
 
+  /* A photograph for any department that has no commissioned shot yet,
+     taken from inside it. One query for the whole directory rather than
+     one per tile, and only when something is actually missing — on a
+     fully photographed catalogue it does not run at all. */
+  const unshot = rows.filter((row) => !CATEGORY_PHOTOS[row.slug]).map((r) => r.id);
+  const standIn = new Map<string, string>();
+  if (unshot.length > 0) {
+    const candidates = await db.product.findMany({
+      where: { ...SELLABLE_PRODUCT, categoryId: { in: unshot }, NOT: { image: "" } },
+      select: { categoryId: true, image: true, sourceImageUrl: true },
+      orderBy: { name: "asc" },
+    });
+    for (const row of candidates) {
+      if (!row.categoryId || standIn.has(row.categoryId)) continue;
+      const photo = resolvePhoto(row);
+      if (photo) standIn.set(row.categoryId, photo);
+    }
+  }
+
   return rows.map((row) => {
-    const images = row.images.length ? row.images : (CATEGORY_SWATCHES[row.slug] ?? []);
+    const images = row.images.length
+      ? row.images
+      : (CATEGORY_SWATCHES[row.slug] ?? []);
     return {
       id: row.id,
       slug: row.slug,
       title: row.name,
       images,
+      photo: CATEGORY_PHOTOS[row.slug] ?? standIn.get(row.id),
       /* The tile shows the thumbnails above; "+N more" counts the
          sub-categories beyond them. The import creates a flat list, so
          this is zero until the tree is populated, and the tile falls back
@@ -311,7 +371,10 @@ export async function getTopPicks(): Promise<Product[]> {
     ? [
         await db.product.findMany({
           ...PRODUCT_QUERY,
-          where: { ...PRODUCT_QUERY.where, id: { in: ranked.map((r) => r.id) } },
+          where: {
+            ...PRODUCT_QUERY.where,
+            id: { in: ranked.map((r) => r.id) },
+          },
         }),
       ]
     : [];
@@ -525,6 +588,96 @@ export async function getRelatedProducts(product: Product): Promise<Product[]> {
   return rows.map(toProduct);
 }
 
+/**
+ * The three rails under a product.
+ *
+ * `getRelatedProducts` above takes eight rows out of the same department
+ * and calls them "Goes well with", which on a bag of tile adhesive is
+ * six more bags of tile adhesive. The shelves make a better answer
+ * available for nothing: products on the *same* shelf are alternatives
+ * to the one being looked at, and products on a *different* shelf in the
+ * same department are the things fitted alongside it — grout, spacers
+ * and a cleaner for that adhesive.
+ *
+ * One query for the department and one for the brand. The split is done
+ * in JavaScript against the same rule the sidebar and the filters use,
+ * so a product can never appear in a row the shelf chips would disagree
+ * with.
+ */
+export interface ProductRows {
+  /** Other things on the same shelf — alternatives. */
+  sameShelf: Product[];
+  /** Other shelves in the department — complements. */
+  complements: Product[];
+  /** Everything else this manufacturer makes. */
+  sameBrand: Product[];
+  /** The shelf's own name, for the heading. Absent off a known shelf. */
+  shelfLabel?: string;
+  /** Its `?type=` value, so the row's "see all" lands on that shelf. */
+  shelfId?: string;
+}
+
+const ROW_SIZE = 10;
+
+export async function getProductRows(
+  product: Product,
+  categorySlug: string | undefined,
+): Promise<ProductRows> {
+  const empty: ProductRows = { sameShelf: [], complements: [], sameBrand: [] };
+  if (!product.categoryId) return empty;
+
+  const [department, brand] = await Promise.all([
+    db.product.findMany({
+      ...PRODUCT_QUERY,
+      where: {
+        ...PRODUCT_QUERY.where,
+        categoryId: product.categoryId,
+        id: { not: product.id },
+      },
+      orderBy: { name: "asc" },
+      /* Capped: the split needs the department, not the catalogue, and
+         the biggest one is 163 rows. */
+      take: 120,
+    }),
+    product.brand
+      ? db.product.findMany({
+          ...PRODUCT_QUERY,
+          where: {
+            ...PRODUCT_QUERY.where,
+            brand: { name: product.brand },
+            id: { not: product.id },
+            /* A different department, or it is the same row the two
+               rails above are already showing. */
+            categoryId: { not: product.categoryId },
+          },
+          orderBy: { name: "asc" },
+          take: ROW_SIZE,
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const shelf = classifyProductType(categorySlug, product.title);
+  const items = department.map(toProduct);
+
+  const sameShelf = shelf
+    ? items.filter((p) => classifyProductType(categorySlug, p.title) === shelf)
+    : [];
+  const sameShelfIds = new Set(sameShelf.map((p) => p.id));
+
+  return {
+    sameShelf: sameShelf.slice(0, ROW_SIZE),
+    /* Everything the shelf did not claim, including the unfiled rows —
+       they are still things from this department, which is the weaker
+       but honest version of the same offer. */
+    complements: items.filter((p) => !sameShelfIds.has(p.id)).slice(0, ROW_SIZE),
+    sameBrand: brand.map(toProduct),
+    shelfLabel: shelf
+      ? productTypesFor(categorySlug).find((t) => t.id === shelf)?.label
+      : undefined,
+    shelfId: shelf,
+  };
+}
+
 /** ---- Browse -------------------------------------------------------------
  * Backs `GET /api/v1/products`. The filters, the search fields and the
  * three sort orders are the ones the removed Django viewset defined; they
@@ -535,6 +688,13 @@ export type ProductSort = "name" | "newest" | "price";
 
 export interface ProductQuery {
   categorySlug?: string;
+  /**
+   * A sub-category within `categorySlug` — the "Type" chip. Meaningless
+   * without a department, and ignored there rather than rejected: the
+   * types are defined per department, so `?type=showers` on the whole
+   * catalogue has nothing to resolve against.
+   */
+  type?: string;
   brandSlug?: string;
   fulfilment?: FulfilmentType;
   /** The phone chip row's "Size" facet — how the price is expressed. */
@@ -596,6 +756,9 @@ function productWhere(query: ProductQuery) {
   const search = query.search?.trim();
   const { minPricePaise: min, maxPricePaise: max } = query;
   const bounded = min != null || max != null;
+  const type = query.type
+    ? productTypeTerms(query.categorySlug, query.type)
+    : undefined;
 
   return {
     isActive: true,
@@ -613,24 +776,60 @@ function productWhere(query: ProductQuery) {
       },
     },
     ...(query.categorySlug ? { category: { slug: query.categorySlug } } : {}),
+    /* The sub-category, as "named like one of these and not like
+       anything more specific" — see `src/lib/product-types.ts`. Under
+       `AND` rather than as a bare `OR`, because the search below already
+       owns the top-level `OR` and a second one would replace it. */
+    ...(type
+      ? {
+          AND: [
+            { OR: type.match.map(nameContains) },
+            ...(type.except.length > 0
+              ? [{ NOT: { OR: type.except.map(nameContains) } }]
+              : []),
+          ],
+        }
+      : {}),
     ...(query.brandSlug ? { brand: { slug: query.brandSlug } } : {}),
-    ...(query.fulfilment ? { fulfilment: DB_FULFILMENT[query.fulfilment] } : {}),
-    ...(query.pricingUnit ? { pricingUnit: DB_PRICING_UNIT[query.pricingUnit] } : {}),
+    ...(query.fulfilment
+      ? { fulfilment: DB_FULFILMENT[query.fulfilment] }
+      : {}),
+    ...(query.pricingUnit
+      ? { pricingUnit: DB_PRICING_UNIT[query.pricingUnit] }
+      : {}),
     ...(search
       ? {
           OR: [
             { name: { contains: search, mode: "insensitive" as const } },
             { sku: { contains: search, mode: "insensitive" as const } },
-            { brand: { name: { contains: search, mode: "insensitive" as const } } },
-            { category: { name: { contains: search, mode: "insensitive" as const } } },
+            {
+              brand: {
+                name: { contains: search, mode: "insensitive" as const },
+              },
+            },
+            {
+              category: {
+                name: { contains: search, mode: "insensitive" as const },
+              },
+            },
           ],
         }
       : {}),
   };
 }
 
-export async function listProducts(query: ProductQuery = {}): Promise<ProductPage> {
-  const pageSize = Math.min(Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE), MAX_PAGE_SIZE);
+/** One term of a type's match list, as a Prisma condition. */
+function nameContains(term: string) {
+  return { name: { contains: term, mode: "insensitive" as const } };
+}
+
+export async function listProducts(
+  query: ProductQuery = {},
+): Promise<ProductPage> {
+  const pageSize = Math.min(
+    Math.max(1, query.pageSize ?? DEFAULT_PAGE_SIZE),
+    MAX_PAGE_SIZE,
+  );
   const page = Math.max(1, query.page ?? 1);
   const skip = (page - 1) * pageSize;
 
@@ -658,7 +857,8 @@ export async function listProducts(query: ProductQuery = {}): Promise<ProductPag
       : await db.product.findMany({
           ...PRODUCT_QUERY,
           where,
-          orderBy: query.sort === "newest" ? { createdAt: "desc" } : { name: "asc" },
+          orderBy:
+            query.sort === "newest" ? { createdAt: "desc" } : { name: "asc" },
           skip,
           take: pageSize,
         });
@@ -727,6 +927,23 @@ export interface ProductFacets {
   /** The phone chip row's "Size" facet. Empty is not an error — a
       category priced entirely `per_piece` has nothing to offer here. */
   pricingUnits: { id: PricingUnit; count: number }[];
+  /**
+   * The department's sub-categories, counted. Empty off a department
+   * page and on the departments that have no honest grouping — see
+   * `src/lib/product-types.ts`.
+   */
+  types: {
+    id: string;
+    label: string;
+    count: number;
+    /**
+     * A photograph from inside the type, for the sidebar's thumbnail.
+     * The first product in it that has one — there is no artwork for a
+     * sub-category that exists only as a rule over names, and a picture
+     * of a real thing in the shelf says more than an icon would.
+     */
+    photo?: string;
+  }[];
   /** Bounds of the cheapest sellable variant across the unpriced query. */
   priceMinPaise: number;
   priceMaxPaise: number;
@@ -742,13 +959,27 @@ export async function getProductFacets(
   const withoutBrand = productWhere({ ...query, brandSlug: undefined });
   const withoutFulfilment = productWhere({ ...query, fulfilment: undefined });
   const withoutPricingUnit = productWhere({ ...query, pricingUnit: undefined });
+  const withoutType = productWhere({ ...query, type: undefined });
   const withoutPrice = productWhere({
     ...query,
     minPricePaise: undefined,
     maxPricePaise: undefined,
   });
 
-  const [brandRows, fulfilmentRows, pricingUnitRows, bounds, discountedIds] = await Promise.all([
+  /* Counted from one query over the department rather than one count
+     per chip: the rule is a substring test on the name, so the names
+     themselves are all it needs, and nine chips would otherwise be nine
+     round trips to Singapore before the page can paint. */
+  const types = productTypesFor(query.categorySlug);
+
+  const [
+    brandRows,
+    fulfilmentRows,
+    pricingUnitRows,
+    bounds,
+    discountedIds,
+    typeNames,
+  ] = await Promise.all([
     db.product.groupBy({
       by: ["brandId"],
       where: { ...withoutBrand, brandId: { not: null } },
@@ -770,11 +1001,46 @@ export async function getProductFacets(
       _max: { pricePaise: true },
     }),
     discountedProductIds(),
+    types.length > 0
+      ? db.product.findMany({
+          where: withoutType,
+          /* `image`/`sourceImageUrl` as well as the name: the same rows
+             that decide the counts also supply each type's thumbnail, so
+             the sidebar costs no further query. Ordered, so the picture
+             a sub-category shows is stable between loads rather than
+             whatever the planner returned first. */
+          select: {
+            name: true,
+            image: true,
+            sourceImageUrl: true,
+            imageIsGenerated: true,
+          },
+          orderBy: { name: "asc" },
+        })
+      : Promise.resolve([]),
   ]);
+
+  const typeCounts = new Map<string, number>();
+  /* Every photographed product per shelf, in name order, because the one
+     that best represents the shelf is not reliably the first — see
+     `pickThumbnail`. */
+  const typeRows = new Map<string, ThumbnailRow[]>();
+  for (const row of typeNames) {
+    const id = classifyProductType(query.categorySlug, row.name);
+    if (!id) continue;
+    typeCounts.set(id, (typeCounts.get(id) ?? 0) + 1);
+    if (resolvePhoto(row)) {
+      const kept = typeRows.get(id);
+      if (kept) kept.push(row);
+      else typeRows.set(id, [row]);
+    }
+  }
 
   /* `groupBy` returns ids; the names come back in one further query
      rather than one per brand. */
-  const brandIds = brandRows.map((r) => r.brandId).filter((id): id is string => id != null);
+  const brandIds = brandRows
+    .map((r) => r.brandId)
+    .filter((id): id is string => id != null);
   const brandNames = await db.brand.findMany({
     where: { id: { in: brandIds } },
     select: { id: true, slug: true, name: true },
@@ -807,14 +1073,70 @@ export async function getProductFacets(
       count: row._count._all,
     })),
 
+    /* Declaration order, not count order: the types are a shelf plan —
+       showers, then WCs, then basins — and re-ordering them by stock
+       would reshuffle the row every time a filter changed. A type with
+       nothing in it is dropped rather than shown at zero. */
+    types: types.flatMap((type) => {
+      const count = typeCounts.get(type.id) ?? 0;
+      return count > 0
+        ? {
+            id: type.id,
+            label: type.label,
+            count,
+            photo: pickThumbnail(type, typeRows.get(type.id) ?? []),
+          }
+        : [];
+    }),
+
     priceMinPaise: bounds._min.pricePaise ?? 0,
     priceMaxPaise: bounds._max.pricePaise ?? 0,
     discountedCount,
   };
 }
 
+/** What `pickThumbnail` needs off a product to choose between them. */
+type ThumbnailRow = {
+  name: string;
+  image: string;
+  sourceImageUrl: string | null;
+  imageIsGenerated: boolean;
+};
+
+/**
+ * The picture that stands for a shelf.
+ *
+ * Three preferences, in order. The shelf's own `thumbnail` terms first,
+ * because "first product by name" is not "typical" and a handful of
+ * shelves were opening on something that looked nothing like them — see
+ * `ProductType.thumbnail`. Then a photograph over an illustration, since
+ * this is the one place the "illustration, actual product may vary"
+ * label cannot be shown alongside it. Then whatever is first, which is
+ * what every shelf without a hint gets and is usually fine.
+ *
+ * `rows` is already filtered to products that have a picture at all and
+ * already in name order, so each step is a `find` rather than a sort.
+ */
+function pickThumbnail(
+  type: ProductType,
+  rows: ThumbnailRow[],
+): string | undefined {
+  if (rows.length === 0) return undefined;
+
+  for (const term of type.thumbnail ?? []) {
+    const wanted = term.toLowerCase();
+    const named = rows.filter((row) => row.name.toLowerCase().includes(wanted));
+    const hit = named.find((row) => !row.imageIsGenerated) ?? named[0];
+    if (hit) return resolvePhoto(hit);
+  }
+
+  return resolvePhoto(rows.find((row) => !row.imageIsGenerated) ?? rows[0]);
+}
+
 /** Brands that have something to sell, for the filter rail. */
-export async function listBrands(): Promise<{ id: string; slug: string; name: string }[]> {
+export async function listBrands(): Promise<
+  { id: string; slug: string; name: string }[]
+> {
   const rows = await db.brand.findMany({
     where: { isActive: true, products: { some: PRODUCT_QUERY.where } },
     orderBy: { name: "asc" },
@@ -887,17 +1209,23 @@ export async function getBrandLinkTargets(): Promise<Map<string, string>> {
 export { brandKey };
 
 /** One category by slug, for the category browse page. Null becomes a 404. */
-export async function getCategoryBySlug(slug: string): Promise<Category | null> {
+export async function getCategoryBySlug(
+  slug: string,
+): Promise<Category | null> {
   const row = await db.category.findFirst({
     where: { slug, isActive: true },
     /* Filtered for the reason given on `getCategories` above. */
     include: {
-      _count: { select: { children: true, products: { where: SELLABLE_PRODUCT } } },
+      _count: {
+        select: { children: true, products: { where: SELLABLE_PRODUCT } },
+      },
     },
   });
   if (!row) return null;
 
-  const images = row.images.length ? row.images : (CATEGORY_SWATCHES[row.slug] ?? []);
+  const images = row.images.length
+    ? row.images
+    : (CATEGORY_SWATCHES[row.slug] ?? []);
   return {
     id: row.id,
     slug: row.slug,
@@ -984,7 +1312,10 @@ export async function listUnpricedProducts(
     db.product.count({ where }),
     db.product.findMany({
       where,
-      include: { brand: true, category: { select: { name: true, slug: true } } },
+      include: {
+        brand: true,
+        category: { select: { name: true, slug: true } },
+      },
       orderBy: { name: "asc" },
       skip: (Math.max(1, page) - 1) * pageSize,
       take: pageSize,
@@ -1031,7 +1362,10 @@ export async function listProductsWithoutPhoto(
     db.product.count({ where }),
     db.product.findMany({
       where,
-      include: { brand: true, category: { select: { name: true, slug: true } } },
+      include: {
+        brand: true,
+        category: { select: { name: true, slug: true } },
+      },
       orderBy: { name: "asc" },
       skip: (Math.max(1, page) - 1) * pageSize,
       take: pageSize,
@@ -1064,7 +1398,9 @@ export async function listBrandsMissingPhotos(): Promise<
     select: {
       slug: true,
       name: true,
-      _count: { select: { products: { where: { isActive: true, image: "" } } } },
+      _count: {
+        select: { products: { where: { isActive: true, image: "" } } },
+      },
     },
     orderBy: { name: "asc" },
   });
@@ -1110,7 +1446,10 @@ export async function listDiscountedProducts(
 
   if (total === 0) return { items: [], page, pageSize, total, totalPages };
 
-  const slice = ids.slice((Math.max(1, page) - 1) * pageSize, Math.max(1, page) * pageSize);
+  const slice = ids.slice(
+    (Math.max(1, page) - 1) * pageSize,
+    Math.max(1, page) * pageSize,
+  );
   const products = await db.product.findMany({
     ...PRODUCT_QUERY,
     where: { ...PRODUCT_QUERY.where, id: { in: slice } },

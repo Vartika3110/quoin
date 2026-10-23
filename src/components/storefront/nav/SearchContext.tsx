@@ -10,6 +10,10 @@ import {
   type ReactNode,
 } from "react";
 import { SearchPalette } from "@/components/storefront/nav/SearchPalette";
+import {
+  AiSearchSheet,
+  type AiSearchMode,
+} from "@/components/storefront/ai/AiSearchSheet";
 
 /**
  * One palette, many triggers.
@@ -23,12 +27,28 @@ import { SearchPalette } from "@/components/storefront/nav/SearchPalette";
  *
  * The global shortcut lives here too, for the same reason: exactly one
  * listener owns ⌘K.
+ *
+ * **The AI sheet is mounted here as well**, and for the identical
+ * argument. The camera and the microphone appear in the phone search
+ * field, inside the palette, and on the home screen's own search row;
+ * three mounts would mean three sheets, and closing the palette with the
+ * camera open would leave an orphan behind it. `openAi("photo" | "voice")`
+ * is how any trigger reaches it.
  */
 
 interface SearchApi {
   open: () => void;
   close: () => void;
   isOpen: boolean;
+  /**
+   * Opens the camera or the voice assistant.
+   *
+   * Closes the palette on the way, because both of them are a *different*
+   * way of asking the same question — leaving a text palette open behind
+   * a camera sheet means two search surfaces stacked, and dismissing the
+   * top one reveals a stale list underneath.
+   */
+  openAi: (mode: AiSearchMode) => void;
 }
 
 const SearchContext = createContext<SearchApi | null>(null);
@@ -42,9 +62,16 @@ export function SearchProvider({
   suggestedTerms: string[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [aiMode, setAiMode] = useState<AiSearchMode | null>(null);
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
+
+  const openAi = useCallback((mode: AiSearchMode) => {
+    setIsOpen(false);
+    setAiMode(mode);
+  }, []);
+  const closeAi = useCallback(() => setAiMode(null), []);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -70,12 +97,18 @@ export function SearchProvider({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const api = useMemo<SearchApi>(() => ({ open, close, isOpen }), [open, close, isOpen]);
+  const api = useMemo<SearchApi>(
+    () => ({ open, close, isOpen, openAi }),
+    [open, close, isOpen, openAi],
+  );
 
   return (
     <SearchContext.Provider value={api}>
       {children}
       <SearchPalette open={isOpen} onClose={close} suggestedTerms={suggestedTerms} />
+      {/* `mode` is only read while open, and `aiMode` is what holds both
+          facts — which sheet, and whether there is one. */}
+      <AiSearchSheet open={aiMode !== null} mode={aiMode ?? "photo"} onClose={closeAi} />
     </SearchContext.Provider>
   );
 }

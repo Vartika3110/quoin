@@ -86,6 +86,21 @@ export interface Professional {
   jobsCompleted?: number;
   responseMinutes?: number;
   visitFeePaise?: number;
+
+  /**
+   * Marked by hand as a specialist, for `/experts`.
+   *
+   * Unset on everybody today, deliberately. `getExpertRoster` reaches
+   * that page through the *work* instead — the services that are
+   * specialist by nature — because grading thirty named tradespeople is
+   * the owner's call to make with them, not a classification to infer
+   * from a trade. Set it on somebody and they appear on Experts whatever
+   * service they are booked through.
+   *
+   * The same rule as the four fields above: do not fill this in to make
+   * a page look fuller.
+   */
+  expert?: boolean;
 }
 
 /** Carpenter, Tile and AC have no service of their own yet. Carpentry and

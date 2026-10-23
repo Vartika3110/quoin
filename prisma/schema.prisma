@@ -323,9 +323,9 @@ model Store {
 /// `onDelete: Cascade` because a wishlist is not a record of anything —
 /// deleting the account should take it, unlike an order.
 model WishlistItem {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// Not a foreign key, deliberately. A retired product should drop out
   /// of the list quietly rather than block its deletion, and the
@@ -940,12 +940,70 @@ enum ConsultSlot {
 }
 
 enum ConsultStatus {
-  /// Submitted by the customer, nobody has called back yet.
+  /// A paid consultation whose fee has not been captured yet. Holds its
+  /// slot for `CONSULT_HOLD_MINUTES` and then stops holding it — the
+  /// ordinary end state for somebody who opened the payment sheet and
+  /// changed their mind, which is not an error.
+  PENDING_PAYMENT
+  /// Submitted by the customer, nobody has called back yet. Where a free
+  /// request lands, and where a paid one lands the moment its fee is
+  /// captured.
   REQUESTED
   /// A time has been agreed with the customer by a human.
   SCHEDULED
   COMPLETED
   CANCELLED
+}
+
+/// What a consultation is about, which is also what it costs.
+///
+/// The band *is* the price list — `CONSULT_TOPIC_INFO` in
+/// `src/lib/types/consult.ts` holds the fee for each, and
+/// `ConsultRequest.feePaise` snapshots whatever it said on the day. Three
+/// bands rather than a fee per subject because the subject the customer
+/// types varies endlessly and the pricing does not: a question about a
+/// leaking tap and a question about a broken geyser are the same twenty
+/// minutes of the same person's time.
+///
+/// The finer grain is already carried by `categoryId` and `notes`, so
+/// "modular kitchen" or "bathroom renovation" does not need an enum
+/// value of its own.
+enum ConsultTopic {
+  /// Repairs, breakdowns and service guidance.
+  REPAIR
+  /// Choosing products, materials, brands and finishes.
+  PRODUCTS
+  /// Interior design, renovation and whole rooms.
+  INTERIOR
+}
+
+/// Where the consultation fee has got to.
+///
+/// Its own small state machine on the row rather than a `Payment`, and
+/// that is deliberate: `Payment.orderId` is required and points at an
+/// `Order`, so reusing it would mean minting a fake order — with lines,
+/// an address and a fulfilment status — for a twenty-minute phone call.
+/// The order tables are the record of goods sold and are deliberately
+/// append-mostly; a consultation is not a sale of goods and does not
+/// belong in them.
+///
+/// The cost of that choice is honest: this row carries its own
+/// `razorpayOrderId` and `razorpayPaymentId`, and the webhook has to know
+/// about both tables. See `settleConsultationPayment`.
+enum ConsultPaymentStatus {
+  /// No fee. A site visit, which is quoted after the scope is seen, and
+  /// every request made before consultations were chargeable.
+  NOT_REQUIRED
+  /// A gateway order exists and nothing has been captured. The slot is
+  /// held, but only for `CONSULT_HOLD_MINUTES` — see `slotIsFree`.
+  PENDING
+  /// Captured, confirmed by `payment.captured` on the webhook. The only
+  /// status that means money actually moved.
+  PAID
+  /// The gateway reported a failed attempt.
+  FAILED
+  /// Refunded, because Quoin could not keep the appointment.
+  REFUNDED
 }
 
 model ConsultRequest {
@@ -1003,6 +1061,70 @@ model ConsultRequest {
   preferredDate DateTime?    @db.Date
   preferredSlot ConsultSlot?
 
+  /// ---- The paid video consultation -----------------------------------
+  ///
+  /// Everything below this line arrived with chargeable video calls.
+  /// Every column is nullable or defaulted, because the table already
+  /// holds free call-back requests and site visits and they must keep
+  /// working untouched — a site visit has no topic, no fee, no exact
+  /// start and no video room, and that is not a missing value.
+
+  /// Which price band. Null for a site visit and for every row written
+  /// before consultations were chargeable.
+  topic ConsultTopic?
+
+  /// What the customer was actually quoted, in paise, frozen at the
+  /// moment of booking.
+  ///
+  /// A snapshot, not a lookup — the same rule `OrderLine` follows and for
+  /// the same reason: raising the interior fee next quarter must not
+  /// rewrite what somebody paid last month, and a receipt that disagrees
+  /// with the bank statement is unarguable.
+  feePaise Int @default(0)
+
+  paymentStatus ConsultPaymentStatus @default(NOT_REQUIRED)
+
+  /// Razorpay's `order_id`, created in the same request as the row. The
+  /// key the webhook looks this up by — it is the only identifier that
+  /// exists both before the customer has paid and on every event about it
+  /// afterwards. Unique: exactly one gateway order per consultation.
+  razorpayOrderId String? @unique
+
+  /// Razorpay's `payment_id`, null until an attempt is made. Unique, and
+  /// that index is load-bearing: with `paymentStatus` it is how a
+  /// redelivered webhook is recognised as the same event. Razorpay
+  /// retries on any non-2xx and can deliver a success twice.
+  razorpayPaymentId String? @unique
+
+  /// When the fee was captured. Null until it was.
+  paidAt DateTime?
+
+  /// The exact start, in UTC, for a call the customer picked a time for.
+  ///
+  /// This is the one place the module's "never an exact time" rule is
+  /// deliberately broken, and only for video: a paid appointment has to
+  /// be a time, or the customer has bought a promise nobody made. Site
+  /// visits still carry only `preferredDate` and `preferredSlot`,
+  /// because travel and scope genuinely cannot be pinned to a minute.
+  startsAt DateTime?
+
+  /// How long the call is booked for. 20 minutes is what the storefront
+  /// quotes; stored per row so shortening the standard call later does
+  /// not retroactively shorten appointments already sold.
+  durationMinutes Int?
+
+  /// The video room this consultation meets in — a room *name*, not a
+  /// URL, for the reason `StoredFile.storageKey` is not one: which
+  /// provider is live is environment configuration, and a URL written
+  /// into a row pins it to whichever provider was running the day it was
+  /// created. `meetingUrl` in `src/lib/consult/video.ts` builds the link.
+  ///
+  /// Minted when the booking is created rather than when it is confirmed,
+  /// so both sides have had the same stable link all along. Unique
+  /// because a room shared between two consultations is two customers in
+  /// one call.
+  videoRoom String? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1010,6 +1132,9 @@ model ConsultRequest {
   /// status and recency. Both are the hot paths, so both are indexed.
   @@index([phone, createdAt])
   @@index([status, createdAt])
+  /// Availability asks "what is already booked at this instant", on every
+  /// render of the day picker — see `bookedStarts`.
+  @@index([startsAt, paymentStatus])
   @@map("consult_requests")
 }
 

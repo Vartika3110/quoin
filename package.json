@@ -24,6 +24,8 @@
     "admin:grant": "tsx scripts/grant-staff.ts",
     "images:pair": "tsx scripts/pair-images-by-code.ts",
     "db:retire-scraped": "tsx scripts/retire-scraped.ts",
+    "db:merge-variants": "tsx scripts/merge-sibling-variants.ts",
+    "db:split-plumbing": "tsx scripts/split-plumbing-fittings.ts",
     "images:localise": "tsx scripts/localise-source-images.ts",
     "db:clean-names": "tsx scripts/clean-product-names.ts",
     "db:copy": "tsx scripts/copy-database.ts",

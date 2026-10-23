@@ -25,10 +25,15 @@ import {
  * drawer wraps it rather than reimplementing it, so the two can never
  * offer different filters.
  *
- * Every count is the count you would get **if you picked that option**,
- * with the option's own dimension removed from the query. A count that
- * already includes the filter it sits next to is either the result total
- * or zero, and both are useless.
+ * **No counts beside the options.** They used to read "Jaquar 80", and
+ * the number was carefully the count you would get *if you picked that
+ * option* — the option's own dimension dropped from the query, because a
+ * count that already includes the filter it sits next to is either the
+ * result total or zero. The arithmetic was right and the owner does not
+ * want product counts anywhere on the storefront, so the labels stand on
+ * their own. `getProductFacets` still computes them: they decide which
+ * options appear at all, and an option that would match nothing is still
+ * dropped rather than shown leading to an empty grid.
  */
 export function FilterPanel({
   basePath,
@@ -66,12 +71,31 @@ export function FilterPanel({
         </Link>
       )}
 
+      {/* First, and above Offers, because it is the biggest cut
+          available on a department page — "showers" takes 163 products
+          to 25, where a brand takes it to 80. Only on a department page:
+          `facets.types` is empty everywhere else, and more than one,
+          because a single type is the whole department under another
+          name. */}
+      {facets.types.length > 1 && (
+        <Group title="Type">
+          {facets.types.map((type) => (
+            <OptionLink
+              key={type.id}
+              href={toggleParam(basePath, params, "type", type.id)}
+              selected={params.type === type.id}
+            >
+              {type.label}
+            </OptionLink>
+          ))}
+        </Group>
+      )}
+
       {showOffers && (
         <Group title="Offers">
           <OptionLink
             href={toggleParam(basePath, params, "offers", "1")}
             selected={params.offers === "1"}
-            count={facets.discountedCount}
             icon={<Percent className="size-3.5" />}
           >
             Under list price
@@ -85,7 +109,6 @@ export function FilterPanel({
             key={f.id}
             href={toggleParam(basePath, params, "fulfilment", f.id)}
             selected={params.fulfilment === f.id}
-            count={f.count}
           >
             {FULFILMENT_LABEL[f.id as FulfilmentType]}
           </OptionLink>
@@ -101,7 +124,6 @@ export function FilterPanel({
               key={u.id}
               href={toggleParam(basePath, params, "unit", u.id)}
               selected={params.unit === u.id}
-              count={u.count}
             >
               {PRICING_UNIT_LABEL[u.id as PricingUnit]}
             </OptionLink>
@@ -127,7 +149,6 @@ export function FilterPanel({
               key={brand.slug}
               href={toggleParam(basePath, params, "brand", brand.slug)}
               selected={params.brand === brand.slug}
-              count={brand.count}
             >
               {brand.name}
             </OptionLink>
@@ -175,13 +196,11 @@ function Group({
 function OptionLink({
   href,
   selected,
-  count,
   icon,
   children,
 }: {
   href: string;
   selected: boolean;
-  count: number;
   icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -206,7 +225,6 @@ function OptionLink({
         {icon ?? <Check className="size-3" strokeWidth={3} />}
       </span>
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      <span className="nums shrink-0 text-micro text-faint">{count}</span>
     </Link>
   );
 }
@@ -227,7 +245,7 @@ function PriceForm({
   params: BrowseParams;
 }) {
   const carried = (
-    ["q", "brand", "fulfilment", "unit", "offers", "sort", "view"] as const
+    ["q", "brand", "fulfilment", "unit", "type", "offers", "sort", "view"] as const
   ).filter((key) => params[key]);
 
   return (

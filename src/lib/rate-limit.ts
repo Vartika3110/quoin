@@ -59,6 +59,30 @@ const BUCKETS: Record<string, Bucket> = {
   search: { windowMs: 60_000, max: 120, hits: new Map() },
   quote: { windowMs: 60_000, max: 40, hits: new Map() },
   parcha: { windowMs: 10 * 60_000, max: 30, hits: new Map() },
+
+  /* ---- The AI features ------------------------------------------------
+   *
+   * A different kind of cost from the three above. Those spend Postgres
+   * connections, which are recoverable; these spend money at OpenAI,
+   * which is not. So they are an order of magnitude tighter, and they are
+   * keyed by *account* where there is one — see `enforceKeyed` — because
+   * an office or a site hut behind one address is several real customers
+   * and throttling them as one caller would make the feature look broken.
+   *
+   * The numbers come from what the UI does. A photograph search is a
+   * deliberate act: aim, shoot, look at the results. Ten in ten minutes
+   * is somebody using it hard; thirty is a loop. The voice assistant is
+   * cheaper per call and more conversational — a person who does not get
+   * the result they wanted rephrases immediately — so it gets more room.
+   *
+   * Room visualisation is the expensive one by a wide margin: an image
+   * edit is cents rather than fractions of one, and its limit is set to
+   * what a person deciding between three tiles would genuinely need
+   * rather than to a round number.
+   */
+  aiVisualSearch: { windowMs: 10 * 60_000, max: 12, hits: new Map() },
+  aiAssist: { windowMs: 10 * 60_000, max: 20, hits: new Map() },
+  aiVisualise: { windowMs: 60 * 60_000, max: 10, hits: new Map() },
 };
 
 /**
@@ -140,4 +164,28 @@ export function enforce(bucketName: keyof typeof BUCKETS, request: Request): voi
     "rate_limited",
     `Too many requests. Try again in ${retryAfterSeconds} seconds.`,
   );
+}
+
+/**
+ * `enforce`, but counting something other than the caller's address.
+ *
+ * The AI buckets use this with an account id where the request is signed
+ * in, falling back to the hashed address for a guest. Two reasons, both
+ * learned from the endpoints above: a shared connection is several
+ * customers and must not be one budget, and an account is the only key
+ * that survives a phone moving between wifi and mobile data mid-session.
+ *
+ * The message is the caller's, not this module's, because "too many
+ * requests" is the wrong sentence for a customer holding a camera — the
+ * route knows what they were trying to do and what else they can do
+ * instead.
+ */
+export function enforceKeyed(
+  bucketName: keyof typeof BUCKETS,
+  key: string,
+  message: (retryAfterSeconds: number) => string,
+): void {
+  const { allowed, retryAfterSeconds } = check(bucketName, key);
+  if (allowed) return;
+  throw new ApiError("rate_limited", message(retryAfterSeconds));
 }

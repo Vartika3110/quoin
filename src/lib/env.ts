@@ -142,6 +142,34 @@ const schema = z.object({
   OPENAI_MODEL: z.string().optional(),
 
   /**
+   * Which model draws a product into a photograph of a customer's room.
+   *
+   * Separate from `OPENAI_MODEL` because it names a different class of
+   * model with a different bill: an image edit costs cents where a read
+   * costs fractions of one. `DEFAULT_IMAGE_MODEL` in
+   * `src/lib/ai/client.ts` is used when unset.
+   *
+   * A free-form string, not an enum, for the reason `OPENAI_MODEL`
+   * records above: validation that can fail on a present-but-blank
+   * optional variable takes the whole site down for a setting that should
+   * only ever degrade one feature.
+   */
+  OPENAI_IMAGE_MODEL: z.string().optional(),
+
+  /**
+   * Where consultation video calls happen.
+   *
+   * A hostname, not a URL — `src/lib/consult/video.ts` builds the link.
+   * Unset, calls use the public `meet.jit.si`, which needs no account and
+   * works on the day this ships; set it to a self-hosted Jitsi or a Jitsi
+   * as a Service domain to move off the public instance without a code
+   * change. Optional, and with no production guard, for the reason
+   * Razorpay and Supabase have none: the unconfigured state is a working
+   * feature on a public server, not a dangerous one.
+   */
+  JITSI_DOMAIN: z.string().optional(),
+
+  /**
    * The site's own origin, for the absolute URLs metadata needs.
    *
    * Open Graph images and canonical links have to be absolute — a
@@ -322,6 +350,8 @@ function load(): Env {
         SHOW_SOURCE_IMAGES: process.env.SHOW_SOURCE_IMAGES === "1",
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         OPENAI_MODEL: process.env.OPENAI_MODEL,
+        OPENAI_IMAGE_MODEL: process.env.OPENAI_IMAGE_MODEL,
+        JITSI_DOMAIN: process.env.JITSI_DOMAIN,
         SITE_URL: process.env.SITE_URL,
         VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
         VERCEL_URL: process.env.VERCEL_URL,

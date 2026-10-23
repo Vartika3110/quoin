@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -100,12 +99,6 @@ export default async function ProPage() {
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb
-            items={[{ label: "Home", href: "/" }, { label: "Quoin Pro" }]}
-          />
-        </div>
-
         <PageSections>
           <section className="px-5 lg:px-0">
             <div className="overflow-hidden rounded-card bg-deep p-6 lg:rounded-2xl lg:p-12">

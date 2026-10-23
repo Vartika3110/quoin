@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ServiceCard } from "@/components/storefront/ServiceCard";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { SectionHead } from "@/components/ui/Section";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -57,16 +57,6 @@ export default async function ServicePage({ params, searchParams }: Ctx) {
     <AppShell>
       <TrackEvent event="service_viewed" props={{ service: slug }} />
       <div className="pt-4 lg:pt-6">
-        <div className="mb-4 px-5 lg:px-0">
-          <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Services", href: "/services" },
-              { label: service.name },
-            ]}
-          />
-        </div>
-
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-10">
           <div className="min-w-0 px-5 lg:px-0">
             <Eyebrow>Service</Eyebrow>
@@ -147,9 +137,9 @@ export default async function ServicePage({ params, searchParams }: Ctx) {
                       <dt className="text-micro text-muted">Service area</dt>
                       <dd className="mt-0.5 text-body-sm text-ink">
                         {service.serviceArea}{" "}
-                        <a href="/consult" className="text-accent">
+                        <Link href="/consult" className="text-accent">
                           Check your area
-                        </a>
+                        </Link>
                       </dd>
                     </div>
                   </div>

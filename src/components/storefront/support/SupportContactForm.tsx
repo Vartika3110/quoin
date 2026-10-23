@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Field, Input, Select, Textarea } from "@/components/ui/Input";
@@ -68,9 +69,9 @@ export function SupportContactForm({
           your account.
         </p>
         <p className="mt-4 text-body-sm">
-          <a href="/consult" className="font-medium text-accent hover:text-accent-bright">
+          <Link href="/consult" className="font-medium text-accent hover:text-accent-bright">
             Prefer to talk? Request a call
-          </a>
+          </Link>
         </p>
       </Card>
     );

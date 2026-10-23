@@ -5,7 +5,8 @@ import { LoadError } from "@/components/storefront/account/LoadError";
 import { ServiceBookingCard } from "@/components/storefront/services/ServiceBookingCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
-import { Briefcase, Calendar, Ruler, Video } from "@/components/icons";
+import Link from "next/link";
+import { Briefcase, Calendar, Clock, Ruler, Video } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { listBookingsForUser, type ServiceBookingListItem } from "@/lib/data/service-bookings";
@@ -18,7 +19,12 @@ import {
   CONSULT_MODE_INFO,
   CONSULT_SLOT_LABEL,
   CONSULT_STATUS_LABEL,
+  CONSULT_TOPIC_INFO,
   formatConsultDay,
+  formatConsultTime,
+  formatFee,
+  istDay,
+  istMinutes,
   type ConsultRequestView,
   type ConsultStatus,
 } from "@/lib/types/consult";
@@ -28,6 +34,9 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Your services — Quoin" };
 
 const STATUS_TONE: Record<ConsultStatus, "accent" | "info" | "success" | "neutral"> = {
+  /* Neutral, not a warning colour: an unpaid booking is somebody who
+     opened the payment sheet and stopped, which is ordinary. */
+  pending_payment: "neutral",
   requested: "accent",
   scheduled: "info",
   completed: "success",
@@ -130,7 +139,11 @@ export default async function AccountServicesPage() {
           )}
 
           <div>
-            <h2 className="mb-2 text-body-sm font-semibold text-ink">Callback requests</h2>
+            {/* "Consultations", not "Callback requests", now that some of
+                them are paid appointments with a time and a video room.
+                A paid booking filed under "callback requests" reads as if
+                nobody noticed the money. */}
+            <h2 className="mb-2 text-body-sm font-semibold text-ink">Consultations</h2>
             {consultations.length === 0 ? (
               <EmptyState
                 compact
@@ -138,8 +151,9 @@ export default async function AccountServicesPage() {
                 title="No callback requests yet"
                 action={{ href: "/consult", label: "Talk to an expert" }}
               >
-                A free video consultation is twenty minutes with someone who
-                has built what you are building.
+                Twenty minutes with someone who has built what you are
+                building — booked for a time you pick from ₹99, or a free
+                call back when you would rather we rang you.
               </EmptyState>
             ) : (
               <ul className="space-y-2.5">
@@ -157,10 +171,23 @@ export default async function AccountServicesPage() {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-body-sm font-semibold text-ink">{mode.title}</p>
+                          <p className="text-body-sm font-semibold text-ink">
+                            {/* The band, when there is one — "Interiors &
+                                renovation" says more than "Video
+                                consultation" once a fee has been paid for
+                                a specific kind of advice. */}
+                            {request.topic
+                              ? CONSULT_TOPIC_INFO[request.topic].title
+                              : mode.title}
+                          </p>
                           <Badge tone={STATUS_TONE[request.status]} size="sm">
                             {CONSULT_STATUS_LABEL[request.status]}
                           </Badge>
+                          {request.paymentStatus === "paid" && request.feePaise > 0 && (
+                            <Badge tone="success" size="sm">
+                              {formatFee(request.feePaise)} paid
+                            </Badge>
+                          )}
                         </div>
 
                         <p className="nums mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted">
@@ -175,6 +202,31 @@ export default async function AccountServicesPage() {
                           )}
                           {request.areaName && <span>{request.areaName}</span>}
                         </p>
+
+                        {/* A booked call has an exact time and somewhere
+                            to go. The link leads to the booking page,
+                            which is the only place the video room is
+                            released — see `getBookingByReference`. */}
+                        {request.startsAt && (
+                          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption">
+                            <span className="flex items-center gap-1 font-medium text-ink">
+                              <Clock className="size-3" />
+                              {formatConsultDay(istDay(new Date(request.startsAt)))} at{" "}
+                              {formatConsultTime(istMinutes(new Date(request.startsAt)))}
+                              {request.durationMinutes
+                                ? ` · ${request.durationMinutes} min`
+                                : ""}
+                            </span>
+                            <Link
+                              href={`/consult/${request.reference}`}
+                              className="font-medium text-accent hover:underline"
+                            >
+                              {request.paymentStatus === "paid"
+                                ? "Open booking & join link"
+                                : "Finish booking"}
+                            </Link>
+                          </p>
+                        )}
                       </div>
                     </li>
                   );

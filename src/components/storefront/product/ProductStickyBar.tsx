@@ -10,6 +10,7 @@ import {
   PRICING_UNIT_LABEL,
   formatPrice,
   resolvePrice,
+  resolveVariantPrice,
   type Product,
 } from "@/lib/types/catalog";
 
@@ -38,25 +39,63 @@ export function ProductStickyBar({
   const toast = useToast();
 
   const price = resolvePrice(product, isPro);
-  const variant = product.variants[0];
-  const line = find(product.slug, variant.id);
 
-  const simple = product.variants.length === 1 && product.fulfilment !== "bookable";
+  /* Whichever option of this product is already in the basket, if the
+     customer has settled on exactly one.
+
+     Thirteen products have two options now — see
+     `scripts/merge-sibling-variants.ts` — and until this looked for them
+     the bar said "Choose options" forever: you picked a tint in the
+     panel, added it, and the bar under your thumb still offered to take
+     you back to a choice you had already made. Exactly one line, because
+     with two tints of the same adhesive in the basket there is no single
+     quantity for this bar to step, and guessing which one the customer
+     meant is worse than sending them to the panel that shows both. */
+  const lines = product.variants.flatMap((v) => find(product.slug, v.id) ?? []);
+  const line = lines.length === 1 ? lines[0] : undefined;
+  const variant =
+    product.variants.find((v) => v.id === line?.variantId) ??
+    product.variants[0];
+
+  const simple =
+    product.fulfilment !== "bookable" &&
+    (product.variants.length === 1 || lines.length === 1);
+
+  /* The price of the thing the bar is actually about: the option in the
+     basket when there is one, the "from" price of the cheapest when the
+     customer has not chosen yet. */
+  const shown = line ? resolveVariantPrice(variant, isPro) : price;
 
   return (
     <StickyBar>
+      {/* Quantity, price, tax position — the reference's three-line
+          stack, and the order they are read in. The figure is the middle
+          line because it is the one being decided on; the unit above it
+          is what stops "₹495" meaning nothing (per bag, per piece and
+          per running foot are all live in this catalogue); the tax line
+          is the standing promise under both. */}
       <div className="min-w-0 flex-1">
-        <p className="nums text-title-sm font-semibold text-ink">
-          {formatPrice(price.amount)}
-        </p>
         <p className="truncate text-micro text-muted">
-          {price.isFrom ? "onwards" : PRICING_UNIT_LABEL[product.pricingUnit]}
-          {price.strikethrough && (
-            <span className="nums ml-1.5 line-through">
-              {formatPrice(price.strikethrough)}
+          {line
+            ? `${line.qty} × ${PRICING_UNIT_LABEL[product.pricingUnit]}`
+            : shown.isFrom
+              ? "onwards"
+              : PRICING_UNIT_LABEL[product.pricingUnit]}
+          {line && product.variants.length > 1 && ` · ${variant.label}`}
+        </p>
+
+        <p className="flex items-baseline gap-1.5 leading-tight">
+          <span className="nums text-title-sm font-semibold text-ink">
+            {formatPrice(shown.amount)}
+          </span>
+          {shown.strikethrough && (
+            <span className="nums text-caption text-faint line-through">
+              MRP {formatPrice(shown.strikethrough)}
             </span>
           )}
         </p>
+
+        <p className="truncate text-micro text-faint">Inclusive of all taxes</p>
       </div>
 
       {!simple ? (

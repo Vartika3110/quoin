@@ -1,17 +1,21 @@
 import { Prisma } from "@prisma/client";
 import type {
   ConsultMode as DbMode,
+  ConsultPaymentStatus as DbPaymentStatus,
   ConsultSlot as DbSlot,
   ConsultStatus as DbStatus,
+  ConsultTopic as DbTopic,
 } from "@prisma/client";
 import { db } from "@/lib/db";
 import { maskPhone } from "@/lib/auth/phone";
 import { REFERENCE_ATTEMPTS, generateReference } from "@/lib/reference";
 import type {
   ConsultMode,
+  ConsultPaymentStatus,
   ConsultRequestView,
   ConsultSlot,
   ConsultStatus,
+  ConsultTopic,
 } from "@/lib/types/consult";
 
 /**
@@ -51,7 +55,25 @@ const FROM_DB_SLOT: Record<DbSlot, ConsultSlot> = {
   EVENING: "evening",
 };
 
+/* Imported from `@prisma/client` the same way the other three are, and
+   mapped out longhand for the same reason: a `Record` keyed on the union
+   is exhaustive, so a value added to the schema fails the build here. */
+const FROM_DB_TOPIC: Record<DbTopic, ConsultTopic> = {
+  REPAIR: "repair",
+  PRODUCTS: "products",
+  INTERIOR: "interior",
+};
+
+const FROM_DB_PAYMENT: Record<DbPaymentStatus, ConsultPaymentStatus> = {
+  NOT_REQUIRED: "not_required",
+  PENDING: "pending",
+  PAID: "paid",
+  FAILED: "failed",
+  REFUNDED: "refunded",
+};
+
 const FROM_DB_STATUS: Record<DbStatus, ConsultStatus> = {
+  PENDING_PAYMENT: "pending_payment",
   REQUESTED: "requested",
   SCHEDULED: "scheduled",
   COMPLETED: "completed",
@@ -86,6 +108,15 @@ const VIEW_QUERY = {
     preferredSlot: true,
     createdAt: true,
     area: { select: { name: true } },
+    /* The paid-consultation columns. Selected here rather than in a
+       second query because every caller of this view renders them when
+       they are set — the account screen shows the booked time and the
+       join link, and operations needs the fee beside the request. */
+    topic: true,
+    feePaise: true,
+    startsAt: true,
+    durationMinutes: true,
+    paymentStatus: true,
   },
 } as const;
 
@@ -108,6 +139,17 @@ function toView(row: RequestRow): ConsultRequestView {
     preferredSlot: row.preferredSlot ? FROM_DB_SLOT[row.preferredSlot] : null,
     areaName: row.area?.name ?? null,
     createdAt: row.createdAt.toISOString(),
+
+    topic: row.topic ? FROM_DB_TOPIC[row.topic] : null,
+    feePaise: row.feePaise,
+    startsAt: row.startsAt?.toISOString() ?? null,
+    durationMinutes: row.durationMinutes,
+    paymentStatus: FROM_DB_PAYMENT[row.paymentStatus],
+    /* The video room is deliberately **not** on this view.
+       `getBookingByReference` in `consult-sessions.ts` is the one place
+       that releases it, gated on the fee actually having been captured,
+       and the account screen links to that page rather than embedding the
+       link in a list. One gate, one caller. */
   };
 }
 

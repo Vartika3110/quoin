@@ -151,6 +151,15 @@ export interface Category {
   moreCount: number;
   /** Active, sellable products filed under it. */
   productCount: number;
+  /**
+   * The tile's photograph.
+   *
+   * `CATEGORY_PHOTOS` when the department has commissioned art, and
+   * otherwise a photograph of something inside it — a new department
+   * arrives before its shot does, and a "photo coming soon" plate on the
+   * Products screen reads as a broken tile rather than an honest gap.
+   */
+  photo?: string;
 }
 
 /** Top-level storefront filter tabs. `all` is a pseudo-category. */

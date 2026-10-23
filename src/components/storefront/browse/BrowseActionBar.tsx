@@ -125,7 +125,7 @@ function Cell({
            phone leaves about 70px each; inline, the words truncate.
            Stacked, each one gets its full label and the row reads as a
            toolbar rather than a sentence. */
-        "flex h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-micro font-medium transition-colors active:bg-hover",
+        "flex h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl text-micro font-medium transition-colors active:bg-hover",
         active ? "text-accent" : "text-ink",
       )}
     >

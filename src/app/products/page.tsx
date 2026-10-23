@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { Browse } from "@/components/storefront/browse/Browse";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { SectionHead } from "@/components/ui/Section";
 import {
   getCategories,
@@ -44,15 +43,6 @@ export default async function ProductsPage({
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: searching ? "Search" : "All products" },
-            ]}
-          />
-        </div>
-
         {/* A visible heading only when there is something to say that the
             page does not already show.
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ParchaWorkbench } from "@/components/storefront/parcha/ParchaWorkbench";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { CheckCircle, Layers, Rupee } from "@/components/icons";
 
 export const metadata: Metadata = {
@@ -32,12 +31,6 @@ export default function UploadPage() {
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb
-            items={[{ label: "Home", href: "/" }, { label: "Upload Parcha" }]}
-          />
-        </div>
-
         {/* No eyebrow here, unlike the other pages that have one.
             "Upload Parcha" is already the last crumb directly above, and
             the heading says it a third time in a sentence — three

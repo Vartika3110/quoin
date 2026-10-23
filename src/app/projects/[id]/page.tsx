@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ProjectDashboard } from "@/components/storefront/projects/ProjectDashboard";
 import { SignInPrompt } from "@/components/storefront/account/SignInPrompt";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { getSession } from "@/lib/auth/session";
 import { listFeed } from "@/lib/data/studio";
 import { ORDER_STATUS_LABEL, ORDER_STATUS_TONE } from "@/lib/data/order-history";
@@ -41,16 +40,6 @@ export default async function ProjectPage({
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-4 px-5 lg:px-0">
-          <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Project Hub", href: "/projects" },
-              { label: "Project" },
-            ]}
-          />
-        </div>
-
         <div className="px-5 lg:px-0">
           {session ? (
             <ProjectDashboard

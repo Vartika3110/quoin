@@ -65,6 +65,21 @@ const COLUMNS: {
     ],
   },
   {
+    /* The four curated sections, which are not departments and have no
+       other home in the footer: `Categories` below is the catalogue's own
+       taxonomy, and these cut across it. On a phone too, unlike that
+       column — these are four short labels, and they are the only route
+       to these pages other than the home screen's own row. */
+    title: "Explore",
+    links: [
+      { href: "/trending", label: "Trending" },
+      { href: "/experts", label: "Experts" },
+      { href: "/lighting", label: "Lighting" },
+      { href: "/rooted", label: "Rooted — Indian brands" },
+      { href: "/premium", label: "Architectural Selects" },
+    ],
+  },
+  {
     title: "Categories",
     /* Desktop only. On a phone these six were the widest labels in the
        footer — "Kitchen & wardrobe fittings" wrapped to two lines in a

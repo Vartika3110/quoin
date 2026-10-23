@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { GalleryActions } from "@/components/storefront/product/GalleryActions";
 import { ProductImage } from "@/components/storefront/ProductImage";
 import { cn } from "@/components/ui/cn";
 import type { Product } from "@/lib/types/catalog";
@@ -31,48 +32,62 @@ export function Gallery({ product }: { product: Product }) {
 
   return (
     <div className="lg:sticky lg:top-24">
-      <div
-        className={cn(
-          "relative aspect-square overflow-hidden bg-photo lg:rounded-card lg:border lg:border-photo-edge",
-          photos.length > 0 && "cursor-zoom-in",
-          zoomed && "cursor-zoom-out",
-        )}
-        onClick={() => photos.length > 0 && setZoomed((z) => !z)}
-        role={photos.length > 0 ? "button" : undefined}
-        tabIndex={photos.length > 0 ? 0 : undefined}
-        onKeyDown={(e) => {
-          if (photos.length === 0) return;
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setZoomed((z) => !z);
+      {/* `relative` so the floating controls have something to pin to,
+          and the same 20px gutter every card on this page sits in.
+
+          The frame used to run edge to edge on a phone, so its ground —
+          `bg-photo`, near-white, because that is what manufacturers shoot
+          against — met the page's cream at the screen edge with nothing
+          between them. It read as a band of a different colour stuck to
+          the top of the page rather than as a picture of a product. Inset
+          and rounded, it is a card like the ones under it. */}
+      <div className="relative mx-5 lg:mx-0">
+        <GalleryActions product={product} />
+        <div
+          className={cn(
+            "relative aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo",
+            photos.length > 0 && "cursor-zoom-in",
+            zoomed && "cursor-zoom-out",
+          )}
+          onClick={() => photos.length > 0 && setZoomed((z) => !z)}
+          role={photos.length > 0 ? "button" : undefined}
+          tabIndex={photos.length > 0 ? 0 : undefined}
+          onKeyDown={(e) => {
+            if (photos.length === 0) return;
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setZoomed((z) => !z);
+            }
+          }}
+          aria-label={
+            photos.length > 0 ? "Zoom the product photograph" : undefined
           }
-        }}
-        aria-label={photos.length > 0 ? "Zoom the product photograph" : undefined}
-        aria-pressed={photos.length > 0 ? zoomed : undefined}
-      >
-        <ProductImage
-          photo={active}
-          swatchKey={product.image}
-          label={product.title}
-          /* Asks for nearly double the box, because clicking scales the
+          aria-pressed={photos.length > 0 ? zoomed : undefined}
+        >
+          <ProductImage
+            photo={active}
+            swatchKey={product.image}
+            label={product.title}
+            /* Asks for nearly double the box, because clicking scales the
              picture 1.8x in place and a source cut to the box exactly
              would go soft the moment anyone zooms. */
-          sizes="(min-width: 1024px) 1100px, 180vw"
-          className={cn(
-            "size-full transition-transform duration-500 ease-out-quart",
-            zoomed && "scale-[1.8]",
-          )}
-        />
+            sizes="(min-width: 1024px) 1100px, 180vw"
+            className={cn(
+              "size-full transition-transform duration-500 ease-out-quart",
+              zoomed && "scale-[1.8]",
+            )}
+          />
 
-        {product.photoIsIllustration && (
-          /* Says what the picture is. A generated image of a real SKU
+          {product.photoIsIllustration && (
+            /* Says what the picture is. A generated image of a real SKU
              shown without this is a claim about goods the customer will
              receive that nobody has photographed. */
-          <p className="absolute inset-x-0 bottom-0 bg-deep/75 px-4 py-2 text-center text-micro text-on-deep backdrop-blur-sm">
-            Illustration only — the product you receive may differ in
-            appearance.
-          </p>
-        )}
+            <p className="absolute inset-x-0 bottom-0 bg-deep/75 px-4 py-2 text-center text-micro text-on-deep backdrop-blur-sm">
+              Illustration only — the product you receive may differ in
+              appearance.
+            </p>
+          )}
+        </div>
       </div>
 
       {photos.length > 1 && (
@@ -86,7 +101,9 @@ export function Gallery({ product }: { product: Product }) {
               aria-current={i === index}
               className={cn(
                 "relative size-16 shrink-0 overflow-hidden rounded-lg border bg-photo transition-colors",
-                i === index ? "border-accent" : "border-photo-edge hover:border-line",
+                i === index
+                  ? "border-accent"
+                  : "border-photo-edge hover:border-line",
               )}
             >
               <ProductImage
