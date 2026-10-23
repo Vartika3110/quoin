@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { SectionHead } from "@/components/ui/Section";
 import { FAQ, SUPPORT_CATEGORIES } from "@/lib/support/faq";
 
@@ -33,10 +32,6 @@ export default function FaqPage() {
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "FAQs" }]} />
-        </div>
-
         <SectionHead
           level={1}
           size="lg"

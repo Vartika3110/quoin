@@ -746,3 +746,38 @@ export const GoogleG = (p: IconProps) => (
     />
   </svg>
 );
+
+/**
+ * Rooted — Indian brands, and Quoin's own lines.
+ *
+ * A sapling with its roots showing, which is the literal reading of the
+ * word and the only one that survives at 24px. The alternatives were all
+ * worse: a map of India is unusable at this size and politically fraught
+ * at any size; a flag is a national symbol being used as a merchandising
+ * badge; a diya reads as "festive offers"; a lotus is a party emblem in
+ * this country and nothing else.
+ *
+ * The roots are the point — three of them, asymmetric, below a ground
+ * line. A sapling drawn without them is a houseplant, which is a
+ * different section entirely.
+ */
+export const Rooted = (p: IconProps) => (
+  <Svg {...p}>
+    {/* The ground, interrupted so the stem passes through it rather than
+        standing on top of it. Short stubs: a full-width rule reads as an
+        underline and fights the label sitting directly beneath. */}
+    <path d="M4 13.5h5M15 13.5h5" />
+    {/* Stem, crown to root crown. */}
+    <path d="M12 19.5V5" />
+    {/* Two leaves, one each side at different heights — a symmetrical
+        pair reads as a child's drawing of a tree. Drawn larger than the
+        first attempt, which rendered as two specks at the 22px these
+        actually appear at: each leaf is now about a quarter of the grid
+        rather than a sixth. */}
+    <path d="M12 8.6c.2-2.6 2-4.4 4.8-4.6-.1 2.7-2 4.5-4.8 4.6Z" />
+    <path d="M12 11.6c-.2-2.3-1.8-3.9-4.3-4.1.1 2.4 1.8 4 4.3 4.1Z" />
+    {/* Three roots, splayed from one crown. The centre one is short so
+        the fan is asymmetric — three equal prongs read as a fork. */}
+    <path d="M12 15.8c-1.8.5-2.9 1.6-3.3 3.3M12 15.8c1.8.5 2.9 1.6 3.3 3.3M12 16.2v3.3" />
+  </Svg>
+);

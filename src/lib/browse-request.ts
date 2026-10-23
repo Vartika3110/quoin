@@ -33,6 +33,7 @@ export function readBrowseParams(
     brand: one(sp.brand),
     fulfilment: one(sp.fulfilment),
     unit: one(sp.unit),
+    type: one(sp.type),
     min: one(sp.min),
     max: one(sp.max),
     offers: one(sp.offers),
@@ -57,6 +58,12 @@ export function toProductQuery(params: BrowseParams) {
 
   return {
     brandSlug: params.brand,
+    /* Unvalidated here on purpose: a type is only resolvable against a
+       department, which this function does not know. `productTypeTerms`
+       returns nothing for an id the department does not define, and the
+       filter is then simply not applied — the same "a stale link still
+       shows products" rule the sort and fulfilment follow above. */
+    type: params.type,
     fulfilment: fulfilment && FULFILMENTS.includes(fulfilment) ? fulfilment : undefined,
     pricingUnit: unit && PRICING_UNITS.includes(unit) ? unit : undefined,
     search: params.q,

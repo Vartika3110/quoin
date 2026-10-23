@@ -2,11 +2,17 @@ import Link from "next/link";
 import { InfiniteGrid } from "@/components/storefront/browse/InfiniteGrid";
 import { FilterPanel } from "@/components/storefront/browse/FilterPanel";
 import { DepartmentRail } from "@/components/storefront/browse/DepartmentRail";
+import { TypeSidebar } from "@/components/storefront/browse/TypeSidebar";
+import { CATEGORY_PHOTOS } from "@/lib/category-photos";
 import { BrowseActionBar } from "@/components/storefront/browse/BrowseActionBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Grid, Menu, Search, Sort } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
-import type { ProductFacets, ProductPage, ProductSort } from "@/lib/data/catalog";
+import type {
+  ProductFacets,
+  ProductPage,
+  ProductSort,
+} from "@/lib/data/catalog";
 import {
   FULFILMENT_LABEL,
   SORTS,
@@ -16,7 +22,11 @@ import {
   withParams,
   type BrowseParams,
 } from "@/lib/browse-params";
-import { PRICING_UNIT_LABEL, type FulfilmentType, type PricingUnit } from "@/lib/types/catalog";
+import {
+  PRICING_UNIT_LABEL,
+  type FulfilmentType,
+  type PricingUnit,
+} from "@/lib/types/catalog";
 
 /**
  * Product browsing.
@@ -48,6 +58,7 @@ export function Browse({
   hideOffersFilter = false,
   departments,
   activeDepartment,
+  departmentTitle,
   scope,
 }: {
   page: ProductPage;
@@ -62,6 +73,13 @@ export function Browse({
       switching department makes no sense — Deals, search results. */
   departments?: { id: string; slug: string; title: string }[];
   activeDepartment?: string;
+  /**
+   * The department's own name, for the type row's "All …" chip. Its
+   * presence is what turns that row on: the sub-categories only mean
+   * something inside one department, and `facets.types` is empty
+   * everywhere else anyway.
+   */
+  departmentTitle?: string;
   /**
    * Filters the page applies that are not in its query string, so the
    * grid can fetch its own next page against the same listing.
@@ -79,6 +97,9 @@ export function Browse({
   const active = activeFilterCount(params);
   const listView = params.view === "list";
   const showOffers = !hideOffersFilter;
+  /* A department page, with more than one shelf in it to choose between.
+     One shelf is the whole department under another name. */
+  const showTypes = Boolean(departmentTitle) && facets.types.length > 1;
   const fetchQuery = toFetchQuery(params, scope);
 
   const panel = (
@@ -96,7 +117,9 @@ export function Browse({
       {showFilters && (
         <aside className="hidden w-60 shrink-0 lg:block">
           <div className="sticky top-24">
-            <h2 className="mb-3 px-2 text-caption font-semibold text-ink">Filters</h2>
+            <h2 className="mb-3 px-2 text-caption font-semibold text-ink">
+              Filters
+            </h2>
             <FilterPanel
               basePath={basePath}
               params={params}
@@ -118,7 +141,7 @@ export function Browse({
           <DepartmentRail
             categories={departments}
             activeSlug={activeDepartment}
-            className="mb-3"
+            className="mb-2"
           />
         )}
 
@@ -142,68 +165,93 @@ export function Browse({
             Desktop is untouched: the filter panel is a column beside the
             grid there, costing nothing, and `BrowseActionBar` is phone
             only. */}
-        <Toolbar
-          basePath={basePath}
-          params={params}
-          total={total}
-          activeSort={activeSort}
-          listView={listView}
-        />
+        {/* Sidebar and grid, side by side, on a phone.
 
-        {/* Phone only. Sort and Filter used to live in the toolbar above,
+            The department's shelves used to be a second row of chips
+            under the department rail; they are a column now, because a
+            horizontal rail of nine shows three. See `TypeSidebar`. The
+            sidebar is its own `lg:hidden`, so this wrapper collapses to
+            the plain grid on a desktop, where the Type group already
+            lives in the filter panel. */}
+        <div className="flex items-start gap-0">
+          {showTypes && (
+            <TypeSidebar
+              basePath={basePath}
+              params={params}
+              types={facets.types}
+              allLabel={`All ${departmentTitle!.toLowerCase()}`}
+              allPhoto={
+                activeDepartment ? CATEGORY_PHOTOS[activeDepartment] : undefined
+              }
+            />
+          )}
+
+          <div className="min-w-0 flex-1">
+            <Toolbar
+              basePath={basePath}
+              params={params}
+              activeSort={activeSort}
+              listView={listView}
+            />
+
+            {/* Phone only. Sort and Filter used to live in the toolbar above,
             which is where a pointer wants them and where a thumb cannot
             reach them once the grid has scrolled. */}
-        <BrowseActionBar
-          basePath={basePath}
-          params={params}
-          facets={facets}
-          activeSort={activeSort}
-          activeCount={active}
-          showFilters={showFilters}
-          panel={panel}
-        />
+            <BrowseActionBar
+              basePath={basePath}
+              params={params}
+              facets={facets}
+              activeSort={activeSort}
+              activeCount={active}
+              showFilters={showFilters}
+              panel={panel}
+            />
 
-        {active > 0 && (
-          <ActiveChips
-            basePath={basePath}
-            params={params}
-            facets={facets}
-            hideOffers={hideOffersFilter}
-          />
-        )}
+            {active > 0 && (
+              <ActiveChips
+                basePath={basePath}
+                params={params}
+                facets={facets}
+                hideOffers={hideOffersFilter}
+              />
+            )}
 
-        {total === 0 ? (
-          <div className="px-5 lg:px-0">
-            <EmptyState
-              icon={<Search className="size-6" />}
-              title="Nothing matched"
-              action={
-                active > 0 || params.q
-                  ? { href: basePath, label: "Clear filters" }
-                  : { href: "/categories", label: "Browse categories" }
-              }
-              secondaryAction={{ href: "/consult", label: "Ask an expert" }}
-            >
-              {active > 0
-                ? "No products match every filter at once. Removing one usually finds it."
-                : "Nothing in this section is priced for sale yet. It arrives as merchandising catches up with the import."}
-            </EmptyState>
-          </div>
-        ) : (
-          /* Keyed on the query, so changing a filter or a sort replaces
+            {total === 0 ? (
+              <div className="px-5 lg:px-0">
+                <EmptyState
+                  icon={<Search className="size-6" />}
+                  title="Nothing matched"
+                  action={
+                    active > 0 || params.q
+                      ? { href: basePath, label: "Clear filters" }
+                      : { href: "/categories", label: "Browse categories" }
+                  }
+                  secondaryAction={{ href: "/consult", label: "Ask an expert" }}
+                >
+                  {active > 0
+                    ? "No products match every filter at once. Removing one usually finds it."
+                    : "Nothing in this section is priced for sale yet. It arrives as merchandising catches up with the import."}
+                </EmptyState>
+              </div>
+            ) : (
+              /* Keyed on the query, so changing a filter or a sort replaces
              the component rather than appending the new first page to
              the old one's accumulated rows. */
-          <InfiniteGrid
-            key={fetchQuery}
-            initial={items}
-            initialPage={page}
-            totalPages={totalPages}
-            query={fetchQuery}
-            pageHrefTemplate={withParams(basePath, params, { page: "__PAGE__" })}
-            isPro={isPro}
-            listView={listView}
-          />
-        )}
+              <InfiniteGrid
+                key={fetchQuery}
+                initial={items}
+                initialPage={page}
+                totalPages={totalPages}
+                query={fetchQuery}
+                pageHrefTemplate={withParams(basePath, params, {
+                  page: "__PAGE__",
+                })}
+                isPro={isPro}
+                listView={listView}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -214,32 +262,35 @@ export function Browse({
 function Toolbar({
   basePath,
   params,
-  total,
   activeSort,
   listView,
 }: {
   basePath: string;
   params: BrowseParams;
-  total: number;
   activeSort: ProductSort;
   listView: boolean;
 }) {
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-5 lg:px-0">
-      {/* The size of the result, not a window into it. "1–24 of 2,556"
-          was true of a pager and is a lie the moment the grid appends its
-          second page — and the running count of what is on screen is
-          already announced by the grid's own live region. */}
-      <p className="nums text-caption text-muted">
-        {total === 0
-          ? "No products"
-          : `${total.toLocaleString("en-IN")} ${total === 1 ? "product" : "products"}`}
-      </p>
+      {/* No running total.
+
+          "14 products" sat on its own line above the first row of goods
+          and told the reader something the grid underneath it was about
+          to show them anyway. On a department of fourteen it is a line
+          of type for nothing; on one of five hundred it is a number
+          nobody acts on, since the next move is to scroll or to filter
+          either way.
+
+          It is still *counted* — `total` drives the paging and the empty
+          state, and `InfiniteGrid`'s live region still announces the
+          running tally to a screen reader as pages append, which is the
+          one audience that cannot see how much is there. */}
 
       {/* Desktop only. Sort and Filter are in `BrowseActionBar` on a
           phone; what is left here — the sort popover and the grid/list
-          toggle — is already `hidden` below `sm`/`lg`, so the row
-          collapses to the count alone. */}
+          toggle — is already `hidden` below `sm`/`lg`, so on a phone
+          this row collapses to nothing and its margin is all that is
+          left. */}
       <div className="flex items-center gap-2">
         {/* Sort as links inside a details/summary: a popover that needs no
             JavaScript and closes on selection because selecting navigates. */}
@@ -324,6 +375,15 @@ function ViewLink({
  * ago — is the most common way a customer concludes the catalogue is
  * empty.
  */
+/* No chip for `type`, deliberately.
+ *
+ * Every other filter here is invisible once it is applied — a brand or a
+ * price ceiling set two screens ago leaves nothing on the page to say so,
+ * and that is the whole reason this row exists. The sub-category is the
+ * opposite: `TypeSidebar` is on screen the entire time with that shelf
+ * lit, and tapping it again clears it. A "Health faucets ✕" chip under
+ * the row that already says Health faucets is the page repeating itself,
+ * and it costs a line above the first product to do it. */
 function ActiveChips({
   basePath,
   params,
@@ -348,7 +408,9 @@ function ActiveChips({
   }
   if (params.fulfilment) {
     chips.push({
-      label: FULFILMENT_LABEL[params.fulfilment as FulfilmentType] ?? params.fulfilment,
+      label:
+        FULFILMENT_LABEL[params.fulfilment as FulfilmentType] ??
+        params.fulfilment,
       href: withParams(basePath, params, { fulfilment: undefined }),
     });
   }

@@ -77,7 +77,8 @@ export function CategoryTile({
  * did before this existed.
  */
 export const CATEGORY_DESCRIPTOR: Record<string, string> = {
-  "bathware-plumbing": "Sanitaryware, taps, showers and pipes",
+  "bathware-plumbing": "Sanitaryware, taps, showers and basins",
+  "plumbing-fittings": "CPVC and PVC pipe, fittings, valves and traps",
   "cement-steel": "Structural materials by the bag and the tonne",
   "electricals-lighting": "Wiring, switchgear, fans and fittings",
   "gypsum-false-ceiling": "Boards, sections and ceiling systems",

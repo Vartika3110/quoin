@@ -32,6 +32,12 @@ export interface BrowseParams {
   fulfilment?: string;
   /** Pricing unit, e.g. "per_bag" — the phone chip row's "Size" facet. */
   unit?: string;
+  /**
+   * Sub-category within the department, e.g. "showers" — the chip row
+   * under the department rail. Only meaningful on `/c/[slug]`, where
+   * there is a department to resolve it against.
+   */
+  type?: string;
   /** Rupees in the URL, paise everywhere else — see `toPaise`. */
   min?: string;
   max?: string;
@@ -173,7 +179,22 @@ export function toPaise(rupees: string | undefined): number | undefined {
   return Math.round(n * 100);
 }
 
-/** How many filters are on, for the "Filters (3)" button and the reset. */
+/**
+ * How many filters are on, for the "Filters (3)" button and the reset.
+ *
+ * **`type` is not one of them.** It is in `BrowseParams` and it narrows
+ * the grid like the rest, but it is not a filter to the person using it
+ * — it is which shelf of the department they are standing in, chosen
+ * from `TypeSidebar`, which is on screen the whole time with that shelf
+ * lit. Counting it put a "1" on the Filters button of a page with no
+ * filters applied, which says there is something hidden behind that
+ * button to go and clear; there is not, and the thing it was counting
+ * was never out of sight in the first place.
+ *
+ * The same reasoning keeps it out of the panel's "Clear N filters" link:
+ * a reset that also moved you back to the whole department would be
+ * doing something the count never said it would.
+ */
 export function activeFilterCount(params: BrowseParams): number {
   return [
     params.brand,

@@ -5,7 +5,6 @@ import { SiteFooter } from "@/components/storefront/nav/SiteFooter";
 import { MobileTabBar } from "@/components/storefront/nav/MobileTabBar";
 import { RouteTransition } from "@/components/storefront/RouteTransition";
 import { CartBar } from "@/components/storefront/nav/CartBar";
-import { ConsultBubble } from "@/components/storefront/nav/ConsultBubble";
 import { getCategories } from "@/lib/data/catalog";
 import { getSession } from "@/lib/auth/session";
 import {
@@ -136,13 +135,21 @@ export async function AppShell({
           <SiteFooter showTrustPills={showTrustPills} />
         </div>
 
-        {/* Phone-only chrome, all three fixed. The bar sits above the tab
-            bar and hides itself on the screens that carry their own
-            total; the bubble sits above whichever of them is on screen. */}
+        {/* Phone-only chrome, both fixed. The bar sits above the tab bar
+            and hides itself on the screens that carry their own total.
+
+            **The floating consult bubble is gone.** It and the header's
+            Consult card were the same destination twice on one screen —
+            and of the two, the card is the one that says what the offer
+            is where a floating headset only says "help". The bubble also
+            had to sit *over* the page to stay reachable, which on a
+            product page meant a dark disc parked on top of the grid and,
+            on the detail page, on the button beneath it. Nothing is lost:
+            Consult is in the header on every page, in the footer, and on
+            the home screen. */}
         {phoneChrome && (
           <>
             <CartBar />
-            <ConsultBubble />
             <MobileTabBar />
           </>
         )}

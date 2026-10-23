@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProductImage } from "@/components/storefront/ProductImage";
+import { Drawer } from "@/components/ui/Drawer";
 import { Badge } from "@/components/ui/Badge";
 import { Rating } from "@/components/ui/Rating";
 import { cn } from "@/components/ui/cn";
@@ -28,6 +29,7 @@ import {
   PRICING_UNIT_LABEL,
   formatPrice,
   resolvePrice,
+  resolveVariantPrice,
   type FulfilmentType,
   type Product,
 } from "@/lib/types/catalog";
@@ -127,12 +129,16 @@ export function ProductCard({
   const bookable = product.fulfilment === "bookable";
 
   const off = price.strikethrough
-    ? Math.round(((price.strikethrough - price.amount) / price.strikethrough) * 100)
+    ? Math.round(
+        ((price.strikethrough - price.amount) / price.strikethrough) * 100,
+      )
     : 0;
 
   function toggleSaved() {
     const nowSaved = wishlist.toggle(product);
-    toast.toast(nowSaved ? "Saved to your wishlist" : "Removed from your wishlist");
+    toast.toast(
+      nowSaved ? "Saved to your wishlist" : "Removed from your wishlist",
+    );
   }
 
   return (
@@ -175,75 +181,79 @@ export function ProductCard({
           the rounded corners; the Add pill has to hang *over* that edge,
           so it lives in an outer box that does not clip. */}
       <div className="relative">
-      <div className="relative aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
-        <Link href={`/p/${product.slug}`} className="block size-full">
-          <ProductImage
-            photo={product.photo}
-            swatchKey={product.image}
-            label={product.title}
-            brand={product.brand}
-            sizes="(min-width: 1280px) 300px, (min-width: 1024px) 25vw, 45vw"
-            className="size-full transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
-          />
-          {product.photoIsIllustration && (
-            /* Says what the picture is. A generated image of a real SKU
+        <div className="relative aspect-square overflow-hidden rounded-card border border-photo-edge bg-photo">
+          <Link href={`/p/${product.slug}`} className="block size-full">
+            <ProductImage
+              photo={product.photo}
+              swatchKey={product.image}
+              label={product.title}
+              brand={product.brand}
+              sizes="(min-width: 1280px) 300px, (min-width: 1024px) 25vw, 45vw"
+              className="size-full transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
+            />
+            {product.photoIsIllustration && (
+              /* Says what the picture is. A generated image of a real SKU
                shown without this is a claim about goods the customer will
                receive that nobody has photographed. */
-            <span className="absolute inset-x-0 bottom-0 bg-deep/75 px-2 py-1 text-center text-micro leading-tight text-on-deep backdrop-blur-sm">
-              Illustration · actual product may vary
+              <span className="absolute inset-x-0 bottom-0 bg-deep/75 px-2 py-1 text-center text-micro leading-tight text-on-deep backdrop-blur-sm">
+                Illustration · actual product may vary
+              </span>
+            )}
+          </Link>
+
+          {off > 0 && (
+            <span className="nums absolute left-2 top-2 rounded-sm bg-accent px-1.5 py-1 text-micro font-semibold leading-none text-on-accent">
+              {off}% off
             </span>
           )}
-        </Link>
 
-        {off > 0 && (
-          <span className="nums absolute left-2 top-2 rounded-sm bg-accent px-1.5 py-1 text-micro font-semibold leading-none text-on-accent">
-            {off}% off
-          </span>
-        )}
-
-        <button
-          type="button"
-          onClick={toggleSaved}
-          aria-pressed={saved}
-          aria-label={saved ? `Remove ${product.title} from your wishlist` : `Save ${product.title}`}
-          /* `tap-target`: 32px is the drawn size the card is built around,
+          <button
+            type="button"
+            onClick={toggleSaved}
+            aria-pressed={saved}
+            aria-label={
+              saved
+                ? `Remove ${product.title} from your wishlist`
+                : `Save ${product.title}`
+            }
+            /* `tap-target`: 32px is the drawn size the card is built around,
              so the touch area is grown to 44px behind it instead.
 
              Always visible once saved, and always visible on a touch
              screen — a control revealed by hover is a control a phone
              cannot reach. `lg:opacity-0` is what makes it a hover
              affordance on a pointer device only. */
-          className={cn(
-            "tap-target absolute right-2 top-2 grid size-8 place-items-center rounded-full border bg-surface/90 backdrop-blur-sm transition-[opacity,color,border-color] duration-200",
-            saved
-              ? "border-accent-edge text-accent"
-              : "border-line-soft text-muted hover:text-accent lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100",
-          )}
-        >
-          {saved ? (
-            <HeartFilled key="on" className="anim-pop size-4" />
-          ) : (
-            <Heart className="size-4" />
-          )}
-        </button>
+            className={cn(
+              "tap-target absolute right-2 top-2 grid size-8 place-items-center rounded-full border bg-surface/90 backdrop-blur-sm transition-[opacity,color,border-color] duration-200",
+              saved
+                ? "border-accent-edge text-accent"
+                : "border-line-soft text-muted hover:text-accent lg:opacity-0 lg:group-hover:opacity-100 lg:focus-visible:opacity-100",
+            )}
+          >
+            {saved ? (
+              <HeartFilled key="on" className="anim-pop size-4" />
+            ) : (
+              <Heart className="size-4" />
+            )}
+          </button>
 
-        {/* Lifted clear of the illustration label, which is a full-width
+          {/* Lifted clear of the illustration label, which is a full-width
             band pinned to `bottom-0` of the same box. Both sat on the
             bottom edge and the chip was drawn straight through the middle
             of the words on every generated tile — which is most of the
             catalogue. `bottom-2` on a card with no label, `bottom-9` on
             one with, so neither has to know about the other beyond this
             line. */}
-        <span
-          className={cn(
-            "absolute left-2 inline-flex items-center gap-1 rounded-sm border border-line-soft bg-surface/90 px-1.5 py-1 text-micro text-ink backdrop-blur-sm",
-            product.photoIsIllustration ? "bottom-9" : "bottom-2",
-          )}
-        >
-          <fulfil.Icon className="size-3 text-accent" />
-          {fulfil.label(product.leadTimeDays)}
-        </span>
-      </div>
+          <span
+            className={cn(
+              "absolute left-2 inline-flex items-center gap-1 rounded-sm border border-line-soft bg-surface/90 px-1.5 py-1 text-micro text-ink backdrop-blur-sm",
+              product.photoIsIllustration ? "bottom-9" : "bottom-2",
+            )}
+          >
+            <fulfil.Icon className="size-3 text-accent" />
+            {fulfil.label(product.leadTimeDays)}
+          </span>
+        </div>
 
         {/* Straddling the picture's bottom edge, as the reference does.
             It reads as a control belonging to the product rather than a
@@ -252,19 +262,28 @@ export function ProductCard({
         <div className="absolute -bottom-4 right-2 z-10">
           {singleVariant && !bookable ? (
             <AddControl product={product} />
-          ) : (
+          ) : bookable ? (
+            /* A bookable visit has no quantity and no pack size. "Options"
+               is the honest word for what is behind it — a slot and a
+               professional — and counting them here would be counting the
+               wrong thing. */
             <Link
               href={`/p/${product.slug}`}
               className="tap-target relative flex h-9 items-center justify-center rounded-full border-2 border-accent bg-surface px-3.5 text-caption font-bold uppercase tracking-wide text-accent shadow-sm transition-colors hover:bg-accent hover:text-on-accent"
             >
               Options
             </Link>
+          ) : (
+            <OptionsControl product={product} isPro={isPro} />
           )}
         </div>
       </div>
 
       <div className="flex flex-1 flex-col pt-5">
-        <Link href={`/p/${product.slug}`} className="flex flex-1 flex-col gap-1">
+        <Link
+          href={`/p/${product.slug}`}
+          className="flex flex-1 flex-col gap-1"
+        >
           {/* Availability, stated as the owner states it: Quoin holds no
               inventory and buys from the vendor who has the line, so
               everything in the catalogue can be ordered. It is a fact
@@ -276,7 +295,9 @@ export function ProductCard({
               day a line is counted in, the caller passes the real answer
               and this badge stops being able to lie. */}
           {inStock && (
-            <span className="text-micro font-semibold text-success">In stock</span>
+            <span className="text-micro font-semibold text-success">
+              In stock
+            </span>
           )}
 
           {product.brand && (
@@ -304,7 +325,9 @@ export function ProductCard({
               {formatPrice(price.amount)}
             </span>
             <span className="text-micro text-muted">
-              {price.isFrom ? "onwards" : PRICING_UNIT_LABEL[product.pricingUnit]}
+              {price.isFrom
+                ? "onwards"
+                : PRICING_UNIT_LABEL[product.pricingUnit]}
             </span>
             {price.strikethrough && (
               <span className="nums text-micro text-faint line-through">
@@ -319,7 +342,6 @@ export function ProductCard({
             </Badge>
           )}
         </Link>
-
       </div>
     </article>
   );
@@ -352,13 +374,102 @@ export function ProductCard({
  * short of the 44px a thumb wants — so each one carries `tap-target` to
  * grow the hit area invisibly rather than the box itself.
  */
-function AddControl({ product }: { product: Product }) {
+/**
+ * Two pack sizes or two tints, chosen without leaving the grid.
+ *
+ * The count goes under the word, the way the reference design has it:
+ * "Options" alone said there was a choice without saying how much of one,
+ * and a reader deciding whether to open anything wants the number.
+ *
+ * It opens a sheet rather than navigating. The first version was a link
+ * to the product page, on the argument that the choice is a real one — a
+ * 1kg tub and a 50kg bag of the same cement are a thousand rupees apart —
+ * and the page already lays out labels, prices and quantity steps. That
+ * is true and it is still the wrong trade: picking a pack size is not a
+ * reason to lose your place in a grid you have scrolled halfway down, and
+ * the product page is one tap further on for anyone who wants the rest of
+ * it.
+ *
+ * Each row carries a full `AddControl`, so an option that is already in
+ * the basket shows its stepper rather than an Add button, and the sheet
+ * stays open while you work — two tints of the same adhesive are a normal
+ * thing to buy together.
+ */
+function OptionsControl({
+  product,
+  isPro,
+}: {
+  product: Product;
+  isPro: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        className="tap-target relative flex flex-col items-center justify-center rounded-full border-2 border-accent bg-surface px-3.5 py-1 leading-none text-accent shadow-sm transition-colors hover:bg-accent hover:text-on-accent"
+      >
+        <span className="text-caption font-bold uppercase tracking-wide">
+          Add
+        </span>
+        <span className="nums mt-0.5 text-[0.625rem] font-medium opacity-80">
+          {product.variants.length} options
+        </span>
+      </button>
+
+      <Drawer
+        open={open}
+        onClose={() => setOpen(false)}
+        title={product.title}
+        side="bottom"
+      >
+        <ul className="p-2 pb-4">
+          {product.variants.map((variant) => {
+            const option = resolveVariantPrice(variant, isPro);
+            return (
+              <li
+                key={variant.id}
+                className="flex min-h-14 items-center justify-between gap-3 rounded-lg px-3 py-2"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-body text-ink">{variant.label}</p>
+                  <p className="nums text-caption text-muted">
+                    {formatPrice(option.amount)}
+                    {option.strikethrough != null && (
+                      <span className="ml-1.5 text-faint line-through">
+                        {formatPrice(option.strikethrough)}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <AddControl product={product} variant={variant} />
+              </li>
+            );
+          })}
+        </ul>
+      </Drawer>
+    </>
+  );
+}
+
+function AddControl({
+  product,
+  /* Which option this control adds. Defaults to the only one, which is
+     every product in the catalogue bar thirteen — the rest pass the one
+     the customer picked in the options sheet. */
+  variant = product.variants[0],
+}: {
+  product: Product;
+  variant?: Product["variants"][number];
+}) {
   const router = useRouter();
   const { add, setQty, find } = useCart();
   const toast = useToast();
   const [flash, setFlash] = useState(false);
 
-  const variant = product.variants[0];
   const line = find(product.slug, variant.id);
 
   if (!line) {
@@ -369,10 +480,15 @@ function AddControl({ product }: { product: Product }) {
           add(product, variant, variant.minQty);
           setFlash(true);
           window.setTimeout(() => setFlash(false), 900);
-          toast.success(`Added ${product.title}`, {
-            label: "View cart",
-            onClick: () => router.push("/cart"),
-          });
+          toast.success(
+            product.variants.length > 1
+              ? `Added ${product.title} — ${variant.label}`
+              : `Added ${product.title}`,
+            {
+              label: "View cart",
+              onClick: () => router.push("/cart"),
+            },
+          );
         }}
         className={cn(
           /* A pill on the page's own surface, outlined rather than

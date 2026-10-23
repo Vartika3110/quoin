@@ -64,10 +64,14 @@ export function CategoryCards({
                 {category.title}
               </span>
               <span className="mt-1 flex items-center gap-0.5 text-caption font-bold text-accent">
+                {/* A price or nothing. The fallback used to be
+                    "N products", which is a number nobody shops on —
+                    and the owner has had every product count taken off
+                    the storefront. A department with no quotable floor
+                    (see `getCategoryPriceFloors`) simply shows its name
+                    and the chevron. */}
                 <span className="nums truncate">
-                  {floor != null
-                    ? `From ${formatPrice(floor)}`
-                    : `${category.productCount} products`}
+                  {floor != null ? `From ${formatPrice(floor)}` : ""}
                 </span>
                 <Chevron className="size-3 shrink-0" />
               </span>

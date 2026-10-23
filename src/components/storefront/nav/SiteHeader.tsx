@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
 import { ThemeToggle } from "@/components/storefront/ThemeToggle";
@@ -9,7 +9,7 @@ import { CartDrawer } from "@/components/storefront/nav/CartDrawer";
 import { NotificationBell } from "@/components/storefront/nav/NotificationBell";
 import { WalletPill } from "@/components/storefront/nav/WalletPill";
 import { useSearch } from "@/components/storefront/nav/SearchContext";
-import { VoiceSearch } from "@/components/storefront/nav/VoiceSearch";
+import { speechIsAvailable } from "@/components/storefront/ai/AiSearchSheet";
 import { useScrolled } from "@/components/storefront/nav/useScrolled";
 import { Counter } from "@/components/ui/Badge";
 import { cn } from "@/components/ui/cn";
@@ -18,13 +18,14 @@ import {
   Cart,
   Chevron,
   ChevronDown,
-  Clock,
   Headset,
   Heart,
+  Mic,
   Search,
   User,
 } from "@/components/icons";
 import { useCart } from "@/lib/store/cart";
+import { useHydrated } from "@/lib/store/hydrated";
 import { useWishlist } from "@/lib/store/wishlist";
 import type { AreaChoice } from "@/lib/data/service-areas";
 import type { Category } from "@/lib/types/catalog";
@@ -207,12 +208,9 @@ function DesktopBar({
           <LocationPicker areas={areas} selected={chosen} />
         </div>
 
-        {chosen?.etaMinutes != null && (
-          <span className="mr-1 hidden items-center gap-1.5 rounded-lg border border-line-soft bg-surface px-2.5 py-1.5 text-micro text-muted xl:inline-flex">
-            <Clock className="size-3.5 text-accent" />
-            <span className="nums">{chosen.etaMinutes} min</span>
-          </span>
-        )}
+        {/* The desktop's "18 min" pill went with the phone's headline
+            above it. Same claim, same reason — a number that is wrong is
+            not made right by a wider screen. */}
 
         <WishlistButton />
         <CartButton onClick={onOpenCart} />
@@ -396,30 +394,29 @@ function MobileBar({
           "pb-0.5 pt-2",
         )}
       >
-        {/* The promise first, the place under it — the reference design's
-            top line, and the right order: the number is what a customer
-            is deciding on, the locality is what qualifies it. Only once
-            they have chosen an area, because "20 minutes" with nowhere
-            attached is a slogan rather than a fact about them, and the
-            picker alone is the right prompt until then.
+        {/* The locality, and no delivery promise over it.
 
-            The figure is `ServiceArea.etaMinutes`, the operator's own
-            number for that locality — not a constant written here. */}
+            "Quoin in 18 minutes" used to head this block, from the
+            reference design, drawn from `ServiceArea.etaMinutes` — the
+            operator's own number for the chosen locality rather than a
+            constant invented here. It is gone at the owner's
+            instruction, and the catalogue agrees with them: nothing in
+            it is stocked as `INSTANT`, every product card quotes 45
+            minutes or a lead time in days, and the "In 18 minutes"
+            filter chip was removed for exactly this reason (see
+            `QuickFilters`). A headline promising eighteen minutes above
+            a grid that says forty-five is not a bold claim, it is the
+            page contradicting itself.
+
+            The picker stays. "Do you come to Janakpuri" is a real
+            question with a real answer, and this is the control that
+            changes it. */}
         <div className="min-w-0 flex-1">
-          {chosen?.etaMinutes != null && (
-            <p className="flex items-baseline gap-1.5 leading-none">
-              <span className="text-micro text-muted">Quoin in</span>
-              <span className="nums font-display text-title-sm font-semibold text-ink">
-                {chosen.etaMinutes} minutes
-              </span>
-            </p>
-          )}
-
           <LocationPicker
             areas={areas}
             selected={chosen}
             compact
-            className={cn("min-w-0", chosen?.etaMinutes != null && "-ml-1 mt-0.5")}
+            className="-ml-1 min-w-0"
           />
         </div>
 
@@ -521,9 +518,20 @@ function MobileBar({
  * the palette, and the two controls are its siblings inside the same
  * bordered pill.
  *
- * The camera goes to Upload Parcha rather than to an image search Quoin
- * does not have. It is the same gesture — photograph the thing, get
- * prices — pointed at the feature that actually exists.
+ * ## Both controls now do what they look like
+ *
+ * The camera used to link to Upload Parcha, on the honest argument that
+ * an image search did not exist and the gesture was close enough —
+ * photograph the thing, get prices. It exists now: the camera opens
+ * `AiSearchSheet`, which reads the photograph and answers with the
+ * catalogue rows Quoin actually stocks like it. Parcha did not lose its
+ * door; it has a tab of its own in `MobileTabBar`, which is where the
+ * people using it were already finding it.
+ *
+ * The microphone used to be dictation — a transcript pasted into `?q=`,
+ * which works for "Jaquar shower head" and fails for every sentence a
+ * person actually says out loud. It opens the assistant instead, which
+ * interprets the sentence and looks for the products *and* the trades.
  */
 /**
  * Consult, beside the search field.
@@ -558,8 +566,7 @@ function ConsultCard() {
 }
 
 function MobileSearchField({ className }: { className?: string }) {
-  const { open } = useSearch();
-  const router = useRouter();
+  const { open, openAi } = useSearch();
 
   return (
     <div
@@ -586,23 +593,47 @@ function MobileSearchField({ className }: { className?: string }) {
         </span>
       </button>
 
-      <Link
-        href="/upload"
-        aria-label="Search by photo — upload a parcha"
-        className="tap-target relative grid size-7 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-hover hover:text-ink"
+      <button
+        type="button"
+        onClick={() => openAi("photo")}
+        aria-label="Search by photo"
+        className="tap-target relative grid size-7 shrink-0 place-items-center rounded-full text-accent transition-colors hover:bg-hover"
       >
         <Camera className="size-5" />
-      </Link>
+      </button>
 
-      {/* Renders nothing where the Web Speech API is absent, so the
-          field closes up around it rather than showing a dead button. */}
-      <VoiceSearch
-        className="tap-target relative size-7 rounded-full"
-        onTranscript={(text) =>
-          router.push(`/products?q=${encodeURIComponent(text)}`)
-        }
-      />
+      {/* Renders nothing where the Web Speech API is absent, so the field
+          closes up around it rather than showing a dead button — the
+          whole assistant is built on in-browser transcription, so there
+          is nothing to offer Firefox here. */}
+      <AssistantButton onOpen={() => openAi("voice")} />
     </div>
+  );
+}
+
+/**
+ * The microphone, present only where speech recognition exists.
+ *
+ * Feature detection is a pure read of `window`, so it can happen during
+ * render — but only once the client has taken over. The server render and
+ * the hydrating one both say "unsupported", which is also the right
+ * answer for Firefox, so nothing flashes and nothing mismatches. Exactly
+ * the rule `VoiceSearch` documents, and the reason this is five lines
+ * rather than a `useEffect`.
+ */
+function AssistantButton({ onOpen }: { onOpen: () => void }) {
+  const hydrated = useHydrated();
+  if (!hydrated || !speechIsAvailable()) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label="Ask Quoin by voice"
+      className="tap-target relative grid size-7 shrink-0 place-items-center rounded-full text-accent transition-colors hover:bg-hover"
+    >
+      <Mic className="size-5" />
+    </button>
   );
 }
 

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/storefront/AppShell";
 import { SignInPanel } from "@/components/storefront/auth/SignInPanel";
 import { Card } from "@/components/ui/Card";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { InlineError } from "@/components/ui/ErrorState";
 import { CheckCircle } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
@@ -71,10 +70,6 @@ export default async function SignInPage({
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb items={[{ label: "Home", href: "/" }, { label: "Sign in" }]} />
-        </div>
-
         <div className="mx-auto max-w-md px-5 lg:px-0">
           <h1 className="font-display text-headline font-semibold text-ink">Sign in</h1>
           <p className="mt-2 text-body leading-relaxed text-muted">{subtitle}</p>

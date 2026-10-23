@@ -54,7 +54,19 @@ const ENTRIES: {
 }[] = [
   { href: "/studio", label: "Quoin Studio", Icon: Building, art: studioArt },
   { href: "/services", label: "Services", Icon: Helmet, art: servicesArt },
-  { href: "/products", label: "Products", Icon: Box, art: productsArt },
+  /* `/categories`, not `/products`. The door said "Products" and opened
+     a grid of 500 of them, newest first — which is the catalogue, not a
+     way into it. A customer who taps a door marked Products on a home
+     screen is asking "what do you sell", and the answer to that is the
+     fourteen departments, not the first twenty-four SKUs in alphabetical
+     order. The reference design opens the department grid here too.
+
+     `/products` is still there and still reachable, from the "All" chip
+     on every department rail, from search, and from the "browse the
+     catalogue" actions in the cart and the account — it is where you go
+     once you know you want to sift the whole shelf, which is a different
+     question and a later one. */
+  { href: "/categories", label: "Products", Icon: Box, art: productsArt },
   /* `/premium`, not `/pro`. This door used to open Quoin Pro on the
      argument that there was no bespoke-products storefront to point at.
      A tile reading "Bespoke products" that opens a trade *membership*

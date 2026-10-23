@@ -7,6 +7,10 @@ import {
   settleCapturedPayment,
   settleProcessedRefund,
 } from "@/lib/data/orders";
+import {
+  recordFailedConsultPayment,
+  settleConsultationPayment,
+} from "@/lib/data/consult-sessions";
 import { verifyWebhookSignature } from "@/lib/payments/razorpay";
 import { notifyPaymentSettled } from "@/lib/data/order-notifications";
 
@@ -291,9 +295,31 @@ export async function POST(request: Request) {
             capturedPaise: entity.amount,
           });
         } else if (outcome === "unknown") {
-          console.warn("[payments] capture for an unrecognised gateway order", {
+          /* No `Payment` row holds this gateway order — so it may be a
+             consultation fee, which carries its own `razorpayOrderId` on
+             `consult_requests` rather than minting a fake `Order` to hang
+             a `Payment` off. See the enum comment on
+             `ConsultPaymentStatus` for why those two tables are separate.
+             Tried second, not first, because goods are the overwhelming
+             majority of captures. */
+          const consult = await settleConsultationPayment({
             providerOrderId,
+            providerPaymentId,
+            amountPaise: entity.amount ?? -1,
           });
+          outcome = `consult_${consult}`;
+
+          if (consult === "amount_mismatch") {
+            console.error("[consult] captured amount did not match the fee", {
+              providerOrderId,
+              providerPaymentId,
+              capturedPaise: entity.amount,
+            });
+          } else if (consult === "unknown") {
+            console.warn("[payments] capture for an unrecognised gateway order", {
+              providerOrderId,
+            });
+          }
         } else if (outcome === "recorded") {
           /* Best-effort, and deliberately outside the settlement itself:
              `settleCapturedPayment` already committed — this only tells
@@ -315,6 +341,18 @@ export async function POST(request: Request) {
           method: entity.method,
           reason: entity.error_description ?? entity.error_reason,
         });
+
+        /* The same fall-through as a capture: an unrecognised gateway
+           order may be a consultation fee. A failed consultation payment
+           does not need unwinding — the slot's hold lapses on its own
+           (see `bookedStarts`) — so this only records why. */
+        if (outcome === "unknown") {
+          const consult = await recordFailedConsultPayment({
+            providerOrderId,
+            providerPaymentId,
+          });
+          outcome = `consult_${consult}`;
+        }
         break;
       }
 

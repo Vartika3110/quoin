@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ProjectWizard } from "@/components/storefront/projects/ProjectWizard";
 import { SignInPrompt } from "@/components/storefront/account/SignInPrompt";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { listAreaChoices } from "@/lib/data/service-areas";
 import { getSession } from "@/lib/auth/session";
 
@@ -22,16 +21,6 @@ export default async function NewProjectPage() {
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-6 px-5 lg:px-0">
-          <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Project Hub", href: "/projects" },
-              { label: "New" },
-            ]}
-          />
-        </div>
-
         <div className="px-5 lg:px-0">
           {session ? (
             <ProjectWizard

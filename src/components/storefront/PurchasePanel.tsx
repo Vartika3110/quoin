@@ -2,23 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PriceDetails } from "@/components/storefront/product/PriceDetails";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
 import { cn } from "@/components/ui/cn";
-import {
-  Calendar,
-  Cart,
-  Check,
-  Heart,
-  HeartFilled,
-  Info,
-  Minus,
-  Plus,
-} from "@/components/icons";
+import { Calendar, Cart, Check, Info } from "@/components/icons";
 import { useCart, type BookingSlot } from "@/lib/store/cart";
-import { useWishlist } from "@/lib/store/wishlist";
 import {
   applyWastage,
   areaFromDimensions,
@@ -59,7 +48,6 @@ export function PurchasePanel({
 }) {
   const router = useRouter();
   const { add } = useCart();
-  const wishlist = useWishlist();
   const toast = useToast();
 
   const [variantId, setVariantId] = useState(product.variants[0].id);
@@ -82,11 +70,20 @@ export function PurchasePanel({
   const measuredArea = areaFromDimensions(Number(lengthFt), Number(widthFt));
   const withWastage = applyWastage(measuredArea, wastage);
 
-  const qty = isBookable ? 1 : normalizeQty(variant, isArea ? withWastage : count);
+  const qty = isBookable
+    ? 1
+    : normalizeQty(variant, isArea ? withWastage : count);
 
   const total = lineTotal(price.amount, qty);
+
   const saving = proSaving(variant);
-  const saved = wishlist.has(product.slug);
+
+  /* See the note on the totals card below. */
+  const showTotals =
+    isArea ||
+    qty > variant.minQty ||
+    Boolean(price.strikethrough) ||
+    (!isPro && Boolean(saving));
 
   function addLine() {
     add(product, variant, qty, slot ?? undefined);
@@ -125,10 +122,14 @@ export function PurchasePanel({
                   }}
                   aria-pressed={on}
                   className={cn(
-                    "min-w-24 rounded-lg border px-3 py-2 text-left transition-colors",
+                    /* `flex-1` with a floor rather than a fixed width:
+                       two options split the row evenly, and a department
+                       that one day has five wraps them into tidy rows
+                       instead of a ragged line. */
+                    "min-h-13 min-w-24 flex-1 rounded-lg border px-3 py-2 text-left transition-colors",
                     on
                       ? "border-accent bg-accent-wash"
-                      : "border-line bg-surface hover:border-line-strong",
+                      : "border-line bg-raised hover:border-line-strong",
                   )}
                 >
                   <span
@@ -160,7 +161,11 @@ export function PurchasePanel({
         <Section label="Area required">
           <div className="rounded-card border border-line bg-surface p-4">
             <div className="flex items-end gap-3">
-              <Dimension label="Length" value={lengthFt} onChange={setLengthFt} />
+              <Dimension
+                label="Length"
+                value={lengthFt}
+                onChange={setLengthFt}
+              />
               <span className="pb-2.5 text-muted" aria-hidden>
                 ×
               </span>
@@ -211,80 +216,66 @@ export function PurchasePanel({
             </p>
           </div>
         </Section>
-      ) : (
-        <Section label="Quantity">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center rounded-lg border border-line bg-surface">
-              <Stepper
-                label="Decrease quantity"
-                onClick={() =>
-                  setCount((c) => Math.max(variant.minQty, c - variant.stepQty))
-                }
-                disabled={qty <= variant.minQty}
-              >
-                <Minus className="size-4" />
-              </Stepper>
-              <span className="nums min-w-12 text-center text-body font-semibold text-ink">
-                {qty}
-              </span>
-              <Stepper
-                label="Increase quantity"
-                onClick={() => setCount((c) => c + variant.stepQty)}
-              >
-                <Plus className="size-4" />
-              </Stepper>
-            </div>
-            <span className="text-caption text-muted">
+      ) : null}
+
+      {/* **Shown only when it adds something.**
+          
+          At a quantity of one with no saving, this card read "₹495 Per
+          Bag × 1" over "₹495" — the same number twice, under a price
+          plate that had already said it once and above a sticky bar
+          saying it a fourth time. It earns its place when the
+          arithmetic is not obvious: more than one unit, a saving to
+          show, a Pro rate, or an area-priced product, where the unit
+          price bears no relation to what will actually be charged.
+
+          The tax breakdown is not conditional — it moves outside and
+          stays reachable, because "inclusive of all taxes" is a claim
+          somebody should always be able to open. */}
+      {showTotals ? (
+        <div className="rounded-card border border-line bg-surface p-4">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="nums text-caption text-muted">
+              {formatPrice(price.amount)}{" "}
               {PRICING_UNIT_LABEL[product.pricingUnit]}
-              {variant.minQty > 1 && ` · minimum ${variant.minQty}`}
+              {!isBookable && ` × ${qty}`}
+            </span>
+            <span className="nums text-title font-semibold text-ink">
+              {formatPrice(total)}
             </span>
           </div>
-        </Section>
-      )}
 
-      {/* The total is always shown, because for area-priced goods the unit
-          price bears no relation to what will actually be charged. */}
-      <div className="rounded-card border border-line bg-surface p-4">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="nums text-caption text-muted">
-            {formatPrice(price.amount)} {PRICING_UNIT_LABEL[product.pricingUnit]}
-            {!isBookable && ` × ${qty}`}
-          </span>
-          <span className="nums text-title font-semibold text-ink">
-            {formatPrice(total)}
-          </span>
+          {price.strikethrough && (
+            <p className="nums mt-1 text-caption text-faint">
+              <span className="line-through">
+                {formatPrice(lineTotal(price.strikethrough, qty))}
+              </span>{" "}
+              <span className="text-success">
+                Save{" "}
+                {formatPrice(
+                  lineTotal(price.strikethrough - price.amount, qty),
+                )}
+              </span>
+            </p>
+          )}
+
+          {/* The tax split used to fold open here. It is on the
+              checkout summary now, at the owner's instruction and to
+              this page's benefit: the catalogue is tax-inclusive, so the
+              breakdown never changed the figure above it, and it is
+              wanted at the moment somebody is asked to pay rather than
+              while they are still choosing. */}
+
+          {!isPro && saving && (
+            <p className="mt-3 flex items-start gap-2 rounded-lg bg-pro-wash px-3 py-2 text-micro leading-snug text-pro">
+              <Badge tone="pro" size="sm">
+                Pro
+              </Badge>
+              Members pay {formatPrice(lineTotal(saving, qty))} less on this
+              order.
+            </p>
+          )}
         </div>
-
-        {price.strikethrough && (
-          <p className="nums mt-1 text-caption text-faint">
-            <span className="line-through">
-              {formatPrice(lineTotal(price.strikethrough, qty))}
-            </span>{" "}
-            <span className="text-success">
-              Save {formatPrice(lineTotal(price.strikethrough - price.amount, qty))}
-            </span>
-          </p>
-        )}
-
-        {/* What the total is made of, folded shut. The catalogue is
-            tax-inclusive, so this adds nothing to the figure above it —
-            it lets someone check the split before they are asked to
-            trust it at the payment screen. */}
-        <PriceDetails
-          total={total}
-          mrpTotal={price.strikethrough ? lineTotal(price.strikethrough, qty) : null}
-          gstRatePct={product.gstRatePct}
-        />
-
-        {!isPro && saving && (
-          <p className="mt-3 flex items-start gap-2 rounded-lg bg-pro-wash px-3 py-2 text-micro leading-snug text-pro">
-            <Badge tone="pro" size="sm">
-              Pro
-            </Badge>
-            Members pay {formatPrice(lineTotal(saving, qty))} less on this order.
-          </p>
-        )}
-      </div>
+      ) : null}
 
       <div className="space-y-2">
         {/* One row, at the owner's instruction. Stacked, "Add to cart" ran
@@ -300,6 +291,19 @@ export function PurchasePanel({
             tick already says, and "Add visit" rather than "Add this
             visit". */}
         <div className="flex gap-2">
+          {/* **No quantity control here.**
+
+              It was a titled section, then an inline stepper beside the
+              button, and it is now neither: quantity lives in the sticky
+              bar, which is where the reference puts it and where it stays
+              under the thumb after the page has scrolled. Adding puts one
+              in the basket and the bar counts from there.
+
+              The cost is honest — a contractor buying forty bags taps +
+              thirty-nine times or edits it in the cart, where the field
+              takes a number. Set against that, every product page was
+              carrying a stepper that reads 1 on almost every order, in
+              front of the button it sits beside. */}
           <Button
             size="lg"
             onClick={onAdd}
@@ -327,25 +331,10 @@ export function PurchasePanel({
           >
             Buy now
           </Button>
-          <Button
-            size="icon-lg"
-            variant="outline"
-            aria-pressed={saved}
-            aria-label={saved ? "Remove from your wishlist" : "Save for later"}
-            onClick={() => {
-              const nowSaved = wishlist.toggle(product);
-              toast.toast(
-                nowSaved ? "Saved to your wishlist" : "Removed from your wishlist",
-              );
-            }}
-            className={cn(saved && "border-accent-edge text-accent")}
-          >
-            {saved ? (
-              <HeartFilled className="anim-pop size-5" />
-            ) : (
-              <Heart className="size-5" />
-            )}
-          </Button>
+          {/* No heart here any more. `GalleryActions` puts one on the
+              photograph, where the reference has it and where a thumb
+              arrives first — two of them on one screen is one being
+              ignored. */}
         </div>
       </div>
     </div>
@@ -354,6 +343,16 @@ export function PurchasePanel({
 
 /* ----------------------------------------------------------------- parts */
 
+/**
+ * One titled block of the buy panel, as a card.
+ *
+ * It used to be a bare uppercase label with its controls loose on the
+ * page ground. That was the only thing left on a product page not sitting
+ * in a card — the picture, the name and price, the brand and the
+ * specifications are all in one — so "SELECT OPTION" and its two chips
+ * read as something that had fallen out of the layout rather than a step
+ * in it.
+ */
 function Section({
   label,
   children,
@@ -362,8 +361,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div>
-      <p className="mb-2 text-micro font-semibold uppercase tracking-wide text-muted">
+    <div className="rounded-card border border-line bg-surface p-4">
+      <p className="mb-2.5 text-micro font-semibold uppercase tracking-wide text-muted">
         {label}
       </p>
       {children}
@@ -396,30 +395,6 @@ function Dimension({
         className="nums h-11 w-full rounded-lg border border-line bg-raised px-3 text-body-lg text-ink outline-none transition-colors focus:border-accent"
       />
     </label>
-  );
-}
-
-function Stepper({
-  children,
-  label,
-  onClick,
-  disabled,
-}: {
-  children: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      disabled={disabled}
-      className="grid size-11 place-items-center rounded-lg text-ink transition-colors hover:bg-hover disabled:text-faint disabled:hover:bg-transparent"
-    >
-      {children}
-    </button>
   );
 }
 
@@ -464,7 +439,12 @@ function SlotPicker({
     return out;
   }, []);
 
-  const times = ["09:00 – 11:00", "11:00 – 13:00", "14:00 – 16:00", "16:00 – 18:00"];
+  const times = [
+    "09:00 – 11:00",
+    "11:00 – 13:00",
+    "14:00 – 16:00",
+    "16:00 – 18:00",
+  ];
   const day = value?.date ?? days[0].key;
   const window = value?.window ?? times[0];
 
@@ -482,14 +462,24 @@ function SlotPicker({
                 aria-pressed={on}
                 className={cn(
                   "flex w-14 flex-col items-center gap-0.5 rounded-lg border py-2 transition-colors",
-                  on ? "border-accent bg-accent-wash" : "border-line hover:border-line-strong",
+                  on
+                    ? "border-accent bg-accent-wash"
+                    : "border-line hover:border-line-strong",
                 )}
               >
-                <span className={cn("text-micro", on ? "text-accent" : "text-faint")}>
+                <span
+                  className={cn(
+                    "text-micro",
+                    on ? "text-accent" : "text-faint",
+                  )}
+                >
                   {d.day}
                 </span>
                 <span
-                  className={cn("nums text-body", on ? "text-ink" : "text-muted")}
+                  className={cn(
+                    "nums text-body",
+                    on ? "text-ink" : "text-muted",
+                  )}
                 >
                   {d.date}
                 </span>
@@ -529,7 +519,9 @@ function Row({ k, v, strong }: { k: string; v: string; strong?: boolean }) {
   return (
     <div className="flex justify-between gap-3">
       <dt className="text-muted">{k}</dt>
-      <dd className={cn("nums", strong ? "font-semibold text-ink" : "text-muted")}>
+      <dd
+        className={cn("nums", strong ? "font-semibold text-ink" : "text-muted")}
+      >
         {v}
       </dd>
     </div>

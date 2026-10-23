@@ -1,27 +1,25 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { PurchasePanel } from "@/components/storefront/PurchasePanel";
-import { DeliveryCheck } from "@/components/storefront/product/DeliveryCheck";
+import { BrandCard } from "@/components/storefront/product/BrandCard";
 import { Gallery } from "@/components/storefront/product/Gallery";
 import { Specs } from "@/components/storefront/product/Specs";
 import { RecordView } from "@/components/storefront/product/RecordView";
+import { RoomPreview } from "@/components/storefront/product/RoomPreview";
 import { JsonLd } from "@/components/analytics/JsonLd";
 import { absolute, breadcrumbSchema, productSchema } from "@/lib/seo";
 import { getProductStock } from "@/lib/data/product-stock";
+import { canVisualise, defaultPlacement } from "@/lib/ai/eligibility";
 import { ProductStickyBar } from "@/components/storefront/product/ProductStickyBar";
-import { Accordion } from "@/components/ui/Accordion";
 import { Badge } from "@/components/ui/Badge";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
-import { Button } from "@/components/ui/Button";
 import { SectionHead, hasEnough } from "@/components/ui/Section";
 import {
   Calendar,
   CheckCircle,
+  Chevron,
   Clock,
-  Headset,
   Refresh,
   Ruler,
   Shield,
@@ -30,10 +28,16 @@ import {
 import {
   getCategories,
   getProductBySlug,
-  getRelatedProducts,
+  getProductRows,
 } from "@/lib/data/catalog";
-import { listServiceAreas } from "@/lib/data/service-areas";
-import { BADGE_LABEL, type FulfilmentType } from "@/lib/types/catalog";
+import {
+  BADGE_LABEL,
+  PRICING_UNIT_LABEL,
+  type Product,
+  formatPrice,
+  resolvePrice,
+  type FulfilmentType,
+} from "@/lib/types/catalog";
 import {
   SCHEDULED_DELIVERY_BODY,
   SCHEDULED_DELIVERY_TITLE,
@@ -91,11 +95,11 @@ const AFTER_SALE = [
     title: "Returns",
     body: "Unopened and unfitted goods can be returned within 7 days. Cut-to-order items cannot.",
   },
-  {
-    Icon: Headset,
-    title: "Help choosing",
-    body: "A free video consultation with someone who has fitted this before.",
-  },
+  /* "Help choosing — a free video consultation" was a fourth entry here.
+     It is the same offer as the "Not sure this is the right one?" panel
+     further down, which has the copy that earns it and the button that
+     acts on it; stated twice on one page plus the header's Consult card,
+     it read as the site badgering rather than offering. */
 ];
 
 export async function generateMetadata({
@@ -153,18 +157,24 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const [related, categories, serviceAreas, stock] = await Promise.all([
-    getRelatedProducts(product),
-    getCategories(),
-    listServiceAreas(),
+  /* The department first, because the rails are split by its shelves —
+     see `getProductRows`. */
+  const categories = await getCategories();
+  const category = categories.find((c) => c.id === product.categoryId);
+
+  const [rows, stock] = await Promise.all([
+    getProductRows(product, category?.slug),
     /* The same lookup the buy box does, pulled up here so the Product
        schema's `availability` reports what this page actually shows
        rather than assuming anything is in stock. */
     getProductStock([product.slug]),
   ]);
-
-  const category = categories.find((c) => c.id === product.categoryId);
   const promise = PROMISE[product.fulfilment];
+
+  /* The headline price: the cheapest option, flagged "onwards" when
+     there is more than one. Standard rates, not Pro — this is a server
+     component and membership is resolved in the client panel below. */
+  const headline = resolvePrice(product, false);
 
   /**
    * The breadcrumb trail, once.
@@ -205,12 +215,6 @@ export default async function ProductPage({
       <JsonLd data={breadcrumbSchema(trail)} />
 
       <div className="pt-4 lg:pt-6">
-        <div className="mb-4 px-5 lg:px-0">
-          <Breadcrumb
-            items={[...trail.slice(0, -1), { label: product.title }]}
-          />
-        </div>
-
         {/* Single column on a phone; gallery and buy box side by side once
             there is room for both to be read without scrolling. */}
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-start lg:gap-12">
@@ -218,61 +222,178 @@ export default async function ProductPage({
 
           <div className="px-5 lg:px-0">
             <div className="pt-6 lg:pt-0">
+              {/* **Name and price in one card, directly under the
+                  picture** — the reference design's arrangement, and the
+                  order a customer reads in: what is it, then what does it
+                  cost. The price used to sit three blocks down inside the
+                  buy panel, under the delivery promise and the pincode
+                  check, so the first screen of a product page answered
+                  two questions nobody had asked yet and not the one
+                  everybody does.
+
+                  The delivery line heads the card rather than owning a
+                  card of its own below: "Delivered today" is a fact about
+                  this product that belongs with its name, and its longer
+                  explanation follows underneath where it costs nothing. */}
+              <div className="rounded-card border border-line bg-surface p-4">
+                <p className="flex items-center gap-1.5 text-micro font-semibold text-accent">
+                  <promise.Icon className="size-4 shrink-0" />
+                  {promise.title(product.leadTimeDays)}
+                </p>
+
+                {/* A label, not a link. `BrandCard` below is the way
+                    through to the rest of the range, and two anchors to
+                    the same URL on one screen is one of them being
+                    ignored. */}
+                {product.brand && (
+                  <p className="mt-2.5 text-micro font-semibold uppercase tracking-wide text-muted">
+                    {product.brand}
+                  </p>
+                )}
+
+                {/* Sans and bold, where every other heading on the site
+                    is the display serif.
+
+                    The reference sets it this way and there is a reason
+                    beyond matching it: these are not headlines, they are
+                    SKU names. "MYK Laticrete 307 Ceramic Tile Adhesive,
+                    20 Kg Bag" in display serif at headline size runs to
+                    three lines and pushes the price below the fold on a
+                    375px screen. The serif is still the voice of the
+                    site — section heads, category tiles, the price right
+                    under this — and a product's own name is the one
+                    string here that is manufacturer's copy rather than
+                    ours. */}
+                <h1 className="mt-1 text-title-sm font-bold leading-snug text-ink lg:text-title-lg">
+                  {product.title}
+                </h1>
+
+                {/* The price, at the size the decision deserves, with the
+                    list price struck beside it **only when there is a real
+                    saving** — `resolvePrice` returns no strikethrough when
+                    MRP equals the selling price, which is true of most of
+                    this catalogue. A struck number identical to the one
+                    beside it is a discount claimed where none exists. */}
+                <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                  {/* The figure on its own plate, the way the reference
+                      carries it — the one number on the page somebody is
+                      actually deciding on, and previously just more text
+                      in the stack.
+
+                      Quoin's accent, not the reference's yellow: a
+                      highlighter tone borrowed from another storefront
+                      reads as a sticker on cream and brown surfaces, and
+                      the job here is prominence rather than that
+                      particular hue. */}
+                  {/* Sans, like every other price in the app.
+
+                      This was the one figure on the storefront set in
+                      the display serif, and the serif rupee sign and
+                      lining numerals inside a tinted plate read as a
+                      different typeface having been pasted in — which it
+                      was. The card grid, the sticky bar and the cart all
+                      set money in `nums` sans; a product page is the
+                      last place the number should look unfamiliar. */}
+                  <span className="nums rounded-lg bg-accent-wash px-2.5 py-1 text-title-lg font-bold text-accent">
+                    {formatPrice(headline.amount)}
+                  </span>
+                  {headline.strikethrough != null && (
+                    <span className="nums text-body text-faint line-through">
+                      MRP {formatPrice(headline.strikethrough)}
+                    </span>
+                  )}
+                  <span className="text-caption text-muted">
+                    {headline.isFrom
+                      ? "onwards"
+                      : PRICING_UNIT_LABEL[product.pricingUnit]}
+                  </span>
+                </p>
+
+                {product.badges.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {product.badges.map((b) => (
+                      <Badge
+                        key={b}
+                        tone="accent"
+                        icon={<CheckCircle className="size-3.5" />}
+                      >
+                        {BADGE_LABEL[b]}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
+                {/* "View details", opening where it stands.
+
+                    It has been three things: a tall edged box ranged
+                    right (orphaned, with no attribute chips to anchor
+                    it), then a row that jumped down the page to the
+                    Specifications block. Both made the reader go
+                    somewhere. This opens underneath itself, which is
+                    what the control has said all along.
+
+                    A native `<details>`, so it needs no JavaScript, and
+                    the whole table is in the markup for a crawler
+                    whether or not anyone opens it. The separate
+                    Specifications section below is gone on a phone
+                    rather than left to say the same thing twice; the
+                    desktop layout keeps its own, where there is a column
+                    for it. */}
+                <details className="group mt-3 border-t border-line-hair pt-3">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-caption font-semibold text-accent transition-colors hover:text-accent-bright [&::-webkit-details-marker]:hidden">
+                    View details
+                    <Chevron className="size-4 shrink-0 transition-transform group-open:-rotate-90" />
+                  </summary>
+
+                  <div className="mt-3">
+                    <Specs product={product} categoryTitle={category?.title} />
+                  </div>
+                </details>
+              </div>
+
+              {/* The manufacturer, straight under the price — where the
+                  reference has it, and where somebody still comparing
+                  goes next. */}
               {product.brand && (
-                <Link
-                  href={`/products?brand=${slugifyBrand(product.brand)}`}
-                  className="text-micro font-semibold uppercase tracking-wide text-accent transition-colors hover:text-accent-bright"
-                >
-                  {product.brand}
-                </Link>
-              )}
-
-              <h1 className="font-display mt-2 text-title-lg font-semibold leading-tight text-ink lg:text-headline">
-                {product.title}
-              </h1>
-
-              {product.badges.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {product.badges.map((b) => (
-                    <Badge key={b} tone="accent" icon={<CheckCircle className="size-3.5" />}>
-                      {BADGE_LABEL[b]}
-                    </Badge>
-                  ))}
+                <div className="mt-3">
+                  <BrandCard brand={product.brand} />
                 </div>
               )}
 
-              <div className="mt-5 flex items-start gap-3 rounded-card border border-line bg-surface p-4">
-                <promise.Icon className="mt-0.5 size-5 shrink-0 text-accent" />
-                <div>
-                  <p className="text-body font-semibold text-ink">
-                    {promise.title(product.leadTimeDays)}
-                  </p>
-                  <p className="mt-0.5 text-caption leading-snug text-muted">
-                    {promise.body}
-                  </p>
-                </div>
-              </div>
 
-              {/* Directly under the promise, because it is the same
-                  question narrowed to one address: the block above says
-                  what Quoin does for this product, this says whether it
-                  does it where the customer is. Above the buy panel on
-                  purpose — "will it reach me" is decided before "how
-                  many", and asking it after the add is how a cart
-                  becomes an argument at the door. */}
-              <div className="mt-3">
-                <DeliveryCheck
-                  fulfilment={product.fulfilment}
-                  leadTimeDays={product.leadTimeDays}
-                  areas={serviceAreas.map((a) => a.name)}
-                />
-              </div>
+              {/* The pincode check was here, between the brand and the
+                  buy panel. Taken out at the owner's instruction.
+
+                  It asked "will it reach me" before the customer had
+                  decided they wanted the thing, which put a form in
+                  front of a decision. The header already names the
+                  chosen locality on every page, and checkout asks for
+                  the address properly — `DeliveryCheck` is kept for
+                  wherever it is wanted next rather than deleted. */}
 
               {/* `id` is the sticky bar's scroll target for products
                   whose options must be chosen before adding. */}
               <div id="buy" className="mt-6 scroll-mt-24">
                 <PurchasePanel product={product} />
               </div>
+
+              {/* Under the buy panel rather than above it: somebody who
+                  has decided is here to add to cart, and a render takes
+                  up to a minute. It is for the customer who has *not*
+                  decided, and they scroll.
+
+                  Absent for services — there is nothing to place in a
+                  photograph of a room. One rule, shared with the route
+                  that spends the money; see `canVisualise`. */}
+              {canVisualise(product, category?.slug) && (
+                <div className="mt-3">
+                  <RoomPreview
+                    slug={product.slug}
+                    title={product.title}
+                    defaultPlacement={defaultPlacement(category?.slug)}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -290,15 +411,7 @@ export default async function ProductPage({
                 open the same panel twice. `defaultOpen` is set from the
                 breakpoint the page is built for, and the `<details>` is
                 simply forced open by CSS from `lg` up. */}
-            <section className="lg:hidden">
-              <div className="px-5">
-                <Accordion title="Specifications" defaultOpen>
-                  <Specs product={product} categoryTitle={category?.title} />
-                </Accordion>
-              </div>
-            </section>
-
-            <section className="hidden lg:block">
+            <section id="specs-lg" className="hidden scroll-mt-24 lg:block">
               <SectionHead level={2} title="Specifications" size="sm" />
               <div className="px-5 lg:px-0">
                 <Specs product={product} categoryTitle={category?.title} />
@@ -307,47 +420,22 @@ export default async function ProductPage({
 
             {/* There is no Reviews block, and that is the point.
 
-                There is no review table — no product has one rating —
-                so a "Reviews" heading over "No reviews yet" was a
-                section whose only content was the announcement of its
-                own absence, on all 3,214 products. A heading that never
-                has anything under it teaches a reader to scroll past
-                that part of the page, and it makes the shop look
+                There is no review table — no product has one rating — so
+                a "Reviews" heading here would be a section that never
+                has anything under it, which teaches a reader to scroll
+                past that part of the page and makes the shop look
                 unused. (Inventing a 4.6 from 213 ratings would be far
                 worse: every other number here is real, and one
                 fabricated one makes the rest suspect.)
 
-                What the empty state was actually *for* — putting
-                somebody who wants a second opinion in touch with a
-                person — stands on its own below, offered as the thing
-                Quoin has rather than as consolation for the thing it
-                does not. When reviews exist, this is where they go and
-                the consult panel moves under them. */}
-            <section>
-              <SectionHead
-                level={2}
-                title="Not sure this is the right one?"
-                size="sm"
-                className="hidden lg:flex"
-              />
-              <div className="px-5 lg:px-0">
-                <div className="flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <p className="text-body-sm font-semibold text-ink lg:hidden">
-                      Not sure this is the right one?
-                    </p>
-                    <p className="text-caption leading-relaxed text-muted lg:text-body-sm">
-                      Talk to someone who has fitted one. A consultation is
-                      free, and they will tell you if a cheaper line does the
-                      same job.
-                    </p>
-                  </div>
-                  <Button href="/consult" variant="outline" className="shrink-0">
-                    Ask an expert
-                  </Button>
-                </div>
-              </div>
-            </section>
+                A consult panel used to stand in its place — "Not sure
+                this is the right one? Ask an expert" — offering the
+                thing Quoin has rather than consolation for the thing it
+                does not. It came out at the owner's instruction: Consult
+                is in the header of every page and in the footer, and a
+                third invitation on one screen reads as the site
+                badgering rather than offering. When reviews exist, this
+                is where they go. */}
           </div>
 
           <aside className="px-5 lg:px-0">
@@ -377,41 +465,85 @@ export default async function ProductPage({
 
         <ProductStickyBar product={product} />
 
-        {/* Four or nothing — see `hasEnough`. A "Goes well with" row
-            holding one card is a shop that looks out of stock, and this
-            row sits at the bottom of every product page. */}
-        {hasEnough(related) && (
+        {/* Three rails, and each one answers a different question.
+
+            There used to be one, headed "Goes well with", holding eight
+            rows taken out of the same department — which on a bag of
+            tile adhesive was six more bags of tile adhesive. The shelves
+            make a better answer available for nothing: same shelf is
+            *instead of this*, another shelf in the department is
+            *alongside this*, and the brand is *more of these*. See
+            `getProductRows`.
+
+            Four or nothing on each — see `hasEnough`. A row holding one
+            card is a shop that looks out of stock, and these sit at the
+            bottom of every product page. */}
+        {hasEnough(rows.complements) && (
           <section className="mt-16">
             <SectionHead
               title="Goes well with"
               subtitle={
-                category ? `More from ${category.title}` : undefined
+                category ? `Fitted alongside it, from ${category.title}` : undefined
               }
               href={category ? `/c/${category.slug}` : "/products"}
             />
-            <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-5">
-              {related.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
+            <Rail products={rows.complements} />
           </section>
         )}
+
+        {hasEnough(rows.sameShelf) && (
+          <section className="mt-12">
+            <SectionHead
+              title={rows.shelfLabel ? `More ${rows.shelfLabel.toLowerCase()}` : "Similar products"}
+              subtitle="Other options on the same shelf"
+              href={
+                category && rows.shelfId
+                  ? `/c/${category.slug}?type=${rows.shelfId}`
+                  : category
+                    ? `/c/${category.slug}`
+                    : "/products"
+              }
+            />
+            <Rail products={rows.sameShelf} />
+          </section>
+        )}
+
+        {product.brand && hasEnough(rows.sameBrand) && (
+          <section className="mt-12">
+            <SectionHead
+              title={`More from ${product.brand}`}
+              subtitle="Elsewhere in the catalogue"
+              href={`/products?brand=${brandSlug(product.brand)}`}
+            />
+            <Rail products={rows.sameBrand} />
+          </section>
+        )}
+
       </div>
     </AppShell>
   );
 }
 
 /**
- * The brand link.
+ * A horizontal row of products on a phone, a grid on a desktop.
  *
- * `Product.brand` is a display name, not a slug — the catalogue's brand
- * row holds both but only the name reaches the storefront type. Rather
- * than widen the domain model for one link, the name is slugified the same
- * way the importer does, which is exact for every brand in the catalogue
- * today. If that ever stops being true, the listing simply returns
- * everything, which is a harmless failure.
+ * Three sections render one, and the only thing that varied between
+ * them was the array — so it is one component rather than three copies
+ * of a class string that would drift the first time one of them was
+ * adjusted.
  */
-function slugifyBrand(name: string): string {
+function Rail({ products }: { products: Product[] }) {
+  return (
+    <div className="rail gap-3 px-5 scroll-pl-5 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:scroll-pl-0 xl:grid-cols-5">
+      {products.map((p) => (
+        <ProductCard key={p.id} product={p} />
+      ))}
+    </div>
+  );
+}
+
+/** Matches `BrandCard`'s own slugifier — see the note there. */
+function brandSlug(name: string): string {
   return name
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")

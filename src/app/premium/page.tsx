@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { Browse } from "@/components/storefront/browse/Browse";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SectionHead } from "@/components/ui/Section";
 import { Crown } from "@/components/icons";
@@ -81,12 +80,6 @@ export default async function PremiumPage({
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <div className="mb-3 px-5 lg:px-0">
-          <Breadcrumb
-            items={[{ label: "Home", href: "/" }, { label: "Architectural Selects" }]}
-          />
-        </div>
-
         <SectionHead
           level={1}
           size="lg"

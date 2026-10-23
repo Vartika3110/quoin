@@ -5,16 +5,20 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
   Box,
+  Camera,
   Chevron,
   Close,
   EnterKey,
   Grid,
+  Mic,
   Package,
   Search,
   Tag,
 } from "@/components/icons";
 import { Spinner } from "@/components/ui/Spinner";
-import { VoiceSearch } from "@/components/storefront/nav/VoiceSearch";
+import { speechIsAvailable } from "@/components/storefront/ai/AiSearchSheet";
+import { useSearch } from "@/components/storefront/nav/SearchContext";
+import { useHydrated } from "@/lib/store/hydrated";
 import { cn } from "@/components/ui/cn";
 import {
   clearRecentSearches,
@@ -290,8 +294,12 @@ export function SearchPalette({
             <Spinner className="size-4 shrink-0 text-muted" />
           )}
 
-          {/* Renders nothing where the Web Speech API is absent. */}
-          <VoiceSearch onTranscript={(text) => setTerm(text)} />
+          {/* The two other ways to ask. Both hand off to `AiSearchSheet`
+              and close this palette on the way — see `openAi`. The
+              microphone used to dictate into the field above, which was
+              the right thing to do before there was anything to
+              interpret the sentence with. */}
+          <AskButtons />
 
           <button
             type="button"
@@ -563,5 +571,46 @@ function Hint({
       ))}
       {children}
     </span>
+  );
+}
+
+/**
+ * The camera and the microphone, inside the palette.
+ *
+ * Here as well as in the phone's search field because the palette is
+ * what ⌘K and the desktop search bar open, and a reader on a laptop with
+ * a photograph of a tile on their desktop has the same question as
+ * somebody standing in front of the tile.
+ *
+ * The microphone renders only where speech recognition exists, and the
+ * detection is a pure read of `window` gated on hydration — the rule
+ * `VoiceSearch` documents, and the reason this is not a `useEffect`.
+ */
+function AskButtons() {
+  const { openAi } = useSearch();
+  const hydrated = useHydrated();
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => openAi("photo")}
+        aria-label="Search by photo"
+        className="grid size-10 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-accent"
+      >
+        <Camera className="size-5" />
+      </button>
+
+      {hydrated && speechIsAvailable() && (
+        <button
+          type="button"
+          onClick={() => openAi("voice")}
+          aria-label="Ask Quoin by voice"
+          className="grid size-10 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:bg-hover hover:text-accent"
+        >
+          <Mic className="size-5" />
+        </button>
+      )}
+    </>
   );
 }

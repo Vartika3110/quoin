@@ -4,7 +4,6 @@ import { StudioShell } from "@/components/storefront/studio/StudioShell";
 import { IdeaDetail } from "@/components/storefront/studio/IdeaDetail";
 import { ShopThisLook } from "@/components/storefront/studio/ShopThisLook";
 import { IdeaMasonry } from "@/components/storefront/studio/IdeaMasonry";
-import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { getSession } from "@/lib/auth/session";
 import { getIdeaBySlug, listRelatedIdeas, shopTheLook } from "@/lib/data/studio";
 
@@ -83,16 +82,6 @@ export default async function IdeaPage({ params }: Props) {
   return (
     <StudioShell>
       <div className="px-5 lg:px-0">
-        <div className="mb-4">
-          <Breadcrumb
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Studio", href: "/studio" },
-              { label: idea.title },
-            ]}
-          />
-        </div>
-
         <IdeaDetail idea={idea} />
 
         <div className="mt-10 max-w-2xl">
