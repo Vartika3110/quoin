@@ -71,7 +71,13 @@ export function Browse({
   hideOffersFilter?: boolean;
   /** Renders the phone's department rail. Omitted on the pages where
       switching department makes no sense — Deals, search results. */
-  departments?: { id: string; slug: string; title: string }[];
+  departments?: {
+    id: string;
+    slug: string;
+    title: string;
+    /** Its tile photograph, commissioned or borrowed — see `Category`. */
+    photo?: string;
+  }[];
   activeDepartment?: string;
   /**
    * The department's own name, for the type row's "All …" chip. Its
@@ -180,8 +186,17 @@ export function Browse({
               params={params}
               types={facets.types}
               allLabel={`All ${departmentTitle!.toLowerCase()}`}
+              /* The department's own picture, taken from the row the
+                 directory already resolved rather than from
+                 `CATEGORY_PHOTOS` directly: a department created after
+                 the artwork — Plumbing fittings — has no entry in that
+                 map, and reading it here put a "photo coming soon" plate
+                 at the top of its sidebar while its tile on the
+                 directory showed a real product. `getCategories` does
+                 that fallback once, for both. */
               allPhoto={
-                activeDepartment ? CATEGORY_PHOTOS[activeDepartment] : undefined
+                departments?.find((d) => d.slug === activeDepartment)?.photo ??
+                (activeDepartment ? CATEGORY_PHOTOS[activeDepartment] : undefined)
               }
             />
           )}

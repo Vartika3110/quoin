@@ -58,22 +58,35 @@ export function CartBar() {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="flex w-full items-center gap-3 rounded-xl bg-deep px-4 py-3 text-left shadow-lg transition-colors hover:bg-deep-soft"
+          /* The accent, not `bg-deep`.
+           *
+           * This is the one control on a phone that has to be seen
+           * without being looked for — it is how a basket gets opened —
+           * and in near-black brown it sat quietly against the page's
+           * cream like a piece of furniture. Blinkit's is a saturated
+           * green for exactly this reason; Quoin's equivalent is its own
+           * accent, which carries the same weight without borrowing
+           * another shop's colour.
+           *
+           * `rounded-full` with it: a filled bar at this size reads as a
+           * pill rather than a panel, which is what keeps it feeling
+           * like something that floats over the page. */
+          className="flex w-full items-center gap-3 rounded-full bg-accent px-4 py-3 text-left shadow-lg transition-colors hover:bg-accent-bright"
         >
-          <span className="relative grid size-9 shrink-0 place-items-center rounded-lg bg-white/10 text-on-deep">
+          <span className="relative grid size-9 shrink-0 place-items-center rounded-full bg-white/20 text-on-accent">
             <Cart className="size-4.5" />
           </span>
 
           <span className="min-w-0 flex-1">
-            <span className="nums block text-caption text-on-deep/70">
+            <span className="nums block text-caption text-on-accent/80">
               {count} {count === 1 ? "item" : "items"}
             </span>
-            <span className="nums block text-body font-semibold text-on-deep">
+            <span className="nums block text-body font-semibold text-on-accent">
               {formatPrice(subtotalPaise)}
             </span>
           </span>
 
-          <span className="flex shrink-0 items-center gap-1 text-caption font-semibold text-on-deep">
+          <span className="flex shrink-0 items-center gap-1 text-caption font-semibold text-on-accent">
             View cart
             <Chevron className="size-4" />
           </span>

@@ -122,8 +122,16 @@ async function main() {
       create: {
         slug: TO,
         name: "Plumbing fittings",
-        /* Directly after the department it came out of. */
-        position: from.position + 1,
+        /* The same `position` as the department it came out of, not one
+           past it.
+           
+           `getCategories` orders by position then name, and every
+           department in the catalogue is position 0 — so the list is
+           alphabetical in practice, and a single row at position 1 is
+           not "just after Bathware", it is pinned to the end of the
+           directory on its own. Matching the rest puts it back in the
+           alphabet with them. */
+        position: from.position,
       },
       select: { id: true },
     });
