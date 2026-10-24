@@ -105,27 +105,32 @@ function Entry({
         active ? "bg-accent-wash" : "active:bg-hover",
       )}
     >
-      {/* No plate behind the picture.
-
-          Each thumbnail sat on a `bg-raised` tile with a border, and the
-          product photographs are shot on their own grounds — some white,
-          some a scene — so the column read as a stack of little boxes of
-          slightly different colours rather than a row of things. Off the
-          plate they sit on the rail's own ground, which is what makes a
-          set of them read as a set.
-
-          `bg-transparent` on `Photo` because its wrapper carries a
-          `bg-skeleton` of its own, and `cn` here is a join rather than a
-          merge — the later class wins on CSS order, which is exactly the
-          arrangement `cn`'s own note describes. */}
-      <span className="overflow-hidden rounded-xl">
+      {/* A white disc behind the picture, not a cream one.
+       *
+       * The first version of this had a `bg-raised` tile with a border —
+       * cream, `#fcf6ec`. Catalogue photography is shot on white, so a
+       * white photograph on a cream plate on a cream page drew two
+       * rectangles nobody asked for, and the column read as a stack of
+       * little boxes in slightly different shades. Taking the plate away
+       * only moved the problem: the photograph's own white then met the
+       * page's cream directly, which is the same seam one layer down.
+       *
+       * `bg-photo` is the token for exactly this — `#ffffff` in light,
+       * near-white in dark — so the picture's own ground and the disc's
+       * are the same colour and the join disappears. What is left on the
+       * page is a round product, which is what the reference shows.
+       *
+       * It cannot fix a photograph shot in a room: a dish drainer on a
+       * worktop still carries its worktop. Those want cutting out at the
+       * asset level, not at the component. */}
+      <span className="overflow-hidden rounded-full bg-photo">
         <Photo
           src={photo}
           alt=""
           label={label}
           ratio="1 / 1"
           sizes="56px"
-          className="w-14 bg-transparent"
+          className="w-14 bg-photo"
         />
       </span>
       <span

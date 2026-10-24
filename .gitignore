@@ -80,3 +80,6 @@ next-env.d.ts
 
 # Local Python virtualenv — not part of the app.
 .venv/
+
+# Scratch output from one-off scripts — not part of the app.
+.tmp-art/

@@ -12,6 +12,7 @@ import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 import { MONEY_MOVED_STATUSES } from "@/lib/orders/status-groups";
 import { CATEGORY_PHOTOS } from "@/lib/category-photos";
+import { PLAIN_BACKGROUND_PHOTOS } from "@/lib/plain-background-photos";
 import {
   classifyProductType,
   productTypeTerms,
@@ -1106,16 +1107,28 @@ type ThumbnailRow = {
 /**
  * The picture that stands for a shelf.
  *
- * Three preferences, in order. The shelf's own `thumbnail` terms first,
- * because "first product by name" is not "typical" and a handful of
- * shelves were opening on something that looked nothing like them — see
- * `ProductType.thumbnail`. Then a photograph over an illustration, since
- * this is the one place the "illustration, actual product may vary"
- * label cannot be shown alongside it. Then whatever is first, which is
- * what every shelf without a hint gets and is usually fine.
+ * Preferences, in order:
+ *
+ * 1. The shelf's own `thumbnail` terms. "First product by name" is not
+ *    "typical", and a handful of shelves were opening on something that
+ *    looked nothing like them — *Fans* on a fan regulator, *Geysers* on
+ *    a bare heating element. See `ProductType.thumbnail`.
+ * 2. A photograph shot on a plain ground. The sidebar sets these in a
+ *    white disc, so a studio shot reads as a cutout while a photograph
+ *    taken in a room brings the room with it and the column goes back to
+ *    being a stack of pictures of different places. Which is which is
+ *    looked up, not guessed — see `scripts/audit-photo-backgrounds.ts`.
+ * 3. A photograph over an illustration, since this is the one place the
+ *    "illustration, actual product may vary" label cannot be shown
+ *    beside it.
+ * 4. Whatever is first.
+ *
+ * Each rule narrows the field rather than replacing it, so a shelf whose
+ * every photograph was taken in a room still gets one — the preference
+ * is for a better picture, never for no picture.
  *
  * `rows` is already filtered to products that have a picture at all and
- * already in name order, so each step is a `find` rather than a sort.
+ * already in name order.
  */
 function pickThumbnail(
   type: ProductType,
@@ -1123,14 +1136,20 @@ function pickThumbnail(
 ): string | undefined {
   if (rows.length === 0) return undefined;
 
+  const best = (from: ThumbnailRow[]): ThumbnailRow | undefined => {
+    if (from.length === 0) return undefined;
+    const real = from.filter((row) => !row.imageIsGenerated);
+    const pool = real.length > 0 ? real : from;
+    return pool.find((row) => PLAIN_BACKGROUND_PHOTOS.has(row.image)) ?? pool[0];
+  };
+
   for (const term of type.thumbnail ?? []) {
     const wanted = term.toLowerCase();
-    const named = rows.filter((row) => row.name.toLowerCase().includes(wanted));
-    const hit = named.find((row) => !row.imageIsGenerated) ?? named[0];
+    const hit = best(rows.filter((row) => row.name.toLowerCase().includes(wanted)));
     if (hit) return resolvePhoto(hit);
   }
 
-  return resolvePhoto(rows.find((row) => !row.imageIsGenerated) ?? rows[0]);
+  return resolvePhoto(best(rows) ?? rows[0]);
 }
 
 /** Brands that have something to sell, for the filter rail. */
