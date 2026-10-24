@@ -270,6 +270,44 @@ export interface DashboardMetrics {
       shows as three rows here, which is the honest count of "how much
       trouble are people having paying" rather than a count of orders. */
   paymentBreakdownToday: PaymentStatusCount[];
+  /**
+   * Webhook deliveries Razorpay sent that this deployment refused.
+   *
+   * The one number on this dashboard that reports a fault in the
+   * application rather than activity in the business, and it is here
+   * because the fault it reports is invisible everywhere else.
+   *
+   * A rejected delivery means the HMAC over the body did not match
+   * `RAZORPAY_WEBHOOK_SECRET` — so the secret is absent, stale, or from
+   * the other Razorpay mode. The payment itself succeeded; only the
+   * settlement was dropped. Orders stay PENDING_PAYMENT, revenue reads
+   * zero, and every other figure on this page is consistent with a quiet
+   * day's trading.
+   *
+   * That is exactly how it went unnoticed for weeks: 45 of the first 46
+   * deliveries were rejected. `isRazorpayConfigured` now refuses to offer
+   * online payment when the secret is *missing*; a secret that is present
+   * and wrong is indistinguishable from a correct one until a delivery
+   * arrives and fails, which is this.
+   *
+   * Seven days rather than today: the rejections arrive in whatever
+   * window customers happen to be paying in, and a counter that resets at
+   * IST midnight would have shown zero to anyone who looked the next
+   * morning.
+   */
+  webhookRejections: {
+    /** Rejected in the last seven days. Anything above zero is a fault. */
+    count: number;
+    /** When the most recent one arrived, for the alert to name. */
+    lastAt: Date | null;
+    /** When a delivery last verified — how long settlement has been down. */
+    lastAcceptedAt: Date | null;
+  };
+}
+
+/** Seven days before `now`, for the webhook rejection window. */
+function sevenDaysAgo(now: Date): Date {
+  return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 }
 
 export async function getDashboardMetrics(now: Date = new Date()): Promise<DashboardMetrics> {
@@ -284,6 +322,9 @@ export async function getDashboardMetrics(now: Date = new Date()): Promise<Dashb
     totalCustomers,
     paymentGroups,
     inventoryRows,
+    webhookRejectionCount,
+    lastRejection,
+    lastAccepted,
   ] = await Promise.all([
     db.order.count({ where: { createdAt: { gte: start, lt: end } } }),
     db.order.aggregate({
@@ -333,6 +374,25 @@ export async function getDashboardMetrics(now: Date = new Date()): Promise<Dashb
       where: { variant: { product: { stockTracked: true } } },
       select: { onHandQty: true, reservedQty: true, lowStockThreshold: true },
     }),
+
+    /* See `webhookRejections` on `DashboardMetrics` for why this is on a
+       seven-day window and not today's. */
+    db.paymentWebhook.count({
+      where: { signatureValid: false, receivedAt: { gte: sevenDaysAgo(now) } },
+    }),
+    db.paymentWebhook.findFirst({
+      where: { signatureValid: false },
+      orderBy: { receivedAt: "desc" },
+      select: { receivedAt: true },
+    }),
+    /* Deliberately unbounded by date: "the last one that worked" is the
+       useful number when nothing has worked recently, and a window would
+       report `null` for both and say nothing about which. */
+    db.paymentWebhook.findFirst({
+      where: { signatureValid: true },
+      orderBy: { receivedAt: "desc" },
+      select: { receivedAt: true },
+    }),
   ]);
 
   const lowCount = inventoryRows.filter(
@@ -350,6 +410,11 @@ export async function getDashboardMetrics(now: Date = new Date()): Promise<Dashb
       status: group.status,
       count: group._count._all,
     })),
+    webhookRejections: {
+      count: webhookRejectionCount,
+      lastAt: lastRejection?.receivedAt ?? null,
+      lastAcceptedAt: lastAccepted?.receivedAt ?? null,
+    },
   };
 }
 

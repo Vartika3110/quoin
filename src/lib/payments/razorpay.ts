@@ -27,13 +27,72 @@ const TIMEOUT_MS = 10_000;
 /**
  * Whether payments can be taken at all.
  *
- * Both halves of the API key are needed: `KEY_ID` alone opens a checkout
- * the server cannot then create an order for. Checked by the route so it
- * can answer "payment is not enabled yet" rather than failing inside an
- * HTTP call.
+ * Three variables, not two, and the third is the one this function was
+ * missing when it mattered.
+ *
+ * `KEY_ID` and `KEY_SECRET` open a checkout and create a gateway order.
+ * `WEBHOOK_SECRET` is what lets `payment.captured` be *believed* when it
+ * arrives — and because the webhook is the only authority that moves an
+ * order to PAID (see the handler's own note), a deploy with the first two
+ * and not the third takes real money and settles none of it. The customer
+ * pays, the modal says yes, and the order sits PENDING_PAYMENT for ever.
+ *
+ * That is not hypothetical. It happened here: 45 of the first 46
+ * deliveries this application ever received were rejected for an invalid
+ * signature, over weeks, while checkout went on cheerfully offering
+ * online payment. `payment_webhooks` is the only reason anyone could
+ * reconstruct it afterwards.
+ *
+ * So the gate includes the webhook secret, and the failure mode is to
+ * **stop offering online payment** rather than to stop the application.
+ * Throwing from env validation would take the whole storefront down —
+ * browsing, sign-in, order history — over a payment misconfiguration,
+ * which is a worse outage than the one being prevented. Falling back
+ * means `CheckoutFlow` offers "Confirm with an expert", the order is
+ * still written, and a human takes payment. Degraded and honest beats
+ * accepting money that cannot be reconciled.
+ *
+ * This only catches a *missing* secret. A secret that is present and
+ * **wrong** looks identical from here and is what actually happened —
+ * for that, see `countRejectedWebhooks` and the alert the admin
+ * dashboard raises from it.
  */
 export function isRazorpayConfigured(): boolean {
-  return Boolean(env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET);
+  return razorpayMissingConfig().length === 0;
+}
+
+/**
+ * The rule itself, over a plain object.
+ *
+ * Separated from `env` so it can be tested without one: `env.ts`
+ * validates and freezes its view of `process.env` at import time, so a
+ * suite that reads the environment can only ever assert one
+ * configuration per process. The thing worth pinning here is the rule —
+ * that the webhook secret counts, and that an empty string is missing —
+ * and the rule is a pure function of three strings.
+ */
+export function razorpayMissingConfigIn(source: {
+  RAZORPAY_KEY_ID?: string;
+  RAZORPAY_KEY_SECRET?: string;
+  RAZORPAY_WEBHOOK_SECRET?: string;
+}): string[] {
+  return (
+    ["RAZORPAY_KEY_ID", "RAZORPAY_KEY_SECRET", "RAZORPAY_WEBHOOK_SECRET"] as const
+  ).filter((name) => !source[name]);
+}
+
+/**
+ * Why online payment is switched off, for an operator rather than a
+ * customer.
+ *
+ * `isRazorpayConfigured()` answers yes or no, which is all a route needs
+ * and nothing an operator can act on. This names the missing variables so
+ * the admin dashboard can say which one to go and set. Names only — never
+ * values, and never whether a present value is correct, which this cannot
+ * know.
+ */
+export function razorpayMissingConfig(): string[] {
+  return razorpayMissingConfigIn(env);
 }
 
 /**
