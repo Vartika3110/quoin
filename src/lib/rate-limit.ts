@@ -83,6 +83,39 @@ const BUCKETS: Record<string, Bucket> = {
   aiVisualSearch: { windowMs: 10 * 60_000, max: 12, hits: new Map() },
   aiAssist: { windowMs: 10 * 60_000, max: 20, hits: new Map() },
   aiVisualise: { windowMs: 60 * 60_000, max: 10, hits: new Map() },
+
+  /* ---- Checkout -------------------------------------------------------
+   *
+   * `quote` above is open to guests and so had to be bounded; these two
+   * sit behind `requireUser()` and were left unbounded on the reasoning
+   * that an account is already a cost to obtain. A launch audit called
+   * that wrong, and it is: the two most expensive writes in the
+   * application are reachable with one phone number.
+   *
+   * `checkoutOrder` creates a row, reserves stock and opens an order at
+   * Razorpay. A loop here fills the orders table and the gateway's
+   * dashboard with pending orders nobody will pay, and the reservations
+   * hold real stock until the release cron sweeps them.
+   *
+   * `checkoutVerify` checks an HMAC. The limit is not what makes that
+   * safe — a SHA-256 signature is not brute-forced at any rate a limiter
+   * cares about — it is there so a failing loop cannot spend the
+   * database on signature checks that were always going to fail.
+   *
+   * Keyed by account rather than address, via `enforceKeyed`: a site hut
+   * or an office behind one connection is several real customers, and
+   * the account is the only key that survives a phone moving between
+   * wifi and mobile data mid-checkout — the same two reasons the AI
+   * buckets are keyed that way.
+   *
+   * The numbers come from what checkout does. Placing an order is the
+   * last act of a basket; a contractor ordering for three sites in one
+   * sitting is real and a dozen in ten minutes is not. Verify is called
+   * once per completed payment, plus a retry or two when the handoff
+   * drops — twenty leaves room for a bad connection and none for a
+   * script. */
+  checkoutOrder: { windowMs: 10 * 60_000, max: 12, hits: new Map() },
+  checkoutVerify: { windowMs: 10 * 60_000, max: 20, hits: new Map() },
 };
 
 /**
