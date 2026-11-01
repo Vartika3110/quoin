@@ -1,5 +1,5 @@
-import { CheckCircle } from "@/components/icons";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import { CheckCircle, Chevron } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import { formatPrice } from "@/lib/types/catalog";
 import {
@@ -58,9 +58,9 @@ export function ProfessionalRail({
            deleting this line is `PROFESSIONALS_ARE_SAMPLE = false`, which
            is the same edit that makes it untrue. */
         <p className="mx-5 mb-2.5 text-micro font-semibold leading-relaxed text-accent lg:mx-0">
-          Sample professionals — the names, ratings, job counts and
-          response times below are placeholders. Replace them in
-          src/lib/data/professionals.ts before launch.
+          Sample professionals — the names and trades below are
+          placeholders. Replace them in src/lib/data/professionals.ts
+          before launch.
         </p>
       ) : null}
 
@@ -74,10 +74,24 @@ export function ProfessionalRail({
         )}
       >
         {people.map((person) => (
-          <article
+          /* The whole card is the link, and there is no Book button.
+
+             The button was struck off the design at the owner's
+             instruction, which left a card listing a tradesperson with
+             no way to reach them — so the action moved outwards rather
+             than away. A card that is one target is also the easier one
+             to hit on a phone: 190px of card beats a 64px pill at the
+             bottom of it.
+
+             `aria-label` because the link's own text would otherwise
+             read "Prem Chand Electrician Quoted after the visit", which
+             says everything except what pressing it does. */
+          <Link
             key={person.id}
+            href={`/services/book?service=${person.serviceSlug}`}
+            aria-label={`Book ${person.name}, ${person.trade}`}
             className={cn(
-              "flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-3 lg:p-4",
+              "group flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-3 transition-colors hover:border-accent-edge hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:p-4",
               /* A fixed width only in the rail, where nothing else sets
                  one. In the list the grid column is the width. */
               /* 190px in the rail, from the design reference: at `w-72`
@@ -125,34 +139,26 @@ export function ProfessionalRail({
                 are off the card with the rest. Nothing invented a value
                 then and nothing does now, which was the point worth
                 keeping. */}
-            {/* Stacked in the rail, side by side everywhere else. The
-                reference's card puts a four-character fee next to the
-                button; this one often carries "Quoted after the visit"
-                instead, which at the rail's 190px wrapped to two lines
-                and ran into the button. Where the fee is a number it
-                still sits on one line, because the row only wraps when
-                it has to. */}
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-0.5">
+            {/* The fee, and a chevron where the button used to be. No
+                longer a control — the card is the control — so this is
+                `aria-hidden`: a mark that says the card goes somewhere,
+                the way the cart bar's does. `nowrap` on the fee because
+                the row no longer has a button to wrap around. */}
+            <div className="mt-auto flex items-center justify-between gap-x-3 pt-0.5">
               {/* No invented fee. Where the owner has not set one the card
                   says how the fee is arrived at, which is how this trade
                   actually works — see `pricing` on each service. */}
-              <span className="nums text-title-sm font-semibold text-ink">
+              <span className="nums min-w-0 truncate text-title-sm font-semibold text-ink">
                 {person.visitFeePaise != null
                   ? formatPrice(person.visitFeePaise)
                   : <span className="text-caption font-normal text-muted">Quoted after the visit</span>}
               </span>
-              <Button
-                href={`/services/book?service=${person.serviceSlug}`}
-                size="sm"
-                /* `grow` so that when the fee line wraps above it, the
-                    button takes the row rather than sitting as a stub
-                    against the left edge. */
-                className="grow px-5 sm:grow-0"
-              >
-                Book
-              </Button>
+              <Chevron
+                aria-hidden
+                className="size-4 shrink-0 text-faint transition-colors group-hover:text-accent"
+              />
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </div>
