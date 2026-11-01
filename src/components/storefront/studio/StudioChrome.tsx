@@ -39,15 +39,35 @@ function isCurrent(pathname: string, href: string, exact?: boolean): boolean {
 export function StudioChrome({
   title = "Studio",
   subtitle,
+  quietTitle = false,
 }: {
   title?: string;
   subtitle?: string;
+  /**
+   * Draws the heading for screen readers only.
+   *
+   * The phone instances of this masthead exist for the pill row; the top
+   * bar above them already says where you are, so the display heading
+   * underneath it was the same word twice, a line of 28px type between
+   * the bar and the first thing on the page. It is still in the document
+   * — a page with no `h1` is a page a screen reader cannot summarise,
+   * and `StudioTopBar` sets its title as a `<p>` — it is just not drawn.
+   */
+  quietTitle?: boolean;
 }) {
   const pathname = usePathname();
 
   return (
-    <header className="mb-5 flex flex-col gap-4 px-5 lg:mb-7 lg:flex-row lg:items-end lg:justify-between lg:px-0">
-      <div className="min-w-0">
+    <header
+      className={cn(
+        "flex flex-col gap-4 px-5 lg:mb-7 lg:flex-row lg:items-end lg:justify-between lg:px-0",
+        /* No bottom margin when the heading is not drawn: the gap under
+           it was spacing the title off the content, and without a title
+           it reads as a hole above the pills. */
+        quietTitle ? "mb-0" : "mb-5",
+      )}
+    >
+      <div className={cn("min-w-0", quietTitle && "sr-only")}>
         <h1 className="font-display text-headline font-light tracking-tight text-ink lg:text-headline-lg">
           {title}
         </h1>

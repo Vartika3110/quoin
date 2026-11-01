@@ -6,7 +6,6 @@ import { MobileTabBar } from "@/components/storefront/nav/MobileTabBar";
 import { RouteTransition } from "@/components/storefront/RouteTransition";
 import { CartBar } from "@/components/storefront/nav/CartBar";
 import { getCategories } from "@/lib/data/catalog";
-import { getSession } from "@/lib/auth/session";
 import {
   AREA_COOKIE,
   getAreaChoice,
@@ -41,8 +40,11 @@ export async function AppShell({
   children: React.ReactNode;
   fullBleed?: boolean;
   /**
-   * Off for the home page, which states the same four claims under its
-   * hero — see `TrustRow` in `src/components/storefront/Trust.tsx`.
+   * Off for the home page. It used to state the same four claims under
+   * its hero and turned these off rather than saying them twice; that
+   * row has since been taken out, so the home page now makes no trust
+   * claim at all. Left off deliberately — turning it back on is a one
+   * word change here, and a decision about the page, not a fix.
    */
   showTrustPills?: boolean;
   /**
@@ -82,11 +84,10 @@ export async function AppShell({
   /* Read on the server so the first paint already shows the right area
      and the right category menu. Doing either on the client renders a
      default for everyone and corrects it after hydration. */
-  const [areas, chosen, categories, session] = await Promise.all([
+  const [areas, chosen, categories] = await Promise.all([
     listAreaChoices(),
     cookies().then((c) => getAreaChoice(c.get(AREA_COOKIE)?.value)),
     getCategories(),
-    getSession(),
   ]);
 
   /* Suggested search terms are real category names, taken from the same
@@ -103,11 +104,6 @@ export async function AppShell({
           mobileSlot={headerSlot}
           phoneBar={phoneChrome}
           phoneSearch={phoneSearch}
-          /* Read here rather than left for the header's own client code to
-             discover: the header is a client component with no request of
-             its own, and a client-side "am I signed in" check would render
-             the bell a moment after everything else, flashing it in. */
-          signedIn={session !== null}
         />
 
         {/* Clearance for the fixed tab bar is on the footer, not here —

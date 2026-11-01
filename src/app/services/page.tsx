@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
-import { Gutter, PageSections } from "@/components/ui/Section";
-import { ConsultBand } from "@/components/storefront/ConsultBand";
+import { PageSections } from "@/components/ui/Section";
 import { listProfessionals } from "@/lib/data/professionals";
 import { RosterSearch } from "@/components/storefront/services/RosterSearch";
 
@@ -44,24 +43,20 @@ export default async function ServicesPage() {
           continues. */}
       <div className="lg:pt-6">
         <PageSections>
-          {/* One component owns the whole page below the chrome: the trail
-              and its field, the band, then the roster it filters. The band
-              is handed in rather than rendered beside it because the search
-              row has to sit *above* it and the chips below — which is one
-              component's layout, not two siblings'. */}
+          {/* One component owns the whole page below the chrome: the
+              trail and its field, then the roster it filters.
+
+              The "Not sure which trade you need?" band used to be handed
+              in here, between the search row and the chips. It is out at
+              the owner's instruction: the chips below it already name
+              every trade Quoin books, which answers the same question by
+              showing rather than offering a call. The `banner` slot that
+              carried it went with it — it had one caller, and an
+              interleaving slot nothing passes is a hole in a layout
+              nobody can see. */}
           {people.length > 0 && (
             <section>
-              <RosterSearch
-                people={people}
-                banner={
-                  <Gutter>
-                    <ConsultBand
-                      title="Not sure which trade you need?"
-                      detail="Describe the job on a free video call and we will scope it"
-                    />
-                  </Gutter>
-                }
-              />
+              <RosterSearch people={people} />
             </section>
           )}
 

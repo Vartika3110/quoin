@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Chevron } from "@/components/icons";
-import { TrustRow } from "@/components/storefront/Trust";
 import { HeroCarousel } from "@/components/storefront/home/HeroCarousel";
 
 /**
@@ -117,8 +116,6 @@ export function Hero() {
           ))}
         </HeroCarousel>
       </div>
-
-      <TrustRow />
     </div>
   );
 }

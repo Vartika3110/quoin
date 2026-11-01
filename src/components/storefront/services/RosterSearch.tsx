@@ -32,7 +32,6 @@ import type { Professional } from "@/lib/data/professionals";
 export function RosterSearch({
   people,
   leading,
-  banner,
 }: {
   people: Professional[];
   /**
@@ -47,14 +46,6 @@ export function RosterSearch({
    * roster's.
    */
   leading?: ReactNode;
-  /**
-   * Rendered between the search row and the trade chips — the consult
-   * band. Handed in rather than placed beside this component because it
-   * belongs *inside* the order: trail and field, then the offer of a
-   * call, then the filters and the list. Siblings cannot interleave like
-   * that without the page knowing what this component's first row is.
-   */
-  banner?: ReactNode;
 }) {
   const [query, setQuery] = useState("");
   const [trade, setTrade] = useState<string | null>(null);
@@ -103,8 +94,6 @@ export function RosterSearch({
 
       </div>
 
-      {banner ? <div className="mt-4">{banner}</div> : null}
-
       {/* The trades, as a row to tap. A chip answers the common case in
           one tap where the field above needs a word typed correctly, and
           it also *shows* what Quoin books — a customer who does not know
@@ -121,16 +110,19 @@ export function RosterSearch({
         ))}
       </div>
 
-      <div className="px-5 lg:px-0">
-        {/* Announced, so a screen reader is told the list changed under
-            it — a filtered list that updates silently is one a
-            non-sighted reader has to go and check. */}
-        <p aria-live="polite" className="mt-3 text-caption text-muted">
-          {results.length === people.length
-            ? `${people.length} professionals available`
-            : `${results.length} of ${people.length} professionals`}
-        </p>
-      </div>
+      {/* Announced but not drawn.
+
+          The tally was a line of grey type above the roster saying what
+          the roster below it already shows, and it is out at the
+          owner's instruction. The live region stays: a filtered list
+          that updates silently is one a non-sighted reader has to go
+          and check, and `sr-only` is the difference between not showing
+          a count and not telling anyone the list moved. */}
+      <p aria-live="polite" className="sr-only">
+        {results.length === people.length
+          ? `${people.length} professionals available`
+          : `${results.length} of ${people.length} professionals`}
+      </p>
 
       {results.length > 0 ? (
         <div className="mt-3">

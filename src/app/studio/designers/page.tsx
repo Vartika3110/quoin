@@ -31,7 +31,7 @@ export default async function DesignersPage() {
     <StudioShell header={<StudioChrome title="Designers" />} barTitle="Designers">
       <div className="px-5 lg:px-0">
         <div className="lg:hidden">
-          <StudioChrome title="Designers" />
+          <StudioChrome title="Designers" quietTitle />
         </div>
 
         {designers.length === 0 ? (

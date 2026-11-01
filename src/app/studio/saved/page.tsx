@@ -37,7 +37,7 @@ export default async function SavedPage() {
       >
         <div className="px-5 lg:px-0">
           <div className="mb-4 lg:hidden">
-            <StudioChrome title="Saved" />
+            <StudioChrome title="Saved" quietTitle />
           </div>
           <SignInPrompt what="Sign in to keep what you save — it follows your account, not this browser." />
         </div>
@@ -54,7 +54,7 @@ export default async function SavedPage() {
     >
       <div className="flex flex-col gap-5">
         <div className="lg:hidden">
-          <StudioChrome title="Saved" />
+          <StudioChrome title="Saved" quietTitle />
         </div>
 
         <PinGrid

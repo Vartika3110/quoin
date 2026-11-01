@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { IdeaImage } from "@/components/storefront/studio/IdeaImage";
-import { ChevronDown, Close } from "@/components/icons";
+import { Close } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import type { RoomFacet } from "@/lib/data/studio";
 import { ROOM_LABEL } from "@/lib/types/studio";
@@ -28,15 +28,22 @@ import {
  * bubble shows a real room from behind that filter — the best-saved one —
  * rather than stock photography of a kitchen Quoin has never seen.
  *
- * **Styles and materials stay compact chips**, because there are a dozen
- * of each and twelve photographs is a second grid above the grid.
+ * **Style and material are no longer drawn**, at the owner's
+ * instruction. They were two rows of compact chips above the wall — a
+ * sticky "STYLE" rail and a foldaway "MATERIAL" one — and on the one
+ * surface whose whole proposition is the photographs underneath them
+ * that was the better part of a phone screen spent on controls. Rooms
+ * stay, as bubbles: one dimension, chosen by looking at a picture.
+ *
+ * The filters themselves are untouched. `?style=` and `?material=`
+ * still parse, still narrow the feed and still survive a share — see
+ * `readFilters` — so a link somebody sent last week opens on the same
+ * rooms, with "Clear filters" there to get back out. What went is the
+ * way to *add* one by tapping, not the ability to hold one.
  *
  * A dimension with nothing in it renders nothing. An empty filter row is
  * a control that cannot do anything, taking up the space where the first
  * photograph should be.
- *
- * On a phone the two chip rows stick under the top bar while the wall
- * scrolls past them — see the note at the point they are rendered.
  */
 export function StudioFilters({
   facets,
@@ -45,97 +52,21 @@ export function StudioFilters({
 }: {
   facets: { rooms: RoomFacet[]; styles: string[]; materials: string[] };
   filters: Filters;
-  /** How many pins the current filters found. Null while it is not known
-      — a search page that has not counted, say — which renders no line
-      rather than "0 rooms". */
+  /** How many pins the current filters found, rendered as "N rooms".
+      Null renders no line at all — which is what Discover passes, where
+      a tally above the wall is a number nobody came for. Search passes
+      one, because there "how many" is the question being answered. */
   resultCount: number | null;
 }) {
   const active = countFilters(filters);
 
-  /* A fragment, not a wrapper.
-     
-     `position: sticky` only sticks inside its own parent's box, and a
-     wrapper around the three filter rows is about 220px tall — so the
-     chip row below would travel 220px and then scroll away with it,
-     which looks exactly like sticky not working at all. Returning the
-     rows as siblings makes the page's own column their parent, and that
-     column spans the whole wall. The caller supplies the gap. */
+  /* A fragment, not a wrapper: the rows are siblings in the page's own
+     column, which spans the whole wall, and the caller supplies the gap
+     between them. */
   return (
     <>
       {facets.rooms.length > 0 && (
         <RoomBubbles rooms={facets.rooms} filters={filters} />
-      )}
-
-      {/* The chips follow you down the wall on a phone; the room bubbles
-          do not.
-
-          A reader scrolling a wall of rooms is refining, and the two
-          compact rows are what they refine with — reaching them again
-          should not mean scrolling back past forty photographs. The
-          bubbles are 80px of photography each and stay where they are:
-          sticking those as well would spend a third of the screen on
-          filters, on the one surface whose entire proposition is the
-          pictures underneath them.
-
-          `top` clears `StudioTopBar` — 56px of bar plus whatever the
-          notch takes. Written with underscores because Tailwind forbids
-          literal spaces inside `[...]` and `calc()` requires whitespace
-          around `+`; without them the declaration is invalid, the
-          browser drops it silently, and the row sticks to the very top
-          *under* the bar. See the note in `docs/design-system.md`.
-
-          Static from `lg`, where the whole filter block is above a grid
-          that starts below the fold anyway. */}
-      {(facets.styles.length > 0 || facets.materials.length > 0) && (
-        <div className="sticky top-[calc(3.5rem_+_env(safe-area-inset-top))] z-30 flex flex-col gap-2 border-b border-line-hair bg-bg/95 py-2 backdrop-blur-xl lg:static lg:border-0 lg:bg-transparent lg:py-0 lg:backdrop-blur-none">
-          {facets.styles.length > 0 && (
-            <ChipRow
-              label="Style"
-              tags={facets.styles}
-              chosen={filters.styles}
-              dimension="style"
-              filters={filters}
-            />
-          )}
-
-          {facets.materials.length > 0 && (
-            /* Folded away by default.
- 
-               Style is nine words and reads as a mood; material is
-               thirteen and reads as a warehouse. Open, the two rows put
-               twenty-two pills above the wall — on the one page whose
-               whole proposition is the photographs underneath them, that
-               is a lot of chrome to scroll past before seeing a room.
- 
-               A `<details>` rather than state, because this file is a
-               server component and a disclosure is the one interaction
-               HTML already has. It also means a reader who opens it, taps
-               a material and lands on a filtered URL gets the panel shut
-               again — which is right: by then the chosen material is a
-               chip in the active row, and the list has done its job.
- 
-               Kept open when a material is already chosen, so nobody has
-               to hunt for the filter they are looking at. */
-            <details className="group/mat" open={filters.materials.length > 0}>
-              <summary className="mx-5 flex w-fit cursor-pointer list-none items-center gap-1.5 text-eyebrow uppercase text-faint outline-none hover:text-muted focus-visible:ring-2 focus-visible:ring-accent lg:mx-0">
-                Material
-                <span className="nums rounded-full bg-sunk px-1.5 py-0.5 text-micro normal-case text-muted">
-                  {facets.materials.length}
-                </span>
-                <ChevronDown className="size-3 transition-transform duration-200 group-open/mat:rotate-180" />
-              </summary>
-
-              <div className="mt-2">
-                <ChipRow
-                  tags={facets.materials}
-                  chosen={filters.materials}
-                  dimension="material"
-                  filters={filters}
-                />
-              </div>
-            </details>
-          )}
-        </div>
       )}
 
       {(resultCount !== null || active > 0) && (
@@ -216,47 +147,6 @@ function RoomBubbles({ rooms, filters }: { rooms: RoomFacet[]; filters: Filters 
             >
               {ROOM_LABEL[facet.room]}
             </span>
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
-function ChipRow({
-  label,
-  tags,
-  chosen,
-  dimension,
-  filters,
-}: {
-  /** Omitted when a disclosure above already names the row. */
-  label?: string;
-  tags: string[];
-  chosen: string[];
-  dimension: "style" | "material";
-  filters: Filters;
-}) {
-  return (
-    <div className="no-scrollbar flex items-center gap-2 overflow-x-auto scroll-pl-5 px-5 lg:px-0 lg:scroll-pl-0">
-      {label ? (
-        <span className="shrink-0 text-eyebrow uppercase text-faint">{label}</span>
-      ) : null}
-      {tags.map((tag) => {
-        const on = chosen.includes(tag);
-        return (
-          <Link
-            key={tag}
-            href={studioHref(toggle(filters, dimension, tag))}
-            aria-pressed={on}
-            className={cn(
-              "flex min-h-8 shrink-0 items-center rounded-full border px-3 text-caption font-medium capitalize transition-colors",
-              on
-                ? "border-accent bg-accent text-on-accent"
-                : "border-line-soft bg-surface text-muted hover:bg-hover hover:text-ink",
-            )}
-          >
-            {tag}
           </Link>
         );
       })}

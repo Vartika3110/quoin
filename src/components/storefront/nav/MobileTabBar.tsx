@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Grid, Home, Layers, Tag, Upload, User } from "@/components/icons";
+import { Grid, Home, Layers, Tag, Upload } from "@/components/icons";
 import { useStickyBarTaken } from "@/components/storefront/StickyBar";
 import { cn } from "@/components/ui/cn";
 
@@ -74,19 +74,23 @@ import { cn } from "@/components/ui/cn";
    typography.
 
    Studio is still not here, which is the one earlier instruction this
-   does not reverse — the reference does not carry it either. Account
-   comes back off the header, where the reference puts it, and the header
-   keeps its own avatar, so it is reachable both ways.
+   does not reverse — the reference does not carry it either.
 
    The order and the words are the reference's: Home, Categories, Project
-   Hub, Upload Parcha, Deals, Account. */
+   Hub, Upload Parcha, Deals. */
+/* **Account is out again**, at the owner's instruction, and this is the
+   second time it has gone the same way. It sat here because the
+   reference draws it; it leaves because the header's avatar was always
+   the other half of that pair, and two permanent entries to one page is
+   one more than a page somebody visits to check an address deserves.
+   The header keeps the avatar, so nothing moved out of reach — and five
+   tabs is the count the note above says the row actually wants. */
 const TABS = [
   { href: "/", label: "Home", Icon: Home },
   { href: "/categories", label: "Categories", Icon: Grid },
   { href: "/projects", label: "Project Hub", Icon: Layers },
   { href: "/upload", label: "Upload Parcha", Icon: Upload },
   { href: "/deals", label: "Deals", Icon: Tag },
-  { href: "/account", label: "Account", Icon: User },
 ] as const;
 
 function isCurrent(pathname: string, href: string): boolean {

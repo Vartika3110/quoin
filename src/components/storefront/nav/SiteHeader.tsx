@@ -6,8 +6,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
 import { ThemeToggle } from "@/components/storefront/ThemeToggle";
 import { CartDrawer } from "@/components/storefront/nav/CartDrawer";
-import { NotificationBell } from "@/components/storefront/nav/NotificationBell";
-import { WalletPill } from "@/components/storefront/nav/WalletPill";
 import { useSearch } from "@/components/storefront/nav/SearchContext";
 import { speechIsAvailable } from "@/components/storefront/ai/AiSearchSheet";
 import { useScrolled } from "@/components/storefront/nav/useScrolled";
@@ -65,7 +63,6 @@ export function SiteHeader({
   chosen,
   categories,
   mobileSlot,
-  signedIn,
   phoneBar = true,
   phoneSearch = true,
 }: {
@@ -91,9 +88,6 @@ export function SiteHeader({
    * pathname and reaching for a component only one route owns.
    */
   mobileSlot?: ReactNode;
-  /** Whether the bell renders at all — see `AppShell`'s own note on why
-      this is read on the server rather than discovered here. */
-  signedIn: boolean;
 }) {
   const scrolled = useScrolled();
   const [cartOpen, setCartOpen] = useState(false);
@@ -129,7 +123,6 @@ export function SiteHeader({
             slot={mobileSlot}
             showSearch={phoneSearch}
             onOpenCart={() => setCartOpen(true)}
-            signedIn={signedIn}
           />
         )}
         <DesktopBar
@@ -138,7 +131,6 @@ export function SiteHeader({
           categories={categories}
           scrolled={scrolled}
           onOpenCart={() => setCartOpen(true)}
-          signedIn={signedIn}
         />
       </header>
 
@@ -155,14 +147,12 @@ function DesktopBar({
   categories,
   scrolled,
   onOpenCart,
-  signedIn,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
   categories: Category[];
   scrolled: boolean;
   onOpenCart: () => void;
-  signedIn: boolean;
 }) {
   const pathname = usePathname();
 
@@ -214,8 +204,6 @@ function DesktopBar({
 
         <WishlistButton />
         <CartButton onClick={onOpenCart} />
-        {signedIn && <NotificationBell buttonClassName="size-10 rounded-lg border-0" />}
-        {signedIn && <WalletPill />}
         <ThemeToggle className="size-10 border-0" />
         <Link
           href="/account"
@@ -332,7 +320,6 @@ function MobileBar({
   slot,
   showSearch = true,
   onOpenCart,
-  signedIn,
 }: {
   areas: AreaChoice[];
   chosen: AreaChoice | null;
@@ -340,7 +327,6 @@ function MobileBar({
   slot?: ReactNode;
   showSearch?: boolean;
   onOpenCart: () => void;
-  signedIn: boolean;
 }) {
   return (
     <div className="px-5 lg:hidden">
@@ -433,11 +419,6 @@ function MobileBar({
             so there is still somewhere for the state to move. */}
         <ThemeToggle className="tap-target relative" />
 
-        {/* The balance, where the reference puts it. Renders nothing
-            for a signed-out reader or an empty wallet — see
-            `WalletPill`. */}
-        {signedIn && <WalletPill />}
-
         {/* Saved, then basket. Two halves of the same habit — the things
             you are considering and the things you have chosen — so they
             sit together rather than one being in the header and the other
@@ -451,7 +432,6 @@ function MobileBar({
         </Link>
 
         <CartPill onClick={onOpenCart} />
-        {signedIn && <NotificationBell buttonClassName="tap-target relative" />}
 
         <Link
           href="/account"

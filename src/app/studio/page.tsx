@@ -7,7 +7,7 @@ import { PinGrid } from "@/components/storefront/studio/PinGrid";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Camera, Play, Sparkle } from "@/components/icons";
 import { getSession } from "@/lib/auth/session";
-import { countFeed, countWatchFeed, listFacets, listFeed } from "@/lib/data/studio";
+import { countWatchFeed, listFacets, listFeed } from "@/lib/data/studio";
 import { countFilters, readFilters, toQueryString } from "@/lib/studio/query";
 
 export const metadata: Metadata = {
@@ -52,10 +52,14 @@ export default async function StudioPage({
     q: filters.q ?? undefined,
   };
 
-  const [feed, facets, total, clips] = await Promise.all([
+  /* No `countFeed` here. Discover used to open with "N rooms" above the
+     wall and no longer draws it, and counting the feed is a second pass
+     over the same filtered set — so the line went and the query went
+     with it rather than being computed for nobody. Search still counts,
+     because there the number is the answer. */
+  const [feed, facets, clips] = await Promise.all([
     listFeed(session?.userId ?? null, query),
     listFacets(),
-    countFeed(query),
     countWatchFeed(),
   ]);
 
@@ -70,7 +74,7 @@ export default async function StudioPage({
             gone, so the masthead's tab row is rendered here too, without
             the display heading the top bar already carries. */}
         <div className="lg:hidden">
-          <StudioChrome title="Studio" />
+          <StudioChrome title="Studio" quietTitle />
         </div>
 
         {/* The way into the watch feed, and it is here rather than a
@@ -100,7 +104,7 @@ export default async function StudioPage({
           </Link>
         )}
 
-        <StudioFilters facets={facets} filters={filters} resultCount={total} />
+        <StudioFilters facets={facets} filters={filters} resultCount={null} />
 
         <PinGrid
           initial={feed.ideas}

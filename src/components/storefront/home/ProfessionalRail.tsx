@@ -1,10 +1,9 @@
-import { Bolt, CheckCircle, Clock, Pin, Star } from "@/components/icons";
+import { CheckCircle } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/components/ui/cn";
 import { formatPrice } from "@/lib/types/catalog";
 import {
   initialsOf,
-  jobsLabel,
   PROFESSIONALS_ARE_SAMPLE,
   type Professional,
 } from "@/lib/data/professionals";
@@ -112,55 +111,20 @@ export function ProfessionalRail({
               </span>
             </div>
 
-            {/* Only what the roster actually carries. A rating needs a
-                review table, a job count needs booking history and a
-                response time needs measuring — none of the three exist,
-                and inventing them beside a real person's name is a claim
-                they never agreed to. Where they are absent the card says
-                where someone works and when, which is what a customer
-                picking a tradesperson is deciding on anyway. */}
-            {/* Rendered only when there is something in it. An empty
-                flex row still spends the card's gap, which left a hole
-                under the name of everyone the sheet records no area or
-                availability for. */}
-            {(person.rating != null ||
-              person.jobsCompleted != null ||
-              person.responseMinutes != null ||
-              person.area ||
-              person.availability) && (
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-              {person.rating != null && (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-accent-wash px-2 py-1 text-caption font-semibold text-ink">
-                  <Star className="size-3.5 text-accent" />
-                  <span className="nums">{person.rating.toFixed(1)}</span>
-                </span>
-              )}
-              {person.jobsCompleted != null && (
-                <span className="nums truncate text-caption text-muted">
-                  {jobsLabel(person.jobsCompleted)}
-                </span>
-              )}
-              {person.responseMinutes != null && (
-                <span className="inline-flex shrink-0 items-center gap-1 text-caption text-success">
-                  <Bolt className="size-3.5" />
-                  <span className="nums">{person.responseMinutes} min</span>
-                </span>
-              )}
-              {person.area && (
-                <span className="inline-flex min-w-0 items-center gap-1 text-caption text-muted">
-                  <Pin className="size-3.5 shrink-0 text-accent" />
-                  <span className="truncate">{person.area}</span>
-                </span>
-              )}
-              {person.availability && (
-                <span className="inline-flex min-w-0 items-center gap-1 text-caption text-muted">
-                  <Clock className="size-3.5 shrink-0 text-accent" />
-                  <span className="truncate">{person.availability}</span>
-                </span>
-              )}
-            </div>
-            )}
+            {/* The meta row is gone, at the owner's instruction.
 
+                It carried where someone works and when — "Paschim Vihar
+                (National Market)", "All days, mornings" — on the
+                argument that with no rating, job count or response time
+                in the data, those two are what a customer picking a
+                tradesperson decides on. The card is the name, the trade
+                and how the fee is arrived at now.
+
+                `rating`, `jobsCompleted` and `responseMinutes` had
+                renderings here too and never had data behind them; they
+                are off the card with the rest. Nothing invented a value
+                then and nothing does now, which was the point worth
+                keeping. */}
             {/* Stacked in the rail, side by side everywhere else. The
                 reference's card puts a four-character fee next to the
                 button; this one often carries "Quoted after the visit"

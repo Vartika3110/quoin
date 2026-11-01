@@ -77,16 +77,6 @@ export function Gallery({ product }: { product: Product }) {
               zoomed && "scale-[1.8]",
             )}
           />
-
-          {product.photoIsIllustration && (
-            /* Says what the picture is. A generated image of a real SKU
-             shown without this is a claim about goods the customer will
-             receive that nobody has photographed. */
-            <p className="absolute inset-x-0 bottom-0 bg-deep/75 px-4 py-2 text-center text-micro text-on-deep backdrop-blur-sm">
-              Illustration only — the product you receive may differ in
-              appearance.
-            </p>
-          )}
         </div>
       </div>
 
