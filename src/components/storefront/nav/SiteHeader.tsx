@@ -322,10 +322,12 @@ function MobileBar({
 
           What that costs, recorded because it is not obvious from here:
 
-          - `/account` and `/account/wishlist` have no entry point on a
-            phone at all. The avatar was the last one — the Account tab
-            came off `MobileTabBar` in the same pass, on the reasoning
-            that the header still carried it. It no longer does.
+          - `/account` is reached from the Account tab in
+            `MobileTabBar`, which was taken off in the same pass as this
+            row and put straight back when the pair of changes turned
+            out to leave the page — and Log out with it — unreachable on
+            a phone. `/account/wishlist` has no direct entry point of
+            its own any more; it is one tap inside Account.
           - The basket opens only from the floating cart bar, which
             draws itself when there is something in it. An empty cart
             cannot be opened, which is mostly fine and is a change.
