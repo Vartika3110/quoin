@@ -148,6 +148,13 @@ export async function GET(request: Request) {
       WHATSAPP_PHONE_NUMBER_ID: describe("WHATSAPP_PHONE_NUMBER_ID"),
       WHATSAPP_ACCESS_TOKEN: describe("WHATSAPP_ACCESS_TOKEN"),
       WHATSAPP_OTP_TEMPLATE: describe("WHATSAPP_OTP_TEMPLATE"),
+
+      /* Not load-bearing — nothing refuses to run without it — but
+         listed because its absence is invisible by construction. An
+         unalerted deploy looks exactly like a healthy one right up to
+         the moment it does not, which is the lesson of the three weeks
+         of rejected webhooks this endpoint was silent about. */
+      ALERT_WEBHOOK_URL: describe("ALERT_WEBHOOK_URL"),
       GOOGLE_CLIENT_ID: describe("GOOGLE_CLIENT_ID"),
       GOOGLE_CLIENT_SECRET: describe("GOOGLE_CLIENT_SECRET"),
       OPENAI_API_KEY: describe("OPENAI_API_KEY"),

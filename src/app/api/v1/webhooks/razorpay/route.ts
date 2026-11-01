@@ -13,6 +13,7 @@ import {
 } from "@/lib/data/consult-sessions";
 import { verifyWebhookSignature } from "@/lib/payments/razorpay";
 import { notifyPaymentSettled } from "@/lib/data/order-notifications";
+import { raise } from "@/lib/alerts";
 
 /**
  * POST /api/v1/webhooks/razorpay
@@ -211,6 +212,21 @@ export async function POST(request: Request) {
        Deliberately says nothing about which. A handler that distinguishes
        "no secret configured" from "bad signature" tells an attacker
        which deploys are worth forging against. */
+    /* The alert this application most needed and did not have. Forty-five
+       of these were logged over three weeks while customers paid and
+       their orders stayed at PENDING_PAYMENT, and nobody was reading the
+       log. The fingerprint goes in the alert and the body never does —
+       an unverified body is attacker-controlled and `SEC-13` is the rule
+       that it is not retained. */
+    raise({
+      kind: "webhook_rejected",
+      summary:
+        "A Razorpay webhook was rejected for an invalid signature. Orders are not being settled.",
+      detail: {
+        event: readEventNameUnverified(rawBody) ?? "unknown",
+        fingerprint: fingerprint(rawBody),
+      },
+    });
     console.warn("[payments] rejected a webhook with an invalid signature");
     await recordDelivery({
       rawBody: null,

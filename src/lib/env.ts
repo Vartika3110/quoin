@@ -320,6 +320,25 @@ const schema = z.object({
   WHATSAPP_OTP_LANGUAGE: z.string().optional(),
 
   CRON_SECRET: z.string().optional(),
+
+  /**
+   * Where an operational alert is posted. Optional, and the whole of
+   * alerting's configuration — see `src/lib/alerts.ts`.
+   *
+   * Unset, alerts still happen; they go to the server log and nowhere
+   * else, which is where they already were. Set to an incoming-webhook
+   * URL (Slack, Discord, or anything that accepts a JSON POST) and the
+   * same events reach somebody who is not reading logs. That difference
+   * is the whole point: the webhook signature failure that cost this
+   * application three weeks of unsettled orders was in the logs the
+   * entire time.
+   *
+   * A URL rather than a vendor SDK, because the thing being bought here
+   * is "a human finds out", and the cheapest version of that does not
+   * need a dependency. A real error-tracking service is a second sink
+   * behind the same `AlertSink` interface when one is wanted.
+   */
+  ALERT_WEBHOOK_URL: z.string().url().optional(),
 });
 
 type Env = z.infer<typeof schema>;
@@ -370,6 +389,7 @@ function load(): Env {
         WHATSAPP_OTP_TEMPLATE: process.env.WHATSAPP_OTP_TEMPLATE,
         WHATSAPP_OTP_LANGUAGE: process.env.WHATSAPP_OTP_LANGUAGE,
         CRON_SECRET: process.env.CRON_SECRET,
+        ALERT_WEBHOOK_URL: process.env.ALERT_WEBHOOK_URL,
       };
     }
 
