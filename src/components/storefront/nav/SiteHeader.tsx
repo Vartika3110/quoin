@@ -116,14 +116,7 @@ export function SiteHeader({
         )}
       >
         {phoneBar && (
-          <MobileBar
-            areas={areas}
-            chosen={chosen}
-            scrolled={scrolled}
-            slot={mobileSlot}
-            showSearch={phoneSearch}
-            onOpenCart={() => setCartOpen(true)}
-          />
+          <MobileBar slot={mobileSlot} showSearch={phoneSearch} />
         )}
         <DesktopBar
           areas={areas}
@@ -314,135 +307,35 @@ function CategoryMenu({
 /* ---------------------------------------------------------------- mobile */
 
 function MobileBar({
-  areas,
-  chosen,
-  scrolled,
   slot,
   showSearch = true,
-  onOpenCart,
 }: {
-  areas: AreaChoice[];
-  chosen: AreaChoice | null;
-  scrolled: boolean;
   slot?: ReactNode;
   showSearch?: boolean;
-  onOpenCart: () => void;
 }) {
   return (
     <div className="px-5 lg:hidden">
-      {/* The wordmark, the area, and the controls that are about *you*
-          rather than about the catalogue: the palette, the basket total
-          and the account.
+      {/* **The utility row is gone**, at the owner's instruction: the
+          area picker, the theme toggle, saved, the basket and the
+          account avatar all came off this bar together, and the phone
+          header is now the search field and Consult.
 
-          The wordmark is back. It was dropped on the argument that the
-          reference design gives the whole top line to the address and
-          that Home has a tab at the bottom — both true, and neither is
-          the job a wordmark does. On a phone, with the site's own chrome
-          gone on Studio and a bottom bar that looks like an app's, the
-          top-left mark is the only thing on screen that says which site
-          this is, and it is the control everyone reaches for to get back
-          to the front. `shrink-0` so it never compresses; the address
-          beside it truncates instead, because a truncated place name is
-          still legible and a squeezed wordmark is not.
+          What that costs, recorded because it is not obvious from here:
 
-          16px and 0.1em, not the desktop's 24px and 0.18em: five capitals
-          with generous tracking is 80px of a 350px line, and the address
-          is what pays for it. Once an area is chosen the label is one
-          short word and both fit; "Choose your area" is the unset state
-          and the one that truncates. */}
-      {/* **This row is what scrolls away; search is what stays.** It was
-          the other way round once and then neither moved, and both were
-          wrong. The promise and the address are read on arrival and then
-          never again — they answer "will you come to me", which is a
-          question asked once. Search is asked continuously. So the block
-          that has done its job folds up, and the toolbar underneath it
-          rides to the top of the screen.
+          - `/account` and `/account/wishlist` have no entry point on a
+            phone at all. The avatar was the last one — the Account tab
+            came off `MobileTabBar` in the same pass, on the reasoning
+            that the header still carried it. It no longer does.
+          - The basket opens only from the floating cart bar, which
+            draws itself when there is something in it. An empty cart
+            cannot be opened, which is mostly fine and is a change.
+          - The service area cannot be changed on a phone. The cookie
+            still decides what the catalogue says about delivery; there
+            is simply no control for it here any more.
+          - Dark mode cannot be turned on from a phone. The preference
+            still follows the system and still persists.
 
-          `grid-rows` rather than `height: auto`, because a height
-          transition from `auto` does not animate at all. */}
-      {/* Unmounted rather than collapsed. A zero-height grid row animates
-          nicely and still leaves its children in the layout — they keep
-          their geometry, and here the account avatar carried on painting
-          over the search field underneath it. A row that is gone should be
-          gone; the animation is not worth one control sitting on top of
-          another. */}
-      {!scrolled && (
-        <div>
-      <div
-        className={cn(
-          "flex items-center gap-1.5 transition-[padding] duration-200 ease-out-quart",
-          /* Three bands stack before any content on a phone — this one,
-             the search field, and the entry cards — and each used to
-             carry its own generous padding. Sixty of the header's 263px
-             were padding alone. Trimmed together rather than one at a
-             time, because the complaint is the sum, not any single
-             band. */
-          "pb-0.5 pt-2",
-        )}
-      >
-        {/* The locality, and no delivery promise over it.
-
-            "Quoin in 18 minutes" used to head this block, from the
-            reference design, drawn from `ServiceArea.etaMinutes` — the
-            operator's own number for the chosen locality rather than a
-            constant invented here. It is gone at the owner's
-            instruction, and the catalogue agrees with them: nothing in
-            it is stocked as `INSTANT`, every product card quotes 45
-            minutes or a lead time in days, and the "In 18 minutes"
-            filter chip was removed for exactly this reason (see
-            `QuickFilters`). A headline promising eighteen minutes above
-            a grid that says forty-five is not a bold claim, it is the
-            page contradicting itself.
-
-            The picker stays. "Do you come to Janakpuri" is a real
-            question with a real answer, and this is the control that
-            changes it. */}
-        <div className="min-w-0 flex-1">
-          <LocationPicker
-            areas={areas}
-            selected={chosen}
-            compact
-            className="-ml-1 min-w-0"
-          />
-        </div>
-
-        {/* 36px of artwork, 44px of target — see `.tap-target`. Three
-            circles this size sit in a row a thumb has to hit while
-            walking a site, and the visual size is what the design fixes,
-            not the reach.
-
-            The glyphs are `text-ink`, not `text-muted`. A 20px line icon
-            is thin enough that muted against the cream ground lands near
-            3:1, which is under the 4.5:1 these have to clear — and a
-            header control that is hard to see is one that gets tapped by
-            accident. Hover goes to the accent rather than back to ink,
-            so there is still somewhere for the state to move. */}
-        <ThemeToggle className="tap-target relative" />
-
-        {/* Saved, then basket. Two halves of the same habit — the things
-            you are considering and the things you have chosen — so they
-            sit together rather than one being in the header and the other
-            three taps into the account menu. */}
-        <Link
-          href="/account/wishlist"
-          aria-label="Saved products"
-          className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full text-ink transition-colors hover:text-accent"
-        >
-          <Heart className="size-5" />
-        </Link>
-
-        <CartPill onClick={onOpenCart} />
-
-        <Link
-          href="/account"
-          aria-label="Account"
-          className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full border border-line text-ink transition-colors hover:text-accent"
-        >
-          <User className="size-5" />
-        </Link>
-      </div>
-        </div>
-      )}
+          Each of these is one line to put back. */}
 
       {/* **Nothing collapses on scroll any more.** Search and the four
           doors used to fold away into a zero-height row, leaving only the
@@ -632,30 +525,6 @@ function AssistantButton({ onOpen }: { onOpen: () => void }) {
  * The badge is absent at zero rather than reading "0": an empty basket
  * has nothing to report, and the icon alone is still the affordance.
  */
-function CartPill({ onClick }: { onClick: () => void }) {
-  const { count, ready } = useCart();
-  /* `ready` is false until the cart has been read out of storage.
-     Rendering the count before then flashes a badge onto an empty
-     basket, or none onto a full one. */
-  const showCount = ready && count > 0;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={showCount ? `Cart, ${count} items` : "Cart, empty"}
-      className="tap-target relative grid size-9 shrink-0 place-items-center rounded-full text-ink transition-colors hover:text-accent"
-    >
-      <Cart className="size-5" />
-      {showCount && (
-        <span className="nums absolute -right-0.5 -top-0.5 grid min-w-4.5 place-items-center rounded-full bg-accent px-1 text-[0.625rem] font-bold leading-4 text-on-accent">
-          {count > 99 ? "99+" : count}
-        </span>
-      )}
-    </button>
-  );
-}
-
 /* ----------------------------------------------------------------- parts */
 
 /**
