@@ -28,6 +28,15 @@ import { createServerClient } from "@supabase/ssr";
  * payment and a real Studio video through it, fix whatever it names, and
  * only then rename the header. That rename is the entire remaining step,
  * and there is a note at the constant below marking it.
+ *
+ * Violations now report to `/api/v1/csp-report`, which alerts on each
+ * distinct one. Until that endpoint existed, "fix whatever it names"
+ * could not be done at all: a report-only policy with no `report-uri`
+ * names things to each visitor's own browser console and to nobody able
+ * to act on them. The header is still report-only — flipping it is a
+ * judgement to make once a test payment has run through it and the
+ * reports have gone quiet, not something to do blind on a checkout that
+ * cannot currently be exercised end to end.
  */
 
 /**
@@ -88,6 +97,12 @@ const CSP = [
   /* Turns any accidental `http://` subresource into `https://` rather
      than letting it become mixed content on a page taking card details. */
   "upgrade-insecure-requests",
+  /* Where a violation is reported. `report-uri` is deprecated in favour
+     of `report-to` and is still the one every browser implements;
+     `report-to` additionally needs a `Reporting-Endpoints` header and a
+     named group, which is worth adding the day a browser drops this
+     one. */
+  "report-uri /api/v1/csp-report",
 ].join("; ");
 
 /**

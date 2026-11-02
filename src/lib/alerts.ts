@@ -16,11 +16,15 @@ import { env } from "@/lib/env";
  * would have caught the outage, pushed somewhere a person sees without
  * going to look.
  *
- * **The two events.** An unhandled 5xx from any API route, and a webhook
- * delivery rejected for a bad signature. Both are raised from the one
+ * **The events.** An unhandled 5xx from any API route, a webhook
+ * delivery rejected for a bad signature, and a resource the content
+ * policy would have blocked. The first two are raised from the one
  * place each already passes through — `handler()` in `http.ts` and the
- * rejection branch of the Razorpay route — rather than sprinkled around,
- * so there is no way to add a route that quietly opts out.
+ * rejection branch of the Razorpay route — rather than sprinkled
+ * around, so there is no way to add a route that quietly opts out. The
+ * third arrives from a browser at `/api/v1/csp-report`, which dedupes
+ * before it raises: a directive that fires on the home page fires for
+ * every visitor.
  *
  * **What an alert may contain.** A summary and a small bag of scalars,
  * and both are written at the call site by code that knows what is safe
@@ -37,7 +41,7 @@ import { env } from "@/lib/env";
  * than no alerting at all.
  */
 
-export type AlertKind = "unhandled_5xx" | "webhook_rejected";
+export type AlertKind = "unhandled_5xx" | "webhook_rejected" | "csp_violation";
 
 export interface Alert {
   kind: AlertKind;

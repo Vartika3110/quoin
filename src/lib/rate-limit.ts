@@ -116,6 +116,18 @@ const BUCKETS: Record<string, Bucket> = {
    * script. */
   checkoutOrder: { windowMs: 10 * 60_000, max: 12, hits: new Map() },
   checkoutVerify: { windowMs: 10 * 60_000, max: 20, hits: new Map() },
+
+  /* ---- CSP violation reports ------------------------------------------
+   *
+   * Different from every bucket above: the caller is a browser posting
+   * unauthenticated, and a single bad deploy makes every visitor a
+   * reporter at once. The limit is not protecting a resource from abuse
+   * so much as stopping a policy mistake from becoming a self-inflicted
+   * flood — and the endpoint it guards does nothing but count, so being
+   * refused costs nothing. Tight on purpose: once a browser has told us
+   * a directive is firing, the ninety-first report of the same minute
+   * adds no information. */
+  cspReport: { windowMs: 60_000, max: 90, hits: new Map() },
 };
 
 /**
