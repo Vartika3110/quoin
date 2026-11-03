@@ -126,7 +126,18 @@ export function HeroCarousel({
         {children.map((slide, i) => (
           <div
             key={i}
-            className="w-full shrink-0 snap-start"
+            /* `flex`, so the slide inside fills this panel's height.
+
+               The track is a flex row, so every panel is already as tall
+               as the tallest slide — and each slide's height is set by
+               its own text block, which differs by a line of headline.
+               Without this the shorter slides kept their content height
+               inside a taller panel, their `fill` background image
+               stopped where the section stopped, and the card's own
+               ground showed as a band under the photograph. Making the
+               panel a flex container stretches the section to meet it;
+               the section carries `w-full` for the cross axis. */
+            className="flex w-full shrink-0 snap-start"
             /* Hidden from assistive tech while off-screen, so a screen
                reader is not read three competing headlines in a row. */
             aria-hidden={i !== active}

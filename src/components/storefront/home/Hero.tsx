@@ -122,7 +122,12 @@ export function Hero() {
 
 function Slide({ slide, first }: { slide: HeroSlide; first: boolean }) {
   return (
-    <section className="relative isolate overflow-hidden">
+    /* `w-full` because the panel in `HeroCarousel` is a flex container:
+       it stretches this section to the track's height, which is the
+       tallest slide's, and this fills the width. Every slide is then the
+       same height, the background covers all of it, and the card does
+       not change height as the carousel advances. */
+    <section className="relative isolate w-full overflow-hidden">
       {/* Behind everything, at every width. The text block below sets
           the card's height and this stretches to whatever that turns out
           to be, rather than the other way round.
