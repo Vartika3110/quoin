@@ -194,6 +194,40 @@ locked out of their only button — and is revocable by rotating the column.
 Set `WHATSAPP_PHONE_NUMBER_ID` and `WHATSAPP_ACCESS_TOKEN` from steps 2
 and 4. See `docs/environment.md` for all seven variables.
 
+### Business verification
+
+Step 1 is not optional for this app, and it is worth being clear about
+why. Every message in §2 goes to somebody who has **not** messaged Quoin
+first — a customer who paid an hour ago, a vendor being handed an order.
+WhatsApp calls that a business-initiated conversation, and an unverified
+business is held to a trial allowance of a few per day to a handful of
+pre-registered test numbers. That is enough to prove the integration
+works and not enough to run a shop. Verification is also what gets the
+business number's display name approved.
+
+What to have ready before starting:
+
+- The **GST registration certificate** (Form REG-06) as the official PDF
+  from the GST portal — Services → User Services → View/Download
+  Certificates. A photograph or a screenshot of the portal is routinely
+  rejected; the generated PDF is not.
+- The **legal entity name exactly as the certificate spells it**, suffix
+  included (`… PRIVATE LIMITED`), not the trading name.
+- The **registered address as the certificate formats it.**
+- A **business phone number somebody answers**, for the confirmation
+  call or SMS.
+
+Then, in Meta Business Settings → Security Centre → Start Verification:
+confirm the business details, upload the certificate, confirm the phone
+number, submit. Review is usually a couple of working days.
+
+**A name or address that does not match the certificate is the common
+rejection**, and it costs another review cycle rather than producing a
+useful error, so copy both out of the PDF rather than typing them.
+
+This is a different thing from the green "official business account"
+badge, which is a separate application and which none of this needs.
+
 ### The six templates
 
 Register each one in WhatsApp Manager → Message Templates, under the
