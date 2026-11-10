@@ -19,6 +19,14 @@
  * Replacing them is this file and nothing else: put the real values in,
  * set `isSample` to false, and every page that reads from here is correct
  * at once.
+ *
+ * That was aspirational when it was written. The footer read from here;
+ * `/contact`, `/grievance` and `/privacy` carried their own hard-coded
+ * `<ToConfirm>` markers, so filling this file in would have left three
+ * policy pages still saying "to confirm". They now read `CompanyFact`
+ * (`src/app/(legal)/legal-ui.tsx`), which prints a value from here only
+ * once `COMPANY_DETAILS_ARE_SAMPLE` is false, so the sentence above is
+ * true and `npm run check:legal` reports on both halves.
  */
 
 export interface CompanyDetails {
@@ -29,6 +37,20 @@ export interface CompanyDetails {
   registeredAddress: string;
   gstin: string;
   supportEmail: string;
+  /**
+   * Where data requests go — a copy of someone's data, a correction, an
+   * account deletion. Published on `/privacy` under "Your rights".
+   *
+   * Its own field rather than reusing `supportEmail`, even though at a
+   * small business the two are normally one mailbox with an alias in
+   * front of it. Two reasons, and neither is tidiness. A deletion
+   * request arrives with a statutory clock on it and wants to be
+   * filterable out of a queue of delivery questions. And if the two ever
+   * do diverge — someone is hired to handle this, or counsel asks for a
+   * separate route — that should be an edit to this file, not a change
+   * to the wording of a policy page.
+   */
+  privacyEmail: string;
   supportPhone: string;
   /** When somebody actually answers that phone. */
   supportHours: string;
@@ -60,6 +82,7 @@ export const COMPANY: CompanyDetails = {
   registeredAddress: "SAMPLE — registered office address, New Delhi 110058",
   gstin: "SAMPLE — 07AAAAA0000A1Z5",
   supportEmail: "sample@quoin.co.in",
+  privacyEmail: "sample-privacy@quoin.co.in",
   supportPhone: "+91 00000 00000",
   supportHours: "Mon–Sat, 10am–7pm",
   grievanceOfficer: {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Clause, LegalPage, ToConfirm } from "../legal-ui";
+import { Clause, CompanyFact, LegalPage } from "../legal-ui";
+import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Grievance officer — Quoin",
@@ -13,9 +14,17 @@ export const metadata: Metadata = {
  * named person, a way to reach them, and a stated time to acknowledge and
  * to resolve.
  *
- * The name and the address are `[LEGAL TO CONFIRM]` because a grievance
- * officer is a real appointment, not a page element — inventing one would
- * be a false statement about who is accountable.
+ * The name and the address show as `[LEGAL TO CONFIRM]` until somebody
+ * has actually been appointed, because a grievance officer is a real
+ * appointment and not a page element — inventing one would be a false
+ * statement about who is accountable. They come from `COMPANY`
+ * (`src/lib/company.ts`) through `CompanyFact`, which is what holds that
+ * line: it prints nothing from that file until
+ * `COMPANY_DETAILS_ARE_SAMPLE` is false.
+ *
+ * The designation below is hard-coded rather than a field, because the
+ * Rules ask for the role this page *is* — there is no version of it where
+ * the answer is not "Grievance Officer".
  */
 export default function GrievancePage() {
   return (
@@ -36,7 +45,10 @@ export default function GrievancePage() {
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Name</dt>
               <dd className="text-ink">
-                <ToConfirm>grievance officer name</ToConfirm>
+                <CompanyFact
+                  label="grievance officer name"
+                  value={COMPANY.grievanceOfficer.name}
+                />
               </dd>
             </div>
             <div className="flex gap-3">
@@ -46,19 +58,25 @@ export default function GrievancePage() {
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Email</dt>
               <dd className="text-ink">
-                <ToConfirm>grievance email address</ToConfirm>
+                <CompanyFact
+                  label="grievance email address"
+                  value={COMPANY.grievanceOfficer.email}
+                />
               </dd>
             </div>
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Phone</dt>
               <dd className="text-ink">
-                <ToConfirm>grievance phone number</ToConfirm>
+                <CompanyFact
+                  label="grievance phone number"
+                  value={COMPANY.grievanceOfficer.phone}
+                />
               </dd>
             </div>
             <div className="flex gap-3">
               <dt className="w-28 shrink-0 text-faint">Address</dt>
               <dd className="text-ink">
-                <ToConfirm>registered address</ToConfirm>
+                <CompanyFact label="registered address" value={COMPANY.registeredAddress} />
               </dd>
             </div>
           </dl>

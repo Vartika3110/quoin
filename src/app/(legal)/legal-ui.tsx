@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { COMPANY_DETAILS_ARE_SAMPLE } from "@/lib/company";
 
 /**
  * The furniture every policy page shares.
@@ -66,4 +67,35 @@ export function ToConfirm({ children }: { children: ReactNode }) {
       [LEGAL TO CONFIRM] {children}
     </mark>
   );
+}
+
+/**
+ * A company detail from `src/lib/company.ts`, printed only once it is
+ * real.
+ *
+ * These pages used to carry their own `<ToConfirm>` markers for the
+ * registered name, the GSTIN, the grievance officer and the rest — the
+ * same facts `COMPANY` already held, written down a second time. That is
+ * how a registered address comes to disagree with itself across two
+ * pages, and it also meant filling in `company.ts` updated the footer
+ * and left `/contact`, `/grievance` and `/privacy` still saying "to
+ * confirm".
+ *
+ * So the page names the fact and where it comes from, and this decides
+ * whether it can be shown. While `COMPANY_DETAILS_ARE_SAMPLE` holds,
+ * `value` is never rendered at all: the placeholders in `COMPANY` are
+ * shaped like the real thing, and a page that printed one would be
+ * asserting a GSTIN nobody has verified — which is the failure the whole
+ * arrangement exists to prevent. `label` is what a customer and
+ * `check:legal` both read in the meantime, so write it as the thing
+ * somebody still has to supply ("registered address"), not as a variable
+ * name.
+ *
+ * `value` is therefore required but unused in the sample case, on
+ * purpose: it keeps the page's claim about *which* detail this is next
+ * to the label, so the two cannot drift.
+ */
+export function CompanyFact({ label, value }: { label: string; value: string }) {
+  if (COMPANY_DETAILS_ARE_SAMPLE) return <ToConfirm>{label}</ToConfirm>;
+  return <>{value}</>;
 }

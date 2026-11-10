@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Clause, LegalPage, ToConfirm } from "../legal-ui";
+import { Clause, CompanyFact, LegalPage, ToConfirm } from "../legal-ui";
+import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Privacy policy — Quoin",
@@ -21,9 +22,10 @@ export default function PrivacyPage() {
     >
       <Clause heading="Who we are">
         <p>
-          Quoin is operated by <ToConfirm>registered entity name</ToConfirm>,
-          registered at <ToConfirm>registered address</ToConfirm>, GSTIN{" "}
-          <ToConfirm>GSTIN</ToConfirm>.
+          Quoin is operated by{" "}
+          <CompanyFact label="registered entity name" value={COMPANY.legalName} />, registered
+          at <CompanyFact label="registered address" value={COMPANY.registeredAddress} />,
+          GSTIN <CompanyFact label="GSTIN" value={COMPANY.gstin} />.
         </p>
       </Clause>
 
@@ -81,8 +83,8 @@ export default function PrivacyPage() {
         <p>
           You can ask for a copy of your data, ask us to correct it, or ask us
           to delete your account and everything in it. Write to{" "}
-          <ToConfirm>privacy email address</ToConfirm> and we will answer within{" "}
-          <ToConfirm>response window</ToConfirm>.
+          <CompanyFact label="privacy email address" value={COMPANY.privacyEmail} /> and we
+          will answer within <ToConfirm>response window</ToConfirm>.
         </p>
       </Clause>
     </LegalPage>
