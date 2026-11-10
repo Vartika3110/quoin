@@ -13,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      updated="2026-09-22"
+      updated="2026-11-10"
       intro={
         <p>
           This describes what Quoin collects when you browse, order or book a

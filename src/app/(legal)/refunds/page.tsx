@@ -12,7 +12,7 @@ export default function RefundsPage() {
   return (
     <LegalPage
       title="Refunds & cancellations"
-      updated="2026-09-22"
+      updated="2026-11-10"
       intro={
         <p>
           Building materials are not all returnable, and this page says plainly
@@ -50,7 +50,13 @@ export default function RefundsPage() {
 
       <Clause heading="How a refund is paid">
         <p>
-          To the method you paid with. A card or UPI refund is initiated within{" "}
+          {/* "Usually", not "To the method you paid with" flatly. That
+              read as a rule the next sentence then broke: money taken in
+              cash has no method to return to, which is why
+              `POLICY.offlineRefundMethod` is a bank transfer. The
+              contradiction was invisible while that was a placeholder
+              and plain once it printed. */}
+          Usually to the method you paid with. A card or UPI refund is initiated within{" "}
           <PolicyFact label="initiation window" value={POLICY.refundInitiationWindow} /> of the return being accepted
           and reaches you on your bank&rsquo;s own timeline, typically five to
           seven working days. An order paid on callback is refunded by{" "}

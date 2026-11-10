@@ -10,22 +10,33 @@
  * publishing the registered address should not wait on somebody picking
  * a returns window.
  *
- * ## Everything here is a PROPOSAL until `POLICY_IS_SAMPLE` is false
+ * ## These are live commitments
  *
- * The values below are conventional defaults for an Indian
- * building-materials business, not decisions anybody at Quoin has made.
- * While the flag holds, the policy pages render `[LEGAL TO CONFIRM]`
- * rather than printing them, so a customer is never shown a window the
- * business has not agreed to and could not be held to.
+ * Agreed on 10 November 2026 and published: `POLICY_IS_SAMPLE` is false,
+ * so `/refunds` and `/privacy` print these values rather than a
+ * placeholder, and a customer can hold Quoin to every one of them.
+ * Changing a number here changes what the business has promised, so it
+ * is a decision and not a tidy-up — move the `updated` date on the page
+ * that quotes it in the same commit.
  *
- * One of them is different, and it is worth knowing which.
- * `returnWindowDays` is **already published**: every product page has
- * been telling customers "returned within 7 days" (see `AFTER_SALE`,
+ * Two of them were never free choices, and their own field comments say
+ * why: `dataRetentionPeriod` is set by section 36 of the CGST Act, and
+ * `offlineRefundMethod` cannot be "the method you paid with" because
+ * cash has no method to return to.
+ *
+ * `returnWindowDays` has a history worth keeping. Every product page was
+ * already telling customers "returned within 7 days" (see `AFTER_SALE`,
  * `src/app/p/[slug]/page.tsx`) while `/refunds` said the window was
- * undecided. That is the disagreement this file exists to make
- * impossible — the product page now reads the number from here, so the
- * two cannot drift again, and 7 is recorded because it is what the site
- * has been promising, not because it was picked.
+ * undecided — a promise on the busiest pages on the site that the policy
+ * page did not back. That is the disagreement this file exists to make
+ * impossible: the product page reads the number from here, so the two
+ * cannot drift again, and 7 is recorded because it is what the site had
+ * been promising, not because it was picked.
+ *
+ * The flag stays, for the next field. Anything added here starts as a
+ * proposal, and the honest way to add one is to turn the flag back on
+ * until it has been agreed too — `npm run check:legal` reads it, and
+ * reports every window the pages would be asserting.
  */
 
 export interface PolicyWindows {
@@ -80,12 +91,15 @@ export interface PolicyWindows {
 /**
  * True while any value above is still a proposal rather than a decision.
  *
- * Flip to `false` in the same commit that settles them. One manual
+ * False since 10 November 2026, when these were agreed. One manual
  * switch, for the reason `COMPANY_DETAILS_ARE_SAMPLE` is one: a
  * half-agreed file should stay flagged, and `npm run check:legal` reads
- * this to decide whether the policy pages are publishable.
+ * this to decide whether the policy pages are publishable. Turn it back
+ * on when a *new* window is added and not yet settled — the cost is that
+ * the agreed ones stop printing too, which is the right trade for a page
+ * that would otherwise assert something nobody chose.
  */
-export const POLICY_IS_SAMPLE = true;
+export const POLICY_IS_SAMPLE = false;
 
 export const POLICY: PolicyWindows = {
   returnWindowDays: 7,
