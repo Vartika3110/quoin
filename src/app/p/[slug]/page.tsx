@@ -34,6 +34,7 @@ import {
 } from "@/lib/data/catalog";
 import { listServiceAreas } from "@/lib/data/service-areas";
 import { BADGE_LABEL, type FulfilmentType } from "@/lib/types/catalog";
+import { POLICY } from "@/lib/policy";
 
 /** Priced from the database on every request — see the note in page.tsx. */
 export const dynamic = "force-dynamic";
@@ -82,7 +83,12 @@ const AFTER_SALE = [
   {
     Icon: Refresh,
     title: "Returns",
-    body: "Unopened and unfitted goods can be returned within 7 days. Cut-to-order items cannot.",
+    /* Read from `POLICY`, not written here. This line said "within 7
+       days" while `/refunds` said the window was undecided — a promise
+       on every product page that the policy page did not back. The
+       number is the same one `/refunds` prints; neither can move
+       without the other now. */
+    body: `Unopened and unfitted goods can be returned within ${POLICY.returnWindowDays} days. Cut-to-order items cannot.`,
   },
   {
     Icon: Headset,

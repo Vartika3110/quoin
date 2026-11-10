@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { COMPANY_DETAILS_ARE_SAMPLE } from "@/lib/company";
+import { POLICY_IS_SAMPLE } from "@/lib/policy";
 
 /**
  * The furniture every policy page shares.
@@ -71,7 +72,7 @@ export function ToConfirm({ children }: { children: ReactNode }) {
 
 /**
  * A company detail from `src/lib/company.ts`, printed only once it is
- * real.
+ * real. See `PolicyFact` below for its sibling.
  *
  * These pages used to carry their own `<ToConfirm>` markers for the
  * registered name, the GSTIN, the grievance officer and the rest — the
@@ -96,6 +97,26 @@ export function ToConfirm({ children }: { children: ReactNode }) {
  * to the label, so the two cannot drift.
  */
 export function CompanyFact({ label, value }: { label: string; value: string }) {
-  if (COMPANY_DETAILS_ARE_SAMPLE) return <ToConfirm>{label}</ToConfirm>;
-  return <>{value}</>;
+  return <Settled label={label} value={value} settled={!COMPANY_DETAILS_ARE_SAMPLE} />;
+}
+
+/**
+ * A window or period from `src/lib/policy.ts`, printed only once it is a
+ * decision rather than a proposal.
+ *
+ * The same shape as `CompanyFact` and a separate component because it
+ * reads a separate flag. A registered address is confirmed off a
+ * certificate; a returns window is somebody choosing how the business
+ * will behave. Those happen at different times and by different people,
+ * so `/privacy` can go live naming the real entity while the retention
+ * period it quotes is still being settled — or the reverse.
+ */
+export function PolicyFact({ label, value }: { label: string; value: string }) {
+  return <Settled label={label} value={value} settled={!POLICY_IS_SAMPLE} />;
+}
+
+/** Shared by both, so the rule about never rendering an unconfirmed
+    value lives in one place rather than in each wrapper. */
+function Settled({ label, value, settled }: { label: string; value: string; settled: boolean }) {
+  return settled ? <>{value}</> : <ToConfirm>{label}</ToConfirm>;
 }

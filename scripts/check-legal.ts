@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { COMPANY, COMPANY_DETAILS_ARE_SAMPLE } from "../src/lib/company";
+import { POLICY_IS_SAMPLE } from "../src/lib/policy";
 
 /**
  * What is still unfilled on the legal pages.
@@ -20,7 +21,12 @@ import { COMPANY, COMPANY_DETAILS_ARE_SAMPLE } from "../src/lib/company";
  * visible marker, but only while `COMPANY_DETAILS_ARE_SAMPLE` is true,
  * and the real value the moment it is false.
  *
- * Both have to be counted, and the second is why this script imports
+ * `<PolicyFact>` is the same arrangement for `src/lib/policy.ts` — the
+ * returns window, the retention period — behind its own flag, because a
+ * decision about how the business behaves is settled by somebody else,
+ * at some other time, than a fact off a registration certificate.
+ *
+ * All three have to be counted, and the latter two are why this script imports
  * that module rather than only reading page source. `CompanyFact` was
  * introduced by moving those facts out of the pages, and a check that
  * matched `<ToConfirm>` alone would have gone quiet the same day —
@@ -58,6 +64,10 @@ const MARKER = /<ToConfirm>([\s\S]*?)<\/ToConfirm>/g;
    be wrapped onto its own line by the formatter, hence the tolerant
    whitespace. */
 const COMPANY_FACT = /<CompanyFact\s[^>]*?label=(?:"([^"]*)"|\{`([^`]*)`\})/g;
+
+/* The same, for the policy windows. Separate pattern rather than one
+   alternation, so the report can say which file to go and edit. */
+const POLICY_FACT = /<PolicyFact\s[^>]*?label=(?:"([^"]*)"|\{`([^`]*)`\})/g;
 
 /**
  * Whether a value in `company.ts` still reads as a placeholder after the
@@ -116,16 +126,17 @@ async function main() {
       });
     }
 
-    /* Only outstanding while the details are samples. Once the flag is
-       off these print real values, and reporting them would make the
-       check permanently red. */
-    if (COMPANY_DETAILS_ARE_SAMPLE) {
-      for (const match of source.matchAll(COMPANY_FACT)) {
+    /* Only outstanding while the respective flag is on. Once it is off
+       these print real values, and reporting them would make the check
+       permanently red. */
+    for (const [isSample, pattern, source_file] of [
+      [COMPANY_DETAILS_ARE_SAMPLE, COMPANY_FACT, "src/lib/company.ts"],
+      [POLICY_IS_SAMPLE, POLICY_FACT, "src/lib/policy.ts"],
+    ] as const) {
+      if (!isSample) continue;
+      for (const match of source.matchAll(pattern)) {
         const label = (match[1] ?? match[2] ?? "").replace(/\s+/g, " ").trim();
-        outstanding.push({
-          page,
-          item: `${label} — from src/lib/company.ts`,
-        });
+        outstanding.push({ page, item: `${label} — from ${source_file}` });
       }
     }
   }
@@ -156,6 +167,12 @@ async function main() {
     outstanding.push({ page: "company details", item: `COMPANY.${key} still reads as a sample` });
   }
 
+  /* No equivalent sweep for `POLICY`. Its values are real phrases from
+     the day they are written — "48 hours" is not shaped like a
+     placeholder — so there is nothing a string match could find. What
+     makes them outstanding is only that nobody has agreed to them, and
+     `POLICY_IS_SAMPLE` is the whole of that signal. */
+
   if (outstanding.length === 0) {
     console.log(
       `[legal] ${files.length} pages checked, and the company details are filled in.` +
@@ -179,9 +196,9 @@ async function main() {
   console.error(
     "\n[legal] These render to customers as [LEGAL TO CONFIRM] and block" +
       "\n        payment-gateway activation." +
-      "\n\n        Policy decisions live in src/app/(legal)." +
-      "\n        Anything marked \"from src/lib/company.ts\" is fixed by filling that" +
-      "\n        file in and setting COMPANY_DETAILS_ARE_SAMPLE to false.",
+      "\n\n        Anything marked \"from src/lib/...\" is fixed by settling that file" +
+      "\n        and turning its *_IS_SAMPLE flag off. Everything else is wording" +
+      "\n        that still has to be written, in src/app/(legal).",
   );
   process.exitCode = 1;
 }

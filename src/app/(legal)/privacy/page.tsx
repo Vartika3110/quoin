@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Clause, CompanyFact, LegalPage, ToConfirm } from "../legal-ui";
+import { Clause, CompanyFact, LegalPage, PolicyFact } from "../legal-ui";
 import { COMPANY } from "@/lib/company";
+import { POLICY } from "@/lib/policy";
 
 export const metadata: Metadata = {
   title: "Privacy policy — Quoin",
@@ -74,7 +75,8 @@ export default function PrivacyPage() {
       <Clause heading="How long we keep it">
         <p>
           Orders and invoices are kept for{" "}
-          <ToConfirm>statutory retention period</ToConfirm> as tax law requires.
+          <PolicyFact label="statutory retention period" value={POLICY.dataRetentionPeriod} /> as
+          tax law requires.
           Everything else is deleted when you delete your account.
         </p>
       </Clause>
@@ -84,7 +86,8 @@ export default function PrivacyPage() {
           You can ask for a copy of your data, ask us to correct it, or ask us
           to delete your account and everything in it. Write to{" "}
           <CompanyFact label="privacy email address" value={COMPANY.privacyEmail} /> and we
-          will answer within <ToConfirm>response window</ToConfirm>.
+          will answer within{" "}
+          <PolicyFact label="response window" value={POLICY.dataRequestResponseWindow} />.
         </p>
       </Clause>
     </LegalPage>

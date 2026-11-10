@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Clause, LegalPage, ToConfirm } from "../legal-ui";
+import { Clause, LegalPage, PolicyFact } from "../legal-ui";
+import { POLICY } from "@/lib/policy";
 
 export const metadata: Metadata = {
   title: "Refunds & cancellations — Quoin",
@@ -31,7 +32,7 @@ export default function RefundsPage() {
       <Clause heading="What can be returned">
         <p>
           Unopened, undamaged goods in their original packaging, within{" "}
-          <ToConfirm>return window in days</ToConfirm> of delivery.
+          <PolicyFact label="return window in days" value={`${POLICY.returnWindowDays} days`} /> of delivery.
         </p>
         <p>
           Cement, adhesives, paints that have been tinted, and anything cut to
@@ -41,7 +42,7 @@ export default function RefundsPage() {
 
       <Clause heading="Damaged or wrong goods">
         <p>
-          Tell us within <ToConfirm>damage reporting window</ToConfirm> of
+          Tell us within <PolicyFact label="damage reporting window" value={POLICY.damageReportWindow} /> of
           delivery and we will replace the item or refund it in full, including
           any delivery charge. Photographs help and are not required.
         </p>
@@ -50,17 +51,23 @@ export default function RefundsPage() {
       <Clause heading="How a refund is paid">
         <p>
           To the method you paid with. A card or UPI refund is initiated within{" "}
-          <ToConfirm>initiation window</ToConfirm> of the return being accepted
+          <PolicyFact label="initiation window" value={POLICY.refundInitiationWindow} /> of the return being accepted
           and reaches you on your bank&rsquo;s own timeline, typically five to
           seven working days. An order paid on callback is refunded by{" "}
-          <ToConfirm>refund method for offline payments</ToConfirm>.
+          <PolicyFact
+            label="refund method for offline payments"
+            value={POLICY.offlineRefundMethod}
+          />.
         </p>
       </Clause>
 
       <Clause heading="Cancelling a service booking">
         <p>
           A booking can be cancelled free of charge up to{" "}
-          <ToConfirm>service cancellation window</ToConfirm> before the slot.
+          <PolicyFact
+            label="service cancellation window"
+            value={POLICY.serviceCancellationWindow}
+          /> before the slot.
           After that a visit fee may apply where the professional has already
           travelled.
         </p>
