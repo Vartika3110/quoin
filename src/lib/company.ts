@@ -81,13 +81,18 @@ export const COMPANY: CompanyDetails = {
   tradingName: "Quoin",
   registeredAddress: "SAMPLE — registered office address, New Delhi 110058",
   gstin: "SAMPLE — 07AAAAA0000A1Z5",
-  supportEmail: "sample@quoin.co.in",
-  privacyEmail: "sample-privacy@quoin.co.in",
+  /* One address for all three. The fields stay separate so that giving
+     data requests or complaints their own mailbox later is an edit here
+     and not a change to a policy page's wording — see `privacyEmail`
+     above — but today they are one alias on one inbox, which is what a
+     business this size actually runs. */
+  supportEmail: "support@quoin.co.in",
+  privacyEmail: "support@quoin.co.in",
   supportPhone: "+91 00000 00000",
   supportHours: "Mon–Sat, 10am–7pm",
   grievanceOfficer: {
     name: "SAMPLE — grievance officer name",
-    email: "sample-grievance@quoin.co.in",
+    email: "support@quoin.co.in",
     phone: "+91 00000 00000",
   },
 };
