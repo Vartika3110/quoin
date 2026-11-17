@@ -83,3 +83,14 @@ next-env.d.ts
 
 # Scratch output from one-off scripts — not part of the app.
 .tmp-art/
+
+# public/catalogue-preview is deliberately NOT ignored, for the same
+# reason public/catalogue is not: the page that draws these files has to
+# work on a deployed URL, and a deploy without them is a page that
+# explains why it is empty. 1,044 files and 3.9 MB against a pack that is
+# already 214 MB.
+#
+# They are still run output — rebuild them with
+# `python3 research/build-catalogue-preview.py public/catalogue-preview/<name>`
+# rather than editing one by hand — and they move to object storage
+# whenever public/catalogue does.
