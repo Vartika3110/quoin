@@ -116,9 +116,8 @@ const LOCATIONS = ["Janakpuri", "Paschim Vihar", "Pitampura", "Rajendra Nagar"];
 
 export function SiteFooter({
   /**
-   * The home page renders the same four claims under its hero, so it
-   * turns these off rather than stating them twice on one page — see
-   * `TrustRow` in `src/components/storefront/Trust.tsx`.
+   * Off for the home page — see the note on `showTrustPills` in
+   * `AppShell`, which is where the page sets it.
    */
   showTrustPills = true,
 }: {

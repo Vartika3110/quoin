@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { orderLinesSchema } from "@/lib/cart/line-schema";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
+import { enforceKeyed } from "@/lib/rate-limit";
 import {
   InvalidPhoneError,
   deliveryPhoneFor,
@@ -96,6 +97,17 @@ const Body = z.object({
  */
 export const POST = handler(async (request) => {
   const user = await requireUser();
+
+  /* Before the body is read, so a flood costs a map lookup rather than a
+     parse. Keyed by account: see the `checkoutOrder` note in
+     `rate-limit.ts` for why not by address. */
+  enforceKeyed(
+    "checkoutOrder",
+    `u:${user.id}`,
+    (seconds) =>
+      `That is a lot of orders in a short time. Try again in ${Math.ceil(seconds / 60)} minutes, or call us and we will place it for you.`,
+  );
+
   const { addressId, lines, idempotencyKey, paymentMode, contactPhone, saveContactPhone } =
     await parseBody(request, Body);
 

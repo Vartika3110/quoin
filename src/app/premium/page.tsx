@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/storefront/AppShell";
 import { Browse } from "@/components/storefront/browse/Browse";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { SectionHead } from "@/components/ui/Section";
 import { Crown } from "@/components/icons";
 import { getProductFacets, listProducts } from "@/lib/data/catalog";
 import { readBrowseParams, toProductQuery } from "@/lib/browse-request";
@@ -80,17 +79,24 @@ export default async function PremiumPage({
   return (
     <AppShell>
       <div className="pt-4 lg:pt-6">
-        <SectionHead
-          level={1}
-          size="lg"
-          title="Architectural Selects"
-          /* Says what the shelf actually is. "Hand-picked by our design
-             team" would be the natural line here and nobody has picked
-             anything — the page is a price cut of the catalogue, and a
-             customer who reads the subtitle knows exactly what they are
-             looking at. */
-          subtitle="The upper end of the catalogue — every product at ₹5,000 and above, priced from the manufacturer's own list."
-        />
+        {/* The title and its line are not drawn, at the owner's
+            instruction — the page opens on the goods.
+
+            The `h1` stays in the document as `sr-only`. Nothing else on
+            this page is a heading, and the phone bar above it carries
+            search rather than a page name, so deleting it outright
+            would leave `/premium` with no heading at all: a page a
+            screen reader cannot announce and a search engine reads as
+            untitled. The `<title>` in `metadata` is a different thing
+            and does not stand in for it.
+
+            The subtitle is gone rather than hidden. It said what the
+            shelf is — "every product at ₹5,000 and above, priced from
+            the manufacturer's own list" — which was worth saying to a
+            reader who could see it, and is not worth reading aloud to
+            one who cannot. The same sentence is still the page's
+            `description` for search results. */}
+        <h1 className="sr-only">Architectural Selects</h1>
 
         {result.total === 0 ? (
           <div className="px-5 lg:px-0">

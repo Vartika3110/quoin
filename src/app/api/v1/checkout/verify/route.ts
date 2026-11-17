@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ApiError, handler, ok, parseBody, requireUser } from "@/lib/http";
+import { enforceKeyed } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { verifyCheckoutSignature } from "@/lib/payments/razorpay";
 
@@ -36,6 +37,18 @@ const Body = z.object({
  */
 export const POST = handler(async (request) => {
   const user = await requireUser();
+
+  /* Bounded so a failing client cannot loop on signature checks. This is
+     not what makes the HMAC safe — see the `checkoutVerify` note in
+     `rate-limit.ts`. The message stays vague about payment state for the
+     same reason the signature failure below does. */
+  enforceKeyed(
+    "checkoutVerify",
+    `u:${user.id}`,
+    (seconds) =>
+      `Too many verification attempts. Try again in ${Math.ceil(seconds / 60)} minutes. If you were charged, contact support with your order reference.`,
+  );
+
   const { razorpayOrderId, razorpayPaymentId, razorpaySignature } =
     await parseBody(request, Body);
 

@@ -6,7 +6,6 @@ import { CategoryTile, CATEGORY_DESCRIPTOR } from "@/components/storefront/Categ
 import { Hero } from "@/components/storefront/home/Hero";
 import { EntryCards } from "@/components/storefront/home/EntryCards";
 import { CategoryCards } from "@/components/storefront/home/CategoryCards";
-import { DiscoverRow } from "@/components/storefront/home/DiscoverRow";
 import { WishlistRow } from "@/components/storefront/home/WishlistRow";
 import { ProfessionalRail } from "@/components/storefront/home/ProfessionalRail";
 import { ServiceIconRail } from "@/components/storefront/home/ServiceIconRail";
@@ -349,25 +348,17 @@ export default async function HomePage() {
             <BrandWall />
           </section>
 
-          {/* The four curated sections, directly under the brands.
+          {/* The Explore row is gone, at the owner's instruction.
 
-              Here rather than further down because none of them is
-              reachable any other way from this page: they cut across the
-              catalogue's taxonomy, so the header's category menu does not
-              hold them and `/categories` never will. Four marks is about
-              70px of page, which is the cheapest navigation on the
-              screen — and it is the one row that answers "show me
-              something" rather than "I know what I want".
-
-              Deliberately *not* the six-icon catalogue rail that used to
-              sit above the hero and was removed. That rail duplicated the
-              entry cards and the tab bar; this one duplicates nothing. */}
-          <section>
-            <SectionHead title="Explore" />
-            <DiscoverRow />
-          </section>
-
-
+              It was four marks — Trending, Experts, Lighting, Rooted —
+              under an "Explore" heading, and the argument for it was
+              that none of the four is reachable any other way from this
+              page: they cut across the catalogue's taxonomy, so the
+              header's category menu does not hold them and
+              `/categories` never will. That is still true, and they are
+              still reachable by URL and from the footer. `DiscoverRow`
+              is left in the tree with no caller, because this is a row
+              that has been added and taken away before. */}
 
           {/* Before the catalogue, because it is not the catalogue: these
               are decisions the reader has already made, and somebody who

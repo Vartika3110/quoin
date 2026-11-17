@@ -32,7 +32,7 @@ export default async function SpacesPage({
     >
       <div className="px-5 lg:px-0">
         <div className="mb-4 lg:hidden">
-          <StudioChrome title="Boards" />
+          <StudioChrome title="Boards" quietTitle />
         </div>
 
         {session ? (

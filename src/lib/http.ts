@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
+import { describeError, raise } from "@/lib/alerts";
 
 /**
  * API conventions.
@@ -119,6 +120,18 @@ export function handler<Args extends unknown[]>(
       if (error instanceof ApiError) {
         return fail(error.code, error.message, { fields: error.fields });
       }
+      /* An `ApiError` is a decision this code made and is handled above;
+         reaching here means something threw that nobody anticipated,
+         which is the definition of the thing worth waking somebody for.
+         `describeError` keeps it to the error's identity — see the note
+         on what an alert may carry in `alerts.ts`. The method and path
+         are included because "something 500s sometimes" is not an
+         actionable alert and "POST /api/v1/checkout/order does" is. */
+      raise({
+        kind: "unhandled_5xx",
+        summary: `${request.method} ${new URL(request.url).pathname} threw`,
+        detail: { error: describeError(error) },
+      });
       console.error("[api] unhandled error", error);
       return fail("internal", "Something went wrong. Please try again.");
     }

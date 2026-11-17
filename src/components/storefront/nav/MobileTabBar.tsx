@@ -74,12 +74,24 @@ import { cn } from "@/components/ui/cn";
    typography.
 
    Studio is still not here, which is the one earlier instruction this
-   does not reverse — the reference does not carry it either. Account
-   comes back off the header, where the reference puts it, and the header
-   keeps its own avatar, so it is reachable both ways.
+   does not reverse — the reference does not carry it either.
 
    The order and the words are the reference's: Home, Categories, Project
    Hub, Upload Parcha, Deals, Account. */
+/* **Account is here, and on a phone it is now the only way in.**
+
+   It came off this row once on the reasoning that the header's avatar
+   was the other half of the pair and two permanent entries to one page
+   was one too many. That reasoning was sound and it stopped being true
+   within the hour: the phone header's whole utility row — area, theme,
+   saved, basket, avatar — came off in the next pass, so between the two
+   changes `/account` had no entry point on a phone at all. Not just the
+   page: orders, addresses, the wallet and **Log out** with it.
+
+   So it is back, and the note above about what a sixth tab costs still
+   applies — this is the row paying 62px for the only door to a page a
+   signed-in customer has to be able to reach. The desktop header keeps
+   its own avatar and never lost it; this is a phone-only repair. */
 const TABS = [
   { href: "/", label: "Home", Icon: Home },
   { href: "/categories", label: "Categories", Icon: Grid },

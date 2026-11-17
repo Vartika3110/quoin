@@ -1,10 +1,9 @@
-import { Bolt, CheckCircle, Clock, Pin, Star } from "@/components/icons";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import { CheckCircle, Chevron } from "@/components/icons";
 import { cn } from "@/components/ui/cn";
 import { formatPrice } from "@/lib/types/catalog";
 import {
   initialsOf,
-  jobsLabel,
   PROFESSIONALS_ARE_SAMPLE,
   type Professional,
 } from "@/lib/data/professionals";
@@ -59,9 +58,9 @@ export function ProfessionalRail({
            deleting this line is `PROFESSIONALS_ARE_SAMPLE = false`, which
            is the same edit that makes it untrue. */
         <p className="mx-5 mb-2.5 text-micro font-semibold leading-relaxed text-accent lg:mx-0">
-          Sample professionals — the names, ratings, job counts and
-          response times below are placeholders. Replace them in
-          src/lib/data/professionals.ts before launch.
+          Sample professionals — the names and trades below are
+          placeholders. Replace them in src/lib/data/professionals.ts
+          before launch.
         </p>
       ) : null}
 
@@ -75,10 +74,30 @@ export function ProfessionalRail({
         )}
       >
         {people.map((person) => (
-          <article
+          /* The whole card is the link, and there is no Book button.
+
+             The button was struck off the design at the owner's
+             instruction, which left a card listing a tradesperson with
+             no way to reach them — so the action moved outwards rather
+             than away. A card that is one target is also the easier one
+             to hit on a phone: 190px of card beats a 64px pill at the
+             bottom of it.
+
+             `aria-label` because the link's own text would otherwise
+             read "Prem Chand Electrician Quoted after the visit", which
+             says everything except what pressing it does. */
+          <Link
             key={person.id}
+            href={`/services/book?service=${person.serviceSlug}`}
+            aria-label={`Book ${person.name}, ${person.trade}`}
             className={cn(
-              "flex flex-col gap-3 rounded-card border border-line-soft bg-surface p-3 lg:p-4",
+              /* `gap-2`, not `gap-3`. The card was built around three
+                 rows and the middle one is gone; at twelve the two that
+                 are left read as two separate things on one card rather
+                 than as a name with its price under it. The 48px avatar
+                 already overhangs the two lines of text beside it, so
+                 the drawn gap is wider than the number suggests. */
+              "group flex flex-col gap-2 rounded-card border border-line-soft bg-surface p-3 transition-colors hover:border-accent-edge hover:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:p-4",
               /* A fixed width only in the rail, where nothing else sets
                  one. In the list the grid column is the width. */
               /* 190px in the rail, from the design reference: at `w-72`
@@ -112,83 +131,46 @@ export function ProfessionalRail({
               </span>
             </div>
 
-            {/* Only what the roster actually carries. A rating needs a
-                review table, a job count needs booking history and a
-                response time needs measuring — none of the three exist,
-                and inventing them beside a real person's name is a claim
-                they never agreed to. Where they are absent the card says
-                where someone works and when, which is what a customer
-                picking a tradesperson is deciding on anyway. */}
-            {/* Rendered only when there is something in it. An empty
-                flex row still spends the card's gap, which left a hole
-                under the name of everyone the sheet records no area or
-                availability for. */}
-            {(person.rating != null ||
-              person.jobsCompleted != null ||
-              person.responseMinutes != null ||
-              person.area ||
-              person.availability) && (
-            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-              {person.rating != null && (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-accent-wash px-2 py-1 text-caption font-semibold text-ink">
-                  <Star className="size-3.5 text-accent" />
-                  <span className="nums">{person.rating.toFixed(1)}</span>
-                </span>
-              )}
-              {person.jobsCompleted != null && (
-                <span className="nums truncate text-caption text-muted">
-                  {jobsLabel(person.jobsCompleted)}
-                </span>
-              )}
-              {person.responseMinutes != null && (
-                <span className="inline-flex shrink-0 items-center gap-1 text-caption text-success">
-                  <Bolt className="size-3.5" />
-                  <span className="nums">{person.responseMinutes} min</span>
-                </span>
-              )}
-              {person.area && (
-                <span className="inline-flex min-w-0 items-center gap-1 text-caption text-muted">
-                  <Pin className="size-3.5 shrink-0 text-accent" />
-                  <span className="truncate">{person.area}</span>
-                </span>
-              )}
-              {person.availability && (
-                <span className="inline-flex min-w-0 items-center gap-1 text-caption text-muted">
-                  <Clock className="size-3.5 shrink-0 text-accent" />
-                  <span className="truncate">{person.availability}</span>
-                </span>
-              )}
-            </div>
-            )}
+            {/* The meta row is gone, at the owner's instruction.
 
-            {/* Stacked in the rail, side by side everywhere else. The
-                reference's card puts a four-character fee next to the
-                button; this one often carries "Quoted after the visit"
-                instead, which at the rail's 190px wrapped to two lines
-                and ran into the button. Where the fee is a number it
-                still sits on one line, because the row only wraps when
-                it has to. */}
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-0.5">
+                It carried where someone works and when — "Paschim Vihar
+                (National Market)", "All days, mornings" — on the
+                argument that with no rating, job count or response time
+                in the data, those two are what a customer picking a
+                tradesperson decides on. The card is the name, the trade
+                and how the fee is arrived at now.
+
+                `rating`, `jobsCompleted` and `responseMinutes` had
+                renderings here too and never had data behind them; they
+                are off the card with the rest. Nothing invented a value
+                then and nothing does now, which was the point worth
+                keeping. */}
+            {/* The fee, and a chevron where the button used to be. No
+                longer a control — the card is the control — so this is
+                `aria-hidden`: a mark that says the card goes somewhere,
+                the way the cart bar's does. `nowrap` on the fee because
+                the row no longer has a button to wrap around. */}
+            {/* `mt-auto` still earns its place: in the rail the cards
+                are flex items that stretch to the tallest, and without
+                it a short card's fee would float up the middle. In the
+                list each card is its own grid row and it does nothing.
+                The `pt-0.5` that sat here is gone — it was half a step
+                of air on top of the gap above. */}
+            <div className="mt-auto flex items-center justify-between gap-x-3">
               {/* No invented fee. Where the owner has not set one the card
                   says how the fee is arrived at, which is how this trade
                   actually works — see `pricing` on each service. */}
-              <span className="nums text-title-sm font-semibold text-ink">
+              <span className="nums min-w-0 truncate text-title-sm font-semibold text-ink">
                 {person.visitFeePaise != null
                   ? formatPrice(person.visitFeePaise)
                   : <span className="text-caption font-normal text-muted">Quoted after the visit</span>}
               </span>
-              <Button
-                href={`/services/book?service=${person.serviceSlug}`}
-                size="sm"
-                /* `grow` so that when the fee line wraps above it, the
-                    button takes the row rather than sitting as a stub
-                    against the left edge. */
-                className="grow px-5 sm:grow-0"
-              >
-                Book
-              </Button>
+              <Chevron
+                aria-hidden
+                className="size-4 shrink-0 text-faint transition-colors group-hover:text-accent"
+              />
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </div>

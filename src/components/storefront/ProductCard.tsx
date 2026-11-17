@@ -191,14 +191,6 @@ export function ProductCard({
               sizes="(min-width: 1280px) 300px, (min-width: 1024px) 25vw, 45vw"
               className="size-full transition-transform duration-500 ease-out-quart group-hover:scale-[1.04]"
             />
-            {product.photoIsIllustration && (
-              /* Says what the picture is. A generated image of a real SKU
-               shown without this is a claim about goods the customer will
-               receive that nobody has photographed. */
-              <span className="absolute inset-x-0 bottom-0 bg-deep/75 px-2 py-1 text-center text-micro leading-tight text-on-deep backdrop-blur-sm">
-                Illustration · actual product may vary
-              </span>
-            )}
           </Link>
 
           {off > 0 && (
@@ -237,19 +229,12 @@ export function ProductCard({
             )}
           </button>
 
-          {/* Lifted clear of the illustration label, which is a full-width
-            band pinned to `bottom-0` of the same box. Both sat on the
-            bottom edge and the chip was drawn straight through the middle
-            of the words on every generated tile — which is most of the
-            catalogue. `bottom-2` on a card with no label, `bottom-9` on
-            one with, so neither has to know about the other beyond this
-            line. */}
-          <span
-            className={cn(
-              "absolute left-2 inline-flex items-center gap-1 rounded-sm border border-line-soft bg-surface/90 px-1.5 py-1 text-micro text-ink backdrop-blur-sm",
-              product.photoIsIllustration ? "bottom-9" : "bottom-2",
-            )}
-          >
+          {/* `bottom-2` unconditionally. This used to drop to `bottom-9`
+            on a generated tile, to clear the "Illustration · actual
+            product may vary" band that was pinned to `bottom-0` of the
+            same box; with that band gone the bottom edge is the chip's
+            alone. */}
+          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-sm border border-line-soft bg-surface/90 px-1.5 py-1 text-micro text-ink backdrop-blur-sm">
             <fulfil.Icon className="size-3 text-accent" />
             {fulfil.label(product.leadTimeDays)}
           </span>
