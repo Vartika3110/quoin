@@ -888,6 +888,13 @@ describe("order lifecycle transitions", () => {
       ["PENDING_PAYMENT", "CANCELLED"],
       ["FAILED", "PENDING_PAYMENT"],
       ["FAILED", "CANCELLED"],
+      /* The simplified lifecycle: a paid order's next move is a vendor
+         sending it out, with no accept, prepare or pack step between.
+         The retired three keep their old edges so an order already in
+         one is not stranded — see src/lib/orders/lifecycle.ts. */
+      ["PAID", "DISPATCHED"],
+      ["CONFIRMED", "DISPATCHED"],
+      ["PROCESSING", "DISPATCHED"],
       ["PAID", "CONFIRMED"],
       ["PAID", "REFUND_PENDING"],
       ["CONFIRMED", "PROCESSING"],
@@ -915,10 +922,16 @@ describe("order lifecycle transitions", () => {
 
   it("rejects a representative set of illegal moves", () => {
     const illegal: [OrderStatus, OrderStatus][] = [
-      /* Cannot skip stages. */
+      /* Cannot skip stages. `CONFIRMED -> DISPATCHED` used to be here
+         and is now legal: the accept/prepare/ready steps are retired, so
+         dispatch is what follows a paid order. Skipping the *vendor*
+         still is not allowed. */
       ["PENDING_PAYMENT", "CONFIRMED"],
+      ["PENDING_PAYMENT", "DISPATCHED"],
       ["PAID", "PACKED"],
-      ["CONFIRMED", "DISPATCHED"],
+      ["PAID", "OUT_FOR_DELIVERY"],
+      ["PAID", "DELIVERED"],
+      ["DISPATCHED", "DELIVERED"],
       /* Cannot go backwards. */
       ["PACKED", "PROCESSING"],
       ["DELIVERED", "OUT_FOR_DELIVERY"],

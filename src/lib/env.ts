@@ -319,6 +319,62 @@ const schema = z.object({
   /** BCP-47 code of the approved template. Meta matches on this exactly. */
   WHATSAPP_OTP_LANGUAGE: z.string().optional(),
 
+  /**
+   * Order notifications over WhatsApp — the six order templates, not the
+   * sign-in code above. See `src/lib/whatsapp/` and
+   * `docs/whatsapp-orders.md`.
+   *
+   * They share `WHATSAPP_PHONE_NUMBER_ID` and `WHATSAPP_ACCESS_TOKEN`
+   * with the OTP sender, deliberately: it is one business number, one
+   * Meta app and one token, and a second pair of variables holding the
+   * same values is a variable that goes stale. Only what genuinely
+   * differs is added here.
+   *
+   * All optional, and no production guard — the same reasoning as
+   * Razorpay and Supabase. Unset, orders are placed, paid, dispatched
+   * and delivered exactly as before, and every notification that could
+   * not be sent is written to `whatsapp_notifications` as FAILED with
+   * "WhatsApp is not configured" on it, visible on the admin order page
+   * and retryable with one click once the credentials land. Refusing to
+   * boot over it would take a working storefront down to protect
+   * against nothing — WhatsApp is explicitly secondary to order
+   * creation.
+   */
+  /** BCP-47 code the six *order* templates were approved under. Its own
+      variable rather than reusing `WHATSAPP_OTP_LANGUAGE`, because the
+      two sets are submitted separately and Meta matches each exactly.
+      Defaults to `en`. */
+  WHATSAPP_TEMPLATE_LANGUAGE: z.string().optional(),
+  /**
+   * `template` (the default, and the only production answer) or `text`.
+   *
+   * `text` sends the rendered body as a free-form message, which
+   * WhatsApp delivers only inside a 24-hour window the recipient opened
+   * by messaging the business first — useless for customers, and
+   * exactly right for the days between wiring this up and six templates
+   * clearing review. A free-form string rather than `z.enum`, for the
+   * reason `SHOW_SOURCE_IMAGES` records: an enum rejects a *present but
+   * empty* value and would 500 every route at boot over a messaging
+   * setting. Anything that is not exactly `text` means `template`.
+   */
+  WHATSAPP_MESSAGE_MODE: z.string().optional(),
+  /**
+   * Answers Meta's `GET` verification challenge when the
+   * delivery-status webhook is first subscribed. Chosen by you, typed
+   * into both the dashboard and here. Unset, that route refuses to
+   * verify — fail closed, exactly like `CRON_SECRET`.
+   */
+  WHATSAPP_WEBHOOK_VERIFY_TOKEN: z.string().optional(),
+  /**
+   * The Meta **app secret**, which signs every webhook delivery
+   * (`X-Hub-Signature-256`). Unset, the delivery-status webhook rejects
+   * every request rather than trusting whatever a public URL is posted:
+   * the same fail-closed rule `verifyWebhookSignature` applies to
+   * Razorpay. Not the access token — a deploy can hold a valid sending
+   * token and still be unable to trust a single incoming delivery.
+   */
+  WHATSAPP_APP_SECRET: z.string().optional(),
+
   CRON_SECRET: z.string().optional(),
 
   /**
@@ -388,6 +444,10 @@ function load(): Env {
         WHATSAPP_ACCESS_TOKEN: process.env.WHATSAPP_ACCESS_TOKEN,
         WHATSAPP_OTP_TEMPLATE: process.env.WHATSAPP_OTP_TEMPLATE,
         WHATSAPP_OTP_LANGUAGE: process.env.WHATSAPP_OTP_LANGUAGE,
+        WHATSAPP_TEMPLATE_LANGUAGE: process.env.WHATSAPP_TEMPLATE_LANGUAGE,
+        WHATSAPP_MESSAGE_MODE: process.env.WHATSAPP_MESSAGE_MODE,
+        WHATSAPP_WEBHOOK_VERIFY_TOKEN: process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
+        WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET,
         CRON_SECRET: process.env.CRON_SECRET,
         ALERT_WEBHOOK_URL: process.env.ALERT_WEBHOOK_URL,
       };

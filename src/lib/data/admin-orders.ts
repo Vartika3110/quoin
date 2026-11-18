@@ -8,6 +8,7 @@ import {
   OrderNotFoundError,
   OrderStatusRaceError,
 } from "@/lib/data/orders";
+import { isRetiredStatus } from "@/lib/orders/lifecycle";
 import { releaseStockForOrder } from "@/lib/data/inventory";
 import type { Paise } from "@/lib/types/catalog";
 
@@ -540,7 +541,18 @@ const ALL_ORDER_STATUSES = Object.values(OrderStatus) as OrderStatus[];
  * attached and a real thing for staff to record.
  */
 export function isAdminTransitionAllowed(from: OrderStatus, to: OrderStatus): boolean {
-  return to !== "PAID" && to !== "REFUNDED" && canTransition(from, to);
+  if (to === "PAID" || to === "REFUNDED") return false;
+  /* The third rule that is about the asker rather than the machine.
+     `CONFIRMED`, `PROCESSING` and `PACKED` are retired — the simplified
+     lifecycle has no accept, prepare or ready step (see
+     `src/lib/orders/lifecycle.ts`) — so nothing may move an order *into*
+     one of them any more. Their edges stay in `ORDER_TRANSITIONS` so an
+     order already sitting in one can be moved forward; this is what
+     stops a new one arriving there. Read from
+     `RETIRED_FULFILMENT_STATUSES` rather than named here, so the retired
+     list has one home. */
+  if (isRetiredStatus(to)) return false;
+  return canTransition(from, to);
 }
 
 /** Every status this endpoint could move `from` into right now. */
@@ -554,7 +566,22 @@ export interface TransitionOrderStatusInput {
   /** The staff account making the change. Never nullable from this
       caller — there is always a `requireStaff()` behind this endpoint —
       but the column itself is nullable, see `OrderStatusChange`. */
-  actorUserId: string;
+  /**
+   * Who is making the change.
+   *
+   * A staff account's id from the admin route, where `requireStaff()`
+   * has already run — or **null**, which is not "unknown" but a
+   * specific, meaningful answer: no account was involved. That is the
+   * case when a vendor dispatches their own leg through the link in
+   * their WhatsApp (`dispatchOrderLeg`,
+   * src/lib/data/order-dispatch.ts) and the last outstanding leg rolls
+   * the order up to DISPATCHED. There is no vendor login in this app,
+   * so attributing that move to a staff member who did not make it
+   * would put a fiction in the audit trail — which is precisely the
+   * nullability `OrderStatusChange.actorUserId` was given, and says so
+   * in its own model comment. The `note` carries which vendor it was.
+   */
+  actorUserId: string | null;
   note?: string;
 }
 

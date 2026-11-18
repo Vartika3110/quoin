@@ -85,20 +85,43 @@ describe("admin transition boundary — everything else still goes through canTr
       ["PENDING_PAYMENT", "CANCELLED"],
       ["FAILED", "PENDING_PAYMENT"],
       ["FAILED", "CANCELLED"],
-      ["PAID", "CONFIRMED"],
       /* ["PAID", "CANCELLED"] was here. It is no longer a legal move:
          money captured means the way out is a refund, not a
          cancellation. See tests/refunds.test.mts. */
       ["PAID", "REFUND_PENDING"],
-      ["CONFIRMED", "PROCESSING"],
-      ["PROCESSING", "PACKED"],
-      ["PACKED", "DISPATCHED"],
+      /* placed -> dispatched -> out for delivery -> delivered, which is
+         the whole of the lifecycle a customer sees. */
+      ["PAID", "DISPATCHED"],
       ["DISPATCHED", "OUT_FOR_DELIVERY"],
       ["OUT_FOR_DELIVERY", "DELIVERED"],
+      /* An order left in a retired status can still be moved forward. */
+      ["CONFIRMED", "DISPATCHED"],
+      ["PROCESSING", "DISPATCHED"],
+      ["PACKED", "DISPATCHED"],
     ];
 
     for (const [from, to] of legal) {
       assert.equal(isAdminTransitionAllowed(from, to), true, `${from} -> ${to} should be allowed`);
+    }
+  });
+
+  it("refuses the three retired statuses as destinations, from everywhere", () => {
+    /* CONFIRMED, PROCESSING and PACKED are the accept, prepare and ready
+       steps the simplified lifecycle does not have. `canTransition`
+       still connects them so a stranded order can move on; this boundary
+       is what stops a *new* one arriving there. */
+    for (const from of ALL_STATUSES) {
+      for (const to of ["CONFIRMED", "PROCESSING", "PACKED"] as const) {
+        assert.equal(
+          isAdminTransitionAllowed(from, to),
+          false,
+          `${from} -> ${to} must be refused: ${to} is retired`,
+        );
+        assert.ok(
+          !legalNextStatuses(from).includes(to),
+          `legalNextStatuses(${from}) must not include the retired ${to}`,
+        );
+      }
     }
   });
 
