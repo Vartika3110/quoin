@@ -194,6 +194,34 @@ locked out of their only button — and is revocable by rotating the column.
 Set `WHATSAPP_PHONE_NUMBER_ID` and `WHATSAPP_ACCESS_TOKEN` from steps 2
 and 4. See `docs/environment.md` for all seven variables.
 
+### It costs money per message
+
+A payment method on the WhatsApp Business Account is **not optional for
+this app**, and the setup flow asks for it under "Add payment to send
+business-initiated messages".
+
+That phrase is the whole reason. A *business-initiated* conversation is
+one the business starts, and every message in §2 is one: the customer
+paid an hour ago, they did not message Quoin. Without a payment method
+they do not send at all.
+
+All six templates are the **utility** category, which is the cheapest
+tier and a small fraction of a rupee per message in India, and Meta
+allows some free conversations each month — so at early volumes this may
+cost nothing. It is still a per-message cost on every order, which the
+MSG91 sign-in SMS already billed separately is not a guide to. Worth
+knowing before switching it on across the whole catalogue rather than
+after.
+
+### Publishing the app
+
+The app can stay **unpublished** and still send. What unpublished blocks
+is *incoming* webhooks carrying production data — the delivery-status
+reporting in §5. The app dashboard warns about this on the webhook panel.
+
+So the order that works is: send first, publish later, and wire the
+status webhook once the app is live. Nothing in §2 waits on it.
+
 ### Business verification
 
 Step 1 is not optional for this app, and it is worth being clear about
