@@ -17,6 +17,7 @@ import {
 } from "@/lib/data/order-history";
 import { listAdminOrders, parseOrderStatusFilter } from "@/lib/data/admin-orders";
 import { OrderStatusFilterForm } from "@/components/admin/OrderStatusFilterForm";
+import { WhatsAppStatusBadge } from "@/components/admin/WhatsAppStatusBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -102,8 +103,10 @@ export default async function AdminOrdersPage({
                 <tr>
                   <th className="px-4 py-3 font-medium">Order</th>
                   <th className="px-4 py-3 font-medium">Customer</th>
+                  <th className="px-4 py-3 font-medium">Vendor</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Payment</th>
+                  <th className="px-4 py-3 font-medium">WhatsApp</th>
                   <th className="px-4 py-3 text-right font-medium">Items</th>
                   <th className="px-4 py-3 text-right font-medium">Total</th>
                   <th className="px-4 py-3 font-medium">Placed</th>
@@ -132,12 +135,31 @@ export default async function AdminOrdersPage({
                       </span>
                     </td>
                     <td className="px-4 py-3">
+                      {row.vendorNames.length === 0 ? (
+                        /* Not a missing vendor: none of this order's
+                           products carries one, so Quoin fulfils it. */
+                        <span className="text-faint">Quoin</span>
+                      ) : (
+                        <>
+                          <span className="block text-ink">{row.vendorNames.join(", ")}</span>
+                          {row.vendorNames.length > 1 && (
+                            <span className="nums block text-caption text-muted">
+                              {row.vendorsDispatched} of {row.vendorNames.length} dispatched
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
                       <Badge tone={ORDER_STATUS_TONE[row.status]} size="sm">
                         {ORDER_STATUS_LABEL[row.status]}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-muted">
                       {row.paymentStatus ? PAYMENT_STATUS_LABEL[row.paymentStatus] : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <WhatsAppStatusBadge summary={row.whatsapp} />
                     </td>
                     <td className="nums px-4 py-3 text-right">{row.itemCount}</td>
                     <td className="nums px-4 py-3 text-right font-medium text-ink">

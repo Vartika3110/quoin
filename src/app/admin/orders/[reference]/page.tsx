@@ -8,6 +8,9 @@ import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { OfflinePaymentForm } from "@/components/admin/OfflinePaymentForm";
 import { RefundForm } from "@/components/admin/RefundForm";
 import { DeliveryDateForm } from "@/components/admin/DeliveryDateForm";
+import { OrderTimeline } from "@/components/admin/OrderTimeline";
+import { WhatsAppActivity } from "@/components/admin/WhatsAppActivity";
+import { VendorFulfilments } from "@/components/admin/VendorFulfilments";
 import { requireStaffPage } from "@/lib/auth/staff";
 import { db } from "@/lib/db";
 import { formatPrice } from "@/lib/types/catalog";
@@ -22,6 +25,9 @@ import {
   getAdminOrder,
   legalNextStatuses,
 } from "@/lib/data/admin-orders";
+import { listOrderFulfilments } from "@/lib/data/order-fulfilments";
+import { listOrderWhatsAppActivity } from "@/lib/data/whatsapp-notifications";
+import { isOrderWhatsAppConfigured } from "@/lib/whatsapp/client";
 import {
   OFFLINE_METHOD_LABEL,
   canTransition,
@@ -63,6 +69,11 @@ export default async function AdminOrderPage({ params }: Ctx) {
      `expectedDeliveryOn` — nothing there reads it yet — so this page
      reads the one extra column itself rather than widening that
      module's projection for a single field only this card needs. */
+  const [fulfilments, whatsappActivity] = await Promise.all([
+    listOrderFulfilments(order.id),
+    listOrderWhatsAppActivity(order.id),
+  ]);
+
   const deliveryRow = await db.order.findUnique({
     where: { id: order.id },
     select: { expectedDeliveryOn: true },
@@ -239,7 +250,48 @@ export default async function AdminOrderPage({ params }: Ctx) {
           </Card>
 
           <Card>
-            <CardHeader title="Status history" subtitle="Newest first" />
+            <CardHeader
+              title="Order timeline"
+              subtitle="Every status change, from the order's own history"
+            />
+            <OrderTimeline
+              status={order.status}
+              createdAt={order.createdAt}
+              paidAt={order.paidAt}
+              /* `getAdminOrder` reads the audit trail newest-first for
+                 the history card below; a timeline reads as a story and
+                 has to run the other way. Reversed here rather than
+                 queried twice. */
+              entries={[...order.statusChanges].reverse()}
+            />
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="Vendors"
+              subtitle={
+                fulfilments.length === 0
+                  ? "Fulfilled by Quoin"
+                  : `${fulfilments.filter((f) => f.status === "DISPATCHED").length} of ${fulfilments.length} dispatched`
+              }
+            />
+            <VendorFulfilments reference={order.reference} fulfilments={fulfilments} />
+          </Card>
+
+          <Card>
+            <CardHeader
+              title="WhatsApp activity"
+              subtitle="Every message this order has caused, and why any of them failed"
+            />
+            <WhatsAppActivity
+              reference={order.reference}
+              activity={whatsappActivity}
+              configured={isOrderWhatsAppConfigured()}
+            />
+          </Card>
+
+          <Card>
+            <CardHeader title="Status history" subtitle="Newest first, exact statuses" />
             {order.statusChanges.length === 0 ? (
               <p className="text-body-sm text-muted">
                 No staff action has been recorded against this order yet.

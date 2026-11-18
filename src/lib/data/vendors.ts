@@ -55,6 +55,10 @@ export interface VendorInput {
   gstin?: string;
   pan?: string;
   phone: string;
+  /** Where this vendor's new-order WhatsApp goes, when that is not
+      `phone`. Optional — `vendorWhatsAppNumber`
+      (src/lib/data/order-fulfilments.ts) falls back to `phone`. */
+  whatsappPhone?: string;
   email?: string;
   addressLine?: string;
   city?: string;
@@ -92,6 +96,16 @@ function clean(input: VendorInput) {
   const phone = input.phone.trim();
   if (phone.length < 6) {
     throw new VendorFieldError("phone", "A vendor needs a number somebody can ring.");
+  }
+
+  /* Optional, and empty means "use `phone`" rather than "no WhatsApp" —
+     see `vendorWhatsAppNumber`. Bounded rather than validated as an
+     Indian mobile, because the sender normalises it and records a failed
+     notification for anything unsendable: a vendor is not blocked from
+     being created by a number typed oddly. */
+  const whatsappPhone = input.whatsappPhone?.trim() || null;
+  if (whatsappPhone && whatsappPhone.length < 6) {
+    throw new VendorFieldError("whatsappPhone", "That is too short to be a number.");
   }
 
   const gstin = input.gstin?.trim().toUpperCase() || null;
@@ -154,6 +168,7 @@ function clean(input: VendorInput) {
     gstin,
     pan,
     phone,
+    whatsappPhone,
     email: input.email?.trim() || null,
     addressLine: input.addressLine?.trim() ?? "",
     city: input.city?.trim() ?? "",

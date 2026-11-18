@@ -11,6 +11,7 @@ import {
 import { getAdminOrder } from "@/lib/data/admin-orders";
 import { ApiError, handler, ok, parseBody, requireStaff } from "@/lib/http";
 import { notify } from "@/lib/data/notifications";
+import { onOrderPlaced } from "@/lib/data/order-whatsapp";
 import { formatPrice } from "@/lib/types/catalog";
 
 type Ctx = { params: Promise<{ reference: string }> };
@@ -105,6 +106,15 @@ export const POST = handler(async (request, { params }: Ctx) => {
   } catch (error) {
     console.error("[payments] failed to notify after an offline payment", error);
   }
+
+  /* The third and last place a payment can settle, and so the third
+     caller of the one function that places an order: money the owner
+     took by phone reaches the customer and the vendors through exactly
+     the same code the Razorpay webhook and the reconciler use. Keyed on
+     the order reference, so staff re-running this (it would be refused
+     anyway — the order is no longer PENDING_PAYMENT) could not double-
+     message. Swallows everything of its own accord. */
+  await onOrderPlaced(order.id);
 
   return ok({ order });
 });

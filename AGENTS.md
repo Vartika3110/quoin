@@ -22,3 +22,34 @@ second runtime for catalogue work.
 Read `docs/django-to-prisma.md` before touching the catalogue. It records the
 invariants the port preserved — integer paise, quarantined `source*`
 provenance fields, and why nothing is imported as `INSTANT`.
+
+# Orders: one lifecycle, four stages
+
+The customer-facing order lifecycle is **placed → dispatched → out for
+delivery → delivered**. There is no accepted, preparing or ready step,
+and `CONFIRMED`, `PROCESSING` and `PACKED` are **retired** — still in the
+`OrderStatus` enum so history survives, refused as destinations by
+`isAdminTransitionAllowed`, and mapped to `placed` wherever a status is
+shown.
+
+**Cancellation is not part of it.** A paid order leaves by
+`REFUND_PENDING → REFUNDED`, which leaves a `Refund` row saying the
+customer is owed money; `CANCELLED` is reachable only from
+`PENDING_PAYMENT` and `FAILED`. `tests/refunds.test.mts` asserts that and
+names the order it was learned from. Do not add those edges back.
+
+- Stage vocabulary: `src/lib/orders/lifecycle.ts` (one file, read by the
+  stepper, the admin timeline, the order board and the notifiers)
+- The machine: `ORDER_TRANSITIONS` in `src/lib/data/orders.ts`
+- One status-writing path: `transitionOrderStatus`
+  (`src/lib/data/admin-orders.ts`). Vendor dispatch and the order board
+  both go through it rather than writing `Order.status` themselves.
+- WhatsApp order messages: `src/lib/whatsapp/` and
+  `src/lib/data/order-whatsapp.ts`. Separate from
+  `src/lib/auth/whatsapp.ts`, which carries sign-in codes — same
+  credentials, different templates, different failure contract.
+- A vendor is a `Vendor` row reached through `Product.vendorId`. An order
+  spanning vendors gets one `OrderFulfilment` each, and only reaches
+  `DISPATCHED` when every one of them has.
+
+Read `docs/whatsapp-orders.md` before touching any of it.

@@ -49,14 +49,16 @@ describe("boardColumnForStatus", () => {
     }
   });
 
-  it("matches the column boundaries the spec drew", () => {
+  it("matches the columns the simplified lifecycle draws", () => {
     assert.equal(boardColumnForStatus("PENDING_PAYMENT"), "new");
     assert.equal(boardColumnForStatus("PAID"), "new");
-    assert.equal(boardColumnForStatus("CONFIRMED"), "confirmed");
-    assert.equal(boardColumnForStatus("PROCESSING"), "preparing");
-    assert.equal(boardColumnForStatus("PACKED"), "preparing");
-    assert.equal(boardColumnForStatus("DISPATCHED"), "on_the_way");
-    assert.equal(boardColumnForStatus("OUT_FOR_DELIVERY"), "on_the_way");
+    /* The retired three sit in "new": nothing can enter them any more,
+       and what an order left in one is waiting for is a dispatch. */
+    assert.equal(boardColumnForStatus("CONFIRMED"), "new");
+    assert.equal(boardColumnForStatus("PROCESSING"), "new");
+    assert.equal(boardColumnForStatus("PACKED"), "new");
+    assert.equal(boardColumnForStatus("DISPATCHED"), "dispatched");
+    assert.equal(boardColumnForStatus("OUT_FOR_DELIVERY"), "out_for_delivery");
     assert.equal(boardColumnForStatus("DELIVERED"), "delivered");
     assert.equal(boardColumnForStatus("CANCELLED"), "cancelled");
     assert.equal(boardColumnForStatus("REFUND_PENDING"), "cancelled");
@@ -89,13 +91,26 @@ describe("forwardNextStatus", () => {
     assert.equal(forwardNextStatus("REFUND_PENDING"), null);
   });
 
-  it("walks the happy path in order", () => {
-    assert.equal(forwardNextStatus("PAID"), "CONFIRMED");
-    assert.equal(forwardNextStatus("CONFIRMED"), "PROCESSING");
-    assert.equal(forwardNextStatus("PROCESSING"), "PACKED");
-    assert.equal(forwardNextStatus("PACKED"), "DISPATCHED");
+  it("walks the simplified happy path: paid, dispatched, out for delivery, delivered", () => {
+    assert.equal(forwardNextStatus("PAID"), "DISPATCHED");
     assert.equal(forwardNextStatus("DISPATCHED"), "OUT_FOR_DELIVERY");
     assert.equal(forwardNextStatus("OUT_FOR_DELIVERY"), "DELIVERED");
+  });
+
+  it("never offers a retired status as the forward move", () => {
+    for (const status of ALL_STATUSES) {
+      const next = forwardNextStatus(status);
+      assert.ok(
+        next === null || !["CONFIRMED", "PROCESSING", "PACKED"].includes(next),
+        `${status} offered ${next}, which is retired`,
+      );
+    }
+  });
+
+  it("still moves an order already in a retired status forward", () => {
+    assert.equal(forwardNextStatus("CONFIRMED"), "DISPATCHED");
+    assert.equal(forwardNextStatus("PROCESSING"), "DISPATCHED");
+    assert.equal(forwardNextStatus("PACKED"), "DISPATCHED");
   });
 });
 

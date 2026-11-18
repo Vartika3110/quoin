@@ -56,7 +56,7 @@ export default async function AdminOrderBoardPage() {
       <div
         className={cn(
           "flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2",
-          "[scrollbar-width:thin] lg:grid lg:snap-none lg:grid-cols-6 lg:overflow-visible",
+          "[scrollbar-width:thin] lg:grid lg:snap-none lg:grid-cols-5 lg:overflow-visible",
         )}
       >
         {board.columns.map((column) => {

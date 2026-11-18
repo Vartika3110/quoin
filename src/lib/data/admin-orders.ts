@@ -9,6 +9,7 @@ import {
   OrderStatusRaceError,
 } from "@/lib/data/orders";
 import { isRetiredStatus } from "@/lib/orders/lifecycle";
+import { summariseWhatsApp, type OrderWhatsAppSummary } from "@/lib/data/whatsapp-notifications";
 import { releaseStockForOrder } from "@/lib/data/inventory";
 import type { Paise } from "@/lib/types/catalog";
 
@@ -59,6 +60,27 @@ export interface AdminOrderRow {
   totalPaise: Paise;
   itemCount: number;
   createdAt: Date;
+  /** When the row last changed, which for an order is always its last
+      status change — see the note on `getOrderBoard`
+      (`src/lib/data/admin-board.ts`) for why `updatedAt` is a safe
+      stand-in for that rather than a join over `OrderStatusChange`. */
+  updatedAt: Date;
+  /**
+   * The vendors this order has to be picked from, snapshotted names.
+   *
+   * An array, not a string, because an order can span vendors and the
+   * column has to be able to say so. Empty for an order whose products
+   * carry no vendor — much of the catalogue predates there being one to
+   * point at — which is not a missing vendor but the honest answer that
+   * Quoin fulfils it itself.
+   */
+  vendorNames: string[];
+  /** How many of those legs have been dispatched, for the "1 of 2"
+      line. */
+  vendorsDispatched: number;
+  /** The worst state among this order's WhatsApp messages, so a staff
+      member can spot a messaging problem without opening the order. */
+  whatsapp: OrderWhatsAppSummary;
 }
 
 export interface AdminOrderListPage {
@@ -116,6 +138,7 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
         reference: true,
         status: true,
         createdAt: true,
+        updatedAt: true,
         totalPaise: true,
         user: { select: { name: true, phone: true, email: true } },
         _count: { select: { lines: true } },
@@ -124,6 +147,13 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
            payment currently stands", same as the customer's own
            order-history read. */
         payments: { orderBy: { createdAt: "desc" }, take: 1, select: { status: true } },
+        /* Two small relation reads per page of twenty rows, both over
+           indexes on `orderId`. Done here rather than as two more
+           queries because the alternative — a second pass keyed by order
+           id — is the same work with an extra round-trip, and these
+           columns are the point of the upgraded queue. */
+        fulfilments: { orderBy: { createdAt: "asc" }, select: { vendorName: true, status: true } },
+        whatsappNotifications: { select: { status: true } },
       },
     }),
   ]);
@@ -139,6 +169,10 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
       totalPaise: row.totalPaise,
       itemCount: row._count.lines,
       createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      vendorNames: row.fulfilments.map((fulfilment) => fulfilment.vendorName),
+      vendorsDispatched: row.fulfilments.filter((f) => f.status === "DISPATCHED").length,
+      whatsapp: summariseWhatsApp(row.whatsappNotifications.map((n) => n.status)),
     })),
     page,
     pageSize,

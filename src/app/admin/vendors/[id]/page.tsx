@@ -135,6 +135,7 @@ export default async function VendorPage({ params }: Ctx) {
                 gstin: vendor.gstin ?? "",
                 pan: vendor.pan ?? "",
                 phone: vendor.phone,
+            whatsappPhone: vendor.whatsappPhone ?? "",
                 email: vendor.email ?? "",
                 addressLine: vendor.addressLine,
                 city: vendor.city,

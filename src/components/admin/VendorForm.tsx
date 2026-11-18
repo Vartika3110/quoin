@@ -37,6 +37,7 @@ export interface VendorValues {
   gstin: string;
   pan: string;
   phone: string;
+  whatsappPhone: string;
   email: string;
   addressLine: string;
   city: string;
@@ -56,6 +57,7 @@ export const EMPTY_VENDOR: VendorValues = {
   gstin: "",
   pan: "",
   phone: "",
+  whatsappPhone: "",
   email: "",
   addressLine: "",
   city: "",
@@ -209,6 +211,21 @@ export function VendorForm({
               id="phone"
               value={v.phone}
               onChange={(e) => set("phone", e.target.value)}
+              maxLength={20}
+              inputMode="tel"
+              className="nums"
+            />
+          </Field>
+          <Field
+            label="WhatsApp number"
+            htmlFor="whatsappPhone"
+            error={errors.whatsappPhone}
+            hint="Only if different from the phone above. Order notifications go here."
+          >
+            <Input
+              id="whatsappPhone"
+              value={v.whatsappPhone}
+              onChange={(e) => set("whatsappPhone", e.target.value)}
               maxLength={20}
               inputMode="tel"
               className="nums"

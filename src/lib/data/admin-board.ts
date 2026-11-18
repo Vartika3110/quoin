@@ -23,26 +23,23 @@ import { isAdminTransitionAllowed } from "@/lib/data/admin-orders";
 
 export type BoardColumnKey =
   | "new"
-  | "confirmed"
-  | "preparing"
-  | "on_the_way"
+  | "dispatched"
+  | "out_for_delivery"
   | "delivered"
   | "cancelled";
 
 export const BOARD_COLUMNS: readonly BoardColumnKey[] = [
   "new",
-  "confirmed",
-  "preparing",
-  "on_the_way",
+  "dispatched",
+  "out_for_delivery",
   "delivered",
   "cancelled",
 ];
 
 export const BOARD_COLUMN_LABEL: Record<BoardColumnKey, string> = {
   new: "New",
-  confirmed: "Confirmed",
-  preparing: "Preparing",
-  on_the_way: "On the way",
+  dispatched: "Dispatched",
+  out_for_delivery: "Out for delivery",
   delivered: "Delivered",
   cancelled: "Cancelled / refunds",
 };
@@ -69,11 +66,14 @@ export const BOARD_COLUMN_LABEL: Record<BoardColumnKey, string> = {
 const STATUS_COLUMN: Record<OrderStatus, BoardColumnKey> = {
   PENDING_PAYMENT: "new",
   PAID: "new",
-  CONFIRMED: "confirmed",
-  PROCESSING: "preparing",
-  PACKED: "preparing",
-  DISPATCHED: "on_the_way",
-  OUT_FOR_DELIVERY: "on_the_way",
+  /* The three retired statuses. An order left in one when the simplified
+     lifecycle shipped still has to appear where a staff member will see
+     it, and what it is waiting for is a dispatch. */
+  CONFIRMED: "new",
+  PROCESSING: "new",
+  PACKED: "new",
+  DISPATCHED: "dispatched",
+  OUT_FOR_DELIVERY: "out_for_delivery",
   DELIVERED: "delivered",
   CANCELLED: "cancelled",
   REFUND_PENDING: "cancelled",
@@ -109,10 +109,10 @@ export function boardColumnForStatus(status: OrderStatus): BoardColumnKey {
  * being pre-decided and hidden here.
  */
 const FORWARD_NEXT_STATUS: Record<OrderStatus, OrderStatus | null> = {
-  PENDING_PAYMENT: "CONFIRMED",
-  PAID: "CONFIRMED",
-  CONFIRMED: "PROCESSING",
-  PROCESSING: "PACKED",
+  PENDING_PAYMENT: "DISPATCHED",
+  PAID: "DISPATCHED",
+  CONFIRMED: "DISPATCHED",
+  PROCESSING: "DISPATCHED",
   PACKED: "DISPATCHED",
   DISPATCHED: "OUT_FOR_DELIVERY",
   OUT_FOR_DELIVERY: "DELIVERED",
@@ -300,12 +300,18 @@ async function fetchColumn(where: Prisma.OrderWhereInput): Promise<{
 export async function getOrderBoard(now: Date = new Date()): Promise<AdminBoard> {
   const { start: recentStart } = resolveRecentIstWindowUtc(now, RECENT_WINDOW_DAYS);
 
-  const [newCol, confirmedCol, preparingCol, onTheWayCol, deliveredCol, cancelledCol] =
+  const [newCol, dispatchedCol, outForDeliveryCol, deliveredCol, cancelledCol] =
     await Promise.all([
-      fetchColumn({ OR: [callbackOrdersWhere(), { status: "PAID" }] }),
-      fetchColumn({ status: "CONFIRMED" }),
-      fetchColumn({ status: { in: ["PROCESSING", "PACKED"] } }),
-      fetchColumn({ status: { in: ["DISPATCHED", "OUT_FOR_DELIVERY"] } }),
+      /* Everything awaiting dispatch: a callback order, a freshly paid
+         one, and anything still sitting in a retired status. */
+      fetchColumn({
+        OR: [
+          callbackOrdersWhere(),
+          { status: { in: ["PAID", "CONFIRMED", "PROCESSING", "PACKED"] } },
+        ],
+      }),
+      fetchColumn({ status: "DISPATCHED" }),
+      fetchColumn({ status: "OUT_FOR_DELIVERY" }),
       fetchColumn({ status: "DELIVERED", updatedAt: { gte: recentStart } }),
       fetchColumn({
         status: { in: ["CANCELLED", "REFUND_PENDING", "REFUNDED", "FAILED"] },
@@ -330,9 +336,8 @@ export async function getOrderBoard(now: Date = new Date()): Promise<AdminBoard>
   return {
     columns: [
       build("new", newCol, "PAID"),
-      build("confirmed", confirmedCol, "CONFIRMED"),
-      build("preparing", preparingCol, "PROCESSING"),
-      build("on_the_way", onTheWayCol, "DISPATCHED"),
+      build("dispatched", dispatchedCol, "DISPATCHED"),
+      build("out_for_delivery", outForDeliveryCol, "OUT_FOR_DELIVERY"),
       build("delivered", deliveredCol, "DELIVERED"),
       build("cancelled", cancelledCol, "CANCELLED"),
     ],

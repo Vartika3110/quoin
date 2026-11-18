@@ -36,6 +36,8 @@ const Body = z.discriminatedUnion("action", [
     gstin: text(20).optional(),
     pan: text(12).optional(),
     phone: text(20),
+  /** Optional; empty means the order notifications go to `phone`. */
+  whatsappPhone: text(20).optional(),
     email: z.string().trim().email().max(160).optional().or(z.literal("")),
     addressLine: text(200).optional(),
     city: text(80).optional(),
