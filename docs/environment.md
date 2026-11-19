@@ -5,7 +5,7 @@
 | Variable | Required? | Used by | What it does |
 | --- | --- | --- | --- |
 | `DATABASE_URL` | Always | App at request time | Pooled connection string (port 6543 with `?pgbouncer=true` on Supabase). The only database URL the app reads at runtime. |
-| `DIRECT_DATABASE_URL` | For migrations only | `prisma migrate` | Direct connection (port 5432) used only by schema migrations. Omitted from runtime validation; the deployed build is unaffected by a missing value. |
+| `DIRECT_DATABASE_URL` | For migrations only | `prisma migrate` | Direct connection (port 5432) used only by schema migrations. Omitted from runtime validation; the deployed build is unaffected by a missing value. | Declaring a `prisma.config.ts` turns Prisma's own `.env` loading off, so that file imports `src/lib/load-env-file` to put `.env.local` back in reach of the CLI — without it `prisma migrate deploy` reports this variable missing even when it is sitting in `.env.local`.
 | `AUTH_SECRET` | Always | `src/lib/auth/session.ts` and `src/lib/auth/otp.ts` | Signs session JWTs and peppers OTP hashes. Minimum 32 characters. Rotating it invalidates every session and every pending OTP. |
 | `MSG91_AUTH_KEY` | Production only | SMS delivery | Authentication key for MSG91. Required in production along with `MSG91_TEMPLATE_ID`; sign-in is unavailable unless both are set; the app still boots and browsing works. A partial configuration is refused outright in production rather than falling back to the console sender, which would print login codes to the server log. |
 | `MSG91_TEMPLATE_ID` | Production only | SMS delivery | DLT-approved template ID for MSG91. Required in production along with `MSG91_AUTH_KEY`; sign-in is unavailable unless both are set; the app still boots and browsing works. |
