@@ -1,3 +1,4 @@
+import { canAccessAdmin } from "@/lib/auth/admin-access";
 import { ApiError, handler, ok, requireUser } from "@/lib/http";
 import { db } from "@/lib/db";
 import {
@@ -29,7 +30,11 @@ export const GET = handler(async (_request, { params }: Ctx) => {
   const { id } = await params;
 
   const file = await db.storedFile.findFirst({
-    where: user.isStaff ? { id } : { id, userId: user.id },
+    /* `canAccessAdmin`, not `user.isStaff`: the flag alone is no longer
+       staff access (src/lib/auth/admin-access.ts), and the privilege
+       granted here — reading any customer's uploaded file — is exactly
+       the kind a stray flag must not carry. */
+    where: canAccessAdmin(user) ? { id } : { id, userId: user.id },
     select: { id: true, status: true, storageKey: true },
   });
   if (!file) throw new ApiError("not_found", "No such file");

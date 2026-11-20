@@ -1,4 +1,5 @@
 import type { OrderStatus, ProjectTaskStatus, ServiceBookingStatus, UserTier } from "@prisma/client";
+import { canAccessAdmin } from "@/lib/auth/admin-access";
 import { db } from "@/lib/db";
 import { projectMoney, type ProjectMoney } from "@/lib/projects/money";
 import { IN_FLIGHT_STATUSES, MONEY_MOVED_STATUSES } from "@/lib/orders/status-groups";
@@ -286,7 +287,12 @@ export async function getAccountOverview(userId: string): Promise<AccountOvervie
       : null;
 
   return {
-    user,
+    /* `isStaff` is reported as *effective* access, not as the column:
+       this is what draws the Staff badge and the link into the internal
+       tools on the account screen, and a flag that `ADMIN_ALLOWLIST`
+       does not approve would otherwise offer a link to a page that
+       404s. See src/lib/auth/admin-access.ts. */
+    user: { ...user, isStaff: canAccessAdmin(user) },
     projects: { activeProjectCount, top: topProjects },
     orders: {
       activeOrderCount,

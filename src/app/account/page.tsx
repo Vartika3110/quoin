@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Crown, User } from "@/components/icons";
+import { adminUrl } from "@/lib/auth/admin-host";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { deliveryPhoneFor, maskPhone } from "@/lib/auth/phone";
@@ -170,13 +171,13 @@ export default async function AccountPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button href="/admin" variant="outline" size="sm">
+              <Button href={adminUrl("/admin")} variant="outline" size="sm">
                 Admin
               </Button>
-              <Button href="/admin/pricing" variant="outline" size="sm">
+              <Button href={adminUrl("/admin/pricing")} variant="outline" size="sm">
                 Pricing
               </Button>
-              <Button href="/admin/images" variant="outline" size="sm">
+              <Button href={adminUrl("/admin/images")} variant="outline" size="sm">
                 Images
               </Button>
             </div>

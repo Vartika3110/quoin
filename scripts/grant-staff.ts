@@ -3,6 +3,11 @@ import "../src/lib/load-env-file";
 
 import { PrismaClient } from "@prisma/client";
 import { normalizePhone } from "../src/lib/auth/phone";
+import {
+  adminAccessRefusal,
+  approvedAdminIdentities,
+  isApprovedAdmin,
+} from "../src/lib/auth/admin-access";
 
 /**
  * Grant or revoke access to the internal tools, and list who has it.
@@ -28,6 +33,20 @@ import { normalizePhone } from "../src/lib/auth/phone";
  * Either way the account has to exist first. Nothing here creates one:
  * the row is made by signing in, which is also what proves the person
  * controls that number or that inbox.
+ *
+ * **This script no longer decides who is an administrator.** It sets
+ * `User.isStaff`, which is one of the two things access needs; the other
+ * is the identity being the owner's or appearing in `ADMIN_ALLOWLIST`,
+ * which lives in the environment precisely so that database access alone
+ * cannot grant it (`src/lib/auth/admin-access.ts`). So this refuses to
+ * set the flag on an account that would be refused at the gate anyway,
+ * rather than leaving a flag lying around that looks like access and is
+ * not. Revoking is never refused.
+ *
+ * It reads the *local* `.env.local`. That is the right file to test
+ * against and the wrong one to trust: what the deployed site admits is
+ * whatever `ADMIN_ALLOWLIST` says in the Vercel project settings, so
+ * `--list` prints the list it is reading and says so.
  */
 const db = new PrismaClient();
 
@@ -55,8 +74,29 @@ async function list() {
     return;
   }
 
-  console.info(`${staff.length} account(s) with staff access:`);
-  for (const user of staff) console.info(`  ${describe(user)}`);
+  console.info(`${staff.length} account(s) with the staff flag:`);
+  for (const user of staff) {
+    /* The flag is not the answer any more, so saying only that it is set
+       would be the one thing this listing must not do. */
+    const mark = isApprovedAdmin(user)
+      ? "approved in ADMIN_ALLOWLIST"
+      : "NOT APPROVED — this flag grants nothing";
+    console.info(`  ${describe(user)}  [${mark}]`);
+  }
+}
+
+/** What this machine's environment approves, which is not what Vercel's does. */
+function reportAllowlist() {
+  const approved = approvedAdminIdentities();
+  console.info("");
+  console.info(
+    approved.length === 0
+      ? "ADMIN_ALLOWLIST (this machine's .env.local): EMPTY — /admin answers 404 for everyone, including you"
+      : `ADMIN_ALLOWLIST (this machine's .env.local): ${approved.join(", ")}`,
+  );
+  console.info(
+    "The deployed site uses the copy in the Vercel project settings, which this cannot see.",
+  );
 }
 
 async function main() {
@@ -64,6 +104,7 @@ async function main() {
 
   if (args.includes("--list")) {
     await list();
+    reportAllowlist();
     return;
   }
 
@@ -92,10 +133,26 @@ async function main() {
     );
   }
 
+  /* Refuse before writing, not after: a flag set on an identity the gate
+     will not admit is worse than no flag at all, because the listing
+     above and the badge on the account screen would both suggest an
+     access that does not exist. Only on the way *in* — taking access
+     away must never be blocked by a configuration problem. */
+  if (!revoke) {
+    const refusal = adminAccessRefusal({ ...user, isStaff: true });
+    if (refusal) throw new Error(refusal);
+  }
+
   await db.user.update({ where: { id: user.id }, data: { isStaff: !revoke } });
   console.info(
     `${describe(user)} ${revoke ? "no longer has" : "now has"} staff access.`,
   );
+
+  if (!revoke) {
+    console.info(
+      "Reachable on the deployed site only if ADMIN_ALLOWLIST in the Vercel project settings lists this identity too.",
+    );
+  }
 }
 
 main()

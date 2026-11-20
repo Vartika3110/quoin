@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { ZodError, type ZodType } from "zod";
+import {
+  canAccessAdmin,
+  reportRefusedAdmin,
+} from "@/lib/auth/admin-access";
+import { hostVerdict, isAdminPath } from "@/lib/auth/admin-host";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth/session";
 import { describeError, raise } from "@/lib/alerts";
@@ -115,6 +120,28 @@ export function handler<Args extends unknown[]>(
 ) {
   return async (request: Request, ...args: Args): Promise<Response> => {
     try {
+      /* The host half of the two locks on the internal tools, applied
+         here rather than in `src/middleware.ts` because that file's
+         matcher deliberately excludes `/api` — see the note on `config`
+         there. Only the `/api/v1/admin` tree: `requireStaff` also guards
+         three routes that a *customer* calls on the storefront
+         (`/consultations`, `/parcha/submissions`), and those must keep
+         answering on the public host. Authorization is unchanged either
+         way; this decides which address can ask. */
+      if (
+        isAdminPath(new URL(request.url).pathname) &&
+        hostVerdict({
+          host:
+            request.headers.get("x-forwarded-host") ??
+            request.headers.get("host"),
+          pathname: new URL(request.url).pathname,
+          adminHost: process.env.ADMIN_HOST ?? null,
+          inProduction: process.env.NODE_ENV === "production",
+        }).kind !== "serve"
+      ) {
+        return fail("not_found", "Not found");
+      }
+
       return await fn(request, ...args);
     } catch (error) {
       if (error instanceof ApiError) {
@@ -192,6 +219,12 @@ export async function viewerId(): Promise<string | null> {
  * token cannot be revoked before it expires, so a token minted while
  * someone had access would keep working after it was taken away.
  *
+ * The row is necessary but not sufficient. `canAccessAdmin`
+ * (`src/lib/auth/admin-access.ts`) wants the owner's own identity, or
+ * `isStaff` **and** an `ADMIN_ALLOWLIST` entry — so that granting an
+ * administrator takes an environment change and not just a write to
+ * this table. Read that file before relaxing anything here.
+ *
  * 404-shaped message on purpose. Confirming that an internal tool exists
  * at this path, to someone who cannot use it, is free reconnaissance.
  */
@@ -206,6 +239,10 @@ export async function requireStaff() {
     throw new ApiError("not_found", "Not found");
   }
 
-  if (!user.isStaff) throw new ApiError("not_found", "Not found");
+  if (!canAccessAdmin(user)) {
+    reportRefusedAdmin(user, "an internal route");
+    throw new ApiError("not_found", "Not found");
+  }
+
   return user;
 }

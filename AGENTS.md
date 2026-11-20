@@ -53,3 +53,25 @@ names the order it was learned from. Do not add those edges back.
   `DISPATCHED` when every one of them has.
 
 Read `docs/whatsapp-orders.md` before touching any of it.
+
+# Admin access: two locks, neither in the database
+
+`User.isStaff` is **necessary and not sufficient**. Admin access is
+`canAccessAdmin` (`src/lib/auth/admin-access.ts`): the flag *and* an
+entry in `ADMIN_ALLOWLIST`, which lives in the environment so that
+database access alone cannot grant it. **Nobody is exempt and no
+identity is hard-coded** — do not add an owner constant or a
+last-resort account back; an empty list admitting nobody is the intended
+behaviour. Never reintroduce a bare `user.isStaff` check either: the
+gates are `requireStaffPage` (pages) and `requireStaff` (routes), and
+`scripts/grant-staff.ts` refuses to set the flag on an identity the gate
+would not admit.
+
+`ADMIN_HOST` serves the console on its own hostname: `/admin` and
+`/api/v1/admin/*` 404 on the storefront and are served only there, by
+`hostVerdict` (`src/lib/auth/admin-host.ts`) in three places —
+`src/middleware.ts`, the `handler` wrapper in `src/lib/http.ts` (the
+middleware matcher excludes `/api`) and `requireStaffPage`.
+
+Read `docs/admin-access.md` before touching any of it. It records the
+account this was learned from.

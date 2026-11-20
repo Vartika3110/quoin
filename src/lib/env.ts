@@ -395,6 +395,65 @@ const schema = z.object({
    * behind the same `AlertSink` interface when one is wanted.
    */
   ALERT_WEBHOOK_URL: z.string().url().optional(),
+
+  /**
+   * Who may administer — the whole of it, with nobody exempt. See
+   * `src/lib/auth/admin-access.ts`.
+   *
+   * Phone numbers and email addresses, separated by commas (spaces,
+   * semicolons and newlines work too, because this gets pasted into a
+   * Vercel text box by a human). An entry grants nothing on its own:
+   * the account also needs `isStaff`, set by `npm run admin:grant`.
+   * What this does is make that flag *mean* something — and it means
+   * nothing without an entry here, for anyone at all.
+   *
+   * The point of it being an environment variable rather than a column
+   * is the one thing worth not forgetting: approving an administrator
+   * must require something a database connection cannot give you. A
+   * leaked `DATABASE_URL`, a restored backup, a careless script or a
+   * sign-in that claims a pre-existing row by phone match can all set a
+   * boolean; none of them can edit this.
+   *
+   * **Unset means nobody.** There is deliberately no owner constant and
+   * no last-resort account anywhere in the source, so an empty list is
+   * `/admin` answering 404 to everyone, including whoever deployed it.
+   * It is still `.optional()` here, and the reason is the one
+   * `SHOW_SOURCE_IMAGES` records: a required value that can be absent
+   * or blank takes the whole storefront down at boot, and losing the
+   * console must never cost a customer the catalogue. The warning in
+   * `approvedAdminIdentities`, and `npm run admin:grant --list`, are
+   * what make the empty state obvious instead of mysterious. A
+   * malformed entry is ignored the same way, with a count logged.
+   */
+  ADMIN_ALLOWLIST: z.string().optional(),
+
+  /**
+   * The hostname the internal tools answer on — `admin.quoin.co.in`.
+   *
+   * Set it and `/admin` is served only there and 404s on the storefront;
+   * unset and both live on one origin, as they always have. The whole
+   * behaviour is `src/lib/auth/admin-host.ts`, which reads
+   * `process.env.ADMIN_HOST` **directly rather than this object**,
+   * because `src/middleware.ts` is its main caller and runs on the edge
+   * runtime, where importing this module throws. It is declared here
+   * anyway so that there is one list of everything this application
+   * reads from its environment, and so the build-phase fallback below
+   * carries it.
+   *
+   * Two things have to be true in the dashboard before setting it: the
+   * domain is attached to the same Vercel project (the same deployment
+   * serves both names — this is not a second app), and, if Google
+   * sign-in is to work there, `https://<ADMIN_HOST>/api/v1/auth/google/callback`
+   * is added to the authorised redirect URIs. The session cookie is
+   * host-only, so signing in on the storefront does not sign you in on
+   * the console; `/signin` is served on the admin host for exactly that
+   * reason.
+   *
+   * Optional, and with no production guard, for the strongest version of
+   * the reason Razorpay and Supabase have none: unset is the state this
+   * application has been in since it shipped.
+   */
+  ADMIN_HOST: z.string().optional(),
 });
 
 type Env = z.infer<typeof schema>;
@@ -450,6 +509,8 @@ function load(): Env {
         WHATSAPP_APP_SECRET: process.env.WHATSAPP_APP_SECRET,
         CRON_SECRET: process.env.CRON_SECRET,
         ALERT_WEBHOOK_URL: process.env.ALERT_WEBHOOK_URL,
+        ADMIN_ALLOWLIST: process.env.ADMIN_ALLOWLIST,
+        ADMIN_HOST: process.env.ADMIN_HOST,
       };
     }
 

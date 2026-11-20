@@ -41,7 +41,16 @@ import { env } from "@/lib/env";
  * than no alerting at all.
  */
 
-export type AlertKind = "unhandled_5xx" | "webhook_rejected" | "csp_violation";
+export type AlertKind =
+  | "unhandled_5xx"
+  | "webhook_rejected"
+  | "csp_violation"
+  /* A row carrying `isStaff` that `ADMIN_ALLOWLIST` does not approve
+     asked for an internal page or route. Either an approval that was
+     never finished in the environment, or an account that acquired the
+     flag without anyone deciding to give it. See
+     `src/lib/auth/admin-access.ts`. */
+  | "admin_access_refused";
 
 export interface Alert {
   kind: AlertKind;

@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import {
+  configuredAdminHost,
+  hostVerdict,
+  normalizeHost,
+} from "@/lib/auth/admin-host";
 
 /**
  * Response headers.
@@ -203,7 +208,86 @@ async function refreshSupabaseSession(
   return result;
 }
 
+
+/**
+ * Where the storefront lives, for sending a misdirected request there.
+ *
+ * `process.env` rather than `siteOrigin()` for the reason
+ * `refreshSupabaseSession` records below: this module runs on the edge
+ * runtime and `@/lib/env` throws there. Returns `null` when the site's
+ * own address is not configured, in which case a storefront path asked
+ * for on the admin host is answered with a 404 rather than a redirect to
+ * a guess.
+ */
+function appOrigin(): string | null {
+  const explicit = process.env.SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  return vercel ? `https://${vercel}` : null;
+}
+
+/**
+ * Two addresses, one deployment.
+ *
+ * `/admin` on the public storefront answers 404 — not a redirect, which
+ * would tell every scanner walking `quoin.co.in` exactly where the
+ * console moved to — and the storefront on the admin host is sent back to
+ * where it belongs, so that one catalogue does not end up served, and
+ * indexed, under two names.
+ *
+ * Runs before anything else in the middleware: a request that this host
+ * must not answer should not have a Supabase session refreshed for it on
+ * the way to being refused.
+ *
+ * The whole decision is `hostVerdict` in `@/lib/auth/admin-host`, which
+ * is a pure function and tested as one. This only carries out the
+ * sentence.
+ */
+function enforceHostSplit(request: NextRequest): NextResponse | null {
+  const verdict = hostVerdict({
+    /* `x-forwarded-host` first: behind Vercel's proxy that is the name
+       the browser asked for, where `host` can be the internal one. */
+    host: request.headers.get("x-forwarded-host") ?? request.headers.get("host"),
+    pathname: request.nextUrl.pathname,
+    adminHost: process.env.ADMIN_HOST ?? null,
+    inProduction: process.env.NODE_ENV === "production",
+  });
+
+  if (verdict.kind === "serve") return null;
+
+  if (verdict.kind === "belongs_to_app") {
+    const origin = appOrigin();
+    if (origin) {
+      const target = new URL(
+        request.nextUrl.pathname + request.nextUrl.search,
+        origin,
+      );
+      /* 307, not 308: a permanent redirect is cached by browsers for
+         good, and this arrangement must stay reversible by unsetting one
+         environment variable. */
+      return NextResponse.redirect(target, 307);
+    }
+  }
+
+  /* Deliberately bodiless and deliberately indistinguishable from any
+     other 404 this app serves. Confirming that an internal tool exists
+     somewhere, to someone who asked for it on the wrong host, is the
+     reconnaissance `notFound()` exists to avoid — the same reasoning as
+     `requireStaff` in src/lib/http.ts. */
+  return new NextResponse(null, {
+    status: 404,
+    headers: {
+      "X-Content-Type-Options": "nosniff",
+      "X-Robots-Tag": "noindex, nofollow",
+    },
+  });
+}
+
 export async function middleware(request: NextRequest) {
+  const misdirected = enforceHostSplit(request);
+  if (misdirected) return misdirected;
+
   let response = NextResponse.next();
 
   response.headers.set("X-Content-Type-Options", "nosniff");
@@ -216,6 +300,20 @@ export async function middleware(request: NextRequest) {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Permissions-Policy", PERMISSIONS_POLICY);
   response.headers.set("Content-Security-Policy-Report-Only", CSP);
+
+  /* Nothing on the admin host is for a search engine, and `robots.txt`
+     alone would not say so: it is served by the storefront's own route,
+     which allows crawling. A header on every response from this host is
+     the version that cannot drift out of step with the split. */
+  const adminHost = configuredAdminHost();
+  if (
+    adminHost &&
+    normalizeHost(
+      request.headers.get("x-forwarded-host") ?? request.headers.get("host"),
+    ) === adminHost
+  ) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
 
   /* Vercel already sends HSTS on its own domains, but a custom domain is
      served by the same code and must not quietly lose it. Set here so the
