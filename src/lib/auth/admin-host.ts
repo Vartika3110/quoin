@@ -115,7 +115,9 @@ export type HostVerdict =
   /** An internal path asked for on the public storefront. */
   | { kind: "not_found" }
   /** A storefront path asked for on the admin host. */
-  | { kind: "belongs_to_app" };
+  | { kind: "belongs_to_app" }
+  /** The admin host's own front door: `https://admin.example/`. */
+  | { kind: "admin_root" };
 
 /**
  * Whether this host may answer this path.
@@ -144,6 +146,14 @@ export function hostVerdict(input: {
   if (!inProduction && isDevelopmentHost(host)) return { kind: "serve" };
 
   if (host === adminHost) {
+    /* Typing the admin hostname into a browser means "take me to the
+       console", not "show me the storefront" — treating `/` like any
+       other storefront path and bouncing it to the shop is technically
+       consistent and practically wrong. The caller turns this into
+       `/admin`, or into sign-in first when there is no session cookie
+       to go on. */
+    if (pathname === "/") return { kind: "admin_root" };
+
     return isAdminPath(pathname) || isAdminHostExtra(pathname)
       ? { kind: "serve" }
       : { kind: "belongs_to_app" };

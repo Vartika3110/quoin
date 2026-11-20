@@ -109,9 +109,22 @@ describe("the admin host", () => {
   });
 
   it("sends the storefront back where it belongs", () => {
-    assert.equal(verdict(ADMIN, "/"), "belongs_to_app");
     assert.equal(verdict(ADMIN, "/products/basin-mixer"), "belongs_to_app");
     assert.equal(verdict(ADMIN, "/checkout"), "belongs_to_app");
+  });
+
+  /* Typing the admin hostname means "take me to the console". Bouncing
+     the root to the shop like any other storefront path is consistent
+     and useless: the middleware turns this into /admin, or into
+     /signin?next=/admin when no session cookie is present. */
+  it("treats its own root as the front door, not as the shop", () => {
+    assert.equal(verdict(ADMIN, "/"), "admin_root");
+    assert.notEqual(verdict(ADMIN, "/"), "belongs_to_app");
+  });
+
+  /* Only the admin host's root. The storefront's own root is the shop. */
+  it("does not claim the storefront's root", () => {
+    assert.equal(verdict(APP, "/"), "serve");
   });
 });
 

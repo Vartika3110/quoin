@@ -107,9 +107,10 @@ and both live on one origin, as they always have.
 
 | Request | Result |
 | --- | --- |
+| `/` on the admin host | 307 to `/admin`, or to `/signin?next=/admin` when no session cookie is present — typing the admin hostname means "take me to the console" |
 | `/admin/*`, `/api/v1/admin/*` on the admin host | served |
 | `/signin`, `/robots.txt`, `/_vercel/*` on the admin host | served — the session cookie is host-only, so signing in has to be possible there |
-| anything else on the admin host | 307 to `SITE_URL` (404 if that is unset) |
+| any other storefront path on the admin host | 307 to `SITE_URL` (404 if that is unset) |
 | `/admin/*`, `/api/v1/admin/*` on the storefront | 404, never a redirect — a redirect would tell every scanner walking the public domain where the console went |
 | an unrecognised host | treated as the storefront: unknown means less access, never more |
 

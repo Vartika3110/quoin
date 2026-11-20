@@ -5,6 +5,7 @@ import {
   hostVerdict,
   normalizeHost,
 } from "@/lib/auth/admin-host";
+import { SESSION_COOKIE } from "@/lib/auth/session-cookie";
 
 /**
  * Response headers.
@@ -244,6 +245,25 @@ function appOrigin(): string | null {
  * is a pure function and tested as one. This only carries out the
  * sentence.
  */
+/**
+ * Whether this request carries *a* session cookie, of either kind.
+ *
+ * A hint for choosing where to send someone, never an authorisation: it
+ * reads names, not contents, and `requireStaffPage` verifies the session
+ * and the identity on the very next request regardless. Both kinds are
+ * checked because this app has two — Google sign-in mints the legacy
+ * `quoin_session` JWT, and phone sign-in leaves Supabase's `sb-*`
+ * token pair — and landing a signed-in administrator on a sign-in page
+ * because the wrong one was looked for is exactly the papercut this is
+ * meant to remove.
+ */
+function looksSignedIn(request: NextRequest): boolean {
+  if (request.cookies.has(SESSION_COOKIE)) return true;
+  return request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+}
+
 function enforceHostSplit(request: NextRequest): NextResponse | null {
   const verdict = hostVerdict({
     /* `x-forwarded-host` first: behind Vercel's proxy that is the name
@@ -255,6 +275,18 @@ function enforceHostSplit(request: NextRequest): NextResponse | null {
   });
 
   if (verdict.kind === "serve") return null;
+
+  if (verdict.kind === "admin_root") {
+    /* Signed out, send them to sign-in with the console as the
+       destination, rather than to an `/admin` that answers 404 and
+       leaves the person who just typed the admin hostname with nowhere
+       to go. The cookie is only read for its *presence* — nothing here
+       trusts it, and `requireStaffPage` verifies the session and the
+       identity on the next request either way. `/signin` is a public
+       page on this host already. */
+    const target = looksSignedIn(request) ? "/admin" : "/signin?next=/admin";
+    return NextResponse.redirect(new URL(target, request.nextUrl.origin), 307);
+  }
 
   if (verdict.kind === "belongs_to_app") {
     const origin = appOrigin();

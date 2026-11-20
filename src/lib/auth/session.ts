@@ -42,7 +42,10 @@ import {
  * can be deleted outright and this file halves.
  */
 
-export const SESSION_COOKIE = "quoin_session";
+/* Defined in its own import-free module so the edge middleware can read
+   the name without pulling this file (and `env`, and Prisma) in. */
+export { SESSION_COOKIE } from "@/lib/auth/session-cookie";
+import { SESSION_COOKIE } from "@/lib/auth/session-cookie";
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
 
 const secret = new TextEncoder().encode(env.AUTH_SECRET);
