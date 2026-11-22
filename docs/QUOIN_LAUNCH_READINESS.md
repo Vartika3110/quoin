@@ -24,13 +24,13 @@ which stays as that day's record and is not rewritten.
 
 | | Count |
 | --- | ---: |
-| Pass | 64 |
+| Pass | 65 |
 | Partial | 7 |
 | Fail | 7 |
 | Blocked (no access) | 9 |
 | Not Started | 19 |
 | N/A / risk accepted | 2 |
-| **Total items** | **108** |
+| **Total items** | **109** |
 
 **The seven failures:** PAY-01 (no settled webhook since 5 October), CX-14 and
 DEP-14 (Supabase storage restricted, so uploads fail), ORD-14 (a captured
@@ -79,7 +79,9 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
   the Parcha upload. This is new since October and is on the spend cap.
 - **Production environment variables are confirmed** (DEP-04), which narrows
   PAY-01 from "something is misconfigured" to "nothing is being delivered".
-- **838 tests pass**, lint clean bar one warning, build compiles.
+- **838 tests pass**, lint reports 0 errors and 3 warnings, and `npm run build`
+  exits 0 on **Next 16.4.6** — upgraded 22 Nov, which closes the only advisory
+  that was in the serving path (DEP-15).
 
 ---
 
@@ -177,7 +179,7 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | SEC-01 | **No secret values in client bundle** | P0 | **Pass** | Every configured secret exact-value searched in `.next/static` — none found | No |
 | SEC-02 | `.env` files git-ignored | P0 | **Pass** | `.gitignore` → `.env*`, and `/backups` added by the exporter itself | No |
 | SEC-03 | **`.env.local` carries an orphaned secret** | P1 | **FAIL — unchanged** | Line 1 is still a 148-character value with no key name, shaped `v1,whsec_…` (a Supabase hook secret), and it is **a different value** from the `SUPABASE_SMS_HOOK_SECRET` the file also sets. Treat it as live until rotated. 6 keys hold empty values (3 MSG91, 3 Razorpay) — expected locally | No (local file), but see SEC-17 |
-| SEC-04 | **Dependency audit** | P1 | **Partial** | `npm audit --omit=dev`: 4 high, 1 moderate — down from 1 critical + 8 high. All four highs are in the **Prisma CLI** chain (`deepmerge-ts`, `effect` via `@prisma/config`) and never run in the serving path. The moderate is `next` itself | No |
+| SEC-04 | **Dependency audit** | P1 | **Partial — the serving path is clean** | `npm audit --omit=dev`: **4 high, 0 moderate, 0 critical** (October: 1 critical + 8 high). The `next` moderate is gone — see DEP-15. All four remaining highs are in the **Prisma CLI** chain (`deepmerge-ts`, `effect` via `@prisma/config`): a developer's tool, never loaded by a request. **A zero here is purchasable and was not worth the price:** `npm audit fix --force` downgrades the CLI to 6.12.0, which does not understand the `migrations.seed` key in `prisma.config.ts` (typecheck fails) and leaves a 6.12 CLI against a 6.19 client. Tried on 22 Nov and reverted. The forward fix is Prisma 7.10.1 or later, which is outside the advisory range — a deliberate major upgrade, not an audit-fix | No |
 | SEC-05 | Admin authorization | P0 | **Pass** | See ADM-01, ADM-02, ADM-12 | No |
 | SEC-06 | Server-side input validation | P0 | **Pass** | Zod on every inspected route, bounded string lengths | No |
 | SEC-07 | Price manipulation prevented | P0 | **Pass** | Totals never read from the request body | No |
@@ -213,7 +215,8 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | DEP-12 | Image optimisation and performance | P2 | **Pass** (partial) | `next/image` with `sizes` throughout; no Lighthouse run | No |
 | DEP-13 | Health endpoint | P2 | **Pass** | `/api/v1/health` → 200 on 22 Nov | No |
 | DEP-14 | **Supabase project is within its limits** | P0 | **Fail** | Storage is restricted: `402 … exceed_egress_quota`. Postgres is still serving, so the shop is unaffected, but every signed upload fails (CX-14, SEC-16) and so does ORD-10's Supabase half. One upgrade clears the cap, the backups and PITR | **Yes, before public launch** |
-| DEP-15 | Framework patch level | P1 | Not Started | `next` 16.2.12 carries 7 published advisories (moderate), among them an image-optimization SVG bypass and cache poisoning in `use cache`. Fixed in 16.4.6, which is outside the stated range — read the upgrade notes in `node_modules/next/dist/docs/` before moving | No |
+| DEP-15 | Framework patch level | P1 | **Pass** (22 Nov) | `next` 16.4.6, pinned exactly as this repo pins it. Closes all 7 advisories, among them the image-optimization SVG bypass and cache poisoning in `use cache`. Verified: typecheck clean, 838 tests pass, `npm run build` exits 0 — compiled in 46s with the Prisma client regenerated at 6.19.3 | No |
+| DEP-16 | `middleware` convention deprecated | P1 | Not Started | Next 16.4.6 warns at build: *"The `middleware` file convention is deprecated. Please use `proxy` instead"*, with `npx @next/codemod@canary middleware-to-proxy`. It still works, and the build labels it `Proxy (Middleware)`. Worth doing deliberately rather than late: `src/middleware.ts` is one of the three places that enforce the admin-host split, so the migration needs the host tests re-run, not just a codemod | No |
 
 ---
 
@@ -280,8 +283,8 @@ Complete **all** of these before revisiting the launch decision.
 ### Gate 3 — security and operations
 
 15. [ ] Rotate the Supabase hook secret, delete line 1 of `.env.local`, re-check (SEC-03, SEC-17).
-16. [ ] `npm audit --omit=dev` → no critical, no high. Today: 4 high, all in the Prisma CLI chain.
-17. [ ] Upgrade `next` past the 7 open advisories (DEP-15).
+16. [ ] `npm audit --omit=dev` → **nothing critical or high in the serving path**. Today: 4 high, all in the Prisma CLI chain, and a plain `audit fix --force` breaks the build to clear them (SEC-04). The real close is Prisma 7.10.1+.
+17. [x] ~~Upgrade `next` past the 7 open advisories.~~ Done 22 Nov — 16.4.6, verified (DEP-15). Then migrate `middleware` → `proxy` (DEP-16).
 18. [ ] Error monitoring installed, with an alert on webhook rejections (DEP-10).
 19. [ ] Clear the Supabase spend cap; confirm storage answers 200 and the Parcha upload works (DEP-14, CX-14).
 20. [ ] Enable Supabase daily backups and PITR; schedule `npm run db:export` as the off-platform copy (ORD-10).
