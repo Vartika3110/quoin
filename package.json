@@ -16,6 +16,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-studio": "tsx prisma/seed-studio.ts",
     "db:studio": "prisma studio",
+    "db:export": "tsx scripts/export-database.ts",
+    "db:export:verify": "tsx scripts/export-database.ts --verify",
     "db:import": "tsx prisma/import-catalogue.ts",
     "audit:catalogue": "tsx scripts/audit-catalogue.ts",
     "check:legal": "tsx scripts/check-legal.ts",

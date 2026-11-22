@@ -123,3 +123,6 @@ next-env.d.ts
 # Quoin's own photography should look like is research, and pushing them
 # to a repository is publishing them.
 /research/data/handypanda-paints/
+
+# Database exports — rows, not schema, and full of personal data.
+/backups
