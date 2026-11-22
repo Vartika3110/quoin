@@ -23,10 +23,10 @@ which stays as that day's record and is not rewritten.
 
 | | Count |
 | --- | ---: |
-| Pass | 63 |
+| Pass | 64 |
 | Partial | 7 |
 | Fail | 7 |
-| Blocked (no access) | 10 |
+| Blocked (no access) | 9 |
 | Not Started | 19 |
 | N/A / risk accepted | 2 |
 | **Total items** | **108** |
@@ -40,9 +40,23 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 
 | Gate | Items |
 | --- | --- |
-| **Controlled pilot** | PAY-01, PAY-14, DEP-04 — and ADM-08 and TRU-09, which are downstream of them |
+| **Controlled pilot** | PAY-01 and PAY-14 — and ADM-08 and TRU-09, which are downstream of them. DEP-04 cleared 22 Nov |
 | **Before live mode** | PAY-10, PAY-13, ADM-09, TRU-05, ORD-14 |
 | **Before public launch** | ORD-10, ORD-12, PAY-11, CX-14, DEP-09, DEP-10, DEP-14, SEC-17, TRU-10 |
+
+> **Live risk, found 22 November.** Online payment is **switched on right now**
+> on `www.quoin.co.in` — `/consult` reports the gateway gate open, which means
+> all three Razorpay variables are set in production. So a customer can pay
+> today, and nothing has settled a payment through the webhook since 5 October.
+> Their money would be captured at Razorpay and their order would sit in
+> `PENDING_PAYMENT` with no confirmation sent: exactly the "payment worked,
+> order counter empty" report that started this audit.
+>
+> Two honest ways out, and the choice is yours. **Either** clear Gate 1 before
+> anyone else pays — it is one dashboard check plus one test delivery —
+> **or** unset `RAZORPAY_WEBHOOK_SECRET` in production, which switches the
+> payment tile off by design (PAY-02) and leaves "Confirm with an expert" in
+> its place until settlement is proven.
 
 ### What moved since 24 October
 
@@ -62,6 +76,8 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
   still the one security item with a real value behind it.
 - **Supabase storage is restricted** — `402 exceed_egress_quota` — which breaks
   the Parcha upload. This is new since October and is on the spend cap.
+- **Production environment variables are confirmed** (DEP-04), which narrows
+  PAY-01 from "something is misconfigured" to "nothing is being delivered".
 - **838 tests pass**, lint clean bar one warning, build compiles.
 
 ---
@@ -115,8 +131,8 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 
 | ID | Task | P | Status | Evidence | Blocks launch |
 | --- | --- | --- | --- | --- | --- |
-| PAY-01 | **Webhook signature verification succeeds** | P0 | **FAIL — untested, not fixed** | 46 deliveries ever: 45 `rejected_signature`, 1 `recorded`. The newest delivery of any kind is **5 October, 16:34 UTC — 48 days ago**. The October fix changed the code; nothing has tested it | **YES — the one pilot blocker** |
-| PAY-02 | Misconfiguration fails loudly | P0 | **Pass** (fixed 24 Oct) | `isRazorpayConfigured` requires the webhook secret, so online payment is not offered without it; admin banner on rejected deliveries; 6 tests | No |
+| PAY-01 | **Webhook signature verification succeeds** | P0 | **FAIL — untested, not fixed** | 46 deliveries ever: 45 `rejected_signature`, 1 `recorded`. The newest delivery of any kind is **5 October, 16:34 UTC — 48 days ago**. The October fix changed the code; nothing has tested it. **DEP-04 narrows the cause:** the webhook secret *is* set in production, so this is no longer "misconfigured and refusing" — nothing is arriving at all, which points at PAY-14 | **YES — the one pilot blocker** |
+| PAY-02 | Misconfiguration fails loudly | P0 | **Pass** (fixed 24 Oct, proven live 22 Nov) | `isRazorpayConfigured` requires the webhook secret, so online payment is not offered without it; admin banner on rejected deliveries; 6 tests. The live site reports the gate open, which is itself the evidence for DEP-04 | No |
 | PAY-03 | Gateway order created server-side | P0 | **Pass** | `createGatewayOrder` in the checkout route | No |
 | PAY-04 | Amount computed server-side from catalogue | P0 | **Pass** | A claimed total in the body is ignored | No |
 | PAY-05 | Handoff signature verified | P0 | **Pass** | HMAC over `orderId\|paymentId` | No |
@@ -128,7 +144,7 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | PAY-11 | Reconciliation catches missed webhooks | P0 | Not Started | `/api/v1/cron/reconcile-payments` is scheduled at 01:00 and is the safety net that should have caught PAY-01. Never observed to run | **Yes, before public launch** |
 | PAY-12 | No Razorpay secret in frontend bundle | P0 | **Pass** | Exact-value search of `.next/static` — clean | No |
 | PAY-13 | Test vs live mode separation | P0 | **Blocked** | `RAZORPAY_KEY_ID` is empty locally; Vercel values not visible | **Yes, before live mode** |
-| PAY-14 | Razorpay webhook subscription configured | P0 | **Blocked** | No dashboard access. Given PAY-01 and 48 days of silence, assume it is not subscribed until a delivery proves otherwise | **Yes** |
+| PAY-14 | Razorpay webhook subscription configured | P0 | **Blocked — now the prime suspect** | No dashboard access. With the secret confirmed present (DEP-04), a rejected delivery would still *be* a delivery. Forty-eight days of complete silence is what a missing, disabled or wrongly-addressed subscription looks like. Check the URL it points at, that `payment.captured` is ticked, and that it is enabled | **Yes** |
 | PAY-15 | Customer-facing payment messages | P2 | **Pass** | Verify failure names support and the order reference without disclosing the order | No |
 | PAY-16 | Revenue figures net off refunds | P1 | **Pass** | Dashboard and monthly revenue both subtract `PROCESSED` refunds (`admin-metrics.ts`) | No |
 
@@ -185,7 +201,7 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | DEP-01 | Production domain + HTTPS + redirect | P0 | **Pass** | `quoin.co.in` → `www.quoin.co.in`, 200, HSTS | No |
 | DEP-02 | Deployed version matches intended code | P1 | **Pass** | October's three unmerged commits are gone: `main` is `e176b30` and level with `origin/main`. The live home page serves the current work (206 "In stock" lines) | No |
 | DEP-03 | No hardcoded localhost / test endpoints | P1 | **Pass** | No `localhost` in `src/`; gateway key read from env per request | No |
-| DEP-04 | Vercel env var names and values | P0 | **Blocked** | No access. `ADMIN_HOST`, `ADMIN_ALLOWLIST`, `CRON_SECRET` and the Razorpay set all have to be right there and nowhere else | **Yes** |
+| DEP-04 | Vercel env var names and values | P0 | **Pass** (owner-confirmed 22 Nov) | Checked in the Vercel production environment by the owner, and corroborated twice from outside: `admin.quoin.co.in/` → 307 → `/signin?next=/admin`, a redirect only reachable from the `host === adminHost` branch of `hostVerdict`, so `ADMIN_HOST` is set and correct; and `/consult` serialises `paymentsReady: true`, which `razorpayMissingConfigIn` only allows when `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` **and** `RAZORPAY_WEBHOOK_SECRET` are all non-empty | No |
 | DEP-05 | Preview and production separated | P1 | **Blocked** | No access | **Yes** |
 | DEP-06 | Build and runtime logs reviewed | P1 | **Blocked** | No access | No |
 | DEP-07 | Region | P2 | **Pass** | `bom1` in `vercel.json`, confirmed by `x-vercel-id` | No |
@@ -238,14 +254,13 @@ Complete **all** of these before revisiting the launch decision.
 
 ### Gate 1 — payment settlement (closes PAY-01)
 
-> With the October fix in place, a deployment missing `RAZORPAY_WEBHOOK_SECRET`
-> **does not offer online payment at all**. If checkout shows only "Confirm with
-> an expert", that is this gate telling you step 1 has not been done — not a
-> separate fault.
+> **Step 1 is already done** — confirmed 22 November. `RAZORPAY_WEBHOOK_SECRET`
+> is set in production, which is why checkout offers the payment tile at all.
+> This gate therefore starts at the Razorpay end, not the Vercel end.
 
-1. [ ] Set `RAZORPAY_WEBHOOK_SECRET` in Vercel production from the Razorpay dashboard. Redeploy.
-2. [ ] Confirm the webhook subscription exists in the dashboard and points at the production URL (PAY-14).
-3. [ ] Send a test webhook. Confirm a new `payment_webhooks` row with `signatureValid = true` and `outcome = 'recorded'` — the first since 5 October.
+1. [x] ~~Set `RAZORPAY_WEBHOOK_SECRET` in Vercel production.~~ Done — DEP-04.
+2. [ ] In the Razorpay dashboard: confirm a webhook subscription exists, is **enabled**, points at the production URL, and has **`payment.captured`** ticked (PAY-14). This is the likeliest single cause of PAY-01.
+3. [ ] Send a test webhook. Confirm a new `payment_webhooks` row with `signatureValid = true` and `outcome = 'recorded'` — the first since 5 October. If it arrives and is *rejected*, the secret in Vercel and the secret in the dashboard differ: copy it again.
 4. [ ] Place **five** test-mode orders end to end.
 5. [ ] Confirm **five** orders reach `status = 'PAID'` with `paidAt` set.
 6. [ ] Confirm **zero** new `rejected_signature` rows.
@@ -292,5 +307,6 @@ October — the catalogue is the right one, the prices are verified, the legal
 pages are real, the admin console is behind two locks on its own hostname, and
 the database finally has a copy that does not live in Supabase. None of that is
 the blocker. **The blocker is that no payment has been settled through this
-system since 5 October, and one ₹1 live test is what turns PAY-01 from an
-argument into a fact.**
+system since 5 October — and now that the production variables are confirmed,
+the next move is not in the code at all. It is one look at the Razorpay
+dashboard's webhook subscription, then one ₹1 test.**
