@@ -1,6 +1,7 @@
 # Quoin — launch readiness checklist
 
-**Re-audited:** 22 November 2026 · **Commit:** `e176b30` · **main:** level with `origin/main`
+**Re-audited:** 22 November 2026 · **Code as audited:** `e176b30`
+**Amended the same day:** DEP-04 confirmed by the owner, and PAY-01 narrowed because of it.
 **First audited:** 24 October 2026 (`b4d9255`) — findings and method in `QUOIN_LAUNCH_AUDIT.md`,
 which stays as that day's record and is not rewritten.
 **Excluded by instruction:** GST, tax calculation, GST compliance.
