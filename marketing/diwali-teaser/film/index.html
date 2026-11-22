@@ -1,0 +1,81 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:'Fraunces';src:url('fonts/Fraunces.ttf') format('truetype');font-weight:100 900;font-display:block}
+@font-face{font-family:'PlexSans';src:url('fonts/IBMPlexSans.ttf') format('truetype');font-weight:100 700;font-display:block}
+html,body{margin:0;padding:0;background:#000;overflow:hidden}
+#stage{position:relative;width:1080px;height:1920px;background:#000;overflow:hidden}
+#gl{position:absolute;inset:0;display:block}
+#ui{position:absolute;inset:0;pointer-events:none}
+#scrim{position:absolute;left:0;right:0;top:0;height:40%;opacity:0;
+  background:linear-gradient(to bottom, rgba(10,6,4,.78) 0%, rgba(10,6,4,.46) 52%, rgba(10,6,4,0) 100%)}
+#L3{top:12.5%}
+.line{
+  position:absolute;left:50%;top:15.5%;
+  width:900px;margin-left:-450px;text-align:center;
+  font-family:'PlexSans',sans-serif;font-variation-settings:'wght' 380;
+  font-size:40px;line-height:1.46;text-transform:uppercase;
+  color:#f5ede1;opacity:0;
+  text-shadow:0 0 30px rgba(217,93,36,.34), 0 0 86px rgba(217,93,36,.16);
+}
+#lockup{position:absolute;left:50%;top:50%;width:1080px;margin-left:-540px;
+  text-align:center;opacity:0;transform:translateY(-50%)}
+#mark{display:block;margin:0 auto 54px;width:230px;height:230px}
+#wordmark{font-family:'Fraunces',serif;font-variation-settings:'wght' 620;
+  font-size:128px;line-height:1;text-transform:uppercase;letter-spacing:.18em;
+  text-indent:.09em;color:#f5ede1;
+  text-shadow:0 0 44px rgba(217,93,36,.30), 0 0 120px rgba(217,93,36,.14)}
+#tagline{margin-top:44px;font-family:'PlexSans',sans-serif;font-variation-settings:'wght' 400;
+  font-size:30px;text-transform:uppercase;letter-spacing:.34em;text-indent:.17em;
+  color:rgba(245,237,225,.74);opacity:0}
+#diwali{position:absolute;left:50%;top:50%;width:1000px;margin-left:-500px;
+  text-align:center;transform:translateY(-50%)}
+#dw1{font-family:'Fraunces',serif;font-variation-settings:'wght' 600;
+  font-size:92px;line-height:1;letter-spacing:.11em;text-indent:.055em;color:#f7f1e6;opacity:0;
+  text-shadow:0 0 40px rgba(217,93,36,.32), 0 0 110px rgba(217,93,36,.15)}
+#dw2{margin-top:40px;font-family:'PlexSans',sans-serif;font-variation-settings:'wght' 360;
+  font-size:32px;letter-spacing:.015em;color:rgba(245,237,225,.86);opacity:0}
+#dw3{margin-top:92px;display:flex;align-items:center;justify-content:center;gap:24px;opacity:0}
+#dw3 svg{width:62px;height:62px;display:block}
+#dw3 span{font-family:'Fraunces',serif;font-variation-settings:'wght' 600;
+  font-size:50px;text-transform:uppercase;letter-spacing:.20em;text-indent:.10em;color:#f5ede1}
+</style></head>
+<body><div id="stage">
+<canvas id="gl" width="1080" height="1920"></canvas>
+<div id="ui">
+  <div id="scrim"></div>
+  <div class="line" id="L1">EVERYTHING GREAT&hellip;</div>
+  <div class="line" id="L2">&hellip;STARTS WITH AN IDEA.</div>
+  <div class="line" id="L3">AND SOMETHING NEW<br>IS TAKING SHAPE.</div>
+
+  <div id="lockup">
+    <!-- The mark exactly as public/icon.svg draws it: the O of QUOIN with
+         the quoin stone cut into its lower right. Geometry untouched. -->
+    <svg id="mark" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-label="Quoin">
+      <defs><mask id="cut">
+        <rect width="512" height="512" fill="#fff"/>
+        <path d="M256 366 h118 v118 h-118 z" fill="#000"/>
+      </mask></defs>
+      <circle cx="256" cy="248" r="118" fill="none" stroke="#d95d24" stroke-width="34" mask="url(#cut)"/>
+      <path d="M268 306 h96 v96 h-96 z" fill="#d95d24"/>
+    </svg>
+    <div id="wordmark">QUOIN</div>
+    <div id="tagline">A new way to build.</div>
+  </div>
+
+  <div id="diwali">
+    <div id="dw1">HAPPY DIWALI</div>
+    <div id="dw2">May new beginnings bring bigger possibilities.</div>
+    <div id="dw3">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-label="Quoin">
+        <defs><mask id="cut2">
+          <rect width="512" height="512" fill="#fff"/>
+          <path d="M256 366 h118 v118 h-118 z" fill="#000"/>
+        </mask></defs>
+        <circle cx="256" cy="248" r="118" fill="none" stroke="#d95d24" stroke-width="34" mask="url(#cut2)"/>
+        <path d="M268 306 h96 v96 h-96 z" fill="#d95d24"/>
+      </svg>
+      <span>Quoin</span>
+    </div>
+  </div>
+</div></div>
+<script type="module" src="film.js"></script></body></html>

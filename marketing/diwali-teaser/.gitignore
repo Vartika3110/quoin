@@ -1,0 +1,7 @@
+# Rendered output. The source beside it regenerates all of this, so the
+# binaries stay out of the repo — drop these lines if you'd rather the
+# finished cut were versioned.
+*.mp4
+*.wav
+*.jpg
+frames/

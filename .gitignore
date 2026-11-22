@@ -94,3 +94,32 @@ next-env.d.ts
 # `python3 research/build-catalogue-preview.py public/catalogue-preview/<name>`
 # rather than editing one by hand — and they move to object storage
 # whenever public/catalogue does.
+
+# Extraction runs from supplier PDFs: thousands of rendered JPEGs, their
+# thumbnails and the spreadsheet built from them. Run output, and the only
+# part of it that matters afterwards is the photography the import copies
+# into public/catalogue. Rebuild with
+# research/extract-catalogue-sheet.py rather than committing a run.
+/research/data/sheets/
+
+# Output of research/test-image-extraction.py: every extraction method's
+# files for a handful of products, plus the sheets comparing them. A run,
+# not a source. Rebuild with
+# `.venv/bin/python research/test-image-extraction.py <pdf> --count 10`.
+/research/data/extraction-test/
+
+# Extraction runs from supplier PDFs: hundreds of MB of rendered and
+# unpacked catalogue imagery. Run output; rebuild with
+# research/extract-catalogue-images.py.
+/research/data/extracted/
+
+# A scrape of a competitor's paint catalogue — 28 products, 61,635 SKUs
+# and 53 of their product photographs, 46 MB in all. Run output, and
+# research/scrape-handypanda-paints.py regenerates it.
+#
+# Out of the repo for two reasons and either would do. Git never forgets,
+# so a 36 MB JSON is paid for by every clone forever. And the images are
+# somebody else's copyright: having them on a laptop while deciding what
+# Quoin's own photography should look like is research, and pushing them
+# to a repository is publishing them.
+/research/data/handypanda-paints/

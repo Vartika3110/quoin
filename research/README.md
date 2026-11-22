@@ -82,3 +82,26 @@ storefront categories yet — they are correct, not useful. `Services` is
 worth keeping regardless: "Unloading Service" is bookable rather than
 stocked, and filing it as goods would put a non-deliverable line in a
 delivery cart.
+
+## Supplier PDFs nobody has described yet
+
+`extract-brand-catalogue.py` needs a layout written out per brand in its
+`BRANDS` table. `extract-catalogue-sheet.py` needs nothing: it anchors on
+the photographs instead of on a known grid, so it reads a catalogue that
+has just arrived, and writes a spreadsheet for a human to price rather
+than a manifest to import.
+
+```bash
+npm run catalogue:lists -- research/data/categories.json
+.venv/bin/python research/extract-catalogue-sheet.py OUT_DIR a.pdf b.pdf \
+    --brand Hindware --brand Jaquar --categories research/data/categories.json
+# ...a human highlights the rows to sell and fills in Your price...
+.venv/bin/python research/read-approved-sheet.py reviewed.xlsx approved.json \
+    --images OUT_DIR/images
+npm run db:import-sheet -- approved.json --dry-run
+```
+
+Only highlighted rows are imported, and only with a price somebody typed:
+the catalogue's MRP is reference, never the sell price. The whole
+procedure, including what to check before handing the sheet over, is the
+`catalogue-from-pdf` skill in `.claude/skills/`.
