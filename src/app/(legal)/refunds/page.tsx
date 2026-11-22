@@ -12,7 +12,7 @@ export default function RefundsPage() {
   return (
     <LegalPage
       title="Refunds & cancellations"
-      updated="2026-09-22"
+      updated="2026-11-22"
       intro={
         <p>
           Building materials are not all returnable, and this page says plainly

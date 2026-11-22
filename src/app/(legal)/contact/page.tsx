@@ -13,7 +13,7 @@ export default function ContactPage() {
   return (
     <LegalPage
       title="Contact us"
-      updated="2026-09-22"
+      updated="2026-11-22"
       intro={<p>A person, not a ticket queue.</p>}
     >
       <Clause heading="About an order or a booking">
@@ -50,22 +50,30 @@ export default function ContactPage() {
               {`${COMPANY.supportPhone} · ${COMPANY.supportHours}`}
             </dd>
           </div>
-          <div className="flex gap-3">
-            <dt className="w-28 shrink-0 text-faint">Address</dt>
-            <dd className="text-ink">
-              {COMPANY.registeredAddress}
-            </dd>
-          </div>
+          {/* The registered address is deliberately not here. It is a
+              statutory disclosure rather than a way to reach support —
+              nobody writing about an order needs it — and it is printed
+              in full under "Who we are" on `/privacy`, plus on
+              `/grievance` where a complaint may actually need posting.
+              Twice is enough; this page is the one people land on. */}
         </dl>
       </Clause>
 
       <Clause heading="A complaint">
+        {/* "the named person responsible" was true while a grievance
+            officer was a required `string`. It is not true now that
+            nobody is appointed and the field is `null`, and a sentence
+            promising a named person to somebody whose order has already
+            gone wrong is the worst place to be loose. The wording
+            follows the data. */}
         <p>
-          If support has not resolved something, the{" "}
+          If support has not resolved something,{" "}
           <Link href="/grievance" className="font-medium text-accent hover:underline">
-            grievance officer
-          </Link>{" "}
-          is the named person responsible for it.
+            escalate it here
+          </Link>
+          {COMPANY.grievanceOfficer
+            ? " — a named person is responsible for it."
+            : " — complaints are escalated and answered to the same timelines."}
         </p>
       </Clause>
     </LegalPage>

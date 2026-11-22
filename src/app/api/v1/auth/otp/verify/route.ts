@@ -41,7 +41,7 @@ export const POST = handler(async (request) => {
   if (!isSupabaseAuthConfigured()) {
     throw new ApiError(
       "conflict",
-      "Sign-in by SMS is not available yet. Please try again later.",
+      "Sign-in by phone is not available yet. Please try again later.",
     );
   }
 

@@ -174,7 +174,17 @@ export function SiteFooter({
 
             {/* The one thing a customer with a problem is looking for,
                 above the fold of the footer rather than three clicks into
-                a policy page. */}
+                a policy page.
+
+                The phone used to sit here beside the email and has moved
+                to `/contact`, one click away and still linked below. A
+                footer renders on every route, so a number here is
+                published forty-odd times over and is the first thing a
+                harvester takes; the email stays because it is a role
+                address that can be rotated, and because leaving no
+                reachable channel in the footer would trade a real
+                customer's problem for a theoretical scraper's
+                convenience. */}
             <dl className="mt-4 space-y-1 text-body-sm lg:mt-5">
               <div className="flex gap-2">
                 <dt className="text-faint">Email</dt>
@@ -191,10 +201,10 @@ export function SiteFooter({
                 <dt className="text-faint">Phone</dt>
                 <dd>
                   <a
-                    href={`tel:${COMPANY.supportPhone.replace(/\s/g, "")}`}
+                    href="/contact"
                     className="text-muted transition-colors hover:text-accent"
                   >
-                    {COMPANY.supportPhone}
+                    See contact
                   </a>
                   <span className="text-faint"> · {COMPANY.supportHours}</span>
                 </dd>
@@ -296,7 +306,14 @@ export function SiteFooter({
             © {new Date().getFullYear()}{" "}
             {COMPANY_DETAILS_ARE_SAMPLE ? COMPANY.tradingName : COMPANY.legalName}.
             All rights reserved.
-            {COMPANY_DETAILS_ARE_SAMPLE ? null : ` GSTIN ${COMPANY.gstin}.`}
+            {/* `null` here is "not published", which is a legitimate
+                answer and prints nothing — distinct from the sample
+                state above, which prints nothing because there is no
+                answer yet. Both end in no GSTIN on screen; only one of
+                them is a thing to go and fix. */}
+            {COMPANY_DETAILS_ARE_SAMPLE || !COMPANY.gstin
+              ? null
+              : ` GSTIN ${COMPANY.gstin}.`}
           </p>
 
           <p className="mt-1.5 text-micro leading-relaxed text-faint lg:text-center">

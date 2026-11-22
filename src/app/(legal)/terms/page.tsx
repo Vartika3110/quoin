@@ -11,7 +11,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of service"
-      updated="2026-09-22"
+      updated="2026-11-22"
       intro={
         <p>
           These terms apply when you place an order, book a service, or use the
@@ -35,9 +35,14 @@ export default function TermsPage() {
 
       <Clause heading="Where we deliver">
         <p>
-          Quoin currently serves selected neighbourhoods in West Delhi.
-          Serviceability is decided on the exact address, not the PIN code, and
-          is confirmed at checkout.
+          {/* "West Delhi" alone was not quite right: the serviced areas
+              are Janakpuri, Paschim Vihar and Pitampura, and Pitampura
+              sits in North West Delhi. A district named on a terms page
+              is a serviceability claim, and the sentence should not be
+              narrower than the map. */}
+          Quoin currently serves selected neighbourhoods in west and
+          north-west Delhi. Serviceability is decided on the exact address,
+          not the PIN code, and is confirmed at checkout.
         </p>
       </Clause>
 

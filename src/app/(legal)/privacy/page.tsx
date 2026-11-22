@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      updated="2026-09-22"
+      updated="2026-11-22"
       intro={
         <p>
           This describes what Quoin collects when you browse, order or book a
@@ -21,10 +21,15 @@ export default function PrivacyPage() {
       }
     >
       <Clause heading="Who we are">
+        {/* The entity disclosure, and the only page that carries the
+            registered address in full. A GSTIN is printed when there is
+            one; the sentence has to end cleanly when there is not, which
+            is why it is composed rather than interpolated inline — a
+            trailing ", GSTIN ." is exactly the kind of thing that ships. */}
         <p>
-          Quoin is operated by {COMPANY.legalName},
-          registered at {COMPANY.registeredAddress}, GSTIN{" "}
-          {COMPANY.gstin}.
+          Quoin is operated by {COMPANY.legalName}, registered at{" "}
+          {COMPANY.registeredAddress}
+          {COMPANY.gstin ? `, GSTIN ${COMPANY.gstin}` : ""}.
         </p>
       </Clause>
 
@@ -62,19 +67,33 @@ export default function PrivacyPage() {
       </Clause>
 
       <Clause heading="Who else sees it">
+        {/* This named "our SMS provider" until it was audited, and there
+            is no SMS provider — MSG91 was removed and a sign-in code now
+            goes over WhatsApp, which means the recipient of a customer's
+            phone number is Meta. Naming the wrong processor is not a
+            wording slip: the whole point of the clause is to tell people
+            which companies receive their data, and somebody deciding
+            whether to hand over a number deserves the real answer.
+
+            If delivery moves again, this sentence moves with it. */}
         <p>
           Our payment gateway, for the amount and the reference of a
-          transaction. Our SMS provider, for the number a one-time code is sent
-          to. Our hosting and database providers, who store the data on our
-          behalf. Nobody else.
+          transaction. Meta, when a one-time sign-in code is sent to your
+          number over WhatsApp. Our hosting, database and storage providers,
+          who hold the data on our behalf. Nobody else.
         </p>
       </Clause>
 
       <Clause heading="How long we keep it">
         <p>
-          Orders and invoices are kept for{" "}
-          {POLICY.dataRetention} as tax law requires.
-          Everything else is deleted when you delete your account.
+          {/* "covers what ... require" rather than "as tax law
+              requires": the second asserts that the law names this
+              period, and which law applies to this entity is still
+              with its accountant. Eight years satisfies both candidate
+              rules, so this sentence is true either way. */}
+          Orders and invoices are kept for {POLICY.dataRetention}, which
+          covers what tax and accounting rules require. Everything else is
+          deleted when you delete your account.
         </p>
       </Clause>
 

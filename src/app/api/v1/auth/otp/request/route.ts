@@ -46,7 +46,7 @@ export const POST = handler(async (request) => {
   if (!isPhoneSignInAvailable()) {
     throw new ApiError(
       "conflict",
-      "Sign-in by SMS is not available yet. Please try again later.",
+      "Sign-in by phone is not available yet. Please try again later.",
     );
   }
 
@@ -106,7 +106,7 @@ export const POST = handler(async (request) => {
       case "phone_provider_disabled":
         throw new ApiError(
           "conflict",
-          "Sign-in by SMS is not available yet. Please continue with Google.",
+          "Sign-in by phone is not available yet. Please continue with Google.",
         );
 
       /* Supabase rejected the number itself. Rare — `normalizePhone` has
@@ -131,7 +131,7 @@ export const POST = handler(async (request) => {
     if (error.status === 422) {
       throw new ApiError(
         "conflict",
-        "Sign-in by SMS is not available yet. Please continue with Google.",
+        "Sign-in by phone is not available yet. Please continue with Google.",
       );
     }
 

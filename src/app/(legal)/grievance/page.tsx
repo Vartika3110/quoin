@@ -14,54 +14,78 @@ export const metadata: Metadata = {
  * named person, a way to reach them, and a stated time to acknowledge and
  * to resolve.
  *
- * The name and the address are `[LEGAL TO CONFIRM]` because a grievance
- * officer is a real appointment, not a page element — inventing one would
- * be a false statement about who is accountable.
+ * ## No officer is named yet, and this page says so
+ *
+ * `COMPANY.grievanceOfficer` is `null` — nobody has been appointed. A
+ * grievance officer is a real appointment, not a page element, and
+ * inventing a name would be a false statement about who is accountable
+ * to a customer who has already been let down once.
+ *
+ * So the page falls back to the support channel and keeps the statutory
+ * 48-hour and one-month commitments, which is what actually serves a
+ * complaining customer. **It does not satisfy the letter of the Rules**,
+ * which ask for a person by name. The fallback is a holding position, not
+ * a solution: fill in `grievanceOfficer` and this page names them
+ * instead, with no other change needed.
  */
+/** One labelled line of the contact block. */
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-3">
+      <dt className="w-28 shrink-0 text-faint">{label}</dt>
+      <dd className="text-ink">{children}</dd>
+    </div>
+  );
+}
+
 export default function GrievancePage() {
+  const officer = COMPANY.grievanceOfficer;
+
   return (
     <LegalPage
       title="Grievance officer"
-      updated="2026-09-22"
+      updated="2026-11-22"
       intro={
-        <p>
-          If something has gone wrong and support has not resolved it, this is
-          the person responsible for it, as required by the Consumer Protection
-          (E-Commerce) Rules, 2020.
-        </p>
+        officer ? (
+          <p>
+            If something has gone wrong and support has not resolved it, this
+            is the person responsible for it, as required by the Consumer
+            Protection (E-Commerce) Rules, 2020.
+          </p>
+        ) : (
+          <p>
+            If something has gone wrong and support has not resolved it, write
+            to the address below and it will be escalated. Quoin has not yet
+            appointed a named grievance officer; until it does, complaints are
+            handled by support to the same timelines.
+          </p>
+        )
       }
     >
       <Clause heading="Who to write to">
         <div className="rounded-card border border-line-soft bg-surface p-5">
           <dl className="flex flex-col gap-2.5 text-body-sm">
-            <div className="flex gap-3">
-              <dt className="w-28 shrink-0 text-faint">Name</dt>
-              <dd className="text-ink">
-                {COMPANY.grievanceOfficer.name}
-              </dd>
-            </div>
-            <div className="flex gap-3">
-              <dt className="w-28 shrink-0 text-faint">Designation</dt>
-              <dd className="text-ink">Grievance Officer, Quoin</dd>
-            </div>
-            <div className="flex gap-3">
-              <dt className="w-28 shrink-0 text-faint">Email</dt>
-              <dd className="text-ink">
-                {COMPANY.grievanceOfficer.email}
-              </dd>
-            </div>
-            <div className="flex gap-3">
-              <dt className="w-28 shrink-0 text-faint">Phone</dt>
-              <dd className="text-ink">
-                {COMPANY.grievanceOfficer.phone}
-              </dd>
-            </div>
-            <div className="flex gap-3">
-              <dt className="w-28 shrink-0 text-faint">Address</dt>
-              <dd className="text-ink">
-                {COMPANY.registeredAddress}
-              </dd>
-            </div>
+            {officer ? (
+              <>
+                <Row label="Name">{officer.name}</Row>
+                <Row label="Designation">Grievance Officer, Quoin</Row>
+                <Row label="Email">{officer.email}</Row>
+                <Row label="Phone">{officer.phone}</Row>
+              </>
+            ) : (
+              <>
+                {/* No named officer — see the note at the top of this
+                    file. Support is the channel, and saying so plainly
+                    beats a page that reads as though somebody specific
+                    is waiting when nobody has been appointed. */}
+                <Row label="Write to">Quoin Customer Support</Row>
+                <Row label="Email">{COMPANY.supportEmail}</Row>
+                <Row label="Phone">
+                  {`${COMPANY.supportPhone} · ${COMPANY.supportHours}`}
+                </Row>
+              </>
+            )}
+            <Row label="Address">{COMPANY.registeredAddress}</Row>
           </dl>
         </div>
       </Clause>
