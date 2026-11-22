@@ -9,6 +9,12 @@
 No application code, schema or production setting was changed by this audit.
 Two documents were written: this one and `QUOIN_LAUNCH_READINESS.md`.
 
+> **Superseded in part, 22 November 2026.** This file stays as 24 October's
+> record and has not been rewritten. The checklist beside it,
+> `QUOIN_LAUNCH_READINESS.md`, was re-audited against the production database
+> and the live site on 22 November and carries the current scores. Where the
+> two disagree, the checklist is newer.
+
 ---
 
 ## 1. Executive summary
