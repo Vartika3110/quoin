@@ -24,11 +24,11 @@ which stays as that day's record and is not rewritten.
 
 | | Count |
 | --- | ---: |
-| Pass | 66 |
-| Partial | 8 |
+| Pass | 69 |
+| Partial | 9 |
 | Fail | 7 |
 | Blocked (no access) | 9 |
-| Not Started | 17 |
+| Not Started | 13 |
 | N/A / risk accepted | 2 |
 | **Total items** | **109** |
 
@@ -92,7 +92,7 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | CX-01 | Home, categories, department, product, cart, checkout routes resolve | P0 | **Pass** | Live `/`, `/signin`, `/account`, `/api/v1/health` → 200 on 22 Nov | No |
 | CX-02 | Custom domain serves over HTTPS | P0 | **Pass** | `quoin.co.in` → `www.quoin.co.in` → 200, HSTS preload | No |
 | CX-03 | Mobile layout (375 px) | P1 | **Pass** | Re-walked after the home-page rebuild: hero carousel, Design & Renovate, Expert Services, six-tab bar | No |
-| CX-04 | Tablet and desktop layouts | P1 | Not Started | Still only 375 px exercised by hand | No |
+| CX-04 | Tablet and desktop layouts | P1 | **Pass** (24 Nov) | Walked at **768** and **1440**: home, category, product, cart and checkout all render with **no horizontal page scroll** at either width (`scrollWidth == clientWidth`). At 1440 the phone tab bar is correctly `display: none`, the footer runs the full width, and the product page lays out two columns at 888 px + 416 px. One quality note, not a break: the hero art is a 1200 px source, so on a large screen at device-pixel-ratio 2 it is scaled past its resolution and will look soft — a 2400 px export fixes it | No |
 | CX-05 | Search, filters, departments, shelves | P1 | **Pass** | Shelf filter verified; `/api/v1/search` rate-limited | No |
 | CX-06 | Product names, SKUs, units, prices render correctly | P1 | **Pass** | All 532 prices on the owner's list verified at three layers — stored paise, rendered card, checkout quote | No |
 | CX-07 | Product images load | P2 | **Pass** | 0 of 488 active products without an image; all served from the repo, none from Supabase storage | No |
@@ -100,8 +100,8 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | CX-09 | Address entry, validation, delivery availability | P0 | **Partial** (23 Nov) | **Availability verified live:** `/api/v1/serviceability` answers 110058 → Janakpuri and 110063 → Paschim Vihar serviceable, Mumbai 400001 not serviceable, and `12` → *"Enter a six-digit pincode"*. **Address entry is sign-in only:** signed out, checkout step 1 offers nothing but "Continue with Google", and pressing Continue answers *"Sign in above to continue — your delivery addresses live on your account"*. There is no guest checkout, so the form, its validation and the save path need one signed-in pass by the owner — I did not sign in, because that is your Google account and saving writes a real `Address` row. The product-page pincode checker exists but is unmounted, by your instruction | No |
 | CX-10 | Loading, empty, error and success states | P2 | **Pass** | `loading.tsx` per route, `EmptyState` on empty results, toasts on cart actions | No |
 | CX-11 | Console errors on key pages | P2 | **Pass** | Only the CSP report-only notice | No |
-| CX-12 | Accessibility basics | P2 | Not Started | ARIA attributes present throughout; no axe run | No |
-| CX-13 | Broken links / missing images sweep | P2 | Not Started | — | No |
+| CX-12 | Accessibility basics | P2 | **Partial** (24 Nov) | Audited home, category and product by hand: `lang="en"`, one `<main>`, header and footer landmarks, no heading-level skips, **no missing `alt`** across 278 images on the home page (44 correctly empty for decoration), and no unnamed link, button or input anywhere. **Two real defects found and fixed:** the home page carried **three `<h1>`** (one per carousel slide) and there was **no skip link**, so a keyboard user walked the whole header on every page. The slides are `h2` now, the page has one screen-reader `h1`, and `Skip to content` is the first thing in the tab order, moving focus to `main#main`. Fixing the second found a third: at `z-50` the link painted *underneath* the sticky header, proven by `elementFromPoint`, so it sits at `z-100`. Still outstanding: no automated axe run (injecting it into the live page was refused, correctly) and no colour-contrast pass | No |
+| CX-13 | Broken links / missing images sweep | P2 | **Pass** (24 Nov) | Crawled 70 live pages — every non-product URL in the sitemap plus 40 sampled products — and resolved all **788 unique internal links and images**: zero broken, zero non-200 pages. Separately, all **488** active products' image files were checked against the repository: every one present, **none pointing at Supabase storage**, which is why the catalogue survives the egress cap. One orphan: `generic-gypsum-keel-furlocgyp176cw` is active but has no active variant, so its page 404s. It is excluded from the sitemap, the listing, search and the category count alike, and nothing links to it — consistent, but it is why "488 active" is one more than the 487 that are sellable | No |
 | CX-14 | **Parcha upload works** | P0 | **Fail** | Supabase storage answers `402 exceed_egress_quota`, so the signed upload fails. The tab is in the six-tab bar | **Yes** — fix the cap or hide the tab |
 | CX-15 | Catalogue restricted to the master list | P1 | **Pass** | 488 active of 3,227; reversible from `reports/restricted-to-master-list.json` | No |
 | CX-16 | Illustrated products are honestly presented | P2 | **Partial** | 75 of 488 carry a generated illustration rather than a photograph; labelled, but photographs are still wanted | No |
@@ -216,7 +216,7 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | DEP-13 | Health endpoint | P2 | **Pass** | `/api/v1/health` → 200 on 22 Nov | No |
 | DEP-14 | **Supabase project is within its limits** | P0 | **Fail** | Storage is restricted: `402 … exceed_egress_quota`. Postgres is still serving, so the shop is unaffected, but every signed upload fails (CX-14, SEC-16) and so does ORD-10's Supabase half. One upgrade clears the cap, the backups and PITR | **Yes, before public launch** |
 | DEP-15 | Framework patch level | P1 | **Pass** (22 Nov) | `next` 16.4.6, pinned exactly as this repo pins it. Closes all 7 advisories, among them the image-optimization SVG bypass and cache poisoning in `use cache`. Verified: typecheck clean, 838 tests pass, `npm run build` exits 0 — compiled in 46s with the Prisma client regenerated at 6.19.3 | No |
-| DEP-16 | `middleware` convention deprecated | P1 | Not Started | Next 16.4.6 warns at build: *"The `middleware` file convention is deprecated. Please use `proxy` instead"*, with `npx @next/codemod@canary middleware-to-proxy`. It still works, and the build labels it `Proxy (Middleware)`. Worth doing deliberately rather than late: `src/middleware.ts` is one of the three places that enforce the admin-host split, so the migration needs the host tests re-run, not just a codemod | No |
+| DEP-16 | `middleware` convention deprecated | P1 | **Pass** (24 Nov) | Migrated by hand rather than by codemod, because the file is one of the three places enforcing the admin-host split: `src/middleware.ts` → `src/proxy.ts`, the exported function renamed, and every reference in code, tests and docs brought with it. The matcher, the header set and the order of operations are untouched. 838 tests pass, the host tests among them; the build warning is gone | No |
 
 ---
 

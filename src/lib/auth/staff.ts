@@ -33,7 +33,7 @@ import { hostVerdict } from "@/lib/auth/admin-host";
  */
 export async function requireStaffPage() {
   /* The host half of the two locks, repeated here on purpose.
-     `src/middleware.ts` already refuses an internal path on the public
+     `src/proxy.ts` already refuses an internal path on the public
      host, and this is the same refusal one layer in — a matcher is one
      regex away from quietly exempting a route, and the gate that must
      not be bypassed is the one that does not depend on it. */

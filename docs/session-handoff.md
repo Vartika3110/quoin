@@ -27,7 +27,7 @@ work that is not mine** — see "Do not commit the auth work" below.
 ### Do not commit the auth work
 
 The tree carries a second session's Supabase/OTP work: modified
-`session.ts`, the OTP routes, `SignInPanel`, `middleware.ts`, `env.ts`,
+`session.ts`, the OTP routes, `SignInPanel`, `proxy.ts`, `env.ts`,
 `prisma/schema.prisma`, plus untracked `src/lib/auth/supabase*.ts`,
 `otp-digits.ts`, `sms-hook.ts`, `OtpInput.tsx` and the migration
 `20261005120000_add_supabase_auth_link/`.

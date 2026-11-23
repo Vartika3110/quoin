@@ -120,10 +120,10 @@ with the console only while they share an origin. Hence the split.
 
 Enforced in three places, deliberately overlapping:
 
-- `src/middleware.ts` for pages, which is also what sets
+- `src/proxy.ts` for pages, which is also what sets
   `X-Robots-Tag: noindex` on every response from the admin host;
 - the `handler` wrapper in `src/lib/http.ts` for `/api/v1/admin/*`,
-  because the middleware's matcher excludes `/api`. Only that tree:
+  because the proxy's matcher excludes `/api`. Only that tree:
   `requireStaff` also guards `/api/v1/consultations` and
   `/api/v1/parcha/submissions`, which customers call on the public host;
 - `requireStaffPage`, one layer in, so the guard that must not be

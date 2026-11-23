@@ -22,7 +22,7 @@
  * the admin host, and this still refuses `/admin` on the storefront host
  * even for the owner.
  *
- * **Reads `process.env` directly, not `@/lib/env`.** `src/middleware.ts`
+ * **Reads `process.env` directly, not `@/lib/env`.** `src/proxy.ts`
  * is the main caller and runs on the edge runtime, where importing the
  * validated `env` throws unless `DATABASE_URL` and `AUTH_SECRET` are in
  * the edge bundle — neither of which has any business being there. The

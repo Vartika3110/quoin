@@ -296,6 +296,15 @@ export default async function HomePage() {
       <JsonLd data={organizationSchema()} />
       <JsonLd data={webSiteSchema()} />
 
+      {/* The page's one `h1`, read and not drawn. The hero is a carousel
+          of three panels and each used to carry its own `h1`, which left
+          a screen reader with three answers to "what is this page" and
+          the sighted reader with none of the benefit. The slides are
+          `h2` now and the name of the page is said once, here. */}
+      <h1 className="sr-only">
+        Quoin — building materials, interiors and expert services in Delhi
+      </h1>
+
       <div className="mx-auto w-full max-w-shell lg:px-6">
         <PageSections>
           {/* The first screen, and the only navigation on it.

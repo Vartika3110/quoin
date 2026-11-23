@@ -11,7 +11,7 @@ const { POST } = await import("@/app/api/v1/csp-report/route");
 /**
  * The endpoint that makes report-only CSP mean something.
  *
- * `middleware.ts` sends the policy as report-only and its note says the
+ * `proxy.ts` sends the policy as report-only and its note says the
  * remaining step is to "fix whatever it names" and then enforce. Without
  * a `report-uri` the policy named things to each visitor's own browser
  * console and to nobody able to act, so the precondition was unmeetable

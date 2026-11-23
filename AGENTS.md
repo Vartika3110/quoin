@@ -70,8 +70,9 @@ would not admit.
 `ADMIN_HOST` serves the console on its own hostname: `/admin` and
 `/api/v1/admin/*` 404 on the storefront and are served only there, by
 `hostVerdict` (`src/lib/auth/admin-host.ts`) in three places —
-`src/middleware.ts`, the `handler` wrapper in `src/lib/http.ts` (the
-middleware matcher excludes `/api`) and `requireStaffPage`.
+`src/proxy.ts` (was `middleware.ts` until Next 16.4 renamed the
+convention), the `handler` wrapper in `src/lib/http.ts` (the proxy
+matcher excludes `/api`) and `requireStaffPage`.
 
 Read `docs/admin-access.md` before touching any of it. It records the
 account this was learned from.

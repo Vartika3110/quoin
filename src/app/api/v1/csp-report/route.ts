@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
  * POST /api/v1/csp-report — where a blocked resource is reported.
  *
  * **Why this is the next step on CSP rather than enforcing it.** The
- * policy in `middleware.ts` is sent as `Content-Security-Policy-Report-
+ * policy in `proxy.ts` is sent as `Content-Security-Policy-Report-
  * Only`, and the note there says what has to happen before the header is
  * renamed: watch a real test payment and a real Studio clip through it,
  * and fix whatever it names. The gap is the naming. Report-only without

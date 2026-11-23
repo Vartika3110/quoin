@@ -201,11 +201,15 @@ function Slide({ slide, first }: { slide: HeroSlide; first: boolean }) {
             letting it wrap on its own gives "BUILD YOUR DREAM / SPACE" at
             most widths. `text-balance` cannot help: it balances what it
             is given, and what looks right here is a specific break. */}
-        <h1 className="font-display text-title-lg font-bold uppercase leading-[1.05] text-ink sm:text-display-sm lg:text-display">
+        {/* `h2`, not `h1`. Three slides each carrying an `h1` gave the
+            home page three of them, which leaves a screen reader without
+            a single answer to "what is this page". The page's own `h1`
+            is in `page.tsx`, read once; a slide is a panel within it. */}
+        <h2 className="font-display text-title-lg font-bold uppercase leading-[1.05] text-ink sm:text-display-sm lg:text-display">
           {slide.headline[0]}
           <br />
           {slide.headline[1]}
-        </h1>
+        </h2>
 
         {/* The reference sets this in a script face. There is no script
             family loaded — the app ships two, a sans for everything read

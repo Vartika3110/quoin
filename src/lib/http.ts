@@ -121,7 +121,7 @@ export function handler<Args extends unknown[]>(
   return async (request: Request, ...args: Args): Promise<Response> => {
     try {
       /* The host half of the two locks on the internal tools, applied
-         here rather than in `src/middleware.ts` because that file's
+         here rather than in `src/proxy.ts` because that file's
          matcher deliberately excludes `/api` — see the note on `config`
          there. Only the `/api/v1/admin` tree: `requireStaff` also guards
          three routes that a *customer* calls on the storefront

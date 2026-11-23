@@ -14,7 +14,7 @@ import {
  *
  * **Supabase Auth owns the session.** It mints the OTP, verifies it, and
  * issues the access/refresh pair that `@supabase/ssr` keeps in cookies
- * and the middleware renews. This module's job is to answer one question
+ * and the proxy renews. This module's job is to answer one question
  * for the hundred-odd call sites that ask it — *which Quoin customer is
  * this?* — and to keep answering it in the same shape it always has, so
  * that moving to Supabase Auth did not mean editing a hundred files.
@@ -42,7 +42,7 @@ import {
  * can be deleted outright and this file halves.
  */
 
-/* Defined in its own import-free module so the edge middleware can read
+/* Defined in its own import-free module so the edge proxy can read
    the name without pulling this file (and `env`, and Prisma) in. */
 export { SESSION_COOKIE } from "@/lib/auth/session-cookie";
 import { SESSION_COOKIE } from "@/lib/auth/session-cookie";

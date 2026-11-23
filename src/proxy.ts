@@ -7,13 +7,21 @@ import {
 } from "@/lib/auth/admin-host";
 import { SESSION_COOKIE } from "@/lib/auth/session-cookie";
 
+/*
+ * Was `src/middleware.ts` until Next 16.4 deprecated that convention in
+ * favour of `proxy`, warning on every build. Same file, same matcher,
+ * same order of operations — the function is named `proxy` and the file
+ * is named for it. Nothing about the host split changed, and the tests
+ * that cover it (`tests/admin-host.test.mts`) were run against this.
+ */
+
 /**
  * Response headers.
  *
  * This app had none beyond the HSTS Vercel sets for itself: no CSP, no
  * `nosniff`, no referrer policy, no frame protection. A storefront that
  * takes payments and holds addresses should not be in that state, and the
- * fix is one file because there was no `middleware.ts` at all.
+ * fix is one file because there was no proxy at all.
  *
  * The split below is the whole design, and it is deliberate.
  *
@@ -71,7 +79,7 @@ const CF_STREAM = "https://*.cloudflarestream.com";
  * sets inline styles, and so does every image placeholder in this app.
  * `'unsafe-inline'` on `script-src` is there for Next's own hydration
  * bootstrap and the pre-paint theme script in `layout.tsx`; removing it
- * means nonce-ing every inline script through the middleware, which is a
+ * means nonce-ing every inline script through this proxy, which is a
  * real change to make once this is enforced rather than a line to delete.
  *
  * `img-src` takes `https:` wholesale rather than naming the Supabase
@@ -136,7 +144,7 @@ const PERMISSIONS_POLICY = [
  * Keeps the Supabase session alive across a navigation.
  *
  * Access tokens are short-lived and refresh against the refresh token.
- * The refreshed pair has to be *written back* as cookies, and middleware
+ * The refreshed pair has to be *written back* as cookies, and the proxy
  * is the only place in an App Router request that can do that on a page
  * load — a Server Component may not set a cookie, which is why
  * `supabaseReadClient()` swallows writes and why this exists to make that
@@ -237,7 +245,7 @@ function appOrigin(): string | null {
  * where it belongs, so that one catalogue does not end up served, and
  * indexed, under two names.
  *
- * Runs before anything else in the middleware: a request that this host
+ * Runs before anything else in the proxy: a request that this host
  * must not answer should not have a Supabase session refreshed for it on
  * the way to being refused.
  *
@@ -316,7 +324,7 @@ function enforceHostSplit(request: NextRequest): NextResponse | null {
   });
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const misdirected = enforceHostSplit(request);
   if (misdirected) return misdirected;
 
@@ -371,7 +379,7 @@ export const config = {
    * Everything a person's browser renders, and nothing else.
    *
    * Next's own build output under `/_next/static` is immutable, hashed
-   * and served from the edge; running middleware over it would add a
+   * and served from the edge; running the proxy over it would add a
    * function invocation to every chunk and every image for headers that
    * do nothing on a static asset. `/api` is excluded for a different
    * reason: those responses are JSON read by `fetch` and by the planned

@@ -115,7 +115,7 @@ describe("the admin host", () => {
 
   /* Typing the admin hostname means "take me to the console". Bouncing
      the root to the shop like any other storefront path is consistent
-     and useless: the middleware turns this into /admin, or into
+     and useless: the proxy turns this into /admin, or into
      /signin?next=/admin when no session cookie is present. */
   it("treats its own root as the front door, not as the shop", () => {
     assert.equal(verdict(ADMIN, "/"), "admin_root");

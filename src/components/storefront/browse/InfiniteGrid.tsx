@@ -162,7 +162,7 @@ export function InfiniteGrid({
       <p aria-live="polite" className="sr-only">
         {status === "loading"
           ? "Loading more products"
-          : `Showing ${items.length} products`}
+          : `Showing ${items.length} ${items.length === 1 ? "product" : "products"}`}
       </p>
 
       {!done && (

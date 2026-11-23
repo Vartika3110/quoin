@@ -97,6 +97,24 @@ export async function AppShell({
   return (
     <SearchProvider suggestedTerms={suggestedTerms}>
       <div className="flex min-h-screen flex-col bg-bg">
+        {/* The first thing in the tab order, invisible until it has
+            focus. Without it a keyboard or screen-reader user walks the
+            search field, the photo and voice buttons, the consult link
+            and five navs again on every single page before reaching the
+            thing they came for. */}
+        <a
+          href="#main"
+          /* `z-100`, the figure this app already uses for things that sit
+             over everything: the header is `sticky z-50` and comes after
+             this in the DOM, so at an equal z-index it paints over the
+             link, and the one element that must be visible when it has
+             focus is the one nobody can see. Caught by `elementFromPoint`,
+             which returned the header's own button at the link's own
+             coordinates. */
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-100 focus:rounded-lg focus:border focus:border-line focus:bg-surface focus:px-4 focus:py-2 focus:text-body focus:text-ink focus:shadow-lg"
+        >
+          Skip to content
+        </a>
         <SiteHeader
           areas={areas}
           chosen={chosen}
@@ -115,10 +133,16 @@ export async function AppShell({
             the footer carries its own clearance for the tab bar and this
             padding only adds dead scroll. */}
         <main
+          /* The skip link's destination. `tabIndex={-1}` so that following
+             the link moves focus here rather than only scrolling — without
+             it the next Tab returns to the header the reader just skipped,
+             which is the whole thing the link exists to avoid. */
+          id="main"
+          tabIndex={-1}
           className={
             fullBleed
-              ? "flex-1 pb-10 lg:pb-16"
-              : "mx-auto w-full max-w-shell flex-1 pb-10 lg:px-6 lg:pb-16"
+              ? "flex-1 pb-10 outline-none lg:pb-16"
+              : "mx-auto w-full max-w-shell flex-1 pb-10 outline-none lg:px-6 lg:pb-16"
           }
         >
           <RouteTransition>{children}</RouteTransition>

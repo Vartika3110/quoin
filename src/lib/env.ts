@@ -434,7 +434,7 @@ const schema = z.object({
    * unset and both live on one origin, as they always have. The whole
    * behaviour is `src/lib/auth/admin-host.ts`, which reads
    * `process.env.ADMIN_HOST` **directly rather than this object**,
-   * because `src/middleware.ts` is its main caller and runs on the edge
+   * because `src/proxy.ts` is its main caller and runs on the edge
    * runtime, where importing this module throws. It is declared here
    * anyway so that there is one list of everything this application
    * reads from its environment, and so the build-phase fallback below

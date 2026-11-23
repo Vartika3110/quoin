@@ -127,10 +127,10 @@ export async function supabaseRouteClient(): Promise<SupabaseClient> {
  * throw would turn a routine token refresh into a 500 on whatever page
  * the customer happened to be reading.
  *
- * Swallowing the write is safe *because* the middleware refreshes the
+ * Swallowing the write is safe *because* the proxy refreshes the
  * session on every navigation and writes the result there, where cookies
  * are writable. The read path never needs to persist anything; it only
- * needs to not explode. See `src/middleware.ts`.
+ * needs to not explode. See `src/proxy.ts`.
  */
 export async function supabaseReadClient(): Promise<SupabaseClient> {
   const config = requireAuthConfig();
