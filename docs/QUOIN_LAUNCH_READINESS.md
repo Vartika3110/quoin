@@ -24,26 +24,26 @@ which stays as that day's record and is not rewritten.
 
 | | Count |
 | --- | ---: |
-| Pass | 69 |
-| Partial | 9 |
-| Fail | 7 |
+| Pass | 70 |
+| Partial | 10 |
+| Fail | 5 |
 | Blocked (no access) | 9 |
 | Not Started | 13 |
-| N/A / risk accepted | 2 |
-| **Total items** | **109** |
+| N/A, resolved or risk accepted | 3 |
+| **Total items** | **110** |
 
-**The seven failures:** PAY-01 (no settled webhook since 5 October), CX-14 and
-DEP-14 (Supabase storage restricted, so uploads fail), ORD-14 (a captured
-payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
-`.env.local`), SEC-11 (CSP still report-only), DEP-10 (no error monitoring).
+**The five failures:** PAY-01 (no settled webhook since 5 October), CX-14 and
+DEP-14 (Supabase storage restricted, so uploads fail), SEC-03 (orphaned secret
+in `.env.local`), SEC-11 (CSP still report-only). ORD-14 and DEP-10 both closed
+on 24 November — see their rows.
 
 **What blocks what:**
 
 | Gate | Items |
 | --- | --- |
 | **Controlled pilot** | PAY-01 and PAY-14 — and ADM-08 and TRU-09, which are downstream of them. DEP-04 cleared 22 Nov |
-| **Before live mode** | PAY-10, PAY-13, ADM-09, TRU-05, ORD-14 |
-| **Before public launch** | ORD-10, ORD-12, PAY-11, CX-14, DEP-09, DEP-10, DEP-14, SEC-17, TRU-10 |
+| **Before live mode** | PAY-10, PAY-13, ADM-09, TRU-05 |
+| **Before public launch** | ORD-10, ORD-12, PAY-11, CX-14, DEP-09, DEP-10 (set `ALERT_WEBHOOK_URL`), DEP-14, SEC-17, TRU-10 |
 
 > **Live risk, found 22 November.** Online payment is **switched on right now**
 > on `www.quoin.co.in` — `/consult` reports the gateway gate open, which means
@@ -112,9 +112,9 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 
 | ID | Task | P | Status | Evidence | Blocks launch |
 | --- | --- | --- | --- | --- | --- |
-| ORD-01 | **Orders persist to the database** | P0 | **Pass** | 4 orders, each with lines and a payment row (unchanged) | No |
+| ORD-01 | **Orders persist to the database** | P0 | **Pass** (as observed 22 Nov) | 4 orders, each with lines and a payment row. The table is empty now by decision, not by fault — ORD-16 | No |
 | ORD-02 | Order carries correct customer, address, items, totals | P0 | **Pass** | Schema + `createPendingOrder`; totals ₹420–₹5,200 | No |
-| ORD-03 | Unique order references | P0 | **Pass** | `QO-XXXXXX`, unique across all 4 | No |
+| ORD-03 | Unique order references | P0 | **Pass** (as observed 22 Nov) | `QO-XXXXXX`, unique across all 4 before they were cleared (ORD-16) | No |
 | ORD-04 | Orders visible in admin | P1 | Not Started | `listAdminOrders` + the order board exist; UI not exercised against a real order | No |
 | ORD-05 | Dashboard counters are day-scoped | P1 | **Pass** | `admin-metrics.ts` counts within today IST | No |
 | ORD-06 | Status transitions guarded | P1 | **Pass** | `ORDER_TRANSITIONS` + `transitionOrderStatus`, the single status-writing path; `OrderStatusChange` audit trail | No |
@@ -125,8 +125,9 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | ORD-11 | Migrations applied cleanly in production | P1 | **Blocked** | No Supabase or Vercel access | No |
 | ORD-12 | Restore drill performed | P1 | Not Started | Procedure now written down, including what to assert and that the clock reading is the recovery time. Needs a second Supabase project and a loader, both deliberately unwritten until the drill is done for real | **Yes, before public launch** |
 | ORD-13 | Four-stage lifecycle, one vocabulary | P1 | **Pass** | `src/lib/orders/lifecycle.ts` read by the stepper, timeline, order board and notifiers; `CONFIRMED`/`PROCESSING`/`PACKED` retired and refused as destinations | No |
-| ORD-14 | **A captured payment sits on a cancelled order** | P1 | **Fail** | `QO-P8498W`: ₹5,200 netbanking, payment `CAPTURED`, `paidAt` set 5 Oct, order `CANCELLED`, and **zero `Refund` rows in the database**. Almost certainly test-mode, but confirm in the Razorpay dashboard and either refund it or annotate it | No, but settle it before live mode |
+| ORD-14 | A captured payment sat on a cancelled order | P1 | **Resolved by deletion** (24 Nov) | Was: `QO-P8498W`, ₹5,200 netbanking, `CAPTURED`, order `CANCELLED`, no `Refund` row. Cleared at the owner's instruction along with the rest of the October test traffic — see ORD-16. **The deletion settles the database, not the money:** if that capture was live, it is still Razorpay's record and still the customer's ₹5,200. The row survives in the 23 November export | No |
 | ORD-15 | Wallet ledger | P2 | Not Started | `WalletEntry` is append-only, credit idempotent on `reference`, spend serializable; 0 entries, never exercised end to end | No |
+| ORD-16 | October's test traffic cleared from production | P2 | **Pass** (24 Nov) | At the owner's instruction: **4 orders, 5 order lines, 1 status change and 4 payment rows deleted**, two of them belonging to people who are not the owner. The **46 `payment_webhooks` rows were kept on purpose** — they carry no customer data and they are the only evidence in the database that the webhook has never worked (PAY-01). A verified export was taken first (6,551 rows, 48 tables, every hash matching, 23 Nov 18:55 UTC), so nothing is unrecoverable. Orders now stand at **0**, which is also why ORD-01 to ORD-03 read as history rather than as live counts | No |
 
 ---
 
@@ -210,7 +211,7 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | DEP-07 | Region | P2 | **Pass** | `bom1` in `vercel.json`, confirmed by `x-vercel-id` | No |
 | DEP-08 | Cron jobs configured | P1 | **Pass** (config) | `reconcile-payments` 01:00, `release-reservations` 02:00 | No |
 | DEP-09 | Cron jobs actually run and are authenticated | P0 | **Blocked** | `CRON_SECRET` empty locally; no log access | **Yes** |
-| DEP-10 | Error monitoring | P0 | **Fail — unchanged** | No Sentry or equivalent in `package.json`. PAY-01 went unnoticed for weeks, which is what this item is for | **Yes, before public launch** |
+| DEP-10 | Error monitoring | P0 | **Partial** (24 Nov) | Not Sentry — `src/lib/alerts.ts` already raises on the events that matter: an unhandled 5xx from any API route, a rejected webhook, a refused admin, a CSP violation. **The hole was pages:** a Server Component that cannot reach the database never passes through `handler()`, so the customer saw the error boundary and nobody else saw anything. Both boundaries now report to `/api/v1/render-error` — digest and path only, never the message, deduped by fault, rate-limited, always 204 — and it raises `render_error`. Proven end to end against a deliberately throwing page: boundary → 204 → `[alert] render_error: A page threw while rendering /…`. 11 new tests. **What is left is yours:** every alert reaches the console and goes no further until `ALERT_WEBHOOK_URL` is set in Vercel production — a Slack or Discord incoming webhook, two minutes, no new vendor | **Yes, before public launch** — set the webhook URL |
 | DEP-11 | Rollback procedure | P1 | **Partial** | Written up in `docs/rollback.md`, including what a rollback does *not* revert. Still undrilled | No |
 | DEP-12 | Image optimisation and performance | P2 | **Pass** (partial) | `next/image` with `sizes` throughout; no Lighthouse run | No |
 | DEP-13 | Health endpoint | P2 | **Pass** | `/api/v1/health` → 200 on 22 Nov | No |

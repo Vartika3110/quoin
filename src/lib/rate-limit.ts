@@ -144,6 +144,16 @@ const BUCKETS: Record<string, Bucket> = {
    * a directive is firing, the ninety-first report of the same minute
    * adds no information. */
   cspReport: { windowMs: 60_000, max: 90, hits: new Map() },
+
+  /* ---- Render-error reports -------------------------------------------
+   *
+   * The same shape of caller as `cspReport` and the same failure mode: a
+   * page that throws throws for everybody, so the first bad deploy turns
+   * every visitor into a reporter within a minute. Tighter than the CSP
+   * bucket because the endpoint dedupes by digest anyway — one report of
+   * a broken page is the whole signal, and the thirty-first in a minute
+   * from one address is a loop, not news. */
+  renderError: { windowMs: 60_000, max: 30, hits: new Map() },
 };
 
 /**

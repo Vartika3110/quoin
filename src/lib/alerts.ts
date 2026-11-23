@@ -17,8 +17,8 @@ import { env } from "@/lib/env";
  * going to look.
  *
  * **The events.** An unhandled 5xx from any API route, a webhook
- * delivery rejected for a bad signature, and a resource the content
- * policy would have blocked. The first two are raised from the one
+ * delivery rejected for a bad signature, a page that threw while
+ * rendering, and a resource the content policy would have blocked. The first two are raised from the one
  * place each already passes through — `handler()` in `http.ts` and the
  * rejection branch of the Razorpay route — rather than sprinkled
  * around, so there is no way to add a route that quietly opts out. The
@@ -45,6 +45,13 @@ export type AlertKind =
   | "unhandled_5xx"
   | "webhook_rejected"
   | "csp_violation"
+  /* A page threw while rendering and the customer was shown the error
+     boundary. Distinct from `unhandled_5xx`, which only ever sees API
+     routes: a Server Component that cannot reach the database, or a
+     client component that throws on hydration, never passes through
+     `handler()` and so was invisible until the boundary reported it
+     itself. See `src/app/api/v1/render-error/route.ts`. */
+  | "render_error"
   /* A row carrying `isStaff` that `ADMIN_ALLOWLIST` does not approve
      asked for an internal page or route. Either an approval that was
      never finished in the environment, or an account that acquired the

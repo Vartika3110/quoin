@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
+import { reportRenderError } from "@/lib/report-render-error";
+
 /**
  * The last resort.
  *
@@ -24,6 +27,15 @@ export default function GlobalError({
   error: Error & { digest?: string };
   unstable_retry: () => void;
 }) {
+  /* The one import this file allows itself, and the reason for the
+     exception: when this renders, the root layout did not, so the whole
+     site is down for that route and nothing else anywhere will say so.
+     The reporter touches no stylesheet and no token, and it swallows its
+     own failures, so it cannot make this page worse. */
+  useEffect(() => {
+    reportRenderError("global", error);
+  }, [error]);
+
   return (
     <html lang="en">
       <body

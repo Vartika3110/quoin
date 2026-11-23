@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { reportRenderError } from "@/lib/report-render-error";
 
 /**
  * The app-wide error boundary.
@@ -25,6 +26,11 @@ export default function AppError({
 }) {
   useEffect(() => {
     console.error("[quoin] unhandled render error", error);
+    /* The console line above is for whoever has this tab open, which on
+       a storefront is a customer. This is the half that reaches someone
+       who can act: a page that throws reaches no API route, so nothing
+       in `handler()` ever hears about it. */
+    reportRenderError("app", error);
   }, [error]);
 
   return (
