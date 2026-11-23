@@ -6,6 +6,7 @@ import {
   normalizeHost,
 } from "@/lib/auth/admin-host";
 import { SESSION_COOKIE } from "@/lib/auth/session-cookie";
+import { contentSecurityPolicy, cspHeaderName } from "@/lib/security/csp";
 
 /*
  * Was `src/middleware.ts` until Next 16.4 deprecated that convention in
@@ -31,93 +32,21 @@ import { SESSION_COOKIE } from "@/lib/auth/session-cookie";
  * mode is "something that was already wrong stops working". They go on
  * now.
  *
- * **Report-only: the CSP.** A content policy is the one header here that
- * can take a checkout down, because it has to allow Razorpay's modal —
- * a third-party script that injects an iframe, talks to its own hosts and
- * is free to add another tomorrow. Shipping a strict policy enforced, on
- * a payment flow that is already the most broken thing in production,
- * would be trading a known problem for an unknown one. So it is sent as
- * `Content-Security-Policy-Report-Only`: browsers evaluate it and log
- * violations to the console, and nothing is blocked. Watch a real test
- * payment and a real Studio video through it, fix whatever it names, and
- * only then rename the header. That rename is the entire remaining step,
- * and there is a note at the constant below marking it.
+ * **The CSP, now enforced.** It spent a month report-only because a
+ * content policy is the one header here that can take a checkout down,
+ * and the condition for enforcing was "watch a real test payment and a
+ * real Studio clip through it first". Neither was reachable — there are
+ * no Studio clips in the database at all, and the test payment is
+ * behind PAY-01 — so the question was settled by reading what Razorpay's
+ * checkout script actually asks for instead. The policy and that
+ * evidence live in `@/lib/security/csp`, with `CSP_REPORT_ONLY=1` as the
+ * way back if a completed payment ever proves it wrong.
  *
- * Violations now report to `/api/v1/csp-report`, which alerts on each
- * distinct one. Until that endpoint existed, "fix whatever it names"
- * could not be done at all: a report-only policy with no `report-uri`
- * names things to each visitor's own browser console and to nobody able
- * to act on them. The header is still report-only — flipping it is a
- * judgement to make once a test payment has run through it and the
- * reports have gone quiet, not something to do blind on a checkout that
- * cannot currently be exercised end to end.
+ * Violations report to `/api/v1/csp-report`, which alerts on each
+ * distinct one — and keeps doing so now the policy is enforced, which is
+ * how a mistake here shows up as a message rather than as a customer
+ * who could not pay.
  */
-
-/**
- * Hosts the browser genuinely has to reach.
- *
- * Everything else this app talks to — OpenAI, WhatsApp, Google's token
- * endpoint, the Cloudflare API — is called from the server and must not
- * appear here. A `connect-src` entry is permission for *page* JavaScript
- * to reach a host, and listing a server-side API would hand that
- * permission to any script that ever got injected.
- */
-const RAZORPAY_SCRIPT = "https://checkout.razorpay.com";
-/* The modal's own frame, its API and its telemetry host. Wildcarded
-   because Razorpay moves these between subdomains without notice, and a
-   policy that blocks a payment on a Tuesday because they renamed a
-   bucket is worse than one scoped to their registrable domain. */
-const RAZORPAY_ANY = "https://*.razorpay.com";
-/* Studio clips: HLS manifests and segments are fetched by hls.js, so
-   Stream needs `connect-src` and not only `media-src`. */
-const CF_STREAM = "https://*.cloudflarestream.com";
-
-/**
- * The content policy, as a single string.
- *
- * `'unsafe-inline'` on `style-src` is not negotiable away here: React
- * sets inline styles, and so does every image placeholder in this app.
- * `'unsafe-inline'` on `script-src` is there for Next's own hydration
- * bootstrap and the pre-paint theme script in `layout.tsx`; removing it
- * means nonce-ing every inline script through this proxy, which is a
- * real change to make once this is enforced rather than a line to delete.
- *
- * `img-src` takes `https:` wholesale rather than naming the Supabase
- * bucket: catalogue imagery is already restricted at the image optimiser
- * by `remotePatterns` in `next.config.ts`, which is the tighter and more
- * meaningful control, and duplicating the host here would mean a project
- * move needs editing in two places.
- *
- * TO ENFORCE: rename the header below from
- * `Content-Security-Policy-Report-Only` to `Content-Security-Policy`
- * once a test payment and a Studio clip both run clean.
- */
-const CSP = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${RAZORPAY_SCRIPT} ${RAZORPAY_ANY}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  `connect-src 'self' ${RAZORPAY_ANY} ${CF_STREAM}`,
-  `frame-src 'self' ${RAZORPAY_ANY} ${CF_STREAM}`,
-  `media-src 'self' blob: ${CF_STREAM}`,
-  "worker-src 'self' blob:",
-  /* Nothing in this app is ever framed by anyone, and no form posts off
-     site — the Google sign-in handoff is a navigation, not a form. */
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  /* Turns any accidental `http://` subresource into `https://` rather
-     than letting it become mixed content on a page taking card details. */
-  "upgrade-insecure-requests",
-  /* Where a violation is reported. `report-uri` is deprecated in favour
-     of `report-to` and is still the one every browser implements;
-     `report-to` additionally needs a `Reporting-Endpoints` header and a
-     named group, which is worth adding the day a browser drops this
-     one. */
-  "report-uri /api/v1/csp-report",
-].join("; ");
 
 /**
  * Device APIs, allowed only where this app actually uses one.
@@ -335,11 +264,18 @@ export async function proxy(request: NextRequest) {
      carries a slug and a search URL carries a query, and neither belongs
      in a third party's logs. */
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  /* Belt and braces with `frame-ancestors` above, which the report-only
-     CSP is not yet enforcing — this one is enforced today. */
+  /* Belt and braces with `frame-ancestors`, which now enforces too.
+     Kept because the two are not the same rule everywhere: a browser
+     that honours neither is not worth designing for, but one that
+     honours only the older header still exists. */
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Permissions-Policy", PERMISSIONS_POLICY);
-  response.headers.set("Content-Security-Policy-Report-Only", CSP);
+  /* Enforced since 24 November. `CSP_REPORT_ONLY=1` puts it back
+     without a deploy — see the note in `@/lib/security/csp`. */
+  response.headers.set(
+    cspHeaderName({ CSP_REPORT_ONLY: process.env.CSP_REPORT_ONLY }),
+    contentSecurityPolicy(),
+  );
 
   /* Nothing on the admin host is for a search engine, and `robots.txt`
      alone would not say so: it is served by the storefront's own route,

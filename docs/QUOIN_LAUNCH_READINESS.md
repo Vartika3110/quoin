@@ -24,18 +24,18 @@ which stays as that day's record and is not rewritten.
 
 | | Count |
 | --- | ---: |
-| Pass | 70 |
+| Pass | 71 |
 | Partial | 10 |
-| Fail | 5 |
+| Fail | 4 |
 | Blocked (no access) | 9 |
 | Not Started | 13 |
 | N/A, resolved or risk accepted | 3 |
 | **Total items** | **110** |
 
-**The five failures:** PAY-01 (no settled webhook since 5 October), CX-14 and
+**The four failures:** PAY-01 (no settled webhook since 5 October), CX-14 and
 DEP-14 (Supabase storage restricted, so uploads fail), SEC-03 (orphaned secret
-in `.env.local`), SEC-11 (CSP still report-only). ORD-14 and DEP-10 both closed
-on 24 November — see their rows.
+in `.env.local`). ORD-14, DEP-10 and SEC-11 all closed on 24 November — see
+their rows.
 
 **What blocks what:**
 
@@ -186,8 +186,8 @@ on 24 November — see their rows.
 | SEC-07 | Price manipulation prevented | P0 | **Pass** | Totals never read from the request body | No |
 | SEC-08 | IDOR — orders | P0 | **Pass** | `checkout/verify` re-checks `order.userId === user.id` even with a valid signature | No |
 | SEC-09 | IDOR — addresses | P0 | **Pass** | Address reads scoped by `userId`, re-scoped inside `createPendingOrder` | No |
-| SEC-10 | Security headers | P1 | **Pass** | Re-read live: HSTS `max-age=63072000; includeSubDomains; preload`, XFO `DENY`, nosniff, Referrer-Policy, Permissions-Policy `payment=()` | No |
-| SEC-11 | **CSP enforced** | P1 | **FAIL — unchanged** | Live header is still `content-security-policy-report-only`, and it allows `unsafe-inline`/`unsafe-eval` | No |
+| SEC-10 | Security headers | P1 | **Pass** | Re-read live: HSTS `max-age=63072000; includeSubDomains; preload`, XFO `DENY`, nosniff, Referrer-Policy, Permissions-Policy `payment=()`. One consequence of that last one worth knowing before it surprises someone: `payment=()` denies the browser's Payment Request API to everyone, this origin included. Card, UPI and netbanking inside Razorpay's iframe do not use it; a future Google Pay or Apple Pay button driven by that API would need the directive relaxed | No |
+| SEC-11 | **CSP enforced** | P1 | **Pass** (24 Nov) | The header is `Content-Security-Policy` now. The old precondition — *"watch a real test payment and a real Studio clip through it"* — could never be met: **there are no Studio clips** (0 `StudioIdea` rows with `media = VIDEO`, no `videoUid`, no `videoPath`, `CF_STREAM_CUSTOMER_CODE` empty), and the test payment is behind PAY-01. So it was settled with evidence instead: every host `checkout.razorpay.com/v1/checkout.js` names — `api`, `cdn`, `lumberjack`, `lumberjack-cx`, `lumberjack-metrics`, `api-dark`, `express` — is under `razorpay.com` and already covered by the wildcard; `browser.sentry-cdn.com` appears only in an ignore-list, not as a script. Then proven in a browser under the enforced header: **the script loads, `window.Razorpay` is defined, and `rzp.open()` creates its iframe on `api.razorpay.com/v1/checkout/public` with no violation reported.** `CSP_REPORT_ONLY=1` is the way back without a deploy. **Be honest about the value:** `script-src` still allows `'unsafe-inline'` and `'unsafe-eval'`, so this is not the policy that stops an injected script — nonce-ing Next's bootstrap is a separate change. What enforcing buys is everything that was inert while report-only: `object-src`, `base-uri`, `frame-ancestors`, `form-action`, and `upgrade-insecure-requests`, which browsers ignore outright in a report-only policy. 8 tests | No |
 | SEC-12 | Rate limiting | P1 | **Pass** | The October gaps are closed: `checkout/order`, `checkout/quote` and `checkout/verify` are all limited, as are `auth/otp/request`, `auth/otp/verify`, `auth/supabase/send-otp`, `parcha`, `search`, `visualise` and the vendor dispatch token route | No |
 | SEC-13 | Unverified webhook bodies not retained | P1 | **Pass** | `fingerprint()` stores length + digest only | No |
 | SEC-14 | Sensitive data kept out of logs | P1 | **Pass** | `maskPhone` on the delivery-phone path; error identity logged, never the argument-echoing Prisma error | No |
