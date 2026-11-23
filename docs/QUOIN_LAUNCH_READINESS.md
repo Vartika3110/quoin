@@ -24,11 +24,11 @@ which stays as that day's record and is not rewritten.
 
 | | Count |
 | --- | ---: |
-| Pass | 65 |
-| Partial | 7 |
+| Pass | 66 |
+| Partial | 8 |
 | Fail | 7 |
 | Blocked (no access) | 9 |
-| Not Started | 19 |
+| Not Started | 17 |
 | N/A / risk accepted | 2 |
 | **Total items** | **109** |
 
@@ -96,8 +96,8 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | CX-05 | Search, filters, departments, shelves | P1 | **Pass** | Shelf filter verified; `/api/v1/search` rate-limited | No |
 | CX-06 | Product names, SKUs, units, prices render correctly | P1 | **Pass** | All 532 prices on the owner's list verified at three layers — stored paise, rendered card, checkout quote | No |
 | CX-07 | Product images load | P2 | **Pass** | 0 of 488 active products without an image; all served from the repo, none from Supabase storage | No |
-| CX-08 | Cart quantity, removal, subtotal | P0 | Not Started | Cart maths unit-tested; no live UI test run | No |
-| CX-09 | Address entry, validation, delivery availability | P0 | Not Started | Code present; untested end to end | No |
+| CX-08 | Cart quantity, removal, subtotal | P0 | **Pass** (walked live, 23 Nov) | On `www`, phone width: added a ₹1,400 valve and a ₹416 bonding agent; 3 × ₹1,400 = **₹4,200**, line 2 **₹416**, group and footer both **₹4,616**, "4 items" counting units not lines. Decrement 3→2→1 and removal by bin both recomputed correctly; − at the minimum removes the line, which `setQty` documents as deliberate; the empty state renders. The cart is `localStorage` (`quoin:cart`), so it survived navigation and **wrote nothing to the database** — the store was read directly after each step and agreed with the screen every time. Not exercisable: `stepQty`/`minQty` above 1 and the savings line, because no variant in the live catalogue has either | No |
+| CX-09 | Address entry, validation, delivery availability | P0 | **Partial** (23 Nov) | **Availability verified live:** `/api/v1/serviceability` answers 110058 → Janakpuri and 110063 → Paschim Vihar serviceable, Mumbai 400001 not serviceable, and `12` → *"Enter a six-digit pincode"*. **Address entry is sign-in only:** signed out, checkout step 1 offers nothing but "Continue with Google", and pressing Continue answers *"Sign in above to continue — your delivery addresses live on your account"*. There is no guest checkout, so the form, its validation and the save path need one signed-in pass by the owner — I did not sign in, because that is your Google account and saving writes a real `Address` row. The product-page pincode checker exists but is unmounted, by your instruction | No |
 | CX-10 | Loading, empty, error and success states | P2 | **Pass** | `loading.tsx` per route, `EmptyState` on empty results, toasts on cart actions | No |
 | CX-11 | Console errors on key pages | P2 | **Pass** | Only the CSP report-only notice | No |
 | CX-12 | Accessibility basics | P2 | Not Started | ARIA attributes present throughout; no axe run | No |
@@ -230,7 +230,7 @@ payment on a cancelled order with no refund row), SEC-03 (orphaned secret in
 | TRU-04 | Grievance officer | P1 | **Pass** | `/grievance` live with a named officer; `COMPANY_DETAILS_ARE_SAMPLE = false` | No |
 | TRU-05 | Contact method works | P0 | Not Started | `support@quoin.co.in` is published site-wide; no delivery test has been run to it | **Yes** |
 | TRU-06 | Delivery coverage and estimates clear | P1 | **Pass** | Four named areas at checkout; "Today — usually within 45 minutes" from one constant, `SCHEDULED_DELIVERY_MINUTES` | No |
-| TRU-07 | **Delivery-time claims are accurate** | P1 | **Pass** | The "18 minutes" headline is gone; 45 minutes or same day everywhere, from one source | No |
+| TRU-07 | **Delivery-time claims are accurate** | P1 | **Pass**, with a loose end | The "18 minutes" headline is gone; 45 minutes or same day everywhere, from one source. **The number itself is still alive in the data:** `/api/v1/serviceability?lat=&lng=` returns `etaMinutes: 18` from `Store.baseEtaMinutes`, and the only reason no page says it is that no component reads that field. Wiring it up would bring the retired claim back without anyone deciding to | No |
 | TRU-08 | Pricing, units, availability clear | P1 | **Pass** | Unit on every price, "Inclusive of all taxes" on the sticky bar — GST is extracted, never added | No |
 | TRU-09 | Order confirmation reaches the customer | P0 | **Blocked** | Depends on PAY-01 and on the WhatsApp variables being set in production | **Yes** |
 | TRU-10 | Operational readiness to deliver / cancel / refund | P0 | Not Started | A business-process question. Nothing in the code can answer it | **Yes** |
