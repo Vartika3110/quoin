@@ -24,18 +24,19 @@ which stays as that day's record and is not rewritten.
 
 | | Count |
 | --- | ---: |
-| Pass | 71 |
+| Pass | 72 |
 | Partial | 10 |
-| Fail | 4 |
+| Fail | 3 |
 | Blocked (no access) | 9 |
 | Not Started | 13 |
 | N/A, resolved or risk accepted | 3 |
 | **Total items** | **110** |
 
-**The four failures:** PAY-01 (no settled webhook since 5 October), CX-14 and
-DEP-14 (Supabase storage restricted, so uploads fail), SEC-03 (orphaned secret
-in `.env.local`). ORD-14, DEP-10 and SEC-11 all closed on 24 November — see
-their rows.
+**The three failures:** PAY-01 (no settled webhook since 5 October), CX-14 and
+DEP-14 (Supabase storage restricted, so uploads fail). ORD-14, DEP-10, SEC-11
+and SEC-03 all closed on 24 November — see their rows. **SEC-17, the rotation
+itself, is still open and is yours** — removing a secret from a file does not
+make it stop working.
 
 **What blocks what:**
 
@@ -179,7 +180,7 @@ their rows.
 | --- | --- | --- | --- | --- | --- |
 | SEC-01 | **No secret values in client bundle** | P0 | **Pass** | Every configured secret exact-value searched in `.next/static` — none found | No |
 | SEC-02 | `.env` files git-ignored | P0 | **Pass** | `.gitignore` → `.env*`, and `/backups` added by the exporter itself | No |
-| SEC-03 | **`.env.local` carries an orphaned secret** | P1 | **FAIL — unchanged** | Line 1 is still a 148-character value with no key name, shaped `v1,whsec_…` (a Supabase hook secret), and it is **a different value** from the `SUPABASE_SMS_HOOK_SECRET` the file also sets. Treat it as live until rotated. 6 keys hold empty values (3 MSG91, 3 Razorpay) — expected locally | No (local file), but see SEC-17 |
+| SEC-03 | `.env.local` carried an orphaned secret | P1 | **Pass** (24 Nov) | Line 1 is gone. It was 148 characters, `v1,whsec_…`, with no key name and **no `=`**, so nothing ever read it — not this project's loader, not Next's: it was a secret sitting in a file doing nothing. 23 keys before and after, no unparsed line left, and every variable verified to still load against the live database. **It was never committed** — `.env.local` has never been tracked, and the only `v1,whsec_` strings in the history are a format note, a test fixture and this checklist. The removed value's fingerprint, for recognising it in the dashboard, is sha256 `cbb1095e…`; the copy taken before the edit has been deleted. 6 keys hold empty values (3 MSG91, 3 Razorpay), which is expected locally | No |
 | SEC-04 | **Dependency audit** | P1 | **Partial — the serving path is clean** | `npm audit --omit=dev`: **4 high, 0 moderate, 0 critical** (October: 1 critical + 8 high). The `next` moderate is gone — see DEP-15. All four remaining highs are in the **Prisma CLI** chain (`deepmerge-ts`, `effect` via `@prisma/config`): a developer's tool, never loaded by a request. **A zero here is purchasable and was not worth the price:** `npm audit fix --force` downgrades the CLI to 6.12.0, which does not understand the `migrations.seed` key in `prisma.config.ts` (typecheck fails) and leaves a 6.12 CLI against a 6.19 client. Tried on 22 Nov and reverted. The forward fix is Prisma 7.10.1 or later, which is outside the advisory range — a deliberate major upgrade, not an audit-fix | No |
 | SEC-05 | Admin authorization | P0 | **Pass** | See ADM-01, ADM-02, ADM-12 | No |
 | SEC-06 | Server-side input validation | P0 | **Pass** | Zod on every inspected route, bounded string lengths | No |
@@ -193,7 +194,7 @@ their rows.
 | SEC-14 | Sensitive data kept out of logs | P1 | **Pass** | `maskPhone` on the delivery-phone path; error identity logged, never the argument-echoing Prisma error | No |
 | SEC-15 | Database RLS | P1 | **Blocked** | No Supabase access; authorization is enforced in application code | No |
 | SEC-16 | File upload validation | P2 | Not Started | Signed-upload routes exist; untestable today because storage is restricted (CX-14) | No |
-| SEC-17 | **Rotate the orphaned secret** | P1 | Not Started | SEC-03 is 29 days old and the value is still in the file. Rotate the Supabase hook secret, delete line 1, then re-check | **Yes** |
+| SEC-17 | **Rotate the orphaned secret** | P1 | Not Started — **and this is the half that matters** | The file is clean (SEC-03) and the secret is not. Deleting a line removes a copy, not the credential: that value still authenticates anything holding it until Supabase issues a new one. It is shaped like the **SMS hook secret**, which is what stops anyone posting to `/api/v1/auth/supabase/send-otp` and making this application send one-time codes. Rotate it in **Supabase → Authentication → Hooks**, then set the new value as `SUPABASE_SMS_HOOK_SECRET` in **both** `.env.local` and Vercel production — and only then is SEC-03 finished | **Yes** |
 | SEC-18 | Vendor identifiers and bank details | P1 | **Partial** | GSTIN base-36 checksum, embedded PAN, IFSC and VPA shape, and name matching are all implemented and tested; a payment route and a note are required before `VERIFIED`. No penny-drop verification, and no vendor rows to verify | No |
 
 ---
