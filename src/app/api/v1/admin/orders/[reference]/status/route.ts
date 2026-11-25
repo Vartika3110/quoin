@@ -5,6 +5,7 @@ import {
   OrderNotFoundError,
   OrderStatusRaceError,
   CapturedPaymentBlocksCancellationError,
+  VendorsNotDispatchedError,
   PaidNotAdminSettableError,
   RefundedNotAdminSettableError,
   transitionOrderStatus,
@@ -103,6 +104,11 @@ export const POST = handler(async (request, { params }: Ctx) => {
       throw new ApiError("conflict", error.message);
     }
     if (error instanceof CapturedPaymentBlocksCancellationError) {
+      throw new ApiError("conflict", error.message);
+    }
+    /* 409 rather than 422: the request is well formed and would be legal
+       the moment the vendors dispatch. See `VendorsNotDispatchedError`. */
+    if (error instanceof VendorsNotDispatchedError) {
       throw new ApiError("conflict", error.message);
     }
     if (error instanceof IllegalOrderTransitionError) {

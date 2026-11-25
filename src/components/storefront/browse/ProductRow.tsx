@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProductImage } from "@/components/storefront/ProductImage";
 import { Badge } from "@/components/ui/Badge";
 import { Calendar, Chevron, Clock, Ruler, Truck } from "@/components/icons";
+import { INSTANT_DELIVERY_SHORT } from "@/lib/orders/delivery-estimate";
 import {
   BADGE_LABEL,
   PRICING_UNIT_LABEL,
@@ -28,7 +29,8 @@ const FULFILMENT: Record<
   FulfilmentType,
   { label: (d?: number) => string; Icon: typeof Clock }
 > = {
-  instant: { label: () => "18 min", Icon: Clock },
+  /* Was a hard-coded "18 min" — see `INSTANT_DELIVERY_SHORT`. */
+  instant: { label: () => INSTANT_DELIVERY_SHORT, Icon: Clock },
   scheduled: { label: (d) => `${d ?? 2} days`, Icon: Truck },
   bookable: { label: () => "Book a slot", Icon: Calendar },
   made_to_order: { label: (d) => `Made to order · ${d ?? 7}d`, Icon: Ruler },

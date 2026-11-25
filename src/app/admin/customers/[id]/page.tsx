@@ -9,7 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Crown, Package, Pin, Wallet } from "@/components/icons";
 import { requireStaffPage } from "@/lib/auth/staff";
 import { db } from "@/lib/db";
-import { resolveAdminPage } from "@/lib/data/admin-metrics";
+import { resolveAdminPage, REVENUE_ORDER_WHERE } from "@/lib/data/admin-metrics";
 import { formatPrice } from "@/lib/types/catalog";
 import { ORDER_STATUS_LABEL, ORDER_STATUS_TONE } from "@/lib/data/order-history";
 import { one } from "@/lib/search-params";
@@ -74,7 +74,7 @@ export default async function CustomerDetailPage({
   const [orderTotal, spendAgg, orders] = await Promise.all([
     db.order.count({ where: { userId: id } }),
     db.order.aggregate({
-      where: { userId: id, status: "PAID" },
+      where: { userId: id, ...REVENUE_ORDER_WHERE },
       _sum: { totalPaise: true },
     }),
     db.order.findMany({

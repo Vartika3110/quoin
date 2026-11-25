@@ -13,7 +13,11 @@ import {
 } from "@/lib/store/persistent";
 import { useHydrated } from "@/lib/store/hydrated";
 import { normalizeQty } from "@/lib/cart/quantity";
-import { SCHEDULED_DELIVERY_BODY } from "@/lib/orders/delivery-estimate";
+import {
+  INSTANT_DELIVERY_BODY,
+  INSTANT_DELIVERY_TITLE,
+  SCHEDULED_DELIVERY_BODY,
+} from "@/lib/orders/delivery-estimate";
 import type {
   FulfilmentType,
   Paise,
@@ -276,8 +280,11 @@ export const GROUP_PROMISE: Record<
   { title: string; detail: (leadDays?: number) => string }
 > = {
   instant: {
-    title: "Arriving in 18 minutes",
-    detail: () => "From your nearest Quoin store.",
+    /* A fifth copy of the retired "18 minutes" promise, and the one
+       closest to the money — it is read in the cart and at checkout.
+       From `delivery-estimate.ts` now; see `INSTANT_DELIVERY_TITLE`. */
+    title: INSTANT_DELIVERY_TITLE,
+    detail: () => INSTANT_DELIVERY_BODY,
   },
   scheduled: {
     title: "Delivered today",

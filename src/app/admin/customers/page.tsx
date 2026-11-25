@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { People, Crown, Search } from "@/components/icons";
 import { requireStaffPage } from "@/lib/auth/staff";
 import { db } from "@/lib/db";
-import { resolveAdminPage } from "@/lib/data/admin-metrics";
+import { resolveAdminPage, REVENUE_ORDER_WHERE } from "@/lib/data/admin-metrics";
 import { formatPrice } from "@/lib/types/catalog";
 import { maskPhone } from "@/lib/auth/phone";
 import { one } from "@/lib/search-params";
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
  * nothing here and the detail page still has what a callback needs.
  *
  * "Total spent" is a second query (`groupBy` on `Order.userId`), not a
- * nested `orders: { where: { status: "PAID" } }` include on the page's own
+ * nested `orders: { where: … } }` include on the page's own
  * `findMany`: that would ship every matching `Order` row's full column set
  * to the application only to `reduce` it in JS, once per customer on the
  * page. A `groupBy` scoped to this page's own ids does the sum in
@@ -91,7 +91,7 @@ export default async function CustomersPage({
   const spendByUser = rows.length
     ? await db.order.groupBy({
         by: ["userId"],
-        where: { userId: { in: rows.map((r) => r.id) }, status: "PAID" },
+        where: { userId: { in: rows.map((r) => r.id) }, ...REVENUE_ORDER_WHERE },
         _sum: { totalPaise: true },
       })
     : [];

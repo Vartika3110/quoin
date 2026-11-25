@@ -123,16 +123,104 @@ const XLSX_CONTENT_TYPES = new Set([
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif"]);
 
 /**
- * What kind of file this is, for the purpose of deciding whether it can
- * be read. Content type first — it is re-checked against the real bytes
- * before a `StoredFile` reaches `STORED` (see the schema comment) — with
- * the declared filename's extension as a fallback for the generic types
- * browsers sometimes send (`application/octet-stream`, or `text/plain`
- * for a CSV with no explicit MIME mapping).
+ * What the first bytes say the file actually is.
+ *
+ * `classifyFile` below reads a filename and a `Content-Type`, and both
+ * are supplied by whoever is uploading: an attacker picks them, and an
+ * ordinary browser gets them wrong often enough that neither can be
+ * trusted on its own. The bytes cannot be renamed. So this is asked
+ * first, and the declared name only decides cases the magic numbers
+ * cannot settle.
+ *
+ * What this buys in practice is narrow and worth stating plainly,
+ * because the extract route is already the safest caller — it persists
+ * nothing and the bytes live for one request. The gain is that a file
+ * which is not what it claims stops being routed as though it were: an
+ * executable renamed `.jpg` no longer reaches the OCR path as an image,
+ * it falls to `unknown` and goes to a person. The submission path
+ * (`parcha-submissions.ts`), which *does* keep the file, gains more.
+ *
+ * Returns `null` rather than `"unknown"` when nothing matches, because
+ * "these bytes are not a format I recognise" and "this file cannot be
+ * read" are different statements — a CSV has no magic number at all, so
+ * a null here is the normal case for the one format that is plain text.
  */
-export function classifyFile(contentType: string, originalName: string): ParchaFileKind {
+export function sniffFileKind(head: Uint8Array): ParchaFileKind | null {
+  const starts = (...bytes: number[]): boolean =>
+    bytes.every((b, i) => head[i] === b);
+
+  /* `%PDF-` */
+  if (starts(0x25, 0x50, 0x44, 0x46, 0x2d)) return "pdf";
+  /* PNG's signature, including the CRLF pair that catches a transfer
+     which has mangled line endings. */
+  if (starts(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)) return "image";
+  /* JPEG: any SOI followed by a marker. */
+  if (starts(0xff, 0xd8, 0xff)) return "image";
+  /* RIFF container; the form type at offset 8 is what makes it a WEBP
+     rather than a WAV. */
+  if (starts(0x52, 0x49, 0x46, 0x46)) {
+    const form = String.fromCharCode(...head.slice(8, 12));
+    return form === "WEBP" ? "image" : null;
+  }
+  /* ISO base media: `ftyp` at offset 4, then a brand. HEIC and HEIF are
+     what a recent iPhone sends, which is most photographs of a parcha. */
+  if (String.fromCharCode(...head.slice(4, 8)) === "ftyp") {
+    const brand = String.fromCharCode(...head.slice(8, 12));
+    return ["heic", "heix", "hevc", "hevx", "mif1", "msf1"].includes(brand)
+      ? "image"
+      : null;
+  }
+  /* XLSX is a zip. So is a great deal else, which is why this returns
+     `xlsx` rather than something more confident: the decision it feeds
+     sends xlsx to a person either way, so a zip that is not a
+     spreadsheet lands in the same place it would have anyway. */
+  if (starts(0x50, 0x4b, 0x03, 0x04)) return "xlsx";
+  /* The old OLE compound-document container: a real `.xls`. */
+  if (starts(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1)) return "xlsx";
+
+  return null;
+}
+
+/** How many bytes `sniffFileKind` needs. Every signature above fits. */
+export const SNIFF_BYTES = 16;
+
+/**
+ * What kind of file this is, for the purpose of deciding whether it can
+ * be read.
+ *
+ * **The real bytes win when they say anything**, via `sniffFileKind` —
+ * pass `head` wherever the caller has them, which is everywhere that
+ * matters. The filename's extension and then the `Content-Type` decide
+ * the rest: the generic types browsers send
+ * (`application/octet-stream`, or `text/plain` for a CSV with no
+ * explicit MIME mapping) and CSV, which has no signature to find.
+ *
+ * `head` is optional so that callers holding only metadata — and tests
+ * covering the declared-type behaviour — keep working unchanged. A
+ * caller that has the bytes and does not pass them is not wrong, only
+ * trusting a name it did not have to.
+ */
+export function classifyFile(
+  contentType: string,
+  originalName: string,
+  head?: Uint8Array,
+): ParchaFileKind {
   const ct = contentType.toLowerCase().trim();
   const ext = (originalName.match(/\.([a-z0-9]+)$/i)?.[1] ?? "").toLowerCase();
+
+  /* Asked before anything the uploader chose. */
+  if (head && head.length > 0) {
+    const sniffed = sniffFileKind(head);
+    if (sniffed) return sniffed;
+    /* The bytes are not a format known here. A name claiming otherwise
+       is the case this check exists for, so the claim is refused rather
+       than believed: `unknown` routes to a person, which is the right
+       answer for a file nobody can identify. CSV is the exception — it
+       is plain text with no signature, so a `.csv` name with
+       unrecognised bytes is simply a CSV. */
+    if (ext === "csv" || CSV_CONTENT_TYPES.has(ct)) return "csv";
+    return "unknown";
+  }
 
   if (ext === "csv") return "csv";
   if (ext === "xlsx" || ext === "xls") return "xlsx";

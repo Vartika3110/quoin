@@ -1,5 +1,6 @@
 import type { FulfilmentType } from "@/lib/types/catalog";
 import type { ProductSort } from "@/lib/data/catalog";
+import { INSTANT_FILTER_LABEL } from "@/lib/orders/delivery-estimate";
 
 /**
  * Where Architectural Selects starts, in rupees.
@@ -56,7 +57,11 @@ export const SORTS: { id: ProductSort; label: string }[] = [
 ];
 
 export const FULFILMENT_LABEL: Record<FulfilmentType, string> = {
-  instant: "In 18 minutes",
+  /* The sixth and last copy of the retired "18 minutes" promise, and the
+     only one that was actually on screen: this is what the browse
+     facet chip renders, and unlike `QuickFilters` it is shown whether or
+     not anything matches. From `delivery-estimate.ts` now. */
+  instant: INSTANT_FILTER_LABEL,
   scheduled: "Scheduled delivery",
   made_to_order: "Made to order",
   bookable: "Bookable visit",

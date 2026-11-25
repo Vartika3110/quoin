@@ -110,6 +110,21 @@ export interface AdminOrderListParams {
  * With neither filter this is a plain `@@index([status, createdAt])` scan
  * ignoring the leading column, no worse than the unfiltered dashboard
  * queries already reading this table.
+ *
+ * **`shipName` is searched too, and was the omission that mattered.**
+ * The queue puts the customer's name in its first column and labels the
+ * box "Search", so a staff member types a name — and got "0 orders
+ * matching" back, which reads as "no such order" rather than as "names
+ * are not searched". It costs no join, because `shipName` is
+ * denormalised onto `Order` already (the name the goods were addressed
+ * to, which is the one a staff member is looking at). It is unindexed,
+ * so this arm is a scan — acceptable for the same reason the unfiltered
+ * listing is, and it only runs when somebody has typed something.
+ *
+ * Searching `shipName` rather than `User.name` is deliberate: the
+ * delivery name is what the screen shows and what a courier reads back
+ * over the phone, and the two differ whenever an order is sent to
+ * somebody else.
  */
 export async function listAdminOrders(params: AdminOrderListParams): Promise<AdminOrderListPage> {
   const { page, pageSize, skip } = resolveAdminPage(params.page, params.pageSize);
@@ -122,6 +137,7 @@ export async function listAdminOrders(params: AdminOrderListParams): Promise<Adm
           OR: [
             { reference: { contains: q, mode: "insensitive" } },
             { user: { phone: { contains: q } } },
+            { shipName: { contains: q, mode: "insensitive" } },
           ],
         }
       : {}),
@@ -532,6 +548,44 @@ export class CapturedPaymentBlocksCancellationError extends Error {
   }
 }
 
+/**
+ * An order cannot claim to have been dispatched before its vendors have.
+ *
+ * `AGENTS.md` states the invariant: an order spanning vendors gets one
+ * `OrderFulfilment` each "and only reaches `DISPATCHED` when every one
+ * of them has". The vendor-facing path has always honoured it —
+ * `src/lib/data/order-dispatch.ts` checks `allDispatched` before calling
+ * `advanceOrderToDispatched`, and says why: *"the customer is told once,
+ * when the whole order is on its way, which is the one thing
+ * 'dispatched' can honestly mean to them"*.
+ *
+ * This path did not, which was found by using the admin console rather
+ * than by reading it: the status dropdown moved an order to `DISPATCHED`
+ * with its only fulfilment still `PENDING` and `dispatchedAt` null. The
+ * consequence is not cosmetic, because the route above this function
+ * calls `notifyOrderStatus` and `notifyCustomerOfStatus` — so the
+ * customer is told their goods have left while no vendor has shipped
+ * anything.
+ *
+ * Refused here rather than in `ORDER_TRANSITIONS`, and for the same
+ * reason as `CapturedPaymentBlocksCancellationError`: the move is a
+ * legal one on the state machine, and what forbids it is a fact about
+ * the world — whether the goods have actually gone. The vendor's own
+ * dispatch is what clears it, and that path then advances the order by
+ * itself.
+ */
+export class VendorsNotDispatchedError extends Error {
+  constructor(outstanding: number, total: number) {
+    super(
+      `This order cannot be marked dispatched yet: ${outstanding} of ${total} vendors ` +
+        "have not dispatched. Dispatch each vendor's leg — the order moves itself once " +
+        "the last one has. Marking it here would tell the customer their whole order is " +
+        "on its way while part of it has not left.",
+    );
+    this.name = "VendorsNotDispatchedError";
+  }
+}
+
 /** Another request already moved this order between the read and the write.
     Defined in `src/lib/data/orders.ts` — `recordOfflinePayment` needs to
     throw the same error, and re-exported here so nothing importing it from
@@ -669,6 +723,31 @@ export async function transitionOrderStatus(
   const from = existing.status;
   if (!canTransition(from, input.toStatus)) {
     throw new IllegalOrderTransitionError(from, input.toStatus);
+  }
+
+  /* The vendor half of "dispatched", asked the same way the money
+     question above is asked: the move is legal on the machine, and what
+     forbids it is whether the goods have actually left. See
+     `VendorsNotDispatchedError`.
+
+     An order with no `OrderFulfilment` rows at all is Quoin's own to
+     fulfil — which is every order today, since `Product.vendorId` is
+     null across the catalogue — and is unaffected: there is no vendor to
+     wait for. A `CANCELLED` leg is not outstanding either; it is a
+     vendor who was asked and then stood down. */
+  if (input.toStatus === "DISPATCHED") {
+    const legs = await db.orderFulfilment.groupBy({
+      by: ["status"],
+      where: { orderId: existing.id },
+      _count: true,
+    });
+    const total = legs.reduce((sum, leg) => sum + leg._count, 0);
+    const outstanding = legs
+      .filter((leg) => leg.status === "PENDING")
+      .reduce((sum, leg) => sum + leg._count, 0);
+    if (outstanding > 0) {
+      throw new VendorsNotDispatchedError(outstanding, total);
+    }
   }
 
   await db.$transaction(async (tx) => {

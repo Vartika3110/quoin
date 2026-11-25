@@ -48,6 +48,12 @@ export default function robots(): MetadataRoute.Robots {
           "/vendor",
           "/studio/pin/",
           "/studio/image/",
+          /* Both render nothing but "Sign in to ..." to a crawler — the
+             same empty-shell problem `/account`, `/cart` and `/checkout`
+             are listed for. The pages they lead to are indexable; the
+             create forms are not. */
+          "/projects/new",
+          "/studio/upload",
         ],
       },
     ],

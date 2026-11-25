@@ -1,5 +1,6 @@
 "use client";
 
+import type { OrderStatus } from "@prisma/client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -30,11 +31,44 @@ export interface OrderStatusOption {
  * here would be a second copy of `getAdminOrder`'s shape that can go
  * stale.
  */
+/**
+ * What to say when there is no move to offer, which is not one thing.
+ *
+ * The form used to print "This order is in a terminal state — there is
+ * nowhere further to move it" whenever `options` was empty. For
+ * `CANCELLED` and `REFUNDED` that is true. For **`REFUND_PENDING` it is
+ * false in the way that matters**: that order is waiting for the
+ * gateway's `refund.processed` to carry it to `REFUNDED`, and it is the
+ * one status in this system that means *this customer is owed money*.
+ * Calling it terminal invites reading it as settled.
+ *
+ * The emptiness itself is correct and deliberate —
+ * `isAdminTransitionAllowed` refuses `REFUNDED` from the dropdown
+ * precisely so that it can only ever arrive with a `Refund` row behind
+ * it. So this is the wording catching up with the behaviour, not a
+ * change to it.
+ */
+function nothingToDoHere(status: OrderStatus): string {
+  if (status === "REFUND_PENDING") {
+    return (
+      "A refund has been agreed and not yet settled. This order moves to " +
+      "Refunded by itself when the gateway confirms it — it cannot be set " +
+      "from here, so that “refunded” always has a refund behind it."
+    );
+  }
+  if (status === "REFUNDED") return "This order has been refunded. Nothing further.";
+  if (status === "CANCELLED") return "This order was cancelled. Nothing further.";
+  return "There is no status this order can be moved to from here.";
+}
+
 export function OrderStatusForm({
   reference,
+  status,
   options,
 }: {
   reference: string;
+  /** The order's current status, which decides the empty-state wording. */
+  status: OrderStatus;
   options: OrderStatusOption[];
 }) {
   const router = useRouter();
@@ -45,9 +79,7 @@ export function OrderStatusForm({
 
   if (options.length === 0) {
     return (
-      <p className="text-body-sm text-muted">
-        This order is in a terminal state — there is nowhere further to move it.
-      </p>
+      <p className="text-body-sm text-muted">{nothingToDoHere(status)}</p>
     );
   }
 

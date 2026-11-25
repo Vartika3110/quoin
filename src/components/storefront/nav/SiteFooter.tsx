@@ -265,7 +265,10 @@ export function SiteFooter({
           {/* Still reachable, still one click, just no longer a column of
               its own. A payment gateway's reviewer and a customer with a
               complaint both look at the foot of the page. */}
-          <ul className="flex flex-wrap gap-x-4 gap-y-1.5 app:hidden">
+          {/* `gap-y-0` because each link now carries its own height: the
+              row spacing moved inside the targets rather than between
+              them, so the strip is the same size it was. */}
+          <ul className="flex flex-wrap gap-x-4 gap-y-0 app:hidden">
             {[
               /* First, and the reason this strip is the whole phone
                  footer: with the columns gone it is the only way to reach
@@ -278,9 +281,16 @@ export function SiteFooter({
               { href: "/grievance", label: "Grievance officer" },
             ].map((link) => (
               <li key={link.href}>
+                {/* `min-h-6` is WCAG 2.2 AA 2.5.8, Target Size (Minimum):
+                    24 × 24 CSS px. These six rendered 14px tall at 375px —
+                    the only targets on any page measured that did not
+                    clear it, and they are the six a customer with a
+                    complaint reaches for. The type size, colour and
+                    position are untouched; the link simply occupies the
+                    height it should have. */}
                 <Link
                   href={link.href}
-                  className="text-micro text-faint transition-colors hover:text-accent"
+                  className="inline-flex min-h-6 items-center text-micro text-faint transition-colors hover:text-accent"
                 >
                   {link.label}
                 </Link>

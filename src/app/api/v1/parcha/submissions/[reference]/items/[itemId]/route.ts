@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ApiError, handler, ok, parseBody } from "@/lib/http";
+import { enforce } from "@/lib/rate-limit";
 import { getSession } from "@/lib/auth/session";
 import {
   ParchaItemNotFoundError,
@@ -39,6 +40,12 @@ const Body = z
  * `statusAfterItemDecisions` in `parcha-submissions.ts`.
  */
 export const PATCH = handler(async (request, { params }: Ctx) => {
+  /* Same reasoning as the GET one level up, and the same bucket: this
+     route is reachable with nothing but the reference, so it is a second
+     door onto the same 29-bit credential — and a writing one. See the
+     `parchaSubmission` bucket. */
+  enforce("parchaSubmission", request);
+
   const { reference, itemId } = await params;
   const body = await parseBody(request, Body);
   const session = await getSession();

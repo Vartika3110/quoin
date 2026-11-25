@@ -21,6 +21,21 @@
         "3100"
       ],
       "port": 3100
+    },
+    {
+      "name": "quoin-admin-fixture",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "DATABASE_URL=postgresql://quoin:localonly@127.0.0.1:55432/quoin_admin_fixture",
+        "DIRECT_DATABASE_URL=postgresql://quoin:localonly@127.0.0.1:55432/quoin_admin_fixture",
+        "ADMIN_ALLOWLIST=fixture-staff@quoin.local",
+        "npx",
+        "next",
+        "dev",
+        "--port",
+        "3200"
+      ],
+      "port": 3200
     }
   ]
 }

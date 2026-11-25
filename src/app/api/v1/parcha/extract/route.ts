@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { callerIp, hashIp } from "@/lib/data/parcha-submissions";
 import {
   classifyFile,
+  SNIFF_BYTES,
   decideExtractionAction,
   decodeCsvBuffer,
   extractCsvLines,
@@ -178,14 +179,20 @@ export const POST = handler(async (request) => {
     );
   }
 
-  const kind = classifyFile(file.type, file.name);
+  /* Read once, used twice: the first bytes decide what this file really
+     is, and the same buffer is the CSV below. `file.type` and
+     `file.name` are both chosen by whoever is uploading — see
+     `classifyFile` — and an executable renamed `.jpg` should not reach
+     the reader as an image. The whole file is already capped above, so
+     buffering it to look at sixteen bytes costs nothing new. */
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const kind = classifyFile(file.type, file.name, buffer.subarray(0, SNIFF_BYTES));
   const decision = decideExtractionAction(kind, isParchaReaderConfigured());
 
   /* A spreadsheet export needs no model and no network — the CSV reader
      in `parcha-extract.ts` has always been real. Handled first so that an
      unconfigured deploy still reads one. */
   if (decision.action === "parse_csv") {
-    const buffer = Buffer.from(await file.arrayBuffer());
     const lines = extractCsvLines(decodeCsvBuffer(buffer));
     if (lines.length === 0) {
       throw new ApiError("bad_request", MESSAGE.empty);
@@ -205,8 +212,10 @@ export const POST = handler(async (request) => {
     throw new ApiError("conflict", MESSAGE[reason]);
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-
+  /* Uses the buffer read at the top. There were two reads before, one
+     per branch, and they never both ran — the CSV branch returns. Now
+     the sniff needs the bytes before either branch is chosen, so there
+     is one read and both branches share it. */
   let items: ParchaExtractedItem[];
   let text: string;
   try {

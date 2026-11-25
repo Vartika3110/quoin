@@ -64,6 +64,38 @@ export const SCHEDULED_DELIVERY_BODY =
   `Collected from the vendor who stocks it and delivered the same day — usually within ${SCHEDULED_DELIVERY_MINUTES} minutes.`;
 
 /**
+ * The `instant` promise, which is deliberately the scheduled one.
+ *
+ * "Quoin in 18 minutes" was **taken out at the owner's instruction** in
+ * `ba4661d` (23 October), for the reason its commit message gives:
+ * nothing in the catalogue is stocked for it, and every card already
+ * said 45 minutes. The headline went; the literal `"18 min"` survived in
+ * four render paths that nobody could see, because `guessFulfilment`
+ * (`prisma/import-catalogue.ts`) never returns `INSTANT` — so one
+ * product set to `instant` by merchandising would have put an unbacked
+ * promise back on a card, and on the product page a claim that it is
+ * "in stock at your nearest Quoin store".
+ *
+ * These alias the scheduled constants rather than carrying a number of
+ * their own, and that is the honest answer rather than a placeholder.
+ * There is no instant promise to make: the business has retired the only
+ * one it had and has not replaced it. Meanwhile the promise it *does*
+ * make — today, usually within 45 minutes — is one an in-stock item can
+ * only beat, so an `instant` product shown this is never over-promised.
+ *
+ * When there is a real instant promise again, it is these four lines
+ * that change, and the storefront follows. That is the point of them
+ * existing at all: the previous arrangement needed four files edited and
+ * had already been missed once.
+ */
+export const INSTANT_DELIVERY_SHORT = SCHEDULED_DELIVERY_SHORT;
+export const INSTANT_DELIVERY_TITLE = SCHEDULED_DELIVERY_TITLE;
+export const INSTANT_DELIVERY_BODY = SCHEDULED_DELIVERY_BODY;
+
+/** The browse chip that filters to in-stock-now items. */
+export const INSTANT_FILTER_LABEL = `In ${SCHEDULED_DELIVERY_MINUTES} minutes`;
+
+/**
  * Least certain first. The order is the whole rule: `estimateFor` walks
  * this list and answers on the first kind the basket contains, so adding
  * a fulfilment type means deciding where its promise sits among these

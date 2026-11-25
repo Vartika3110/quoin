@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 import { siteOrigin } from "@/lib/env";
+import { fixedSitemapPages } from "@/lib/seo/sitemap-pages";
 
 /**
  * `/sitemap.xml`, which until now 404'd.
@@ -68,32 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ]);
 
-  /**
-   * The hand-written pages, with priorities that say something true.
-   *
-   * The storefront's entry points rank above the legal pages because
-   * that is the actual difference in how much Quoin wants them crawled —
-   * not because a higher number is better. The legal pages are included
-   * at all because a payment gateway and a regulator both expect them to
-   * be publicly findable.
-   */
-  const fixed: MetadataRoute.Sitemap = [
-    { url: `${origin}/`, priority: 1, changeFrequency: "daily" },
-    { url: `${origin}/products`, priority: 0.9, changeFrequency: "daily" },
-    { url: `${origin}/categories`, priority: 0.8, changeFrequency: "weekly" },
-    { url: `${origin}/deals`, priority: 0.7, changeFrequency: "daily" },
-    { url: `${origin}/studio`, priority: 0.7, changeFrequency: "weekly" },
-    { url: `${origin}/services`, priority: 0.7, changeFrequency: "weekly" },
-    { url: `${origin}/upload`, priority: 0.6, changeFrequency: "monthly" },
-    { url: `${origin}/projects`, priority: 0.5, changeFrequency: "monthly" },
-    { url: `${origin}/pro`, priority: 0.5, changeFrequency: "monthly" },
-    { url: `${origin}/consult`, priority: 0.5, changeFrequency: "monthly" },
-    { url: `${origin}/privacy`, priority: 0.3, changeFrequency: "yearly" },
-    { url: `${origin}/terms`, priority: 0.3, changeFrequency: "yearly" },
-    { url: `${origin}/refunds`, priority: 0.3, changeFrequency: "yearly" },
-    { url: `${origin}/contact`, priority: 0.3, changeFrequency: "yearly" },
-    { url: `${origin}/grievance`, priority: 0.3, changeFrequency: "yearly" },
-  ];
+  const fixed = fixedSitemapPages(origin);
 
   return [
     ...fixed,

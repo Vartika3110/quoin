@@ -330,7 +330,11 @@ export default async function AdminOrderPage({ params }: Ctx) {
 
           <Card tone="sunk">
             <CardHeader title="Change status" />
-            <OrderStatusForm reference={order.reference} options={nextStatusOptions} />
+            <OrderStatusForm
+              reference={order.reference}
+              status={order.status}
+              options={nextStatusOptions}
+            />
           </Card>
 
           {canRefund && (

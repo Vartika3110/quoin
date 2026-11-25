@@ -39,6 +39,8 @@ import {
   type FulfilmentType,
 } from "@/lib/types/catalog";
 import {
+  INSTANT_DELIVERY_BODY,
+  INSTANT_DELIVERY_TITLE,
   SCHEDULED_DELIVERY_BODY,
   SCHEDULED_DELIVERY_TITLE,
 } from "@/lib/orders/delivery-estimate";
@@ -53,8 +55,12 @@ const PROMISE: Record<
 > = {
   instant: {
     Icon: Clock,
-    title: () => "Delivered in 18 minutes",
-    body: "In stock at your nearest Quoin store, inside the serviceable radius.",
+    /* Was "Delivered in 18 minutes", with a body claiming the item is
+       "in stock at your nearest Quoin store" — two promises the owner
+       retired and nothing in the catalogue could keep. Both come from
+       `delivery-estimate.ts` now; see `INSTANT_DELIVERY_TITLE`. */
+    title: () => INSTANT_DELIVERY_TITLE,
+    body: INSTANT_DELIVERY_BODY,
   },
   scheduled: {
     Icon: Truck,

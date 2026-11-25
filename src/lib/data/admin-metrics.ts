@@ -135,6 +135,29 @@ export function isRevenueStatus(status: OrderStatus, paidAt: Date | null): boole
   return paidAt != null && status !== "REFUNDED";
 }
 
+/**
+ * The same rule as a Prisma filter, for a lifetime figure.
+ *
+ * `isRevenueStatus` is a predicate over fetched rows and the two
+ * date-ranged callers above spell the rule inline because they also need
+ * `paidAt` between two instants. The customer screens need neither: they
+ * want "every order this person has ever actually paid for", and what
+ * they had instead was a bare `status: "PAID"`.
+ *
+ * That is the identical bug this module's own comment records having
+ * found and fixed in the dashboard, left standing in two more places —
+ * and it is worse there, because it does not merely under-count. `PAID`
+ * is a *transient* status: the moment an order is dispatched it is
+ * `DISPATCHED`, so a customer's "total spent" fell back to ₹0 as soon as
+ * their goods left, and the longest-standing customers — the ones whose
+ * orders have all been delivered — were the ones shown as having spent
+ * nothing at all.
+ */
+export const REVENUE_ORDER_WHERE = {
+  paidAt: { not: null },
+  status: { not: "REFUNDED" },
+} as const;
+
 /** ---- Orders awaiting staff action -----------------------------------------
  *
  * Not "everything not yet delivered" — `PENDING_PAYMENT` is the

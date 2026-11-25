@@ -154,6 +154,31 @@ const BUCKETS: Record<string, Bucket> = {
    * a broken page is the whole signal, and the thirty-first in a minute
    * from one address is a loop, not news. */
   renderError: { windowMs: 60_000, max: 30, hits: new Map() },
+
+  /**
+   * Reading or editing a parcha submission by its reference.
+   *
+   * This bucket exists because of what the reference *is*. A guest's
+   * submission has no `userId`, so `getSubmissionByReference` matches it
+   * for anyone holding the reference — the schema comment and the route
+   * doc both say so, and for a guest flow that is a reasonable design.
+   * What makes it worth throttling is the size: six characters from a
+   * 29-character alphabet is about **29 bits**, where a bearer token is
+   * normally 128. Short is survivable; short *and* unthrottled is not,
+   * and until now neither the read nor the item `PATCH` was counted at
+   * all, so nothing slowed an enumeration down.
+   *
+   * Deliberately strict, because the honest use is narrow: a customer
+   * opens the link they were given and edits the lines on it. Thirty
+   * references in ten minutes from one address is somebody walking the
+   * space, not somebody checking their own order. What leaks if they
+   * succeed is a materials list and whatever the customer typed with it.
+   *
+   * The real fix is a longer reference for guest submissions, which
+   * changes a stored format; this is the half that costs nothing and
+   * closes the door today.
+   */
+  parchaSubmission: { windowMs: 10 * 60_000, max: 30, hits: new Map() },
 };
 
 /**

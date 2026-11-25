@@ -1,4 +1,5 @@
 import { ApiError, handler, ok } from "@/lib/http";
+import { enforce } from "@/lib/rate-limit";
 import { getSession } from "@/lib/auth/session";
 import { getSubmissionByReference } from "@/lib/data/parcha-submissions";
 
@@ -13,8 +14,15 @@ type Ctx = { params: Promise<{ reference: string }> };
  * for a submission that actually has an owner — a guest's has the
  * unguessable reference as its only credential, exactly as the schema
  * comment on `ParchaSubmission.userId` describes.
+ *
+ * Rate-limited because of that last sentence. "Unguessable" is doing a
+ * lot of work for six characters out of a 29-character alphabet — about
+ * 29 bits — and an unthrottled endpoint is what turns a short credential
+ * into a guessable one. See the `parchaSubmission` bucket.
  */
-export const GET = handler(async (_request, { params }: Ctx) => {
+export const GET = handler(async (request, { params }: Ctx) => {
+  enforce("parchaSubmission", request);
+
   const { reference } = await params;
   const session = await getSession();
 

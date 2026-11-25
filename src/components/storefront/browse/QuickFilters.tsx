@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/components/ui/cn";
 import { withParams, type BrowseParams } from "@/lib/browse-params";
+import { INSTANT_FILTER_LABEL } from "@/lib/orders/delivery-estimate";
 import type { ProductFacets } from "@/lib/data/catalog";
 
 /**
@@ -52,7 +53,10 @@ const CHIPS: {
   available?: (f: ProductFacets) => boolean;
 }[] = [
   {
-    label: "In 18 minutes",
+    /* Was "In 18 minutes". Guarded by the `available` check below, so
+       it has never been shown — but it would have been the moment one
+       product was set to `instant`. */
+    label: INSTANT_FILTER_LABEL,
     params: { fulfilment: "instant" },
     activeWhen: (p) => p.fulfilment === "instant",
     available: (f) =>

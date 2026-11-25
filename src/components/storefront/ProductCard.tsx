@@ -21,7 +21,10 @@ import {
   Trash,
   Truck,
 } from "@/components/icons";
-import { SCHEDULED_DELIVERY_SHORT } from "@/lib/orders/delivery-estimate";
+import {
+  INSTANT_DELIVERY_SHORT,
+  SCHEDULED_DELIVERY_SHORT,
+} from "@/lib/orders/delivery-estimate";
 import { useCart } from "@/lib/store/cart";
 import { useWishlist } from "@/lib/store/wishlist";
 import {
@@ -74,7 +77,9 @@ const FULFILMENT: Record<
   FulfilmentType,
   { label: (d?: number) => string; Icon: typeof Clock }
 > = {
-  instant: { label: () => "18 min", Icon: Clock },
+  /* Was a hard-coded "18 min" — the promise the owner retired. From
+     `delivery-estimate.ts` now, like the branch below it. */
+  instant: { label: () => INSTANT_DELIVERY_SHORT, Icon: Clock },
   scheduled: {
     /* From the one place the promise is written down — see
        `delivery-estimate.ts`. A line that carries its own
